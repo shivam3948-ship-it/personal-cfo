@@ -1,7 +1,11 @@
 # 09 · User Journeys
 
 **Status:** v0.1 · **Last updated:** 2026-10-03
-Personas: **Rohan** (DIY investor, primary) · **Priya** (family money manager, secondary). See PRD §7.
+Personas (PRD §7):
+- **Rohan**: primary. A DIY investor managing his own funds in direct plans through apps.
+- **Priya**: secondary. Manages her parents' or spouse's money, often in regular plans bought through a bank.
+
+The **Persona** column says who goes through each journey. Where it's "Rohan + Priya", the steps are the same and only the emphasis differs: Rohan cares most about returns vs his funds and overlap; Priya cares most about the cost of regular plans and seeing several family members in one place. Journeys only one of them takes are marked with that name.
 Problem codes P1–P6 refer to 08-problem-validation.md. Feature codes F1–F14 refer to the PRD.
 
 ## 1. The core loop
@@ -28,25 +32,25 @@ flowchart LR
 ## 2. All journeys at a glance
 | ID | Journey | Persona | Trigger | Outcome | Phase / priority | Features |
 |---|---|---|---|---|---|---|
-| J0 | Discover and decide to try | Both | Friend link, LinkedIn/Reddit post, shared report card | Lands, trusts enough to sign up | P1 · Must | Landing |
-| J1 | Sign up, consent, AI disclosure | Both | "Check my portfolio" | Account + purpose consents recorded | P1 · Must | F1 |
-| J2 | Get my CAS (doesn't have one) | Both | No statement at hand | Detailed CAS in inbox | P1 · Must | F2 guide |
-| J3 | Upload and parse (incl. every failure path) | Both | Has the PDF | Reconciled portfolio, or a precise fix | P1 · Must | F2, F3 |
-| J4 | First x-ray: the "aha" | Both | Parse succeeded | Sees top 3 insights in < 3 min | P1 · Must | F4, F5 |
-| J5 | Insight deep dive | Both | Taps an insight | Understands, checks the math, marks intent | P1 · Must | F5 |
-| J6 | Ask your CFO (chat), incl. the advice-seeking path | Both | Has a question | Grounded answer or compliant redirect | P1 · Must | F6, F7 |
-| J7 | Monthly refresh → what changed → verified action | Both | Monthly CAS email / reminder | Diff seen; action confirmed | P1 · Should | F9 |
+| J0 | Discover and decide to try | Rohan + Priya | Friend link, LinkedIn/Reddit post, shared report card | Lands, trusts enough to sign up | P1 · Must | Landing |
+| J1 | Sign up, consent, AI disclosure | Rohan + Priya | "Check my portfolio" | Account + purpose consents recorded | P1 · Must | F1 |
+| J2 | Get my CAS (doesn't have one) | Rohan + Priya | No statement at hand | Detailed CAS in inbox | P1 · Must | F2 guide |
+| J3 | Upload and parse (incl. every failure path) | Rohan + Priya | Has the PDF | Reconciled portfolio, or a precise fix | P1 · Must | F2, F3 |
+| J4 | First x-ray: the "aha" | Rohan + Priya | Parse succeeded | Sees top 3 insights in < 3 min | P1 · Must | F4, F5 |
+| J5 | Insight deep dive | Rohan + Priya | Taps an insight | Understands, checks the math, marks intent | P1 · Must | F5 |
+| J6 | Ask your CFO (chat), incl. the advice-seeking path | Rohan + Priya | Has a question | Grounded answer or compliant redirect | P1 · Must | F6, F7 |
+| J7 | Monthly refresh → what changed → verified action | Rohan + Priya | Monthly CAS email / reminder | Diff seen; action confirmed | P1 · Should | F9 |
 | J8 | Family view: add a parent's portfolio | Priya | Manages parents' money | Combined + per-member view | P1 · Should | F10 |
-| J9 | Risk questionnaire: stated vs actual | Both | Prompt after first x-ray | Sees gap between stated and actual equity share | P1 · Should | F11 |
+| J9 | Risk questionnaire: stated vs actual | Rohan + Priya | Prompt after first x-ray | Sees gap between stated and actual equity share | P1 · Should | F11 |
 | J10 | Behaviour moment: market falls | Rohan | Index down sharply / SIP about to be cancelled | Sees own history and the cost of stopping, as education, not advice | P1 · Should (P2 evidence) | F5, F6 |
-| J11 | Report a wrong number / rate an answer | Both | Something looks off | Flag logged and fixed within SLA | P1 · Must | F7 |
-| J12 | Share a report card | Both | Proud or alarmed | Anonymised image shared | P1 · Could | F14 |
-| J13 | Join Account Aggregator waitlist | Both | Dislikes uploading PDFs | On waitlist (demand signal) | P1 · Should | F12 |
-| J14 | Data controls: delete statement, export, withdraw consent, delete account | Both | Privacy concern / leaving | Hard delete confirmed | P1 · Must | F8 |
-| J15 | Return visit with stale data | Both | Opens app after weeks | Prompted to refresh; sees what may have changed | P1 · Should | F9 |
-| J16 | Connect bank/card statements → spend and surplus | Both | Wants "how much can I invest?" | Investable surplus estimate | **P2** | — |
-| J17 | Set a goal → plan → personalised advice | Both | Life event (house, child) | Advice under RIA, after suitability | **P3 (RIA)** | — |
-| J18 | Tax: capital-gains report → harvesting suggestions | Both | Jan–Mar tax season | ITR-ready gains report; advice under RIA | **P4** (report pre-RIA) | — |
+| J11 | Report a wrong number / rate an answer | Rohan + Priya | Something looks off | Flag logged and fixed within SLA | P1 · Must | F7 |
+| J12 | Share a report card | Rohan + Priya | Proud or alarmed | Anonymised image shared | P1 · Could | F14 |
+| J13 | Join Account Aggregator waitlist | Rohan + Priya | Dislikes uploading PDFs | On waitlist (demand signal) | P1 · Should | F12 |
+| J14 | Data controls: delete statement, export, withdraw consent, delete account | Rohan + Priya | Privacy concern / leaving | Hard delete confirmed | P1 · Must | F8 |
+| J15 | Return visit with stale data | Rohan + Priya | Opens app after weeks | Prompted to refresh; sees what may have changed | P1 · Should | F9 |
+| J16 | Connect bank/card statements → spend and surplus | Rohan + Priya | Wants "how much can I invest?" | Investable surplus estimate | **P2** | — |
+| J17 | Set a goal → plan → personalised advice | Rohan + Priya | Life event (house, child) | Advice under RIA, after suitability | **P3 (RIA)** | — |
+| J18 | Tax: capital-gains report → harvesting suggestions | Rohan + Priya | Jan–Mar tax season | ITR-ready gains report; advice under RIA | **P4** (report pre-RIA) | — |
 
 ## 3. Detailed maps (the journeys that make or break Phase 1)
 
