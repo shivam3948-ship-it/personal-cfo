@@ -95,7 +95,7 @@ personal-cfo/
 See D-005. The parser interface is source-agnostic (`HoldingsSource`), so AA plugs in later.
 
 ### ADR-005 · Mobile-first PWA, not native apps, for Phase 1
-Faster iteration, no store review, one codebase. Revisit for voice (Phase 1.5) or push-notification needs.
+Faster iteration, no store review, one codebase. Full evidence and native-app triggers: docs/10-platform-decision.md (D-014).
 
 ### ADR-006 · Model provider: Claude API behind a thin interface
 - Larger model for explanations and chat; small, fast model for intent classification and checks.

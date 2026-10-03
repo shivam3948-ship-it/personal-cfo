@@ -31,7 +31,8 @@ DIY mutual fund investors can see *what* they own, not *whether it's any good fo
 
 ## 6. Constraints
 - **Regulatory:** no personalised buy/sell/switch recommendations (03-regulatory §3). Advice code paths exist behind `ADVICE_ENABLED=false`.
-- **Data:** CAS PDF only (CAMS + KFintech consolidated). No AA, no demat CAS in Phase 1.
+- **Data:** CAS PDFs only (detailed RTA CAS for history; depository CAS for refresh). No AA in Phase 1.
+- **Platform:** mobile-first PWA, works on desktop (D-014, docs/10).
 - **Privacy:** no PII to the LLM; CAS password never stored; PDF deleted after parse by default.
 - **Team:** solo builder; scope must fit 6 one-week sprints (S0–S5).
 - **Cost:** pilot infra + LLM spend kept small; per-user LLM cost tracked from day one.
@@ -59,7 +60,7 @@ DIY mutual fund investors can see *what* they own, not *whether it's any good fo
 | ID | Feature | Priority | Notes |
 |---|---|---|---|
 | F1 | Sign-up (email OTP / Google), onboarding, consent, AI-use disclosure | Must | Consent is per purpose (DPDP) |
-| F2 | CAS upload + parse: detailed CAS from CAMS or KFintech, password used in memory only | Must | Show "how to get your CAS" guide (MFCentral / CAMS / KFintech) |
+| F2 | CAS upload + parse: detailed CAS from CAMS / KFintech / MF Central, plus the monthly NSDL/CDSL CAS for refresh; password used in memory only; Android "share to app" | Must | Guide starts with "check your inbox first" (J2); D-013, D-014 |
 | F3 | Parse validation: reconcile parsed holdings against the CAS valuation totals; flag mismatches | Must | Wrong parses never reach the UI |
 | F4 | X-ray engine (deterministic): value, invested, XIRR (portfolio and per scheme), asset allocation, market-cap split, look-through top stocks and sectors, fund overlap matrix, expense drag ₹/yr, regular-vs-direct cost gap, benchmark comparison, tiny/dormant folios | Must | Every metric stores formula + inputs |
 | F5 | Insights feed: rules engine ranks findings by severity and ₹ impact; LLM writes a 2–3 sentence explanation per insight from fact IDs only | Must | "Show the math" on every card |

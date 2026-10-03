@@ -22,6 +22,9 @@ An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS)
 | [docs/05-metrics-framework.md](docs/05-metrics-framework.md) | North Star, metric tree, guardrails, kill criteria |
 | [docs/06-gtm-cold-start.md](docs/06-gtm-cold-start.md) | Trust-first cold start |
 | [docs/07-roadmap.md](docs/07-roadmap.md) | Now / Next / Later |
+| [docs/08-problem-validation.md](docs/08-problem-validation.md) | Market evidence for and against each problem hypothesis |
+| [docs/09-user-journeys.md](docs/09-user-journeys.md) | All user journeys, failure paths, journey → metric map |
+| [docs/10-platform-decision.md](docs/10-platform-decision.md) | What kind of app; web vs mobile, with native-app triggers |
 | [tech/ARCHITECTURE.md](tech/ARCHITECTURE.md) | System design + ADRs |
 | [tech/DATA_MODEL.md](tech/DATA_MODEL.md) | Postgres schema |
 | [tech/AI_EVALS.md](tech/AI_EVALS.md) | AI components, guardrails, eval gates |
