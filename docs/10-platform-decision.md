@@ -53,3 +53,18 @@ Build the Expo app (sharing the same API) when **any** of these holds:
 - Email as the default reminder channel; web push as an opt-in extra
 - Passkey login option + idle timeout for an "app lock" feel
 - Performance budget: first insight usable on a mid-range Android phone over 4G (budget to be set in S0)
+
+## 7. Keeping a later move to native cheap
+Rules for the Phase 1 build, so a native app later means rebuilding screens only:
+1. **All business logic lives in the API** (FastAPI). The web app only renders and calls endpoints, so a native app reuses 100% of the logic.
+2. **Shared contracts:** API types / zod schemas in `packages/shared`, importable by both Next.js and an Expo app.
+3. **Auth via Supabase**, which has SDKs for both web and React Native; no web-only auth tricks.
+4. **Design tokens** (colours, type scale, spacing) in one file, consumed by both.
+5. **No browser-only dependencies in core flows** without a native equivalent noted (e.g. PDF picker → `expo-document-picker`; share target → native share extension).
+
+Migration paths (rough estimates for one builder with AI help; to re-estimate when triggered):
+| Path | What you get | Rough effort |
+|---|---|---|
+| Trusted Web Activity (Android) | The same PWA listed on the Play Store | Days |
+| Capacitor wrapper (Android + iOS) | Store presence, native share extension, push, biometrics; UI unchanged | 1–2 weeks incl. store review |
+| Expo / React Native rewrite of the UI | Fully native feel; reuses API, auth and shared types | 3–6 weeks for ~15 Phase 1 screens |
