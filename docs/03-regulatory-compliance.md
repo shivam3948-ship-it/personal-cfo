@@ -21,7 +21,10 @@
 | Advice vs distribution | Same client can't get both advice and distribution within the group | SEBI IA FAQ, Aug 2025 | No commissions if we advise (D-007) |
 | Fees | ₹1.51L per family per year (fixed mode) or 2.5% of AUA; advance max 2 quarters | Cafemutual, 18 Feb 2025 | Upper bound for pricing if RIA |
 
-## 3. The advice boundary (Phase 1, enforced in code)
+## 2a. Advice modes (D-016)
+Advice is built now but shown only in `internal` (founder + consenting family, no fee) and `demo` (synthetic portfolios) modes; pilot users stay in `diagnosis`. The IA definition turns on **consideration, being in the business, and holding out**; Regulation 4 has no relatives exemption. Full reasoning and guardrails: [12-advice-engine.md](12-advice-engine.md). Task **L-8**: counsel to confirm both modes and any public wording.
+
+## 3. The advice boundary (`diagnosis` mode, enforced in code)
 The LLM guardrail, the copy and the test suite all use this table.
 
 | ✅ Allowed (diagnosis / education) | ⛔ Gated until licensed (advice) |
@@ -69,6 +72,7 @@ The LLM guardrail, the copy and the test suite all use this table.
 | L-5 | Choose the RIA route (D-OPEN-2) | Before Phase 3 |
 | L-6 | Privacy notice and consent text per the DPDP Rules | Before pilot |
 | L-7 | Terms of use: "not investment advice" and AI-use disclosure | Before pilot |
+| L-8 | Confirm `internal` (family, no fee) and `demo` (synthetic data) advice modes are outside the IA definition; review public wording for "holding out" | Before showing the demo publicly |
 
 ## Sources
 - SEBI IA FAQs (Aug 2025): https://www.sebi.gov.in/sebi_data/faqfiles/aug-2025/1755174193178.pdf

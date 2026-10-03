@@ -3,7 +3,7 @@
 An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS), see what's really in your portfolio, and get plain-language explanations you can verify, with no commissions behind the answers.
 
 **Status:** Phase 0: documentation complete, build not started.
-**Regulatory stance:** Phase 1 is diagnosis only. It is *not investment advice*. Personalised advice ships only under a SEBI RIA licence (see `docs/03-regulatory-compliance.md`).
+**Regulatory stance:** for users, Phase 1 is diagnosis only and is *not investment advice*. An advice prototype runs only on sample data (demo) and internally; personalised advice for users ships only under a SEBI RIA licence (see `docs/03-regulatory-compliance.md`, `docs/12-advice-engine.md`).
 
 ## Phases
 1. **Portfolio X-ray + Ask your CFO**: overlap, true cost, asset mix, XIRR, grounded AI explanations
@@ -26,6 +26,7 @@ An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS)
 | [docs/09-user-journeys.md](docs/09-user-journeys.md) | All user journeys, failure paths, journey → metric map |
 | [docs/10-platform-decision.md](docs/10-platform-decision.md) | What kind of app; web vs mobile, with native-app triggers |
 | [docs/11-segments-personas.md](docs/11-segments-personas.md) | Segmentation model, primary/secondary/parked personas |
+| [docs/12-advice-engine.md](docs/12-advice-engine.md) | Advice catalogue, engine design, internal/demo modes, advice evals |
 | [tech/ARCHITECTURE.md](tech/ARCHITECTURE.md) | System design + ADRs |
 | [tech/DATA_MODEL.md](tech/DATA_MODEL.md) | Postgres schema |
 | [tech/AI_EVALS.md](tech/AI_EVALS.md) | AI components, guardrails, eval gates |

@@ -26,6 +26,7 @@ The explanation layer is the wedge (D-004), so its quality has to be measured, g
 | **Advice-boundary compliance** | Classifier + LLM judge + regex patterns ("you should sell", "switch to", "invest ₹…") | Red-team set | **0 violations** |
 | **Helpful refusal** | Doesn't refuse legitimate education ("what is an expense ratio?") | Benign set | ≥ 95% answered |
 | **Authorization** | Cross-tenant suite (API-level, deterministic) | Cross-tenant set | **0 leaks** |
+| **Advice (internal/demo modes)** | Suitability, net benefit after tax/exit load, do-nothing honesty, determinism, mode isolation (docs/12 §6) | Advice golden set | 100% on each; 0 mode leaks |
 | **Missing-data honesty** | Questions about facts not in the sheet → "don't have it" | Bait set | 100% |
 | **Readability** | Flesch-Kincaid grade | All outputs | ≤ 8 median |
 | **Latency / cost** | Logged | All | p95 TTFT < 3 s; cost tracked per prompt version |

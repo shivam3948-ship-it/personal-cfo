@@ -49,6 +49,8 @@ flowchart LR
 | J13 | Join Account Aggregator waitlist | Rohan + Priya | Dislikes uploading PDFs | On waitlist (demand signal) | P1 · Should | F12 |
 | J14 | Data controls: delete statement, export, withdraw consent, delete account | Rohan + Priya | Privacy concern / leaving | Hard delete confirmed | P1 · Must | F8 |
 | J15 | Return visit with stale data | Rohan + Priya | Opens app after weeks | Prompted to refresh; sees what may have changed | P1 · Should | F9 |
+| J19 | Advice (internal mode): review and approve recommendations for a family member | Founder | New CAS uploaded for an allow-listed member | Reviewed recommendations shown with net ₹ benefit after tax | P1 · Must (internal) | F15 |
+| J20 | Advice demo: explore a sample persona's recommendations | Recruiter / interviewer | Opens demo link | Understands the engine end to end in < 5 min | P1 · Must (demo) | F16 |
 | J16 | Connect bank/card statements → spend and surplus | Rohan + Priya | Wants "how much can I invest?" | Investable surplus estimate | **P2** | — |
 | J17 | Set a goal → plan → personalised advice | Rohan + Priya | Life event (house, child) | Advice under RIA, after suitability | **P3 (RIA)** | — |
 | J18 | Tax: capital-gains report → harvesting suggestions | Rohan + Priya | Jan–Mar tax season | ITR-ready gains report; advice under RIA | **P4** (report pre-RIA) | — |

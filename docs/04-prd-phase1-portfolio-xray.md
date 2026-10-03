@@ -75,9 +75,11 @@ Full personas and segment reasoning: [docs/11-segments-personas.md](11-segments-
 | F12 | "Account Aggregator — coming soon" CTA + waitlist | Should | Demand signal (D-005) |
 | F13 | Hindi explanations toggle | Could | Phase 1.5 experiment (D-OPEN-1) |
 | F14 | Shareable, anonymised "portfolio report card" image | Could | Growth loop |
+| F15 | **Advice engine v1** (A1–A3 first: consolidate overlap, regular→direct plan, rebalance), with suitability gate and tax/exit-load simulation | Must (internal + demo only) | D-016, docs/12 |
+| F16 | **Advice demo**: 2 synthetic personas, anonymised funds, "how it works" panel with eval scorecard | Must | Portfolio artefact |
 
 ## 10. Features Out
-- Any personalised recommendation (fund, amount, timing) → Phase 3 behind RIA
+- Personalised recommendations **to pilot users** → only after an RIA of record (built now for `internal` and `demo` modes; F15–F16)
 - Transactions, order placement, distribution → never (D-007)
 - Demat equity analysis, EPF, NPS, FDs → later phases (the NSDL/CDSL CAS *is* accepted for MF holdings and monthly refresh; D-013)
 - Account Aggregator → waitlist only

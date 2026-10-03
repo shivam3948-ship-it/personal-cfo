@@ -57,6 +57,7 @@ personal-cfo/
 │   ├── cas/             # parse + reconcile (deterministic)
 │   ├── engine/          # x-ray metrics → facts (deterministic)
 │   ├── insights/        # rules + ranking + template fallbacks
+│   ├── advice/          # recommendation rules A1–A6, suitability gate, tax/exit-load simulation, mode checks
 │   ├── ai/
 │   │   ├── prompts/     # versioned prompt files + registry.py (typed, never inline strings)
 │   │   ├── pipeline.py  # fact sheet → LLM → checks
@@ -105,8 +106,8 @@ Faster iteration, no store review, one codebase. Full evidence and native-app tr
 ### ADR-007 · RAG only over a curated knowledge base
 Sources: SEBI and AMFI investor-education material and our own methodology docs, each chunk tagged with source URL + date. No open-web retrieval in production answers.
 
-### ADR-008 · Advice capability flag
-`ADVICE_ENABLED` per environment *and* per user (requires a completed risk profile + signed agreement + an RIA-of-record). Checked in the API, logged in the audit log.
+### ADR-008 · Advice modes (updated by D-016)
+Each session resolves an `advice_mode` on the server: `diagnosis` (default) · `internal` (allow-listed accounts) · `demo` (synthetic data only) · `advised` (later: risk profile + signed agreement + RIA of record). Every advice endpoint checks it; every decision is audit-logged. `demo` uses a separate DB schema and storage bucket with seeded sample portfolios, so it can never read real uploads. Engine design: docs/12-advice-engine.md.
 
 ### ADR-009 · What we took from the generic "production RAG app" layout, and what we rejected
 - **Context:** A widely shared 9-layer template (services, agents, prompts, security, evaluation, observability, .claude, …) was reviewed on 2026-10-03. It's designed for document Q&A. Our core data is structured (facts in Postgres), not documents.

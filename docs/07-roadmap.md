@@ -29,6 +29,11 @@ S0 spikes → S1 upload/parse → S2 x-ray engine → S3 insights + evals → S4
 - Data: PDF upload first; AA later via a partner
 - Regulatory: information only; not securities advice (⚠ confirm)
 
+## Next — Advice engine v1 (internal + demo modes; D-016)
+- A1–A3 recommendations with suitability and tax/exit-load simulation; founder-reviewed on family portfolios
+- Public demo on synthetic personas; L-8 legal check before sharing the link
+- Blind review of 30 recommendations by a practising RIA/CFP
+
 ## Later — Phase 3: Goal-based planning (**RIA required**)
 - Goals → required corpus → SIP gap, using the risk profile captured in Phase 1
 - Advice flag on; suitability check; client agreement; AI-use disclosure

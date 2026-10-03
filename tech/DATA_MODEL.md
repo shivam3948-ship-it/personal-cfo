@@ -19,7 +19,10 @@ Conventions: `uuid` PKs, `created_at timestamptz default now()`, RLS on every us
 | `members` | `id`, `user_id`, `label` ("Self", "Mother"), `pan_hash`, `pan_last4`, `consent_attested_at` | Family view (F10) |
 | `consents` | `id`, `user_id`, `purpose` (`analysis`, `product_improvement`, `marketing`), `version`, `granted_at`, `withdrawn_at` | DPDP purpose-wise consent |
 | `risk_profiles` | `id`, `member_id`, `answers jsonb`, `score`, `category`, `version`, `completed_at` | Reused for RIA suitability |
-| `advice_eligibility` | `member_id`, `risk_profile_id`, `agreement_signed_at`, `ria_of_record`, `enabled` | Phase 3; all false in Phase 1 |
+| `advice_eligibility` | `member_id`, `risk_profile_id`, `agreement_signed_at`, `ria_of_record`, `enabled` | For `advised` mode (later) |
+| `advice_allowlist` | `user_id`, `mode` (`internal`), `added_by`, `reason`, `added_at` | Founder + consenting family only (D-016) |
+| `recommendations` | `id`, `upload_id`, `member_id`, `type` (A1–A6), `actions jsonb`, `rationale_fact_ids text[]`, `expected_impact_paise`, `costs jsonb` (tax, exit load), `assumptions jsonb`, `suitability_passed`, `rules_version`, `mode`, `reviewed_by`, `reviewed_at` | Deterministic output of the advice engine |
+| `tax_rules` (config file, versioned) | `rule`, `value`, `effective_from`, `source_url` | `config/tax_rules.yaml`; CI fails if `source_url` is missing |
 
 ## 3. Portfolio snapshot (one per CAS upload)
 | Table | Key columns | Notes |
