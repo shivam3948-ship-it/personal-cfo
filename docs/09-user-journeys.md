@@ -2,8 +2,9 @@
 
 **Status:** v0.1 · **Last updated:** 2026-10-03
 Personas (PRD §7):
-- **Rohan**: primary. A DIY investor managing his own funds in direct plans through apps.
-- **Priya**: secondary. Manages her parents' or spouse's money, often in regular plans bought through a bank.
+- **Rohan**: primary. A time-poor engaged investor: wants to be involved in his money but has no time to research.
+- **Priya**: secondary. The family proxy for her father, a distributor-led investor in regular plans bought through a bank.
+- Full personas, plus the parked first-time saver (Ramesh): [11-segments-personas.md](11-segments-personas.md).
 
 The **Persona** column says who goes through each journey. Where it's "Rohan + Priya", the steps are the same and only the emphasis differs: Rohan cares most about returns vs his funds and overlap; Priya cares most about the cost of regular plans and seeing several family members in one place. Journeys only one of them takes are marked with that name.
 Problem codes P1–P6 refer to 08-problem-validation.md. Feature codes F1–F14 refer to the PRD.

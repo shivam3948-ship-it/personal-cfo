@@ -6,7 +6,7 @@
 A personal CFO for Indian investors: it reads your real financial data, tells you what's wrong in plain language, and (once licensed) tells you what to do about it, with no commission riding on the answer.
 
 ## 2. Problem
-DIY mutual fund investors in India have access to cheap direct plans and many apps. What they lack is **judgement about their own portfolio**:
+Indian mutual fund investors who manage their own money through apps have access to cheap direct plans and many apps. What they lack is **judgement about their own portfolio**:
 
 - **Accidental complexity.** Portfolios accrete funds over the years (an NFO here, a friend's tip there). The investor can't see that five funds hold the same top 10 stocks.
 - **Invisible costs.** Regular-plan commissions, overlapping expense ratios and exit loads aren't shown as rupees per year.
@@ -16,17 +16,15 @@ DIY mutual fund investors in India have access to cheap direct plans and many ap
 > **Assumption to validate:** DIY investors *want* this judgement, and will act on it. This is the riskiest assumption in the plan; see §7.
 
 ## 3. Who it's for (Phase 1)
-**Primary persona — "the self-directed salaried investor"**
-- 25–40, salaried, metro or tier-1 city, invests via Groww, Zerodha Coin, Kuvera or similar
-- 4–15 mutual fund schemes, SIPs running, some lumpsum
-- Reads finance content, distrusts agents, has never paid for advice
+Segments and personas are defined in [11-segments-personas.md](11-segments-personas.md) (D-015).
+
+**Primary: the time-poor engaged investor (returning).** Wants to be involved in their money but has no time to research. Salaried, 25–40, metro/tier-1, 4–15 funds, SIPs running.
 - Job to be done: *"Tell me if my portfolio is actually fine, in a way I understand, without selling me something."*
 
-**Secondary persona — "the family money manager"**
-- Manages parents' or spouse's investments alongside their own
-- Pain: holdings scattered across PANs, often in regular plans bought through a bank RM
+**Secondary: the distributor-led investor (returning), reached through a family proxy.** Often a parent in regular plans bought through a bank RM; the adult child uses the app on their behalf.
 
-**Not for (now):** first-time investors with no holdings, traders, HNIs with PMS/AIF-heavy portfolios.
+**Early adopters, not the design target:** DIY investors.
+**Parked:** first-time self-employed savers (Phase 1.5–3). **Out:** traders, HNIs with PMS/AIF-heavy portfolios.
 
 ### Market context (verified figures, cite when used)
 - 6.09 crore unique MF investors, end Feb 2026 (Angel One, citing AMFI data, 24 Mar 2026)

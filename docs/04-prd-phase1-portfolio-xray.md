@@ -18,7 +18,7 @@ Phase 1: Portfolio X-ray with grounded AI explanations (diagnosis only)
 # One Pager
 
 ## 4. Problem
-DIY mutual fund investors can see *what* they own, not *whether it's any good for them*. Overlap, cost drag, concentration and drift are invisible or buried in charts, and advice is either conflicted (commission-paid) or expensive (fee-only RIA). Detail: 01-vision-strategy §2.
+Investors who manage their own funds (but lack time to research) can see *what* they own, not *whether it's any good for them*. Overlap, cost drag, concentration and drift are invisible or buried in charts, and advice is either conflicted (commission-paid) or expensive (fee-only RIA). Detail: 01-vision-strategy §2.
 
 ## 5. Objectives
 | # | Objective | Measured by |
@@ -38,10 +38,12 @@ DIY mutual fund investors can see *what* they own, not *whether it's any good fo
 - **Cost:** pilot infra + LLM spend kept small; per-user LLM cost tracked from day one.
 
 ## 7. Personas
-1. **Rohan, 31, the self-directed salaried investor (primary).** Product engineer in Bangalore. 9 funds across Groww and Coin, 4 SIPs, half of them started after reading a Reddit thread. Wants to know if he's "doing it right" without being sold anything.
-2. **Priya, 35, the family money manager (secondary).** Tracks her parents' portfolio: regular plans bought via a bank RM. Wants one view and a clear answer to "what are they paying for this?"
+Full personas and segment reasoning: [docs/11-segments-personas.md](11-segments-personas.md) (D-015).
+1. **Rohan, 31, the time-poor engaged investor (primary).** Wants to be involved but has no time. 9 funds, 4 SIPs, picked from tips. Wants a 3-minute verdict on whether he's doing okay, without being sold anything.
+2. **Priya, 35 + her father, 63 (secondary).** Priya is the proxy; her father is a distributor-led investor in regular plans bought via a bank RM. She wants one view and "what is this costing him?"
+3. **Parked: Ramesh, 42, first-time self-employed saver.** Not designed for in Phase 1 (nothing to upload); target for Phase 1.5 voice/Hindi and Phases 2–3.
 
-(Illustrative composites, not research findings. Replace with real interview data after T-3.)
+(Proto-personas: hypotheses to confirm in T-3 interviews.)
 
 ## 8. Use cases
 - UC1: "Is my portfolio diversified, or do I own the same stocks five times?"
@@ -68,7 +70,7 @@ DIY mutual fund investors can see *what* they own, not *whether it's any good fo
 | F7 | Answer feedback (👍/👎 + reason) feeding the eval pipeline | Must | |
 | F8 | Data controls: delete everything, export my data | Must | DPDP |
 | F9 | Refresh and diff: re-upload → "what changed" + detected actions (e.g. a regular plan exited and the direct plan bought) | Should | Powers the North Star |
-| F10 | Family view: multiple CAS per account, tagged by member, with consent attestation | Should | |
+| F10 | Family view: multiple CAS per account, tagged by member, with consent attestation; printable family summary | Must (secondary persona, D-015) | |
 | F11 | Risk questionnaire (stored; shown as "your stated vs actual equity share", which is diagnosis) | Should | Reused for RIA suitability later |
 | F12 | "Account Aggregator — coming soon" CTA + waitlist | Should | Demand signal (D-005) |
 | F13 | Hindi explanations toggle | Could | Phase 1.5 experiment (D-OPEN-1) |

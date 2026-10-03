@@ -56,7 +56,7 @@
 5. Phone or laptop: where do they open their CAS email and where do they manage investments?
 6. Willingness to pay: what would a monthly "portfolio check-up" be worth?
 
-**Exit criteria for problem validation:** ≥ 6 of 10 DIY investors rank P1, P2 or P6 as a top-2 pain *and* ≥ 5 of 10 say they'd upload a CAS. Otherwise revisit the target user (D-003 / D-OPEN-1).
+**Exit criteria for problem validation:** among the 6 primary-segment interviewees (time-poor engaged, docs/11), ≥ 4 rank P1, P2 or P6 as a top-2 pain *and* ≥ 4 say they'd upload a CAS; among the 3 family proxies, ≥ 2 say they'd upload a parent's CAS. Otherwise revisit the segments (D-015).
 
 ## Sources
 - SEBI Investor Survey 2025 coverage: [Business Standard, 21 Jan 2026](https://www.business-standard.com/markets/news/two-thirds-of-domestic-households-aware-of-securities-products-sebi-survey-126012100349_1.html) · [Policy Edge](https://www.policyedge.in/p/sebi-investor-survey-2025-mapping)

@@ -1,7 +1,7 @@
 # AGENTS.md — working rules for any AI coding agent (Claude Code, Codex, Cursor, …)
 
 ## Project
-Personal CFO (working name): an AI personal CFO for Indian DIY mutual fund investors. Phase 1 = CAS upload → portfolio x-ray → grounded AI explanations + chat. Read `DECISIONS.md` first; it overrides anything stale elsewhere.
+Personal CFO (working name): an AI personal CFO for Indian mutual fund investors who want to stay involved but lack time (primary), and for families checking a parent's portfolio (secondary); see docs/11. Phase 1 = CAS upload → portfolio x-ray → grounded AI explanations + chat. Read `DECISIONS.md` first; it overrides anything stale elsewhere.
 
 ## Non-negotiables
 1. **No investment advice in Phase 1.** Never write copy, prompts or logic that recommends buying, selling or switching a specific security, or an amount or timing. Advice code paths must check `ADVICE_ENABLED` server-side. Boundary table: `docs/03-regulatory-compliance.md` §3.
