@@ -53,11 +53,23 @@
 ```
 personal-cfo/
 ├── apps/web/            # Next.js PWA
-├── services/api/        # FastAPI: cas, engine, insights, ai, privacy
+├── services/api/
+│   ├── cas/             # parse + reconcile (deterministic)
+│   ├── engine/          # x-ray metrics → facts (deterministic)
+│   ├── insights/        # rules + ranking + template fallbacks
+│   ├── ai/
+│   │   ├── prompts/     # versioned prompt files + registry.py (typed, never inline strings)
+│   │   ├── pipeline.py  # fact sheet → LLM → checks
+│   │   ├── router.py    # intent classifier
+│   │   └── kb.py        # curated-KB retrieval (pgvector)
+│   ├── guards/          # 3 layers: input (intent / PII), content (untrusted PDF + KB text), output (numbers + advice)
+│   ├── observability/   # trace_id per request across parse→engine→LLM; cost per request; feedback joined to trace
+│   └── privacy/         # delete, export
 ├── jobs/                # reference-data ingestion (AMFI)
-├── evals/               # golden sets, red-team sets, harness, scorecard
+├── evals/               # golden, red-team, benign, bait sets; offline harness; online monitor; results/ history
 ├── supabase/            # migrations, RLS policies, seed
 ├── docs/ tech/          # this documentation
+├── .claude/rules/       # compliance.md, code-style.md, testing.md for the AI coding agent
 └── .github/workflows/   # CI: lint, tests, evals gate
 ```
 
@@ -94,6 +106,21 @@ Sources: SEBI and AMFI investor-education material and our own methodology docs,
 
 ### ADR-008 · Advice capability flag
 `ADVICE_ENABLED` per environment *and* per user (requires a completed risk profile + signed agreement + an RIA-of-record). Checked in the API, logged in the audit log.
+
+### ADR-009 · What we took from the generic "production RAG app" layout, and what we rejected
+- **Context:** A widely shared 9-layer template (services, agents, prompts, security, evaluation, observability, .claude, …) was reviewed on 2026-10-03. It's designed for document Q&A. Our core data is structured (facts in Postgres), not documents.
+- **Adopted:**
+  - Prompt registry (typed, versioned)
+  - Three guard layers, with the *content* layer meaning untrusted text inside CAS PDFs and KB chunks
+  - Per-request tracing with feedback and cost joined to the trace
+  - An online eval monitor (sampled LLM-judge on production answers) plus stored eval history
+  - `.claude/rules/` split
+- **Rejected:**
+  - **Semantic cache:** a "similar" question about a different portfolio or date returns a wrong number. We cache only on the exact `fact_sheet_hash`.
+  - **Hybrid retriever + reranker, query rewriter and decomposer:** retrieval of the user's data is SQL by fact ID. The curated KB is small enough for plain pgvector top-k. Revisit only if KB recall evals fail.
+  - **Agentic "document grader" / self-correcting loops:** add latency, cost and non-determinism. Our correction is a single, rule-checked regeneration (AI_EVALS §6).
+  - **Web search tool:** production answers come only from facts and the curated KB (ADR-007).
+- **Consequence:** fewer moving parts, every answer reproducible. Each rejected component has a named eval that would justify adding it back.
 
 ## 6. Security & privacy
 - TLS everywhere; secrets in the platform secret store; no secrets in the repo

@@ -15,6 +15,7 @@ Format: ID · date · decision · why · revisit when. Newest at the bottom. Nev
 | D-008 | 2026-10-03 | Repo: `personal-cfo` (working name) under version control on GitHub. Docs live in the repo next to code. | Single source of truth; reviewers can see decisions evolve. | Product gets a real name. |
 | D-009 | 2026-10-03 | **The LLM never computes numbers and never sees PII.** A deterministic engine computes every figure; the LLM only explains facts it is handed, and every number it outputs must trace to a fact ID. | Wrong numbers destroy trust in a money product. Keeps PAN, names and folio numbers out of third-party model APIs. Makes outputs testable. | Never, unless evals prove an alternative is safer. |
 | D-010 | 2026-10-03 | Stack: Next.js web app (mobile-first PWA) + Python FastAPI analytics service + Supabase Postgres (auth, RLS, storage) + Claude API. | Python owns CAS parsing and finance maths; Supabase repeats what worked on LaborLink. A PWA avoids app-store overhead for a pilot. Details in tech/ARCHITECTURE.md. | Voice or native features need a mobile app. |
+| D-011 | 2026-10-03 | Adopt from the generic RAG template: prompt registry, 3 guard layers, per-request tracing, online eval monitor, `.claude/rules/`. Reject: semantic cache, hybrid retriever/reranker, agentic self-correction loops, web search (ADR-009). | Our data is structured facts, not documents; reproducibility beats flexibility in a money product. | A named eval fails that a rejected component would fix. |
 
 ## Open decisions
 

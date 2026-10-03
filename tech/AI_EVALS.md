@@ -45,8 +45,9 @@ LLM-judge calibration: before the judge is trusted, it is compared against Shiva
 ## 5. Process
 1. Every prompt or model change → run the full suite locally → PR shows a scorecard diff.
 2. CI blocks the merge if any gate fails.
-3. Weekly: review production 👎 → add failures to the datasets (regression).
-4. Monthly: publish the scorecard (`evals/SCORECARD.md`) in the repo.
+3. **Online monitor:** a daily sample of production answers (PII-scrubbed) is scored by the same judges and deterministic checks; results go to `evals/results/` with prompt version + model, so drift is visible over time.
+4. Weekly: review production 👎 (each joined to its trace_id) → add failures to the datasets (regression).
+5. Monthly: publish the scorecard (`evals/SCORECARD.md`) in the repo.
 
 ## 6. Production safeguards
 - Output checker on 100% of responses: fail → one regeneration with the violation fed back → still failing → safe template response + log.
