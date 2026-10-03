@@ -54,6 +54,7 @@ The LLM guardrail, the copy and the test suite all use this table.
 - **LLM calls carry no PII** (D-009); review the model provider's data-retention terms (L-3)
 
 ## 5. Account Aggregator (for "coming soon")
+- **No direct MF Central route:** AMFI directed MF Central to stop sharing investor data directly with fintech apps; third parties must get it from the investor or, if RIA/PMS-licensed, through Account Aggregator (Angel One, Sep 2025; ⚠ verify the circular). So AA is the long-term ingestion path, and it depends on the RIA licence (D-018).
 - An FIU must be regulated by RBI, SEBI, IRDAI or PFRDA, and since Oct 2023 must also join as an FIP if it holds financial information (casparser.in, 2026; ⚠ verify against the RBI Master Direction).
 - MF data (CAMS, KFin) and demat data (CDSL, NSDL) are available via AA; the article reports demat transaction history is capped at 2 years.
 - **Path for us:** partner with a regulated FIU, or become one after RIA registration. Estimated first-year cost of ₹5–25L (same source; unverified).

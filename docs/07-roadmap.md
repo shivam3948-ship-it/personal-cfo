@@ -12,7 +12,7 @@ Now / Next / Later. Dates are targets for a solo builder, re-planned at each pha
 - [x] Problem validation from secondary research (docs/08)
 - [x] User journeys (docs/09) and platform decision (docs/10)
 - [x] Interview kit (docs/research/interview-kit.md) and clickable prototype (docs/research/prototype-notes.md)
-- [ ] T-3 10 user interviews (questions in docs/08 §4; exit criteria defined there)
+- [ ] T-3 10 user interviews: **moved to after the MVP** (D-018); run them on the working product with the same kit and pass criteria
 - [ ] L-1 Book a lawyer review of the advice boundary
 - [ ] Create the GitHub repo, project board and issues from the PRD
 
