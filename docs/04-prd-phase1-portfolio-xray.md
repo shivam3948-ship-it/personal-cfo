@@ -72,7 +72,7 @@ Full personas and segment reasoning: [docs/11-segments-personas.md](11-segments-
 | F9 | Refresh and diff: re-upload → "what changed" + detected actions (e.g. a regular plan exited and the direct plan bought) | Should | Powers the North Star |
 | F10 | Family view: multiple CAS per account, tagged by member, with consent attestation; printable family summary | Must (secondary persona, D-015) | |
 | F11 | Risk questionnaire (stored; shown as "your stated vs actual equity share", which is diagnosis) | Should | Reused for RIA suitability later |
-| F12 | "Account Aggregator — coming soon" CTA + waitlist | Should | Demand signal (D-005) |
+| F12 | Disabled **"Connect automatically · coming soon"** button beside upload; a tap logs demand and offers a waitlist. Copy names no third party (no MF Central/AA brand) until a real integration exists | Must | Demand signal; production route = Account Aggregator after RIA (D-018) |
 | F13 | Hindi explanations toggle | Could | Phase 1.5 experiment (D-OPEN-1) |
 | F14 | Shareable, anonymised "portfolio report card" image | Could | Growth loop |
 | F15 | **Advice engine v1** (A1–A3 first: consolidate overlap, regular→direct plan, rebalance), with suitability gate and tax/exit-load simulation | Must (internal + demo only) | D-016, docs/12 |
