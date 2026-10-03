@@ -21,48 +21,57 @@ jobs:
       - name: Validate Claude Code settings JSON
         run: python -m json.tool .claude/settings.json > /dev/null
 
+  # The jobs below skip their steps until the code they test exists (Phase 0 = docs only).
   api:
     name: API lint + tests
     runs-on: ubuntu-latest
-    if: ${{ hashFiles('services/api/pyproject.toml') != '' }}
-    defaults:
-      run:
-        working-directory: services/api
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - id: present
+        run: echo "yes=$([ -f services/api/pyproject.toml ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.present.outputs.yes == 'true'
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -e ".[dev]"
-      - run: ruff check . && ruff format --check .
-      - run: pytest -q
+      - if: steps.present.outputs.yes == 'true'
+        working-directory: services/api
+        run: |
+          pip install -e ".[dev]"
+          ruff check . && ruff format --check .
+          pytest -q
 
   evals:
     name: AI eval gates
     runs-on: ubuntu-latest
     needs: api
-    if: ${{ hashFiles('evals/run.py') != '' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - id: present
+        run: echo "yes=$([ -f evals/run.py ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.present.outputs.yes == 'true'
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -e "services/api[dev]"
-      - run: python evals/run.py --gates
+      - if: steps.present.outputs.yes == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          pip install -e "services/api[dev]"
+          python evals/run.py --gates
 
   web:
     name: Web typecheck + build
     runs-on: ubuntu-latest
-    if: ${{ hashFiles('apps/web/package.json') != '' }}
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - id: present
+        run: echo "yes=$([ -f apps/web/package.json ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.present.outputs.yes == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-      - run: npm run typecheck && npm run build
+      - if: steps.present.outputs.yes == 'true'
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run typecheck && npm run build
