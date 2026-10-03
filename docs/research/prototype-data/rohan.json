@@ -1,0 +1,75 @@
+{
+ "rohan": {
+  "total": 2635755,
+  "invested_net": 1831000,
+  "gain": 804755,
+  "investor_xirr_pct": 12.4,
+  "funds_return_pct": 13.2,
+  "equity_pct": 98.3,
+  "debt_pct": 1.7,
+  "ter_cost_per_year": 18457,
+  "n_funds": 10,
+  "holdings": [
+   {
+    "fund": "Flexi-cap Fund A",
+    "value": 581687,
+    "ter": 0.7,
+    "cagr_pct": 15.7
+   },
+   {
+    "fund": "ELSS Fund A",
+    "value": 425448,
+    "ter": 0.8,
+    "cagr_pct": 12.1
+   },
+   {
+    "fund": "Mid Cap Fund A",
+    "value": 388941,
+    "ter": 0.65,
+    "cagr_pct": 15.3
+   },
+   {
+    "fund": "Nifty 50 Index Fund A",
+    "value": 252072,
+    "ter": 0.2,
+    "cagr_pct": 14.1
+   },
+   {
+    "fund": "Large Cap Fund A",
+    "value": 240533,
+    "ter": 0.95,
+    "cagr_pct": 9.9
+   },
+   {
+    "fund": "Flexi-cap Fund B",
+    "value": 228753,
+    "ter": 0.85,
+    "cagr_pct": 9.6
+   },
+   {
+    "fund": "Small Cap Fund A",
+    "value": 216465,
+    "ter": 0.7,
+    "cagr_pct": 15.3
+   },
+   {
+    "fund": "Large & Mid Cap Fund A",
+    "value": 198299,
+    "ter": 0.75,
+    "cagr_pct": 11.2
+   },
+   {
+    "fund": "Technology Fund A",
+    "value": 59074,
+    "ter": 0.95,
+    "cagr_pct": 12.4
+   },
+   {
+    "fund": "Short Duration Debt Fund A",
+    "value": 44483,
+    "ter": 0.35,
+    "cagr_pct": 7.1
+   }
+  ]
+ }
+}

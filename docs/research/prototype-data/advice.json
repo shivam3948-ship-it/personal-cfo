@@ -1,0 +1,41 @@
+{
+ "r1": {
+  "value": 240533,
+  "gain": 90533,
+  "tax": 0,
+  "ter_saving_yr": 1804,
+  "net_5yr": 9020
+ },
+ "r2": {
+  "long_value": 141871,
+  "long_gain": 21871,
+  "long_tax": 0,
+  "short_value": 86882,
+  "short_gain": 6882,
+  "cost_if_sold_now": 2245,
+  "cost_if_wait": 0,
+  "saving_by_waiting": 2245,
+  "short_lot_dates": [
+   "2026-03-05"
+  ],
+  "ter_saving_yr": 343,
+  "exemption_left_after_r1_r2long": 12597
+ },
+ "r3": {
+  "total": 2635755,
+  "debt": 44483,
+  "debt_pct": 1.7,
+  "target_debt_pct": 20,
+  "extra_debt_needed": 603335,
+  "months_via_sip": 31.8,
+  "sip_total": 19000,
+  "debt_pct_if_r1_proceeds_to_debt": 10.8
+ },
+ "exemption_used": 112403,
+ "same_window_cagr_since_2021_09": {
+  "Large Cap Fund A": 9.9,
+  "Nifty 50 Index Fund A": 10.4,
+  "Flexi-cap Fund A": 12.0,
+  "Flexi-cap Fund B": 11.3
+ }
+}

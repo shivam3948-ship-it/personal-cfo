@@ -1,0 +1,51 @@
+{
+ "total": 4000000,
+ "n": 6,
+ "regular_cost_gap_per_year": 35450,
+ "gap_pct_of_portfolio": 0.89,
+ "ten_year_corpus_difference": 753693,
+ "holdings": [
+  {
+   "fund": "Large Cap Fund C (Regular)",
+   "value": 900000,
+   "ter_regular": 1.7,
+   "ter_direct": 0.85,
+   "gap": 7650
+  },
+  {
+   "fund": "Balanced Advantage Fund A (Regular)",
+   "value": 800000,
+   "ter_regular": 1.75,
+   "ter_direct": 0.8,
+   "gap": 7600
+  },
+  {
+   "fund": "Flexi-cap Fund C (Regular)",
+   "value": 700000,
+   "ter_regular": 1.8,
+   "ter_direct": 0.75,
+   "gap": 7350
+  },
+  {
+   "fund": "Corporate Bond Fund A (Regular)",
+   "value": 600000,
+   "ter_regular": 0.7,
+   "ter_direct": 0.35,
+   "gap": 2100
+  },
+  {
+   "fund": "Multi Asset Fund A (Regular)",
+   "value": 500000,
+   "ter_regular": 1.85,
+   "ter_direct": 0.7,
+   "gap": 5750
+  },
+  {
+   "fund": "Dividend Yield Fund A (Regular)",
+   "value": 500000,
+   "ter_regular": 2.0,
+   "ter_direct": 1.0,
+   "gap": 5000
+  }
+ ]
+}
