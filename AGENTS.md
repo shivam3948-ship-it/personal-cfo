@@ -14,7 +14,7 @@ Personal CFO (working name): an AI personal CFO for Indian DIY mutual fund inves
 8. **Evals gate merges.** Any change to prompts, models or the output checker must run `evals/` and pass all gates in `tech/AI_EVALS.md`.
 
 ## Layout
-`apps/web` (Next.js) · `services/api` (FastAPI: cas, engine, insights, ai, guards, observability, privacy) · `jobs` (AMFI ingestion) · `evals` · `supabase` (migrations, RLS) · `docs`, `tech`
+`apps/web` (Next.js) · `services/api` (FastAPI: cas, engine, insights, ai, authz, guards, observability, privacy) · `jobs` (AMFI ingestion) · `evals` · `supabase` (migrations, RLS) · `docs`, `tech`
 
 ## Conventions
 - Python 3.12, ruff, pytest, type hints; TypeScript strict; Conventional Commits (`feat(engine): …`)
