@@ -1,0 +1,27 @@
+# Decision Log
+
+Every product, regulatory and technical decision, with the reason and what would make us revisit it.
+Format: ID · date · decision · why · revisit when. Newest at the bottom. Never delete a row; supersede it.
+
+| ID | Date | Decision | Why | Revisit when |
+|---|---|---|---|---|
+| D-001 | 2026-10-03 | Build a "personal CFO" for Indian retail investors, shipped module by module: (1) portfolio analysis → (2) savings insights → (3) goal-based planning → (4) tax-aware investing. | Each module reuses the data and trust earned by the previous one. Portfolio analysis has the cleanest data source (CAS) and the fastest time-to-value. | Phase 1 retention is weak (see metrics doc kill criteria). |
+| D-002 | 2026-10-03 | Purpose: credible portfolio piece first, with a real path to a business. | Founder (Shivam) is job-seeking for AI PM roles in wealthtech; a live product with real users and evals is the strongest proof. | A pilot shows paid-intent signal, or a job offer changes time available. |
+| D-003 | 2026-10-03 | First user: DIY mutual fund investors (self-directed, invest through apps, mostly direct plans). | They already hold portfolios, so CAS upload delivers value on day one. First-time investors have nothing to analyse yet. | See D-OPEN-1. |
+| D-004 | 2026-10-03 | Wedge = AI that explains *your* portfolio in plain language + a portfolio x-ray (overlap, true cost, real asset mix). | X-rays alone are commoditised (see competitive analysis). The explanation layer, grounded in computed numbers and measured by evals, is the differentiator and the AI PM showcase. | Evals show users don't value explanations over charts. |
+| D-005 | 2026-10-03 | Data in, Phase 1: CAMS/KFintech CAS PDF upload. Show "Account Aggregator: coming soon" CTA to measure demand. | CAS needs no licence and carries full MF history. AA needs an FIU that is a regulated entity, or a regulated partner (see regulatory doc). | AA partner found, or CAS upload completion < target. |
+| D-006 | 2026-10-03 | Regulatory stance: **RIA-ready, advice gated**. Phase 1 ships diagnosis only. Personalised recommendations stay behind a server-side flag until a SEBI RIA licence (own or partner) exists. | Advice without registration is the existential risk. Building risk profiling, suitability, audit trail and AI-use disclosure now makes the switch a config change, not a rebuild. | Licence obtained, or counsel says a specific feature is advice. |
+| D-007 | 2026-10-03 | Monetisation: undecided. Constraint recorded: if we become an RIA, no distribution commissions for advised clients. | Keeps "unbiased by design" credible. SEBI requires client-level segregation of advice and distribution. | Pilot users exist to test willingness to pay. |
+| D-008 | 2026-10-03 | Repo: `personal-cfo` (working name) under version control on GitHub. Docs live in the repo next to code. | Single source of truth; reviewers can see decisions evolve. | Product gets a real name. |
+| D-009 | 2026-10-03 | **The LLM never computes numbers and never sees PII.** A deterministic engine computes every figure; the LLM only explains facts it is handed, and every number it outputs must trace to a fact ID. | Wrong numbers destroy trust in a money product. Keeps PAN, names and folio numbers out of third-party model APIs. Makes outputs testable. | Never, unless evals prove an alternative is safer. |
+| D-010 | 2026-10-03 | Stack: Next.js web app (mobile-first PWA) + Python FastAPI analytics service + Supabase Postgres (auth, RLS, storage) + Claude API. | Python owns CAS parsing and finance maths; Supabase repeats what worked on LaborLink. A PWA avoids app-store overhead for a pilot. Details in tech/ARCHITECTURE.md. | Voice or native features need a mobile app. |
+
+## Open decisions
+
+| ID | Question | Options | Current recommendation | Decide by |
+|---|---|---|---|---|
+| D-OPEN-1 | Should the first user shift towards first-time / vernacular investors (the segment Bachatt, Jar etc. target)? | (a) Stay with DIY MF investors. (b) Pivot to first-time investors. (c) Stay, but add Hindi + voice to the explanation layer as a Phase 1.5 experiment. | (c). CAS analysis needs an existing portfolio, so (b) breaks Phase 1. Language and voice are interface layers we can add without changing the core. | End of Phase 1 build |
+| D-OPEN-2 | Who holds the RIA licence? | Shivam registers (individual / part-time) · partner with an existing RIA · company registers later. | Partner first. Self-registration may conflict with full-time employment at a wealthtech company. Needs a legal read. | Before Phase 3 (goal planning = financial planning = advice) |
+| D-OPEN-3 | Fund holdings data source for overlap | AMFI monthly portfolio disclosure files (free, messy) · paid vendor | Start with AMFI files; budget a vendor if parsing cost explodes. | Phase 1 sprint 1 spike |
+| D-OPEN-4 | Product name | — | Decide after 10 user interviews. | Before public pilot |
+| D-OPEN-5 | Revenue model | Freemium subscription · RIA fee · B2B (white-label to RIAs) | Undecided by design (D-007). | After pilot |

@@ -1,0 +1,26 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# never commit real statements or PII
+*.pdf
+evals/golden/raw/
+data/private/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# node
+node_modules/
+.next/
+.vercel/
+
+# os / editors
+.DS_Store
+.idea/
+.vscode/
