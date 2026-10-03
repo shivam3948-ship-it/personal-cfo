@@ -61,7 +61,7 @@ flowchart LR
 | Step | User does / thinks | Risk | Design response | Metric |
 |---|---|---|---|---|
 | 1 | "What's a CAS? Where do I get it?" | Abandons | 3-option chooser: **"Check your inbox first"** (monthly NSDL/CDSL CAS) · MF Central (one PDF, both RTAs) · CAMS + KFintech | Guide → request rate |
-| 2 | Requests a *detailed* CAS, since inception, sets password | Picks Summary; short date range | Annotated screenshots; "choose **Detailed**", "from first investment" | Summary-CAS error rate |
+| 2 | Requests a *detailed* CAS, since inception, sets password | Picks Summary; **leaves the default date range (current FY only), as in our first real test file** | Annotated screenshots; "choose **Detailed**", "from first investment" | Summary-CAS error rate |
 | 3 | Waits for email | Email goes to an old KYC address | "Didn't arrive in 10 min?" → explain the KYC email rule | Time to CAS |
 | 4 | Returns with PDF (often on phone, from Gmail) | Can't find the file on phone | Mobile: "Share to Personal CFO" (Android) / "Files" picker; desktop: drag-drop | Return rate within 24 h |
 

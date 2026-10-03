@@ -91,7 +91,10 @@ Full personas and segment reasoning: [docs/11-segments-personas.md](11-segments-
 As Rohan, I want to upload my CAS PDF and see my portfolio, so that I don't have to type anything.
 - AC1: Accepts PDF ≤ 10 MB; asks for the CAS password; the password is never persisted or logged (verified by log review + test).
 - AC2: Parses CAMS and KFintech *detailed* CAS; a *summary* CAS shows a specific message on how to download the detailed one.
-- AC3: Reconciliation: Σ parsed scheme valuations = the CAS's stated total (to the rupee) for 100% of golden-set files; on mismatch, show an error, not data.
+- AC3: Reconciliation, per scheme: closing units × NAV = stated valuation (to the paisa), and Σ scheme valuations = the CAS total *where the format prints one* (MF Central v1.2 doesn't), for 100% of golden-set files; on mismatch, show an error, not data.
+- AC3b: ISINs are found even when the "ISIN:" label is missing or the line wraps (seen in the first golden file).
+- AC3c: Statements whose period doesn't start at the first investment are accepted for holdings, but lifetime XIRR and tax lots stay locked, with a prompt to fetch a "since inception" statement.
+- AC3d: Header PII (name, address, mobile, email) is discarded at parse time; PAN is kept only as a salted hash + last 4.
 - AC4: p95 parse time < 15 s for a 10-scheme CAS.
 - AC5: Original PDF deleted after a successful parse unless "keep my statement" is ticked.
 
