@@ -1,3 +1,12 @@
+---
+paths:
+  - "services/**"
+  - "jobs/**"
+  - "apps/**"
+  - "evals/**"
+  - "supabase/**"
+---
+
 # Testing
 - Every engine metric: unit test against a hand-computed or spreadsheet reference.
 - Every insight rule: golden-set case + deterministic template fallback test.

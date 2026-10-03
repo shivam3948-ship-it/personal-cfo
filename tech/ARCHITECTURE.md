@@ -62,7 +62,8 @@ personal-cfo/
 │   │   ├── pipeline.py  # fact sheet → LLM → checks
 │   │   ├── router.py    # intent classifier
 │   │   └── kb.py        # curated-KB retrieval (pgvector)
-│   ├── guards/          # 3 layers: input (intent / PII), content (untrusted PDF + KB text), output (numbers + advice)
+│   ├── authz/           # ownership scope resolved once per request: user → member_ids → upload_ids (deny by default)
+│   ├── guards/          # 3 text layers: input (intent / PII), content (untrusted PDF + KB text), output (numbers + advice)
 │   ├── observability/   # trace_id per request across parse→engine→LLM; cost per request; feedback joined to trace
 │   └── privacy/         # delete, export
 ├── jobs/                # reference-data ingestion (AMFI)
@@ -111,7 +112,7 @@ Sources: SEBI and AMFI investor-education material and our own methodology docs,
 - **Context:** A widely shared 9-layer template (services, agents, prompts, security, evaluation, observability, .claude, …) was reviewed on 2026-10-03. It's designed for document Q&A. Our core data is structured (facts in Postgres), not documents.
 - **Adopted:**
   - Prompt registry (typed, versioned)
-  - Three guard layers, with the *content* layer meaning untrusted text inside CAS PDFs and KB chunks
+  - Three guard layers, with the *content* layer meaning untrusted text inside CAS PDFs and KB chunks. **Corrected after review:** text guards don't cover the real risk, which is who may see which data, so an authorization layer (§6.1) comes before them
   - Per-request tracing with feedback and cost joined to the trace
   - An online eval monitor (sampled LLM-judge on production answers) plus stored eval history
   - `.claude/rules/` split
@@ -120,9 +121,22 @@ Sources: SEBI and AMFI investor-education material and our own methodology docs,
   - **Hybrid retriever + reranker, query rewriter and decomposer:** retrieval of the user's data is SQL by fact ID. The curated KB is small enough for plain pgvector top-k. Revisit only if KB recall evals fail.
   - **Agentic "document grader" / self-correcting loops:** add latency, cost and non-determinism. Our correction is a single, rule-checked regeneration (AI_EVALS §6).
   - **Web search tool:** production answers come only from facts and the curated KB (ADR-007).
+- **Agent tooling (.claude/):** settings.json (deny reads of statements and secrets; hooks), rules with path scopes, a compliance-reviewer subagent and an add-insight-rule skill. `AGENTS.md` is the shared source; `CLAUDE.md` imports it. No `.mcp.json`, so no MCP server touches user data.
 - **Consequence:** fewer moving parts, every answer reproducible. Each rejected component has a named eval that would justify adding it back.
 
 ## 6. Security & privacy
+
+### 6.1 Authorization comes before every text guard
+The real data risk in a retrieval app isn't a bad sentence; it's showing User A's portfolio to User B. Text filters can't catch that, so authorization is its own layer:
+1. **Scope resolved on the server, once per request:** the JWT gives `user_id` → owned `member_ids` (family members need `consent_attested_at`) → their `upload_ids`. Stored in a request-scoped `Scope` object.
+2. **Every repository function takes `Scope`,** not raw IDs. Fact, insight, chat and file queries filter by it; there's no unscoped query path in application code.
+3. **IDs from the client or the LLM are untrusted.** A `member_id` in a request body or a fact ID cited by the model is checked against `Scope`; unknown → 404 (not 403, to avoid confirming existence).
+4. **Defence in depth:** Postgres RLS on every user table, with the API using the user's JWT for user-scoped reads, so a missed check in code still fails closed.
+5. **The KB is public and the cache is safe to share:** KB chunks hold no user data. Explanation cache keys are `fact_sheet_hash`; fact sheets carry no PII, so a cross-user cache hit reveals nothing.
+6. **Storage:** opted-in PDFs live under `{user_id}/…` with storage policies matching RLS; signed URLs expire in minutes.
+7. **Tests:** a cross-tenant suite (User A requests B's upload, member, insight, chat and file; it expects 404) runs in CI; every new endpoint must add a case.
+
+### 6.2 Other controls
 - TLS everywhere; secrets in the platform secret store; no secrets in the repo
 - PAN stored as a salted hash plus last 4 characters; names and emails encrypted at the application layer (⚠ choose a KMS)
 - Log redaction middleware, with tests asserting no PAN, password or folio patterns in logs

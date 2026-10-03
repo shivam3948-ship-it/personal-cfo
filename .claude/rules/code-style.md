@@ -1,3 +1,10 @@
+---
+paths:
+  - "services/**/*.py"
+  - "jobs/**/*.py"
+  - "apps/**/*.{ts,tsx}"
+---
+
 # Code style
 - Python 3.12, ruff (lint + format), full type hints, pydantic models at API boundaries.
 - TypeScript strict; no `any`.
