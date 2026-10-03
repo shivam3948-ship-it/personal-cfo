@@ -47,7 +47,7 @@ The LLM guardrail, the copy and the test suite all use this table.
 
 **Design commitments (from day one):**
 - Purpose-specific consent at upload; separate consent for using data to improve the product
-- **CAS password never stored**; PDF deleted after parsing (default) unless the user opts to keep it
+- **The CAS PDF and its password never leave the user's device** (parsed in the browser, ADR-010); the server receives only pseudonymised holdings. A failed file is sent only with separate, explicit consent and auto-deleted after the fix
 - Data minimisation: store PAN only as a salted hash plus the last 4 characters; names are encrypted
 - "Delete my data" in-product: hard delete within an SLA we publish
 - Breach runbook (⚠ confirm notification timelines in the Rules text)

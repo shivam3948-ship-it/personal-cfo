@@ -8,13 +8,13 @@ Personal CFO (working name): an AI personal CFO for Indian mutual fund investors
 2. **The LLM never computes numbers.** All figures come from `services/api/engine` as `facts` with IDs. LLM output is post-checked against the fact sheet.
 3. **Authorization before retrieval.** Every query for facts, insights, uploads or chat history is scoped to the caller's `user_id` and owned `member_id`s on the server; never accept a member/upload ID from the client or the LLM without an ownership check. Cross-tenant tests are mandatory.
 4. **No PII to LLMs or logs.** No PAN, names, emails, folio numbers or CAS passwords in prompts, logs, analytics events or error traces. Tests enforce this.
-5. **CAS passwords are never persisted.** Memory only.
+5. **The CAS PDF and password never leave the device.** Parsing runs in the browser (`packages/cas-parser`); the API accepts only pseudonymised holdings (ADR-010). No endpoint may accept a PDF except the opt-in debug upload.
 6. **Money in paise (`bigint`)**; never floats for currency.
 7. **Every number is reproducible:** store formula, inputs and as-of dates.
 8. **Evals gate merges.** Any change to prompts, models or the output checker must run `evals/` and pass all gates in `tech/AI_EVALS.md`.
 
 ## Layout
-`apps/web` (Next.js) · `services/api` (FastAPI: cas, engine, insights, advice, ai, authz, guards, observability, privacy) · `jobs` (AMFI ingestion) · `evals` · `supabase` (migrations, RLS) · `docs`, `tech`
+`apps/web` (Next.js) · `packages/cas-parser` (TS, on-device) · `services/api` (FastAPI: holdings, engine, insights, advice, ai, authz, guards, observability, privacy) · `jobs` (AMFI ingestion) · `evals` · `supabase` (migrations, RLS) · `docs`, `tech`
 
 ## Conventions
 - Python 3.12, ruff, pytest, type hints; TypeScript strict; Conventional Commits (`feat(engine): …`)

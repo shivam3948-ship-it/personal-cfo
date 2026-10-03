@@ -130,7 +130,7 @@ As Rohan, I want to ask "why is fund X bad?" and get an answer about *my* fund.
 
 ## 13. Technical Considerations
 Full detail: tech/ARCHITECTURE.md, tech/DATA_MODEL.md, tech/AI_EVALS.md.
-- CAS parsing in Python; evaluate the open-source `casparser` library (check licence) vs a commercial API; golden set of ≥ 20 real CAS files (own + family + volunteers, with consent, redacted).
+- **CAS parsing on the device** (D-017/ADR-010): TypeScript parser on pdf.js text in the browser; the PDF and password never leave the phone. Evaluate open-source parsers (e.g. Python `casparser`, check licence) as a reference for test expectations. Golden set of ≥ 20 real CAS files (own + family + volunteers, with consent), kept outside the repo.
 - Fund reference data: AMFI daily NAV, scheme master, TER; AMFI monthly portfolio disclosures for holdings (D-OPEN-3).
 - LLM: Claude API. The deterministic engine produces a **fact sheet** (IDs, values, units, as-of dates); the LLM gets the fact sheet only, no PII.
 - Guardrails: input classifier (advice-seeking intent), output checker (numbers must match facts; recommendation-pattern detector).
@@ -162,7 +162,7 @@ Closed pilot: friends, family, ex-colleagues and finance communities. Concierge 
 ## 18. Feature Timeline & Phasing
 | Sprint (1 wk) | Scope | Exit criteria |
 |---|---|---|
-| S0 Spikes | CAS parser eval on golden set · AMFI holdings ingestion · eval harness skeleton · Figma wireframes | Parser picked; holdings for top 200 schemes loaded |
+| S0 Spikes | TypeScript CAS parser in the browser on the golden set (incl. low-end Android timing) · AMFI holdings ingestion · eval harness skeleton · Figma wireframes | Parser picked; holdings for top 200 schemes loaded |
 | S1 | F1, F2, F3, F8 | US1 + US5 ACs pass |
 | S2 | F4 x-ray engine + show-the-math | US2 ACs pass |
 | S3 | F5 insights + LLM explanations + evals v1 | US3 ACs; eval gates green |

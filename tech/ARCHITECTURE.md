@@ -13,7 +13,7 @@
 ```
 ┌──────────────┐  HTTPS + Supabase JWT   ┌───────────────────────────────┐
 │  Web (PWA)   │ ──────────────────────▶ │  API service (FastAPI, Py)    │
-│  Next.js     │ ◀────── SSE stream ──── │  ├─ cas/      parse + validate│
+│  Next.js     │ ◀────── SSE stream ──── │  ├─ holdings/ re-reconcile    │
 └──────┬───────┘                         │  ├─ engine/   x-ray metrics   │
        │ auth, storage                   │  ├─ insights/ rules + ranking │
        ▼                                 │  ├─ ai/       fact sheet, LLM,│
@@ -33,10 +33,10 @@
 
 ## 3. Core flows
 **A. Upload → insights**
-1. Web posts the PDF + password to `POST /cas` (TLS). The password stays in memory only and is excluded from logs by a middleware allow-list.
-2. `cas/` parses → normalised schemes, folios, transactions, valuations.
-3. **Reconcile:** Σ scheme valuations vs the CAS total; on a mismatch, reject with a reason code.
-4. The PDF is discarded (default) or stored encrypted if the user opted in.
+1. **On the device** (ADR-010): the browser opens the PDF with the user's password, extracts text (pdf.js) and runs the TypeScript parser (`packages/cas-parser`). The PDF and password never leave the device.
+2. The parser drops header PII (name, address, mobile, email), replaces folio numbers with random per-user IDs, keeps PAN only as last 4 + a salted hash, and **reconciles on the device** (units × NAV = valuation per scheme).
+3. Only the structured, pseudonymised payload (schemes, units, transactions, valuations, statement period, parser version) goes to `POST /holdings` over TLS. The server **re-runs reconciliation** and rejects mismatches.
+4. Failed parse → the user may opt in to send *that file* for debugging (separate consent, auto-deleted after the fix).
 5. `engine/` computes metrics → `facts` rows (id, type, value, unit, formula, inputs, as_of).
 6. `insights/` rules evaluate facts → ranked `insights`.
 7. `ai/` builds a **fact sheet** per insight (only the fact IDs it needs, no PII) → LLM → output checker → stored explanation with prompt version.
@@ -53,8 +53,9 @@
 ```
 personal-cfo/
 ├── apps/web/            # Next.js PWA
+├── packages/cas-parser/ # TypeScript CAS parser; runs in the browser (and Node for CI tests)
 ├── services/api/
-│   ├── cas/             # parse + reconcile (deterministic)
+│   ├── holdings/        # receive pseudonymised holdings from the device; re-reconcile (deterministic)
 │   ├── engine/          # x-ray metrics → facts (deterministic)
 │   ├── insights/        # rules + ranking + template fallbacks
 │   ├── advice/          # recommendation rules A1–A6, suitability gate, tax/exit-load simulation, mode checks
@@ -76,8 +77,14 @@ personal-cfo/
 ```
 
 ## 5. Architecture Decision Records
-### ADR-001 · Python service for parsing and finance maths
-- **Context:** CAS parsing, XIRR and holdings look-through are data-heavy; the best tooling (pdfplumber, pandas, `casparser`) is Python.
+### ADR-010 · Parse on the device, compute in the cloud (D-017)
+- **Context:** the biggest adoption barrier is handing a PAN-bearing PDF to a new product (docs/08, J2/J3). Fully on-device would break the family view, monthly diffs, advice records (an RIA must keep them, reportedly for 5 years) and evals.
+- **Decision:** hybrid. PDF + password + header PII stay on the device; the parser runs in the browser; the cloud receives only pseudonymised holdings and transactions and does all maths, insights, advice and LLM work.
+- **Alternatives rejected:** all-cloud parsing (weaker privacy promise); fully local-first (no cross-device history, no family view, no records for advised mode, no evals); on-device LLM (too weak for quality and Hindi today).
+- **Consequences:** the parser is written in **TypeScript** (shared by browser and Node CI); the Python service no longer parses PDFs. Parser fixes ship with the web app. Low-end Android performance must be tested in S0.
+
+### ADR-001 · Python service for finance maths (parsing moved to the device by ADR-010)
+- **Context:** XIRR, holdings look-through, overlap and tax simulation are data-heavy; Python (pandas, numpy) is the best fit. CAS parsing originally lived here too.
 - **Decision:** FastAPI service owns all computation. The web app owns no business logic.
 - **Consequences:** two deploy targets (web + API). Accepted for correctness and testability.
 
