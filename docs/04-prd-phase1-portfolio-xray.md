@@ -76,7 +76,7 @@ DIY mutual fund investors can see *what* they own, not *whether it's any good fo
 ## 10. Features Out
 - Any personalised recommendation (fund, amount, timing) → Phase 3 behind RIA
 - Transactions, order placement, distribution → never (D-007)
-- Demat/stock CAS (NSDL/CDSL), EPF, NPS, FDs → later phases
+- Demat equity analysis, EPF, NPS, FDs → later phases (the NSDL/CDSL CAS *is* accepted for MF holdings and monthly refresh; D-013)
 - Account Aggregator → waitlist only
 - Voice, native mobile apps → Phase 1.5+ / later
 - Tax harvesting → Phase 4
