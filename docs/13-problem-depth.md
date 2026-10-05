@@ -82,3 +82,31 @@ How we'll know: Monthly Verified Actions and 30-day re-upload (docs/05), with pr
 - [Fintech Inside #80: Groww deep dive](https://fintechinside.substack.com/p/eighty)
 - [Third-party initiation report citing Groww's shareholder letters (verify against primary filings)](https://zigercap.com/ai-experiments/Initiation%20Report%20Examples/GROWW_April2026.pdf)
 - Other figures: see docs/08 sources
+
+## 6. Problem brief (one page)
+
+**True problem (not the symptom).** Symptoms: overlap, high fees, panic exits, too many funds. The underlying problem: **investors make money decisions without a trusted, personal, unconflicted judgement of their own portfolio, and never get feedback on whether those decisions helped.** No one closes the loop between "what I did" and "what it did to my money". The overlap or the fee is just where the missing loop shows up.
+
+**Who faces it.** Users and payers differ:
+| | Users | Likely payer (hypothesis) |
+|---|---|---|
+| Primary | Time-poor engaged investor (Rohan) | Himself: subscription now; RIA fee once licensed |
+| Secondary | Family proxy (Priya) acting for a distributor-led parent | Priya, for the family plan |
+| Later / B2B | — | RIAs and wealth platforms licensing the engine; employers as a benefit (untested) |
+
+**How we know it's real.**
+- *Strong (market level):* complexity is the top barrier (74% of non-investors); investor returns trail fund returns (Axis MF study); 62% act on finfluencer tips; ~58,000 investors per RIA; SIP stoppage at 75.6% of new SIPs (docs/08).
+- *Revealed behaviour:* investors already improvise, pasting portfolios into ChatGPT (86% of affluent Indian investors use AI for finance, HSBC/Ipsos 2026), and funded players are building the same thing (Bachatt Saathi, Groww MCP). Demand exists; the trusted version doesn't.
+- *Our own data:* the first real CAS needed code even to reconcile, and has no portfolio total. The x-ray isn't something users can do by eye.
+- *Not yet proven:* that **Rohan** feels it enough to act. The MVP answers this with Verified Actions and re-upload rate (docs/05).
+
+**Value created.**
+- *For users:* rupees (fee drag, tax-timed moves, behaviour gap; e.g. Priya's sample father pays ₹35,450/yr more in regular plans), time (3 minutes vs a spreadsheet weekend), and confidence (a verdict they can check).
+- *For the business:* (1) a subscription or RIA fee, capped at ₹1.51 L per family per year or 2.5% of AUA (docs/03); (2) a unique dataset of *verified outcomes* (what users did and what it did to their money), which no distribution app has; (3) a B2B engine for advisers, since 1,050 RIAs can't hand-analyse every client; (4) for Shivam, a live AI-PM portfolio piece. **We don't claim market size until T-1 sizing is done.**
+
+**Why now.**
+1. **AI can explain a specific portfolio** in plain language at near-zero marginal cost, and evals make it measurable.
+2. **Regulation opened the door:** easier RIA registration (Dec 2024: graduate degree, no experience, a deposit instead of net worth) and explicit AI-use disclosure rules for advisers. There's a clear lane for licensed AI advice.
+3. **Regulation closed the shortcut:** AMFI stopped MF Central sharing data with fintechs (Sep 2025); licensed Account Aggregator access now favours RIA-ready players like us.
+4. **Privacy bar rising:** DPDP Rules (obligations from May 2027) reward on-device, minimal-data designs (D-017).
+5. **Market timing:** retail direct-plan share rose from 21.4% to 36.7% (2021→2026). Millions are now self-directed without an adviser, and funded competitors are moving, so the window to be the *trusted* version is now.
