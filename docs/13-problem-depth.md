@@ -110,3 +110,20 @@ How we'll know: Monthly Verified Actions and 30-day re-upload (docs/05), with pr
 3. **Regulation closed the shortcut:** AMFI stopped MF Central sharing data with fintechs (Sep 2025); licensed Account Aggregator access now favours RIA-ready players like us.
 4. **Privacy bar rising:** DPDP Rules (obligations from May 2027) reward on-device, minimal-data designs (D-017).
 5. **Market timing:** retail direct-plan share rose from 21.4% to 36.7% (2021→2026). Millions are now self-directed without an adviser, and funded competitors are moving, so the window to be the *trusted* version is now.
+
+## 7. What about first-time investors (Ramesh, and Bachatt's market)?
+**Same root problem, earlier in the journey.** First-timers also lack a trusted, unconflicted judgement, but *before* the first decision rather than after it. With no portfolio, there's no feedback loop to close yet. Their job is "help me start safely", not "tell me if my portfolio is fine".
+
+| | Returning investor (Rohan) | First-time investor (Ramesh) |
+|---|---|---|
+| Core question | "Is what I own fine?" | "Should I start, with what, how much, and can I trust it?" |
+| Barriers | Time, visibility, conflicted advice | Complexity (74%), risk/return worry (73%), trust (51%); 80% of households prioritise capital preservation; 94% prefer Hindi or regional languages (SEBI survey 2025) |
+| Data we can use | CAS | None yet: bank/UPI flows (Phase 2), stated goals |
+| What helps | Diagnosis → advice | Education + a first *product* (low-risk, small-ticket, daily/variable amounts), in their language, by voice |
+| Regulatory nature | Diagnosis is free; advice needs an RIA | Choosing a first fund is advice, *or* distribution |
+
+**Size (derived from the SEBI survey, indicative):** 32.1 M investing households = 9.5% → ~338 M households in total, ~306 M not investing; 22% of non-investors intend to invest within a year → **~67 M households** (computed; survey-based, not a TAM).
+
+**Why the business model differs:** first-timers start tiny (Bachatt from ₹100). A fee-only RIA model can't price that; distribution commissions can. That's why Bachatt is an AMFI-registered distributor, and why this segment conflicts with our no-commission stance (D-007).
+
+**Our position:** keep Ramesh parked for Phase 1 (nothing to analyse; different economics). Reach him through Phase 1.5 (Hindi/voice "explain my money"), Phase 2 (investable surplus from bank statements) and Phase 3 goals under an RIA. Revisit D-007 if we ever want to serve him at scale.
