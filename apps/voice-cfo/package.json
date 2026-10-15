@@ -14,7 +14,8 @@
     "eval:live": "RUN_LIVE=1 vitest run tests/eval.live.test.ts",
     "smoke": "node scripts/smoke-keys.mjs",
     "e2e": "node scripts/e2e-smoke.mjs",
-    "dev:lan": "next dev -H 0.0.0.0 -p 3000"
+    "dev:lan": "next dev -H 0.0.0.0 -p 3000",
+    "build:web-demo": "node web-demo/build.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.134.0",
@@ -27,6 +28,7 @@
     "@types/node": "22.15.3",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
+    "esbuild": "^0.25.10",
     "pdf-lib": "1.17.1",
     "typescript": "5.8.3",
     "vitest": "3.2.4"

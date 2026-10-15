@@ -118,7 +118,7 @@ export default function Page() {
     }
     if (!browserSttAvailable()) { setError('Voice input needs Chrome/Edge, or set SARVAM_API_KEY. You can type below.'); return; }
     setPhase('listening');
-    recRef.current = browserListen(sttLang, setInterim, (t) => { recRef.current = null; setPhase('idle'); if (t) ask(t); else setInterim(''); }, (err) => { recRef.current = null; setPhase('idle'); setError(`Voice: ${err}`); });
+    recRef.current = browserListen(sttLang, setInterim, (t) => { recRef.current = null; setPhase('idle'); if (t) ask(t); else setInterim(''); }, (err) => { recRef.current = null; setPhase('idle'); setError(/not-allowed|service-not-allowed|audio-capture/.test(err) ? (uiLang === 'hi' ? 'माइक की इजाज़त नहीं मिली। सवाल नीचे लिखें, जवाब बोलकर सुनाया जाएगा।' : 'The microphone is blocked here. Type your question below; replies are still spoken.') : `Voice: ${err}`); });
   }, [phase, lang, data, H, ask, uiLang]);
 
   const upload = async (files: FileList | null) => {

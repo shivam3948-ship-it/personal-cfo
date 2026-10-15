@@ -5,6 +5,8 @@ Ask about your money out loud, in Hindi or English. Munim reads bank and card st
 Built for the Bachatt × Digia Voice AI × Finance Buildathon (17 Oct 2026). Runbook: [docs/17](../../docs/17-buildathon-runbook.md) · Voice stack decision: [docs/16](../../docs/16-voice-stack-decision.md) · Native roadmap: [docs/18](../../docs/18-expo-native-roadmap.md).
 
 ## Try it
+**0 · Shareable link (no install).** `npm run build:web-demo` builds `web-demo/dist/munim.html`: the whole app as one static page (sample data, offline rules, spoken replies, uploads of CSV/TXT/EML/JSON) with the API re-implemented in the browser. Published as a claude.ai artifact (private until you share it). The microphone is blocked inside shared pages, so it is type-to-ask there; voice input needs options 1–3.
+
 **1 · On your Mac (5 minutes, voice works).** Needs Node 20+ (`node -v`; if missing: `brew install node`).
 ```bash
 cd ~/PyCharmMiscProject/Github/personal-cfo/apps/voice-cfo
