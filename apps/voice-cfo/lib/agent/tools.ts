@@ -197,7 +197,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const date = String(input.date ?? '');
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { result: { error: 'date must be YYYY-MM-DD' } };
       const a = addAction(ctx.sid, { kind: 'reminder', title: String(input.title ?? 'Reminder'), reminder: { date, time: input.time ? String(input.time) : undefined, notes: input.notes ? String(input.notes) : undefined } });
-      return { result: { done: true, action_id: a.id, title: a.title, date, calendar_file: `/api/actions/${a.id}/ics`, google_calendar: gcalLink(a) }, action: a };
+      return { result: { done: true, already_existed: !!a.duplicate, action_id: a.id, title: a.title, date, calendar_file: `/api/actions/${a.id}/ics`, google_calendar: gcalLink(a) }, action: a };
     }
     case 'draft_email': return draft(input, ctx);
     case 'create_savings_goal': {
@@ -207,7 +207,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const pics = monthPictures(ds).filter((p) => p.complete);
       const avg = pics.length ? Math.round(sum(pics.map((p) => p.surplus)) / pics.length) : null;
       const a = addAction(ctx.sid, { kind: 'goal', title: String(input.name ?? 'Goal'), goal: { target, byDate: by, monthlyNeeded: monthly, avgSurplus: avg, feasible: avg === null ? null : avg >= monthly } });
-      return { result: { done: true, goal: a.title, target: R(target), by: by, months, monthly_needed: R(monthly), average_monthly_surplus: R(avg), fits_current_surplus: a.goal!.feasible }, action: a };
+      return { result: { done: true, already_existed: !!a.duplicate, goal: a.title, target: R(target), by: by, months, monthly_needed: R(monthly), average_monthly_surplus: R(avg), fits_current_surplus: a.goal!.feasible }, action: a };
     }
     case 'save_prepayment_plan': {
       const l = findLoan(ds, String(input.loan ?? ''));
@@ -215,7 +215,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const amt = Math.round(Number(input.amount_rupees) * 100); const date = String(input.date ?? addDays(asOf, 1));
       const r = simulatePrepayment(l, amt, asOf);
       const a = addAction(ctx.sid, { kind: 'prepayment_plan', title: `Prepay ${inr(r.amount)} on ${l.lender} ${l.type} loan`, reminder: { date, notes: `Interest saved about ${inr(r.interestSaved)}; ${r.monthsSaved} EMIs fewer. Ask the lender to reduce tenure, keep the EMI.` }, plan: { loanId: l.id, amount: r.amount, date, interestSaved: r.interestSaved, monthsSaved: r.monthsSaved } });
-      return { result: { done: true, plan: a.title, date, interest_saved: R(r.interestSaved), months_saved: r.monthsSaved, allowed_now: r.allowed, calendar_file: `/api/actions/${a.id}/ics` }, action: a };
+      return { result: { done: true, already_existed: !!a.duplicate, plan: a.title, date, interest_saved: R(r.interestSaved), months_saved: r.monthsSaved, allowed_now: r.allowed, calendar_file: `/api/actions/${a.id}/ics` }, action: a };
     }
   }
   return { result: { error: `Unknown tool ${name}` } };
@@ -257,7 +257,7 @@ function draft(input: Record<string, unknown>, ctx: ToolCtx): ToolOutput {
     mail = draftEmail({ kind: 'fee_waiver', fees, accountLast4: bank?.last4 });
   }
   const a = addAction(ctx.sid, { kind: 'email', title: mail.subject, email: mail });
-  return { result: { done: true, drafted: kind, to: mail.to, subject: mail.subject, note: 'Draft saved in the actions panel; the user reviews and sends it.' }, action: a };
+  return { result: { done: true, already_existed: !!a.duplicate, drafted: kind, to: mail.to, subject: mail.subject, note: 'Draft saved in the actions panel; the user reviews and sends it.' }, action: a };
 }
 
 function avgIncome(ds: Dataset): number | null {

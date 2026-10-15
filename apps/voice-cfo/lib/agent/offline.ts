@@ -42,7 +42,7 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   const call = async (tool: string, input: Record<string, unknown> = {}) => {
     const s = Date.now(); const out = await runTool(tool, input, ctx);
-    trace.push({ tool, input, result: out.result, ms: Date.now() - s }); results.push(out.result); if (out.action) actions.push(out.action);
+    trace.push({ tool, input, result: out.result, ms: Date.now() - s }); results.push(out.result); if (out.action && !(out.action as { duplicate?: boolean }).duplicate) actions.push(out.action);
     return out.result as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   };
   const say = (h: string, e: string) => (hi ? h : e);

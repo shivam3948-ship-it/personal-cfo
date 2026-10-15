@@ -38,6 +38,15 @@ mic ─► /api/stt (Sarvam Saaras) ─► transcript
 - **Agent** (`lib/agent`): 18 tools, 4 of them actions. A spoken style prompt. The guard flags any figure not found in tool output; the UI shows "✓ numbers traced" or the unverified figure.
 - **Privacy** (`lib/privacy`): PAN, phone numbers, emails, account/card numbers, UPI handles and holder names are stripped from any document text sent to the LLM; tool results carry merchant names, not narrations.
 
+## Trust and safety
+| Concern | What the app does | Known gap |
+|---|---|---|
+| **Compliance (SEBI / IRDAI)** | The prompt forbids fund/stock/insurance recommendations and buy/surrender advice; insurance answers are diagnosis from the user's own documents; loans and budgets are maths and trade-offs the user decides; "not advice" is on every screen; live eval cases Q11–Q12 probe the boundary | Live evals have not been run yet (they need an API key); no compliance-reviewer pass on the final copy |
+| **Security** | API keys stay server-side; upload limits (40 files, 15 MB); sessions are random UUIDs; strict headers (`nosniff`, no referrer, mic only on self); document, email and SMS text is treated as untrusted (prompt + extraction system prompt); CI repo hygiene blocks PDFs, `.env` and PAN-shaped strings | No auth or rate limiting (single-user prototype); in-memory sessions |
+| **Personal data (DPDP)** | Mock data only (the event rule); before the LLM, PAN, phone numbers, emails, account/card numbers, UPI handles and holder names are stripped from document text **and from what the user says**; tool results carry merchant names, not narrations; logs hold error messages only; uploads live in memory and "Back to sample data" drops them | Raw voice audio goes to Sarvam (data location not verified); no consent screen or retention policy, both needed before real data |
+| **Hallucination** | Every number is computed in code (paise) and the LLM only copies it; the guard checks every ₹/%/lakh figure against tool output; one automatic repair round, then an amber "not found in data" badge; "Show the math" on every answer; deterministic parsers first, and AI extraction must pass the same reconciliation checks | The guard checks numbers, not claims (a wrong merchant or date in prose is not caught); small counts (days, EMIs) are not checked |
+| **Idempotency** | Actions are keyed by content (kind, title, date, recipient, amounts): a retry, a double "haan" or a repeated tool call returns the existing action (`already_existed: true`); the offline agent clears the pending offer after running it; calendar files use a stable UID, so re-importing does not duplicate the event; uploads replace the dataset rather than appending; nothing is sent externally (emails are drafts) | No idempotency key on HTTP requests; two genuinely different reminders on the same date need different titles |
+
 ## Using the organisers' dataset
 Upload the files in the Data card, or drop them into a folder and call `ingest()`. Red rows tell you which parser to adjust. See runbook §4.
 

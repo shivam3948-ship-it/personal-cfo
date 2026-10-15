@@ -118,6 +118,9 @@ Expected answers below come from the reference app on the sample data (offline r
 | Wrong number spoken | Amber "not found in data" badge | Point at it: "the guard caught it". This is a feature. |
 
 ## 7. Q&A prep
+- **How did you validate the problem?** Honestly: market research plus my own experience and conversations with friends and relatives who manage money for themselves or their parents. No formal user research yet; that comes on the working MVP (docs/08, D-018).
+- **What's the wedge?** The Sunday Money Call: one proactive weekly voice briefing that finds money you're losing *across* scattered sources (a trial that just charged you, an unused gym, a duplicate debit, an EMI that will bounce) and fixes it with a single "haan". Rupee value in the first call; the weekly habit is the retention loop. Leak-finding alone is copyable; the defensible part is cross-document reconciliation + numbers you can trust + Hindi voice.
+- **Why "Munim"?** मुनीम: the trusted family accountant who kept the bahi-khata for Indian merchant households. He keeps your accounts and tells you what's coming; he doesn't sell you products. One Hindi word, easy to say to a voice app. Risks: old Hindi films sometimes cast the munim as a scheming clerk, and other Indian apps may use the name, so check the trademark before any public use.
 - **Why voice?** Most Indians don't open a spreadsheet; they ask someone. Hindi voice reaches the first-time savers Bachatt serves (docs/13 §7).
 - **How do you stop hallucinated numbers?** Tools compute everything in paise; the guard checks every spoken figure; "Show the math" exposes the trace.
 - **Privacy?** Names, PAN, phones, emails, account numbers and UPI handles are stripped before text reaches the LLM; mock data only (as the brief requires).

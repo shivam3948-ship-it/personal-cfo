@@ -3,6 +3,8 @@
 **Status:** v0.1 · **Last updated:** 2026-10-03 · **Owner:** Shivam Singh
 **Rule:** every figure has a source and date. Derived numbers were computed in code (shown in the Calc column). Secondary research can show a problem exists *in the market*; only interviews (T-3) can show *our user* feels it enough to act.
 
+> **How the problem was validated (read this first).** By **market research** (the secondary sources below) plus the founder's **personal experience** and informal conversations with **friends and relatives** who invest or look after a parent's money. **No traditional user research has been done yet:** no screened interviews, surveys or usability tests. That is a deliberate choice (D-018: build the MVP first, interview on it). The interview kit is ready (docs/research/interview-kit.md). Until those interviews run, treat every "our user feels X" claim as a hypothesis. This applies equally to the buildathon app, Munim (docs/17).
+
 ## 1. Verdict
 | | |
 |---|---|

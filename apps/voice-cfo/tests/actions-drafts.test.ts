@@ -39,3 +39,18 @@ describe('actions', () => {
     expect(toIcs(p.action!)).toContain('DTSTART;VALUE=DATE:20261101');
   });
 });
+
+describe('idempotency', () => {
+  it('the same action twice (retry, double "haan", repeated tool call) is stored once', async () => {
+    const ds = await demo(); clearActions('t-idem');
+    const ctx = { ds, sid: 't-idem', lang: 'en' as const };
+    const a = await runTool('create_reminder', { title: 'Pay card bill', date: '2026-10-23' }, ctx);
+    const b = await runTool('create_reminder', { title: 'Pay card bill', date: '2026-10-23' }, ctx);
+    expect(b.result).toMatchObject({ already_existed: true, action_id: a.result.action_id });
+    await runTool('draft_email', { kind: 'refund_request', merchant: 'LingoPro' }, ctx);
+    await runTool('draft_email', { kind: 'refund_request', merchant: 'LingoPro' }, ctx);
+    expect(listActions('t-idem').length).toBe(2);
+    await runTool('create_reminder', { title: 'Pay card bill', date: '2026-10-22' }, ctx); // different date = different action
+    expect(listActions('t-idem').length).toBe(3);
+  });
+});

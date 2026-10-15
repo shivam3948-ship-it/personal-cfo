@@ -25,7 +25,16 @@ export function listActions(sid: string): Action[] {
 function save(sid: string) {
   try { fs.mkdirSync(DIR, { recursive: true }); fs.writeFileSync(file(sid), JSON.stringify(mem.get(sid) ?? [], null, 1)); } catch { /* read-only FS (e.g. serverless): memory only */ }
 }
-export function addAction(sid: string, a: Omit<Action, 'id' | 'createdAt'>): Action {
+/** What makes two actions "the same": a retry, a double "haan" or a repeated tool call must not create a second one. */
+export function actionKey(a: Omit<Action, 'id' | 'createdAt'>): string {
+  return [a.kind, a.title.trim().toLowerCase(), a.reminder?.date, a.reminder?.time, a.email?.to, a.goal?.target, a.goal?.byDate, a.plan?.loanId, a.plan?.amount, a.plan?.date].map((x) => x ?? '').join('|');
+}
+
+/** Idempotent: returns the existing action (duplicate: true) when an identical one is already saved for this session. */
+export function addAction(sid: string, a: Omit<Action, 'id' | 'createdAt'>): Action & { duplicate?: boolean } {
+  const key = actionKey(a);
+  const existing = listActions(sid).find((x) => actionKey(x) === key);
+  if (existing) return { ...existing, duplicate: true };
   const act: Action = { ...a, id: crypto.randomUUID().slice(0, 8), createdAt: new Date().toISOString() };
   listActions(sid).unshift(act); save(sid); return act;
 }

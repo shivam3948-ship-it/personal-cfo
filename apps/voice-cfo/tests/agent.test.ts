@@ -79,14 +79,28 @@ describe('Claude loop (mocked client)', () => {
     expect(r.engine).toBe('claude'); expect(r.trace.map((t) => t.tool)).toEqual(['upcoming_dues']);
     expect(r.check).toMatchObject({ ok: true, checked: 1 });
   });
-  it('flags a number the tools never produced', async () => {
+  it('an invented number triggers one repair round; if it persists, the reply is flagged', async () => {
+    const ds = await demo();
+    const bad = [{ type: 'text', text: 'Fixing this could save you ₹25,000 a year.', citations: null } as Anthropic.TextBlock];
+    const client = fake([[{ type: 'tool_use', id: 't1', name: 'credit_health', input: {} } as Anthropic.ToolUseBlock], bad, bad]);
+    const r = await runClaude([{ role: 'user', content: 'credit?' }], { ds, sid: 'claude-mock2', lang: 'en' }, client);
+    expect(r.repaired).toBe(true); expect(r.check.ok).toBe(false); expect(r.check.unverified).toEqual(['₹25,000']);
+  });
+  it('the repair round fixes the answer before anyone hears it', async () => {
     const ds = await demo();
     const client = fake([
       [{ type: 'tool_use', id: 't1', name: 'credit_health', input: {} } as Anthropic.ToolUseBlock],
-      [{ type: 'text', text: 'Fixing this could save you ₹25,000 a year.', citations: null } as Anthropic.TextBlock],
+      [{ type: 'text', text: 'Your score is 768, worth ₹25,000.', citations: null } as Anthropic.TextBlock],
+      [{ type: 'text', text: 'Your score is 768, down from 791.', citations: null } as Anthropic.TextBlock],
     ]);
-    const r = await runClaude([{ role: 'user', content: 'credit?' }], { ds, sid: 'claude-mock2', lang: 'en' }, client);
-    expect(r.check.ok).toBe(false); expect(r.check.unverified).toEqual(['₹25,000']);
+    const r = await runClaude([{ role: 'user', content: 'credit?' }], { ds, sid: 'claude-mock4', lang: 'en' }, client);
+    expect(r).toMatchObject({ repaired: true, answer: 'Your score is 768, down from 791.' }); expect(r.check.ok).toBe(true);
+  });
+  it('PII the user speaks is scrubbed before it reaches the model', async () => {
+    const ds = await demo(); const sent: string[] = [];
+    const client: LlmClient = { messages: { create: async (body) => { sent.push(JSON.stringify(body.messages)); return { id: 'm', type: 'message', role: 'assistant', model: 'x', stop_sequence: null, usage: { input_tokens: 1, output_tokens: 1 }, content: [{ type: 'text', text: 'ok', citations: null }], stop_reason: 'end_turn' } as unknown as Anthropic.Message; } } };
+    await runClaude([{ role: 'user', content: 'Main Rohan hoon, PAN ABCPE1234F, phone 9876543210' }], { ds, sid: 'pii-in', lang: 'hi' }, client);
+    for (const bad of ['ABCPE1234F', '9876543210', 'Rohan']) expect(sent[0]).not.toContain(bad);
   });
   it('action tool calls produce actions', async () => {
     const ds = await demo(); clearActions('claude-mock3');
