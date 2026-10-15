@@ -1,0 +1,22 @@
+TRUSTSCORE CREDIT BUREAU (fictional) - CREDIT INFORMATION REPORT
+Consumer: Rohan Mehta    Report Date: 01-Oct-2026
+
+CREDIT SCORE: 768 (range 300-900)
+Previous Score: 791 as on 01-Jul-2026
+
+ACCOUNTS
+1. Car Loan | Kestrel Auto Finance | Sanctioned 6,00,000 | Current Balance 3,35,324 | Opened 05-Mar-2024 | Status: Active | DPD (last 36 months): 0
+2. Personal Loan | Orbit Finserv | Sanctioned 3,00,000 | Current Balance 2,35,916 | Opened 20-Dec-2025 | Status: Active | DPD (last 36 months): 0
+3. Credit Card | Saffron Bank | Credit Limit 2,00,000 | Current Balance 56,900 | Opened 14-Feb-2021 | Status: Active | DPD history: 30 days past due in Aug-2025, otherwise 0
+4. Credit Card | Comet Bank | Credit Limit 50,000 | Current Balance 0 | Status: Closed (Mar-2023)
+
+CREDIT UTILISATION (cards): 28.5% (previous report: 9.2%)
+
+ENQUIRIES (last 12 months)
+18-Aug-2026 | Comet Bank | Credit Card
+02-Sep-2026 | Neem Bank | Personal Loan
+
+KEY FACTORS AFFECTING YOUR SCORE
+- Credit card utilisation increased
+- 2 new credit enquiries in the last 3 months
+- One 30-day late payment in the last 24 months

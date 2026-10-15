@@ -2,7 +2,7 @@
 
 An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS), see what's really in your portfolio, and get plain-language explanations you can verify, with no commissions behind the answers.
 
-**Status:** Phase 0: documentation complete, build not started.
+**Status:** Phase 0 docs complete. First working code: `apps/voice-cfo` (Munim), a Hindi/English voice CFO built for the Bachatt × Digia buildathon (docs/16–18).
 **Regulatory stance:** for users, Phase 1 is diagnosis only and is *not investment advice*. An advice prototype runs only on sample data (demo) and internally; personalised advice for users ships only under a SEBI RIA licence (see `docs/03-regulatory-compliance.md`, `docs/12-advice-engine.md`).
 
 ## Phases
@@ -30,6 +30,10 @@ An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS)
 | [docs/13-problem-depth.md](docs/13-problem-depth.md) | 5 whys, today's alternatives, pain size, behaviour change, the Groww lesson |
 | [docs/15-prd-phase2-money-picture.md](docs/15-prd-phase2-money-picture.md) | Phase 2 PRD: spending, net worth, insurance |
 | [docs/14-prompt-benchmark.md](docs/14-prompt-benchmark.md) | The viral "10 AI finance prompts" vs our product: gaps, phases, adoptions |
+| [docs/16-voice-stack-decision.md](docs/16-voice-stack-decision.md) | Voice stack analysis: Sarvam vs alternatives, cascade vs speech-to-speech, cost per turn |
+| [docs/17-buildathon-runbook.md](docs/17-buildathon-runbook.md) | Buildathon plan: judging map, timeline, step-by-step rebuild prompts, demo script, failure drills |
+| [docs/18-expo-native-roadmap.md](docs/18-expo-native-roadmap.md) | Web → Expo native: what carries over, phases N0–N5, risks |
+| [apps/voice-cfo/README.md](apps/voice-cfo/README.md) | Munim: run, test, architecture, known gaps |
 | [docs/research/interview-kit.md](docs/research/interview-kit.md) | Screener, script, notes template, synthesis grid |
 | [tech/ARCHITECTURE.md](tech/ARCHITECTURE.md) | System design + ADRs |
 | [tech/DATA_MODEL.md](tech/DATA_MODEL.md) | Postgres schema |

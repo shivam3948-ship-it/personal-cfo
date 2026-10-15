@@ -1,0 +1,36 @@
+# Exported SMS (timestamp | sender | message)
+2026-10-01 08:35 | VM-SAFFRN | INR 1,45,000.00 credited to A/c XX4521 on 01-Oct-26 by ACME TECHNOLOGIES PVT LTD SALARY. Avl Bal INR 2,32,075.65 -Saffron Bank
+2026-10-01 09:37 | VM-SAFFRN | INR 619.00 debited from A/c XX4521 on 01-Oct-26 for UPI/SWIGGY. Avl Bal INR 2,31,456.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-01 10:30 | VM-SAFFRN | INR 701.00 debited from A/c XX4521 on 01-Oct-26 for UPI/ZOMATO. Avl Bal INR 2,30,755.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-02 08:37 | VM-SAFFRN | INR 26,000.00 debited from A/c XX4521 on 02-Oct-26 for UPI/RAJESH KUMAR. Avl Bal INR 2,04,755.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-02 09:14 | VM-SAFFRN | 482913 is your OTP for login to Saffron NetBanking. Do not share it with anyone. -Saffron Bank
+2026-10-03 08:48 | VM-SAFFRN | INR 10,000.00 debited from A/c XX4521 on 03-Oct-26 for IMPS/OWN A/C NEO BANK XX6610. Avl Bal INR 1,94,755.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-03 09:20 | VM-SAFFRN | INR 478.00 debited from A/c XX4521 on 03-Oct-26 for UPI/SWIGGY. Avl Bal INR 1,94,277.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-03 10:48 | VM-SAFFRN | INR 395.00 debited from A/c XX4521 on 03-Oct-26 for UPI/SWIGGY. Avl Bal INR 1,93,882.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-03 11:55 | VM-SAFFRN | INR 634.00 debited from A/c XX4521 on 03-Oct-26 for UPI/BLINKIT. Avl Bal INR 1,93,248.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-04 08:18 | VM-SAFFRN | INR 261.00 debited from A/c XX4521 on 04-Oct-26 for UPI/RAPIDO. Avl Bal INR 1,92,987.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-04 09:51 | VM-SAFFRN | INR 272.00 debited from A/c XX4521 on 04-Oct-26 for UPI/UBER INDIA. Avl Bal INR 1,92,715.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-05 08:32 | VM-SAFFRN | INR 12,601.00 debited from A/c XX4521 on 05-Oct-26 for ACH/KESTREL AUTO FINANCE. Avl Bal INR 1,80,114.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-05 09:19 | VM-SAFFRN | INR 10,000.00 debited from A/c XX4521 on 05-Oct-26 for ACH/BSE LTD MF SIP. Avl Bal INR 1,70,114.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-05 10:05 | VM-SAFFRN | Statement for Saffron Bank Credit Card XX9012 generated. Total Amt Due Rs 36,343.00, Min Amt Due Rs 1,817.00, Due Date 24-Oct-26 -Saffron Bank
+2026-10-05 10:34 | VM-SAFFRN | INR 493.00 debited from A/c XX4521 on 05-Oct-26 for UPI/SWIGGY. Avl Bal INR 1,69,621.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-05 11:10 | VM-SAFFRN | INR 415.00 debited from A/c XX4521 on 05-Oct-26 for UPI/ZOMATO. Avl Bal INR 1,69,206.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-06 08:38 | VM-SAFFRN | Rs 1,272.00 spent on Saffron Bank Credit Card XX9012 at AMAZON PAY INDIA ECOM on 06-Oct-26. Avl Lmt Rs 1,62,385.00 -Saffron Bank
+2026-10-06 18:40 | VK-MYNTRA | BIG FASHION FESTIVAL is LIVE! Flat 60% off on top brands. Shop now: myntra.example/bff
+2026-10-07 08:24 | VM-SAFFRN | INR 10,000.00 debited from A/c XX4521 on 07-Oct-26 for UPI/RAKESH MEHTA. Avl Bal INR 1,59,206.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-07 09:13 | VM-SAFFRN | INR 748.00 debited from A/c XX4521 on 07-Oct-26 for UPI/BLINKIT. Avl Bal INR 1,58,458.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-08 08:57 | VM-SAFFRN | INR 1,999.00 debited from A/c XX4521 on 08-Oct-26 for UPI AUTOPAY/CULTFIT. Avl Bal INR 1,56,459.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-09 08:32 | VM-SAFFRN | INR 5,000.00 debited from A/c XX4521 on 09-Oct-26 for ATM WDL SECTOR 44 GGN. Avl Bal INR 1,51,459.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-09 09:50 | VM-SAFFRN | INR 526.00 debited from A/c XX4521 on 09-Oct-26 for UPI/SWIGGY. Avl Bal INR 1,50,933.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-09 10:48 | VM-SAFFRN | Rs 119.00 spent on Saffron Bank Credit Card XX9012 at SPOTIFY INDIA on 09-Oct-26. Avl Lmt Rs 1,62,266.00 -Saffron Bank
+2026-10-10 08:10 | VM-SAFFRN | INR 5,000.00 debited from A/c XX4521 on 10-Oct-26 for ACH/BHAROSA LIFE INSURANCE. Avl Bal INR 1,45,933.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-11 08:36 | VM-SAFFRN | Rs 4,999.00 spent on Saffron Bank Credit Card XX9012 at LINGOPRO LEARNING APP on 11-Oct-26. Avl Lmt Rs 1,57,267.00 -Saffron Bank
+2026-10-11 12:02 | AD-LNGPRO | Welcome to LingoPro Premium! Your annual plan is now active. Happy learning!
+2026-10-12 08:52 | VM-SAFFRN | INR 1,980.00 debited from A/c XX4521 on 12-Oct-26 for BBPS/DHBVN ELECTRICITY. Avl Bal INR 1,43,953.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-12 09:15 | VM-SAFFRN | INR 295.00 debited from A/c XX4521 on 12-Oct-26 for UPI/UBER INDIA. Avl Bal INR 1,43,658.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-13 08:58 | VM-SAFFRN | INR 670.00 debited from A/c XX4521 on 13-Oct-26 for UPI/ZOMATO. Avl Bal INR 1,42,988.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-13 09:23 | VM-SAFFRN | Rs 2,200.00 spent on Saffron Bank Credit Card XX9012 at HPCL FUEL STN SOHNA RD on 13-Oct-26. Avl Lmt Rs 1,55,067.00 -Saffron Bank
+2026-10-14 08:13 | VM-SAFFRN | INR 626.00 debited from A/c XX4521 on 14-Oct-26 for UPI/ZOMATO. Avl Bal INR 1,42,362.65. Not you? Call 1800-000-1234 -Saffron Bank
+2026-10-14 09:17 | VM-SAFFRN | Rs 149.00 spent on Saffron Bank Credit Card XX9012 at GOOGLE YOUTUBEPREMIUM on 14-Oct-26. Avl Lmt Rs 1,54,918.00 -Saffron Bank
+2026-10-14 11:30 | VM-ORBITF | Dear Customer, EMI of Rs 10,181.00 for loan a/c XX7788 is due on 20-Oct-26. Please maintain sufficient balance. -Orbit Finserv
+2026-10-15 08:33 | VM-SAFFRN | INR 599.00 debited from A/c XX4521 on 15-Oct-26 for BBPS/AIRTEL POSTPAID. Avl Bal INR 1,41,763.65. Not you? Call 1800-000-1234 -Saffron Bank
