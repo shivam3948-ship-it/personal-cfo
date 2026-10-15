@@ -73,6 +73,7 @@ The LLM guardrail, the copy and the test suite all use this table.
 | L-5 | Choose the RIA route (D-OPEN-2) | Before Phase 3 |
 | L-6 | Privacy notice and consent text per the DPDP Rules | Before pilot |
 | L-7 | Terms of use: "not investment advice" and AI-use disclosure | Before pilot |
+| L-9 | Confirm the IRDAI boundary: is computing a policy's return and comparing it to term + investing "diagnosis", and what needs an insurance licence (surrender/purchase recommendations)? | Before the Phase 2 insurance module |
 | L-8 | Confirm `internal` (family, no fee) and `demo` (synthetic data) advice modes are outside the IA definition; review public wording for "holding out" | Before showing the demo publicly |
 
 ## Sources

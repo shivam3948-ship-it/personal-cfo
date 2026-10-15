@@ -28,6 +28,8 @@ S0 spikes → S1 upload/parse → S2 x-ray engine → S3 insights + evals → S4
 - Bank and card statement parsing (builds on the existing statement-analysis work)
 - Spend categorisation, leakage detection, "investable surplus" estimate
 - Data: PDF upload first; AA later via a partner
+- **Net worth screen** as the monthly anchor (MF + demat from CAS, bank/loans from statements, EPF/PPF/NPS/gold/property entered manually; no peer averages)
+- **Insurance module:** detect premiums in statements; per-policy return from actual terms; diagnosis only (L-9) (docs/14)
 - Regulatory: information only; not securities advice (⚠ confirm)
 
 ## Next — Advice engine v1 (internal + demo modes; D-016)
@@ -36,7 +38,7 @@ S0 spikes → S1 upload/parse → S2 x-ray engine → S3 insights + evals → S4
 - Blind review of 30 recommendations by a practising RIA/CFP
 
 ## Later — Phase 3: Goal-based planning (**RIA required**)
-- Goals → required corpus → SIP gap, using the risk profile captured in Phase 1
+- Goals → required corpus → SIP gap, using the risk profile captured in Phase 1; **retirement is the first goal template**; projections shown as ranges with editable assumptions
 - Advice flag on; suitability check; client agreement; AI-use disclosure
 - Gate: RIA route decided and live (D-OPEN-2, L-5)
 
