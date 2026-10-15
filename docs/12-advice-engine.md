@@ -8,7 +8,8 @@ Build the advice engine **now**, and run it in three modes enforced on the serve
 
 | Mode | Who sees advice | Data | Purpose | Status |
 |---|---|---|---|---|
-| **`diagnosis`** | Pilot users | Their real CAS | Product as launched publicly | **Default for everyone** |
+| **`guided`** (D-021) | Invite-only pre-licence users, **no fee, no public sign-up or marketing** | Their real data | Show what to do next before the licence | **Default pre-licence.** Category-level recommendations with the disclaimer "not SEBI-registered investment advice"; no product picks. ⚠ L-8 extended to cover this mode |
+| **`diagnosis`** | ~~Pilot users~~ Fallback if counsel rejects `guided` | Their real CAS | Diagnosis only | Superseded as default by D-021 |
 | **`internal`** | Allow-listed accounts only: Shivam + consenting family members, **no fee** | Real CAS | Dogfood the advice quality on real portfolios before any licence | Allow-list in config, audit-logged |
 | **`demo`** | Anyone with the demo link (recruiters, interviewers) | **Synthetic sample portfolios only**; uploads disabled | Show the advice prototype end to end | Watermarked "Prototype · sample data · not investment advice" |
 

@@ -3,7 +3,7 @@
 An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS), see what's really in your portfolio, and get plain-language explanations you can verify, with no commissions behind the answers.
 
 **Status:** Phase 0 docs complete. First working code: `apps/voice-cfo` (Munim), a Hindi/English voice CFO built for the Bachatt × Digia buildathon (docs/16–18).
-**Regulatory stance:** for users, Phase 1 is diagnosis only and is *not investment advice*. An advice prototype runs only on sample data (demo) and internally; personalised advice for users ships only under a SEBI RIA licence (see `docs/03-regulatory-compliance.md`, `docs/12-advice-engine.md`).
+**Regulatory stance (D-021):** before the licence, invite-only users get guidance with a disclaimer (*not SEBI-registered investment advice*), category level only, free, with no public marketing. **Go-to-market only after a SEBI RIA licence** (see `docs/03-regulatory-compliance.md`, `docs/12-advice-engine.md`).
 
 ## Phases
 1. **Portfolio X-ray + Ask your CFO**: overlap, true cost, asset mix, XIRR, grounded AI explanations
@@ -33,6 +33,8 @@ An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS)
 | [docs/16-voice-stack-decision.md](docs/16-voice-stack-decision.md) | Voice stack analysis: Sarvam vs alternatives, cascade vs speech-to-speech, cost per turn |
 | [docs/17-buildathon-runbook.md](docs/17-buildathon-runbook.md) | Buildathon plan: judging map, timeline, step-by-step rebuild prompts, demo script, failure drills |
 | [docs/18-expo-native-roadmap.md](docs/18-expo-native-roadmap.md) | Web → Expo native: what carries over, phases N0–N5, risks |
+| [docs/19-tradeoffs-log.md](docs/19-tradeoffs-log.md) | What every decision cost us, why that's acceptable, mitigations |
+| [docs/research/appendix-wealth-creation-framework.md](docs/research/appendix-wealth-creation-framework.md) | Generic wealth-creation framework + gap evaluation (adopted in D-022) |
 | [apps/voice-cfo/README.md](apps/voice-cfo/README.md) | Munim: run, test, architecture, known gaps |
 | [docs/research/interview-kit.md](docs/research/interview-kit.md) | Screener, script, notes template, synthesis grid |
 | [tech/ARCHITECTURE.md](tech/ARCHITECTURE.md) | System design + ADRs |

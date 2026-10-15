@@ -1,6 +1,6 @@
 # Appendix · Generic "wealth creation" framework (research reference)
 
-**Status:** saved for research on 2026-10-15. **No product or doc changes made from it yet.**
+**Status:** saved 2026-10-15. **Gaps G1–G6 adopted in D-022** (G1, G2 built in Munim; G3, G4 in the Phase 2 PRD as F2-10, F2-14, F2-15; G5, G6 in the Phase 3 roadmap). Guidance policy: D-021.
 **Source:** pasted by Shivam; it reads like an AI search summary built on bank, AMC, insurer and YouTube pages (cited below). Kept verbatim as a benchmark of what a mass-market user is told today. It sits alongside docs/14 (the "10 AI finance prompts" benchmark).
 
 ---

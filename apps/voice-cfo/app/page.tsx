@@ -18,8 +18,8 @@ const PHASE: Record<Phase, Record<Lang, string>> = {
   speaking: { hi: 'बोल रहा हूँ… रोकने के लिए टैप करें', en: 'Speaking… tap to interrupt' },
 };
 const SUGGEST: Record<Lang, string[]> = {
-  hi: ['मेरा पैसा कहाँ जा रहा है?', 'कौन से सब्सक्रिप्शन बेकार हैं?', 'क्या मैं कार लोन जल्दी चुका सकता हूँ? 50 हज़ार', 'मेरा क्रेडिट स्कोर क्यों गिरा?', 'पापा की मोतियाबिंद सर्जरी का क्लेम कैसे करें?'],
-  en: ['Where is my money going?', 'Which subscriptions should I cut?', 'Can I prepay 50,000 on my car loan?', 'Can I get a better rate on my personal loan?', 'Why did my credit score drop?'],
+  hi: ['मुझे पहले क्या करना चाहिए?', 'मेरा पैसा कहाँ जा रहा है?', 'कौन से सब्सक्रिप्शन बेकार हैं?', 'क्या मैं कार लोन जल्दी चुका सकता हूँ? 50 हज़ार', 'मेरा क्रेडिट स्कोर क्यों गिरा?', 'पापा की मोतियाबिंद सर्जरी का क्लेम कैसे करें?'],
+  en: ['What should I fix first?', 'Where is my money going?', 'Which subscriptions should I cut?', 'Can I prepay 50,000 on my car loan?', 'Can I get a better rate on my personal loan?', 'Why did my credit score drop?'],
 };
 const SUNDAY: Record<Lang, string> = { hi: 'मेरी संडे मनी कॉल शुरू करो: इस हफ़्ते क्या ध्यान देना है?', en: 'Start my Sunday money call: what needs my attention this week?' };
 
@@ -182,6 +182,7 @@ export default function Page() {
                     {m.check && m.check.checked > 0 && (m.check.ok ? <span className="badge ok">✓ {m.check.checked} {m.check.checked === 1 ? 'number' : 'numbers'} traced to your data</span> : <span className="badge warn">⚠ not found in data: {m.check.unverified.join(', ')}</span>)}
                     <span>{m.engine}{m.ms ? ` · ${(m.ms / 1000).toFixed(1)}s` : ''}</span>
                     {m.fallbackReason && <span title={m.fallbackReason}>· Claude unavailable, used rules</span>}
+                    {m.trace?.some((t) => t.tool === 'advice_plan') && <span className="badge warn" title="Guidance from your documents and rules of thumb; not SEBI-registered investment advice">Guidance · not registered advice</span>}
                     <button className="btn ghost small" onClick={() => speak(m.speech || m.content, m.lang ?? 'hi')}>▶ {uiLang === 'hi' ? 'फिर सुनें' : 'Replay'}</button>
                   </div>
                   {!!m.trace?.length && (
@@ -234,7 +235,7 @@ export default function Page() {
           <p className="empty" style={{ fontSize: 12, marginBottom: 0 }}>Mock data only. Names, PAN, phone numbers and account numbers are stripped before any text reaches the AI.</p>
         </div>
       </aside>
-      <footer className="foot">Prototype on fictional data · Not investment, tax or insurance advice · Numbers come from code, never from the AI</footer>
+      <footer className="foot">Prototype on fictional data · Guidance only, not SEBI-registered investment advice (RIA licence pending) · Numbers come from code, never from the AI</footer>
     </main>
   );
 }

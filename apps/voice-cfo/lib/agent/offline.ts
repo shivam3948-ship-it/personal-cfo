@@ -19,6 +19,7 @@ const INTENTS: [string, RegExp][] = [
   ['draft', /\bdraft|\bemail\b|\bmail\b|ईमेल|refund|रिफ़ंड|रिफंड|dispute|शिकायत|letter/i],
   ['remind', /remind|yaad dila|याद दिला|reminder|रिमाइंडर/i],
   ['goal', /\bgoal\b|save for|bachana hai|लक्ष्य|जमा करना/i],
+  ['advice', /what should i (do|fix)|fix first|what do i do|next step|priorit|advice|advise|suggest|pehle kya|पहले क्या|kya karu|kya karun|kya karna chahiye|salah|सलाह|क्या करूँ|क्या करूं|क्या करना चाहिए|सुझाव/i],
   ['briefing', /sunday|weekly|week|summary|how am i doing|kya chal|kaisa chal|haal|money call|हाल|सारांश|हफ़्ते|हफ्ते|कैसा चल|क्या चल/i],
   ['subscriptions', /subscri|cancel|netflix|cult|gym|leak|trial|lingopro|सब्सक्रिप्शन|रद्द|बंद कर/i],
   ['unusual', /unusual|ajeeb|spike|weird|zyada kharch|असामान्य|अजीब|ज़्यादा खर्च|ज्यादा खर्च/i],
@@ -109,6 +110,16 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
         `आपके ${r.subscription_count} सब्सक्रिप्शन पर साल में ${r.all_subscriptions_per_year} जाते हैं। ${items.slice(0, 3).map((x: any) => lkHi(x)).join('; ')}।${first ? ' क्या मैं पहले वाले के लिए ईमेल ड्राफ़्ट करूँ?' : ''}`, // eslint-disable-line @typescript-eslint/no-explicit-any
         `Your ${r.subscription_count} subscriptions cost ${r.all_subscriptions_per_year} a year. ${items.slice(0, 3).map((x: any) => `${x.what} (${x.per_year}/yr)`).join('; ')}.${first ? ' Shall I draft the email for the first one?' : ''}`); // eslint-disable-line @typescript-eslint/no-explicit-any
       if (first) next = { tool: 'draft_email', input: { kind: hintToDraft(first.suggested_action), merchant: first.merchant } };
+      break;
+    }
+    case 'advice': {
+      const r = await call('advice_plan');
+      const steps = (r.steps ?? []) as AdviceStep[];
+      const todo = steps.filter((x) => x.status === 'todo');
+      const [a, b] = todo.length ? todo : steps.filter((x) => x.status === 'review');
+      answer = say(
+        `सबसे पहले: ${a ? adviceHi(a) : 'कुछ ज़रूरी नहीं।'}${b ? ` उसके बाद: ${adviceHi(b)}` : ''} ${r.disclaimer}`,
+        `First: ${a?.recommendation ?? 'nothing urgent.'}${b ? ` Then: ${b.recommendation}` : ''} ${r.disclaimer}`);
       break;
     }
     case 'unusual': {
@@ -208,6 +219,24 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
   return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'offline', ms: Date.now() - t0 };
 }
 
+type AdviceStep = { step: string; status: string; finding: string; recommendation: string; numbers: Record<string, string | number | null> };
+/** Hindi wording for each advice step, filled only with numbers from the advice_plan result. */
+function adviceHi(s: AdviceStep): string {
+  const n = s.numbers;
+  switch (s.step) {
+    case 'cash_flow': return `पिछले ${n.months_checked} महीनों में औसत बचत ${n.average_monthly_surplus} रही; बड़े खर्च पहले से प्लान करें।`;
+    case 'card_debt': return 'क्रेडिट कार्ड का पूरा बिल हर महीने भरें; कार्ड का ब्याज सबसे महंगा कर्ज़ है।';
+    case 'high_interest_loans': return n.personal_prepay_allowed_from
+      ? `पर्सनल लोन (${n.personal_rate_pct}%) में ${spokenDate(String(n.personal_prepay_allowed_from), 'hi')} से पहले प्रीपेमेंट नहीं हो सकता; तब तक ${n.personal_lender ?? 'लेंडर'} से ${n.offer_rate_pct ? `${n.offer_rate_pct}% ` : 'कम '}रेट माँगिए और बची रकम इमरजेंसी फ़ंड या ${n.best_prepay_now === 'car loan' ? 'कार लोन' : 'दूसरे लोन'} में डालिए।`
+      : 'सबसे महंगा लोन पहले चुकाइए।';
+    case 'emergency_fund': return `इमरजेंसी फ़ंड ${n.months_now} महीने का है; लक्ष्य ${n.target_months} महीने, यानी ${n.target_amount}।`;
+    case 'health_cover': return 'माता-पिता 60 के करीब हैं; को-पे शुरू होने से पहले सुपर टॉप-अप या अलग सीनियर कवर देख लीजिए।';
+    case 'life_cover': return `टर्म कवर आमदनी का ${n.times_income} गुना है; इसे ${n.rule_times} गुना की ओर बढ़ाने पर विचार करें।`;
+    case 'savings_policies': return 'एंडोमेंट पॉलिसी पर फ़ैसले से पहले बीमा कंपनी से सरेंडर और पेड-अप वैल्यू पूछिए।';
+    case 'invest_surplus': return 'बची रकम लक्ष्य के हिसाब से लगाइए: 3 साल से कम के लिए FD या लिक्विड फ़ंड, 3 से 7 साल के लिए हाइब्रिड या डेट फ़ंड, 7 साल से ज़्यादा के लिए SIP से इक्विटी फ़ंड।';
+    default: return s.recommendation;
+  }
+}
 function irrRange(xs: string[], hi = false): string {
   const n = xs.map((x) => x.match(/-?[\d.]+%/)?.[0]).filter(Boolean);
   return n.length > 1 ? `${n[0]} ${hi ? 'से' : 'to'} ${n[n.length - 1]}` : n[0] ?? '';

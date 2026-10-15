@@ -29,7 +29,9 @@ S0 spikes → S1 upload/parse → S2 x-ray engine → S3 insights + evals → S4
 - Spend categorisation, leakage detection, "investable surplus" estimate
 - Data: PDF upload first; AA later via a partner
 - **Net worth screen** as the monthly anchor (MF + demat from CAS, bank/loans from statements, EPF/PPF/NPS/gold/property entered manually; no peer averages)
-- **Insurance module:** detect premiums in statements; per-policy return from actual terms; diagnosis only (L-9) (docs/14)
+- **Insurance module:** detect premiums in statements; per-policy return from actual terms; health-cover review (docs/14, D-022)
+- **Foundation-first verdict + revolving card-debt detection + all-asset allocation** (D-022 G1, G2, G4; F2-13 to F2-15). G1/G2 already built in Munim
+- Guidance shown with a disclaimer to invite-only users (D-021); **no GTM until the RIA licence**
 - Regulatory: information only; not securities advice (⚠ confirm)
 
 ## Next — Advice engine v1 (internal + demo modes; D-016)
@@ -39,6 +41,7 @@ S0 spikes → S1 upload/parse → S2 x-ray engine → S3 insights + evals → S4
 
 ## Later — Phase 3: Goal-based planning (**RIA required**)
 - Goals → required corpus → SIP gap, using the risk profile captured in Phase 1; **retirement is the first goal template**; projections shown as ranges with editable assumptions
+- **Goal-horizon buckets** (0–3 / 3–7 / 7+ years → liquidity vs growth) and **inflation-adjusted** goal, buffer and return figures (D-022 G5, G6)
 - Advice flag on; suitability check; client agreement; AI-use disclosure
 - Gate: RIA route decided and live (D-OPEN-2, L-5)
 

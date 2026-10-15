@@ -124,6 +124,6 @@ Expected answers below come from the reference app on the sample data (offline r
 - **Why voice?** Most Indians don't open a spreadsheet; they ask someone. Hindi voice reaches the first-time savers Bachatt serves (docs/13 §7).
 - **How do you stop hallucinated numbers?** Tools compute everything in paise; the guard checks every spoken figure; "Show the math" exposes the trace.
 - **Privacy?** Names, PAN, phones, emails, account numbers and UPI handles are stripped before text reaches the LLM; mock data only (as the brief requires).
-- **Is this advice?** No. Loans and budgeting are maths and trade-offs; insurance is diagnosis from the user's own documents; no product recommendations (docs/03, L-9).
+- **Is this advice?** It's guidance with a disclaimer: "what to fix first" from your own documents plus disclosed rules of thumb, category level only, no named funds or policies. Registered advice and any public launch come only after an RIA licence (D-021, docs/03, L-9).
 - **Business?** It is the voice layer for Personal CFO Phase 2 (docs/15). For Bachatt: a Saathi-style weekly money call that drives savings habits.
 - **What next?** Account Aggregator data instead of uploads (D-018), Expo native app with push for the Sunday call (docs/18), streaming TTS.

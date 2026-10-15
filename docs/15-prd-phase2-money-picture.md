@@ -56,8 +56,11 @@ UC1 True spend by category this month and the trend · UC2 Investable surplus (i
 | F2-7 | Leak finder: subscriptions, fees and charges, cashback shortfalls, duplicate charges, unmatched refunds | Must | ₹/yr framing; severity tiers |
 | F2-8 | **Net worth screen:** MF + demat (CAS), bank balances + FDs (statements), EPF/PPF/NPS/gold/property/other (manual, dated), loans (statements + manual) | Must | Monthly anchor; liquid and investable splits |
 | F2-9 | Emergency fund metric: liquid assets ÷ average monthly true spend | Must | Months of cover |
-| F2-10 | **Insurance module:** detect premiums in statements; user adds policy details; compute each traditional/ULIP policy's projected return from its terms; show term-cover gap vs a user-chosen need | Should | Diagnosis only (L-9) |
+| F2-10 | **Insurance module:** detect premiums in statements; user adds policy details; compute each traditional/ULIP policy's projected return from its terms; show term-cover gap vs a user-chosen need; **health-cover review: members near the co-pay age, waiting periods, employer-only cover, top-up gap (D-022 G3)** | Should | Category-level guidance with disclaimer (D-021); no product picks (L-9) |
 | F2-11 | Family view extension: parents' statements and policies (with consent) | Should | Secondary persona |
+| F2-13 | **Foundation-first verdict (D-022 G1):** one ordered plan, cash flow → card debt → high-interest loans → emergency fund → health → life → savings-type policies → invest the surplus; the first gap is the headline | Must | Built in Munim (`lib/finance/advice.ts`); guidance with disclaimer (D-021) |
+| F2-14 | **Revolving card-debt detection (D-022 G2):** bill not paid in full, finance charges, minimum-only payments, BNPL | Must | Rate taken from the statement text |
+| F2-15 | **All-asset allocation (D-022 G4):** equity / debt / gold / real estate / EPF-PPF-NPS as a share of net worth, not just within MFs | Should | Extends F2-8; manual assets dated |
 | F2-12 | Suspicious-transaction flags (large unlabelled credits, vague large transfers, same-day duplicates) | Could | From the Spend Analyser rules |
 
 ## 10. Features Out
