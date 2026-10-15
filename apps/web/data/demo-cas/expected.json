@@ -1,0 +1,63 @@
+{
+ "as_of": "2026-10-15",
+ "total_cost": 847000,
+ "total_value": 1278284.5,
+ "xirr_pct": 14.19,
+ "funds": [
+  {
+   "scheme": "Kestrel Flexi Cap Fund - Regular Plan - Growth",
+   "isin": "INF000K01FC1",
+   "plan": "Regular",
+   "asset": "equity",
+   "units": 26464.268,
+   "nav": 21.0189,
+   "cost": 350000,
+   "value": 556249.8,
+   "xirr_pct": 16.04
+  },
+  {
+   "scheme": "Banyan Nifty 50 Index Fund - Direct Plan - Growth",
+   "isin": "INF000B07IX2",
+   "plan": "Direct",
+   "asset": "equity",
+   "units": 15538.314,
+   "nav": 14.265,
+   "cost": 165000,
+   "value": 221654.05,
+   "xirr_pct": 13.16
+  },
+  {
+   "scheme": "Monsoon Small Cap Fund - Regular Plan - Growth",
+   "isin": "INF000M03SC3",
+   "plan": "Regular",
+   "asset": "equity",
+   "units": 7910.542,
+   "nav": 11.6857,
+   "cost": 82000,
+   "value": 92440.22,
+   "xirr_pct": 7.18
+  },
+  {
+   "scheme": "Teak ELSS Tax Saver Fund - Regular Plan - Growth",
+   "isin": "INF000T11EL4",
+   "plan": "Regular",
+   "asset": "equity",
+   "units": 13233.957,
+   "nav": 21.0805,
+   "cost": 150000,
+   "value": 278978.43,
+   "xirr_pct": 14.28
+  },
+  {
+   "scheme": "Lotus Short Duration Fund - Direct Plan - Growth",
+   "isin": "INF000L05SD5",
+   "plan": "Direct",
+   "asset": "debt",
+   "units": 10000.0,
+   "nav": 12.8962,
+   "cost": 100000,
+   "value": 128962.0,
+   "xirr_pct": 9.98
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+ORBIT FINSERV PVT LTD (fictional)
+PERSONAL LOAN - SANCTION LETTER AND KEY FACT STATEMENT
+
+Borrower: Rohan Mehta, Gurugram, Haryana
+Loan Account Number: XXXXXX7788
+Sanctioned Loan Amount: Rs 3,00,000.00
+Rate of Interest: 13.50% p.a. (fixed, reducing balance)
+Tenure: 36 months
+EMI Amount: Rs 10,181.00
+First EMI Date: 20-Jan-2026    Last EMI Date: 20-Dec-2028
+EMI debit date: 20th of every month via NACH from Saffron Bank A/c XX4521
+
+PREPAYMENT AND FORECLOSURE
+Part-prepayment: permitted after 12 EMIs. Part-prepayment charges: 4% of amount prepaid + GST.
+Foreclosure: permitted after 12 EMIs. Foreclosure charges: 5% of principal outstanding + GST.
+
+LATE PAYMENT
+Penal charges of 2% per month on the overdue EMI amount. Repeated delays are reported to credit bureaus.
+
+GRIEVANCE REDRESSAL
+Write to care@orbitfinserv.example with your loan account number. Nodal officer response within 30 days.
