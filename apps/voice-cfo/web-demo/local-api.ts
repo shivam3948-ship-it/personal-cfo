@@ -70,6 +70,11 @@ export function installLocalApi() {
     const claude = (window as unknown as { claude?: { use: (n: string) => Promise<{ save: (f: { filename: string; data: string }) => Promise<unknown> } | null> } }).claude;
     const downloads = claude ? await claude.use('downloads') : null;
     if (downloads) { try { await downloads.save({ filename: `munim-${action.id}.ics`, data: toIcs(action) }); } catch { /* viewer declined */ } }
-    else { const g = gcalLink(action); if (g) window.open(g, '_blank', 'noopener'); }
+    else if (!claude) {
+      // Ordinary hosting (Netlify etc.): a normal file download works.
+      const url = URL.createObjectURL(new Blob([toIcs(action)], { type: 'text/calendar' }));
+      const link = Object.assign(document.createElement('a'), { href: url, download: `munim-${action.id}.ics` });
+      document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } else { const g = gcalLink(action); if (g) window.open(g, '_blank', 'noopener'); }
   });
 }

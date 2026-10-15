@@ -41,4 +41,8 @@ const html = `<title>Munim</title>
 `;
 fs.mkdirSync(path.join(here, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(here, 'dist', 'munim.html'), html);
+// Standalone version for static hosts (Netlify Drop, GitHub Pages): a full document with its own head.
+const standalone = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#16201B"><meta name="description" content="Munim: ask about your money in Hindi or English. Prototype on fictional data."></head><body>${html}</body></html>`;
+fs.mkdirSync(path.join(here, 'dist', 'site'), { recursive: true });
+fs.writeFileSync(path.join(here, 'dist', 'site', 'index.html'), standalone);
 console.log(`web-demo/dist/munim.html ${(html.length / 1024).toFixed(0)} KB, ${files.length} demo files embedded`);
