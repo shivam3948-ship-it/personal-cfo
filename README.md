@@ -33,6 +33,7 @@ An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS)
 | [docs/16-voice-stack-decision.md](docs/16-voice-stack-decision.md) | Voice stack analysis: Sarvam vs alternatives, cascade vs speech-to-speech, cost per turn |
 | [docs/17-buildathon-runbook.md](docs/17-buildathon-runbook.md) | Buildathon plan: judging map, timeline, step-by-step rebuild prompts, demo script, failure drills |
 | [docs/18-expo-native-roadmap.md](docs/18-expo-native-roadmap.md) | Web → Expo native: what carries over, phases N0–N5, risks |
+| [docs/20-why-now.md](docs/20-why-now.md) | Why now, sourced: Dec 2024 RIA amendments + AI rules, PMS 2026 MF-only route, finfluencer crackdown, data and AI shifts |
 | [docs/19-tradeoffs-log.md](docs/19-tradeoffs-log.md) | What every decision cost us, why that's acceptable, mitigations |
 | [docs/research/appendix-wealth-creation-framework.md](docs/research/appendix-wealth-creation-framework.md) | Generic wealth-creation framework + gap evaluation (adopted in D-022) |
 | [apps/voice-cfo/README.md](apps/voice-cfo/README.md) | Munim: run, test, architecture, known gaps |

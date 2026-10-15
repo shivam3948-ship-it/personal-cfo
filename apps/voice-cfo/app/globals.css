@@ -15,7 +15,7 @@
 html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
 button, input, textarea { font-family: inherit; font-size: inherit; color: inherit; }
 a { color: var(--green-ink); }
-.wrap { max-width: 1120px; margin: 0 auto; padding: 16px 16px 48px; display: grid; gap: 18px; grid-template-columns: 1fr; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom)); display: grid; gap: 18px; grid-template-columns: 1fr; }
 @media (min-width: 960px) { .wrap { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; padding-top: 24px; } .side { position: sticky; top: 16px; } }
 header.top { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .brand { display: flex; align-items: baseline; gap: 10px; }
@@ -86,4 +86,9 @@ details.math pre { background: var(--line-2); border-radius: 10px; padding: 10px
 .checks .ok::before { content: '✓ '; color: var(--green-ink); } .checks .bad::before { content: '✗ '; color: var(--red); }
 .empty { color: var(--muted); font-size: 14px; }
 .foot { grid-column: 1 / -1; color: var(--muted); font-size: 12px; text-align: center; }
+/* Mobile-first: a floating mic stays in thumb reach once the conversation scrolls the hero away. */
+.fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 64px; height: 64px; border-radius: 50%; border: 0; background: #2C8C62; color: #fff; display: grid; place-items: center; box-shadow: 0 6px 20px rgba(0,0,0,.25); z-index: 10; cursor: pointer; }
+.fab.listening { background: #C0412B; animation: pulse 1.3s infinite; } .fab.speaking { background: #2C6E8C; } .fab.busy { background: #4A564F; }
+@media (min-width: 960px) { .fab { display: none; } }
+.chip, .btn, .seg button, .sunday { min-height: 40px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

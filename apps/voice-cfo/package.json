@@ -13,7 +13,8 @@
     "demo:pdfs": "node scripts/make-pdfs.mjs",
     "eval:live": "RUN_LIVE=1 vitest run tests/eval.live.test.ts",
     "smoke": "node scripts/smoke-keys.mjs",
-    "e2e": "node scripts/e2e-smoke.mjs"
+    "e2e": "node scripts/e2e-smoke.mjs",
+    "dev:lan": "next dev -H 0.0.0.0 -p 3000"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.134.0",

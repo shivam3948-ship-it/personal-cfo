@@ -235,6 +235,11 @@ export default function Page() {
           <p className="empty" style={{ fontSize: 12, marginBottom: 0 }}>Mock data only. Names, PAN, phone numbers and account numbers are stripped before any text reaches the AI.</p>
         </div>
       </aside>
+      {msgs.length > 0 && (
+        <button className={`fab ${phase === 'listening' ? 'listening' : phase === 'speaking' ? 'speaking' : phase === 'idle' ? '' : 'busy'}`} onClick={micTap} aria-label={PHASE[phase][uiLang]}>
+          {phase === 'listening' ? <StopIcon /> : phase === 'speaking' ? <SpeakerIcon /> : <MicIcon />}
+        </button>
+      )}
       <footer className="foot">Prototype on fictional data · Guidance only, not SEBI-registered investment advice (RIA licence pending) · Numbers come from code, never from the AI</footer>
     </main>
   );

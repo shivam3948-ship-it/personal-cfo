@@ -70,7 +70,20 @@ Go native when the web MVP shows a weekly return habit (docs/05). Until then the
 | Two UIs drifting apart | Shared design tokens (colours, type scale) in `packages/core/tokens.ts`; one Figma page per screen |
 | PDF parsing on the device | Server-side first; consider a native PDF module only if users demand offline PDF parsing |
 
-## 5. Definition of done for "native v1"
+## 5. Expo or Digia for the native shell?
+[Digia](https://www.capterra.com/p/10033988/Digia/) (a buildathon co-host) is a low-code, **server-driven UI** platform for native apps: screens and flows change from the server without an app-store release. Capterra lists Web, Android and iOS; its free tier allows 1 app release and 1,000 monthly installs, paid tiers from $29/month (checked 2026-10-15).
+
+| | Expo (React Native) | Digia (server-driven, low-code) |
+|---|---|---|
+| Reuse of our TypeScript core | Direct: same language, `packages/core` imported | None on the device; Digia screens call our HTTP APIs |
+| Custom voice UX (record, silence detection, barge-in) | Full control in code | Depends on Digia's components or custom-code hooks (⚠ not verified) |
+| Shipping UI changes | EAS Update for JS; native changes need review | **Its main strength:** UI changes without a release, good for fast copy and flow experiments with users |
+| Lock-in | Open source | Vendor platform |
+| For the **web** app | Not relevant (Next.js stays) | No advantage: we already ship web, mobile-first |
+
+**Decision (D-023):** keep the **web app mobile-first in Next.js** (PWA, installable). For native, **Expo stays the default**, because our core is TypeScript and the voice UX is custom. **Digia is worth a spike** only if (a) the organisers' rules or judging reward it on Saturday, or (b) we need server-driven experiments on native onboarding flows. A Digia screen can consume `/api/agent` as-is, since the backend contract doesn't change.
+
+## 6. Definition of done for "native v1"
 - Talk → answer → action works in Hindi and English on a mid-range Android phone in ≤ 6 s per turn on 4G (measured).
 - The Sunday notification brings the user back (track D7/D28 return; docs/05).
 - Zero PII in logs (test); every spoken number passes the guard (same tests as web, now in `packages/core`).

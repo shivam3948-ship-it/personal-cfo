@@ -33,6 +33,7 @@ Segments and personas are defined in [11-segments-personas.md](11-segments-perso
 We do **not** yet have a sourced estimate of how many investors are "DIY", so no TAM is claimed. Sizing is task T-1 in the roadmap.
 
 ## 4. Why now
+*Full, sourced version with the Dec 2024 IA amendments, AI-use rules, the PMS 2026 mutual-fund-only route and the finfluencer crackdown: [docs/20](20-why-now.md).*
 1. **Self-directed investing is growing.** The shift to direct plans (above) means a growing base without an adviser in the loop.
 2. **LLMs can now explain** specific numbers in plain language at near-zero marginal cost. Before 2023, personalised explanation needed a human.
 3. **Regulation made fee-only advice more feasible.** SEBI's Dec 2024 IA amendments dropped the experience requirement, replaced net worth with a deposit and allowed part-time advisers.

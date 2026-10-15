@@ -104,7 +104,7 @@ How we'll know: Monthly Verified Actions and 30-day re-upload (docs/05), with pr
 - *For users:* rupees (fee drag, tax-timed moves, behaviour gap; e.g. Priya's sample father pays ₹35,450/yr more in regular plans), time (3 minutes vs a spreadsheet weekend), and confidence (a verdict they can check).
 - *For the business:* (1) a subscription or RIA fee, capped at ₹1.51 L per family per year or 2.5% of AUA (docs/03); (2) a unique dataset of *verified outcomes* (what users did and what it did to their money), which no distribution app has; (3) a B2B engine for advisers, since 1,050 RIAs can't hand-analyse every client; (4) for Shivam, a live AI-PM portfolio piece. **We don't claim market size until T-1 sizing is done.**
 
-**Why now.**
+**Why now.** (Full, sourced version: [docs/20](20-why-now.md).)
 1. **AI can explain a specific portfolio** in plain language at near-zero marginal cost, and evals make it measurable.
 2. **Regulation opened the door:** easier RIA registration (Dec 2024: graduate degree, no experience, a deposit instead of net worth) and explicit AI-use disclosure rules for advisers. There's a clear lane for licensed AI advice.
 3. **Regulation closed the shortcut:** AMFI stopped MF Central sharing data with fintechs (Sep 2025); licensed Account Aggregator access now favours RIA-ready players like us.

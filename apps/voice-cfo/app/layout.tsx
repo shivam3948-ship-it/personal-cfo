@@ -4,8 +4,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Munim · voice CFO',
   description: 'Ask about your money in Hindi or English. Munim reads your statements, SMS, emails, loan and insurance papers, and helps you act.',
+  appleWebApp: { capable: true, title: 'Munim', statusBarStyle: 'black-translucent' },
 };
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#F3F4EF' };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#16201B' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

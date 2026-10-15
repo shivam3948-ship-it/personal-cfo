@@ -4,7 +4,20 @@ Ask about your money out loud, in Hindi or English. Munim reads bank and card st
 
 Built for the Bachatt × Digia Voice AI × Finance Buildathon (17 Oct 2026). Runbook: [docs/17](../../docs/17-buildathon-runbook.md) · Voice stack decision: [docs/16](../../docs/16-voice-stack-decision.md) · Native roadmap: [docs/18](../../docs/18-expo-native-roadmap.md).
 
-## Run it
+## Try it
+**1 · On your Mac (5 minutes, voice works).** Needs Node 20+ (`node -v`; if missing: `brew install node`).
+```bash
+cd ~/PyCharmMiscProject/Github/personal-cfo/apps/voice-cfo
+npm install
+npm run dev          # open http://localhost:3000 in Chrome, allow the mic
+```
+No keys needed: it runs on the sample data with offline rules and browser voice. Add keys to `.env.local` for Claude and Sarvam.
+
+**2 · On your phone, same Wi-Fi.** `npm run dev:lan`, then open `http://<your Mac's IP>:3000` on the phone (IP: `ipconfig getifaddr en0`). Typing works; **the mic needs HTTPS**, so for voice on the phone use a tunnel: `brew install cloudflared && cloudflared tunnel --url http://localhost:3000` and open the `https://…trycloudflare.com` link it prints. "Add to Home Screen" installs it like an app (PWA).
+
+**3 · Hosted link (Vercel).** `npm i -g vercel`, then from `apps/voice-cfo`: `vercel` (first time, links the project), add `ANTHROPIC_API_KEY` / `SARVAM_API_KEY` in the Vercel dashboard, then `vercel --prod`. Caveat: serverless instances keep uploads in memory, so **demo uploads from the laptop build**; the sample data works anywhere.
+
+## Run it (developer)
 ```bash
 cd apps/voice-cfo
 npm install
