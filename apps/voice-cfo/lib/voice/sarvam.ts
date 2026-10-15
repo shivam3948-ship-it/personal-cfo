@@ -7,17 +7,37 @@ export const sarvamConfigured = () => !!process.env.SARVAM_API_KEY;
 
 export interface SttResult { transcript: string; languageCode: string | null; ms: number }
 
+const EXT: Record<string, string> = { 'audio/webm': 'webm', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a', 'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/aac': 'aac' };
+
+/** Browsers label recordings "audio/webm;codecs=opus"; Sarvam rejects MIME parameters, so send the bare type with a matching extension. */
+export function normaliseAudio(audio: Blob, filename: string): { blob: Blob; filename: string; mime: string } {
+  const mime = (audio.type || 'audio/webm').split(';')[0].trim().toLowerCase();
+  const ext = EXT[mime] ?? (filename.split('.').pop() || 'webm');
+  const base = filename.replace(/\.[^.]*$/, '') || 'speech';
+  return { blob: new Blob([audio], { type: mime }), filename: `${base}.${ext}`, mime };
+}
+
 export async function sarvamStt(audio: Blob, filename: string, lang: 'hi' | 'en' | 'auto' = 'auto'): Promise<SttResult> {
   const t0 = Date.now();
-  const form = new FormData();
-  form.append('file', audio, filename);
-  form.append('model', process.env.SARVAM_STT_MODEL || 'saaras:v4');
-  if (process.env.SARVAM_STT_MODE) form.append('mode', process.env.SARVAM_STT_MODE); // only for saaras:v3, e.g. "codemix"
-  form.append('language_code', lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'unknown');
-  const res = await fetch(`${BASE}/speech-to-text`, { method: 'POST', headers: { 'api-subscription-key': process.env.SARVAM_API_KEY ?? '' }, body: form });
-  if (!res.ok) throw new Error(`Sarvam STT ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  const j = (await res.json()) as { transcript?: string; language_code?: string };
-  return { transcript: (j.transcript ?? '').trim(), languageCode: j.language_code ?? null, ms: Date.now() - t0 };
+  const n = normaliseAudio(audio, filename);
+  // Second attempt: a generic binary type (Sarvam accepts application/octet-stream and detects the container itself).
+  const tries = [n.blob, new Blob([audio], { type: 'application/octet-stream' })];
+  let last = '';
+  for (let i = 0; i < tries.length; i++) {
+    const form = new FormData();
+    form.append('file', tries[i], n.filename);
+    form.append('model', process.env.SARVAM_STT_MODEL || 'saaras:v4');
+    if (process.env.SARVAM_STT_MODE) form.append('mode', process.env.SARVAM_STT_MODE); // only for saaras:v3, e.g. "codemix"
+    form.append('language_code', lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'unknown');
+    const res = await fetch(`${BASE}/speech-to-text`, { method: 'POST', headers: { 'api-subscription-key': process.env.SARVAM_API_KEY ?? '' }, body: form });
+    if (res.ok) {
+      const j = (await res.json()) as { transcript?: string; language_code?: string };
+      return { transcript: (j.transcript ?? '').trim(), languageCode: j.language_code ?? null, ms: Date.now() - t0 };
+    }
+    last = `Sarvam STT ${res.status}: ${(await res.text()).slice(0, 300)}`;
+    if (!(res.status === 400 && /file type|format|codec/i.test(last))) break; // only a format complaint is worth retrying
+  }
+  throw new Error(last);
 }
 
 export interface TtsResult { audioBase64: string; mime: string; ms: number; attempt: number }

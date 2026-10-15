@@ -28,6 +28,25 @@ describe('Sarvam client (mocked fetch)', () => {
     expect((calls[0].init.headers as Record<string, string>)['api-subscription-key']).toBe('k');
     expect(body.get('model')).toBe('saaras:v4'); expect(body.get('language_code')).toBe('unknown');
   });
+  it('STT strips codec parameters from the browser MIME type and retries as octet-stream on a format error', async () => {
+    process.env.SARVAM_API_KEY = 'k';
+    const types: string[] = []; const names: string[] = [];
+    vi.stubGlobal('fetch', async (_: string, init: RequestInit) => {
+      const f = (init.body as FormData).get('file') as File; types.push(f.type); names.push(f.name);
+      if (types.length === 1) return new Response('{"error":{"message":"Invalid file type: audio/webm"}}', { status: 400 });
+      return new Response(JSON.stringify({ transcript: 'ok' }), { status: 200 });
+    });
+    const r = await sarvamStt(new Blob(['x'], { type: 'audio/webm;codecs=opus' }), 'speech.webm', 'hi');
+    expect(r.transcript).toBe('ok');
+    expect(types).toEqual(['audio/webm', 'application/octet-stream']);
+    expect(names).toEqual(['speech.webm', 'speech.webm']);
+  });
+  it('STT does not retry on auth errors', async () => {
+    process.env.SARVAM_API_KEY = 'bad'; let n = 0;
+    vi.stubGlobal('fetch', async () => { n++; return new Response('{"error":"invalid_api_key_error"}', { status: 403 }); });
+    await expect(sarvamStt(new Blob(['x'], { type: 'audio/mp4' }), 'speech.webm')).rejects.toThrow(/403/);
+    expect(n).toBe(1);
+  });
   it('TTS falls back across request shapes on 4xx and accepts either response field', async () => {
     process.env.SARVAM_API_KEY = 'k';
     const bodies: Record<string, unknown>[] = [];
