@@ -28,6 +28,7 @@ An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS)
 | [docs/11-segments-personas.md](docs/11-segments-personas.md) | Segmentation model, primary/secondary/parked personas |
 | [docs/12-advice-engine.md](docs/12-advice-engine.md) | Advice catalogue, engine design, internal/demo modes, advice evals |
 | [docs/13-problem-depth.md](docs/13-problem-depth.md) | 5 whys, today's alternatives, pain size, behaviour change, the Groww lesson |
+| [docs/15-prd-phase2-money-picture.md](docs/15-prd-phase2-money-picture.md) | Phase 2 PRD: spending, net worth, insurance |
 | [docs/14-prompt-benchmark.md](docs/14-prompt-benchmark.md) | The viral "10 AI finance prompts" vs our product: gaps, phases, adoptions |
 | [docs/research/interview-kit.md](docs/research/interview-kit.md) | Screener, script, notes template, synthesis grid |
 | [tech/ARCHITECTURE.md](tech/ARCHITECTURE.md) | System design + ADRs |
