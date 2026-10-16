@@ -24,6 +24,8 @@ New Project → import `personal-cfo` → **Root Directory: `apps/web`** → add
 ## Embedded voice demo (`/host`)
 A fictional savings app with Munim as its voice layer: in-task voice hints, a proactive offer when the user hesitates on Withdraw, and voice actions (change or pause the daily saving) that only happen after a spoken or tapped "haan". The host owns the data and applies changes; Munim only answers from the state it is given and proposes (`lib/host/agent.ts`, `/api/host/agent`). Growth plan: [docs/23](../../docs/23-voice-agent-growth.md).
 
+Research-backed scenarios (docs/26): presenter chips under the phone switch between *withdrawal on time*, *3 days late*, *paid but "not in my bank"* and *charged twice today*; deep links like `/host?s=late`. Munim answers from the host's withdrawal and debit records, shows the math, and hands over to a person in one step with a written case summary. The evidence is at `/research`.
+
 ## How the data flows
 | Data | Where it is read | What is stored |
 |---|---|---|
