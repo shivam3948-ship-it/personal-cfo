@@ -23,7 +23,8 @@ export default function Credit() {
           <div className="card" style={{ display: 'grid', padding: '4px 14px' }}>
             {c.utilisation_on_report && <div className="row"><span>Card use on the report</span><span>{c.utilisation_previous ? `${c.utilisation_previous} → ` : ''}{c.utilisation_on_report}</span></div>}
             <div className="row"><span>New enquiries, last 90 days</span><span>{c.enquiries_last_90_days?.length ?? 0}</span></div>
-            <div className="row"><span>Late payments</span><span style={{ whiteSpace: 'normal', textAlign: 'right' }}>{c.late_payments?.length ? c.late_payments.join('; ') : 'None'}</span></div>
+            <div className="row"><span>Late payments</span><span>{(() => { const lp = (c.late_payments ?? []) as string[]; const days = lp.map((x) => x.match(/(\d+)\s*days/)?.[1]).filter(Boolean) as string[]; return !lp.length ? 'None' : days.length === lp.length && new Set(days).size === 1 ? `${lp.length} × ${days[0]} days` : `${lp.length}`; })()}</span></div>
+            {!!c.late_payments?.length && <small style={{ color: 'var(--muted)', fontSize: 12, padding: '0 0 10px' }}>{c.late_payments.join('; ')}</small>}
           </div>
           {c.utilisation_latest_statement && <span className="sub" style={{ lineHeight: 1.45 }}>Your latest card statement ({fmtDate(c.latest_statement_date)}) shows {c.utilisation_latest_statement} use.</span>}
           <div className="eyebrow">What helps</div>

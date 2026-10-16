@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp, downloadVia } from '../client';
 import { BottomNav } from '../ui';
@@ -135,81 +136,69 @@ export default function Page() {
   const checks = data?.log.flatMap((l) => l.checks) ?? [];
   const passing = checks.filter((c) => c.ok).length;
 
+  const pressed = (l: Lang) => lang === l || (lang === 'auto' && uiLang === l);
   return (
-    <div className="app"><main className="screen wrap">
-      <div className="topbar" style={{ gridColumn: '1 / -1' }}>
-        <h1>{uiLang === 'hi' ? 'मुनीम से बात करें' : 'Talk to Munim'}</h1>
-        <div className="pills">
-          <span className={`pill ${data?.status.claude ? 'ok' : 'warn'}`}>{data?.status.claude ? 'Claude' : 'Offline rules'}</span>
-          <span className={`pill ${data?.status.sarvam ? 'ok' : 'warn'}`}>{data?.status.sarvam ? 'Sarvam voice' : 'Browser voice'}</span>
-        </div>
-      </div>
-
-      <section style={{ display: 'grid', gap: 14 }}>
-        <div className="stage">
-          <h1>{uiLang === 'hi' ? 'अपने पैसों के बारे में बोलकर पूछिए' : 'Ask about your money, out loud'}</h1>
-          <p>{uiLang === 'hi' ? 'बैंक, कार्ड, SMS, ईमेल, लोन, बीमा और क्रेडिट रिपोर्ट — सब जोड़कर जवाब, और फिर काम भी।' : 'Bank, card, SMS, email, loan, insurance and credit report, connected. Then it acts.'}</p>
+    <div className="app"><main className="screen">
+      {/* Design S11: compact voice header, then the conversation with numbers traced and actions inline. */}
+      <div className="stage" style={{ gap: 10, padding: '14px 16px 18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <b style={{ fontSize: 18 }}>Munim</b>
           <div className="seg" role="group" aria-label="Language">
-            {(['auto', 'hi', 'en'] as LangPref[]).map((l) => <button key={l} aria-pressed={lang === l} onClick={() => setLang(l)}>{l === 'auto' ? 'Auto' : l === 'hi' ? 'हिंदी' : 'English'}</button>)}
+            {(['hi', 'en'] as Lang[]).map((l) => <button key={l} aria-pressed={pressed(l)} onClick={() => setLang(l)}>{l === 'hi' ? 'हिंदी' : 'English'}</button>)}
           </div>
-          <button className={`mic ${phase === 'listening' ? 'listening' : phase === 'speaking' ? 'speaking' : phase === 'idle' ? '' : 'busy'}`} onClick={micTap} aria-label={PHASE[phase][uiLang]} disabled={!sid}>
-            {phase === 'listening' ? <StopIcon /> : phase === 'speaking' ? <SpeakerIcon /> : <MicIcon />}
-          </button>
-          <div className="level" aria-hidden><i style={{ width: `${Math.round(level * 100)}%` }} /></div>
-          <div className="state" aria-live="polite">{PHASE[phase][uiLang]}</div>
-          <button className="sunday" onClick={() => ask(SUNDAY[uiLang])} disabled={phase !== 'idle'}>☀ {uiLang === 'hi' ? 'संडे मनी कॉल शुरू करें' : 'Start the Sunday Money Call'}</button>
-          <div className="chips">{SUGGEST[uiLang].map((q) => <button key={q} className="chip" onClick={() => ask(q)} disabled={phase !== 'idle'}>{q}</button>)}</div>
-          <form className="ask" onSubmit={(e) => { e.preventDefault(); ask(text); setText(''); }}>
-            <input value={text} onChange={(e) => setText(e.target.value)} placeholder={uiLang === 'hi' ? 'या यहाँ लिखें…' : 'Or type here…'} aria-label="Type a question" />
-            <button className="btn small" type="submit" disabled={phase !== 'idle' || !text.trim()}>{uiLang === 'hi' ? 'भेजें' : 'Send'}</button>
-          </form>
-          <label style={{ fontSize: 13, color: 'var(--dark-muted)' }}><input type="checkbox" checked={voiceOut} onChange={(e) => setVoiceOut(e.target.checked)} /> {uiLang === 'hi' ? 'जवाब बोलकर सुनाएँ' : 'Speak replies'}</label>
         </div>
-
-        {error && <div className="card" role="alert" style={{ borderColor: 'var(--red)', color: 'var(--red)' }}>{error}</div>}
-
-        <div className="convo">
-          {msgs.map((m, i) => (
-            <div key={i} className={`msg ${m.role === 'user' ? 'user' : 'bot'}`}>
-              <div className="bubble">{m.content}</div>
-              {m.role === 'assistant' && (
-                <>
-                  <div className="meta">
-                    {m.check && m.check.checked > 0 && (m.check.ok ? <span className="badge ok">✓ {m.check.checked} {m.check.checked === 1 ? 'number' : 'numbers'} traced to your data</span> : <span className="badge warn">⚠ not found in data: {m.check.unverified.join(', ')}</span>)}
-                    <span>{m.engine}{m.ms ? ` · ${(m.ms / 1000).toFixed(1)}s` : ''}</span>
-                    {m.fallbackReason && <span title={m.fallbackReason}>· Claude unavailable, used rules</span>}
-                    {m.trace?.some((t) => t.tool === 'advice_plan') && <span className="badge warn" title="Guidance from your documents and rules of thumb; not SEBI-registered investment advice">Guidance · not registered advice</span>}
-                    <button className="btn ghost small" onClick={() => speak(m.speech || m.content, m.lang ?? 'hi')}>▶ {uiLang === 'hi' ? 'फिर सुनें' : 'Replay'}</button>
-                  </div>
-                  {!!m.trace?.length && (
-                    <details className="math"><summary>{uiLang === 'hi' ? 'हिसाब देखें' : 'Show the math'} ({m.trace.map((t) => t.tool).join(', ')})</summary>
-                      {m.trace.map((t, k) => <pre key={k}>{`${t.tool}(${JSON.stringify(t.input)})  ${t.ms}ms\n${JSON.stringify(t.result, null, 1)}`}</pre>)}
-                    </details>
-                  )}
-                </>
-              )}
-            </div>
-          ))}
-          {phase === 'listening' && interim && <div className="msg user"><div className="bubble" style={{ opacity: 0.6 }}>{interim}</div></div>}
-          <div ref={endRef} />
-          {!!msgs.length && <button className="btn ghost small" style={{ justifySelf: 'start' }} onClick={newChat}>{uiLang === 'hi' ? 'नई बातचीत' : 'New conversation'}</button>}
-        </div>
-      </section>
-
-      <aside className="side">
-        <div className="card">
-          <h2>{uiLang === 'hi' ? 'काम जो Munim ने किए' : 'Actions taken'} ({actions.length})</h2>
-          {!actions.length && <div className="empty">{uiLang === 'hi' ? 'अभी कुछ नहीं। कहिए “रिमाइंडर लगा दो” या “ईमेल ड्राफ़्ट करो”।' : 'Nothing yet. Say “set a reminder” or “draft the email”.'}</div>}
-          <div className="list">{actions.map((a) => <ActionCard key={a.id} a={a} fresh={fresh.has(a.id)} onDelete={() => delAction(a.id)} />)}</div>
-        </div>
-
-      </aside>
-      {msgs.length > 0 && (
-        <button className={`fab ${phase === 'listening' ? 'listening' : phase === 'speaking' ? 'speaking' : phase === 'idle' ? '' : 'busy'}`} onClick={micTap} aria-label={PHASE[phase][uiLang]}>
+        <button className={`mic ${phase === 'listening' ? 'listening' : phase === 'speaking' ? 'speaking' : phase === 'idle' ? '' : 'busy'}`} style={{ width: 96, height: 96 }} onClick={micTap} aria-label={PHASE[phase][uiLang]} disabled={!sid}>
           {phase === 'listening' ? <StopIcon /> : phase === 'speaking' ? <SpeakerIcon /> : <MicIcon />}
         </button>
+        {phase === 'listening' && <div className="level" aria-hidden><i style={{ width: `${Math.round(level * 100)}%` }} /></div>}
+        <div className="state" aria-live="polite" style={{ color: 'var(--dark-muted)', fontSize: 14 }}>{PHASE[phase][uiLang]}</div>
+      </div>
+
+      {error && <div className="card" role="alert" style={{ borderColor: 'var(--red)', color: 'var(--red)' }}>{error}</div>}
+
+      <div className="convo">
+        {!msgs.length && (
+          <button className="sunday" style={{ background: 'var(--dark)', color: 'var(--dark-ink)', justifySelf: 'start' }} onClick={() => ask(SUNDAY[uiLang])} disabled={phase !== 'idle'}>☀ {uiLang === 'hi' ? 'संडे मनी कॉल शुरू करें' : 'Start the Sunday Money Call'}</button>
+        )}
+        {msgs.map((m, i) => (
+          <div key={i} className={`msg ${m.role === 'user' ? 'user' : 'bot'}`}>
+            <div className="bubble">{m.content}
+              {m.role === 'assistant' && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginTop: 8, fontSize: 12.5, color: 'var(--muted)', whiteSpace: 'normal' }}>
+                  {m.check && m.check.checked > 0 && (m.check.ok ? <span style={{ color: 'var(--green-ink)', fontWeight: 600 }}>✓ numbers traced</span> : <span style={{ color: 'var(--red)' }}>⚠ not found in data: {m.check.unverified.join(', ')}</span>)}
+                  {m.trace?.some((t) => t.tool === 'advice_plan') && <span className="badge warn" title="Guidance from your documents and rules of thumb; not SEBI-registered investment advice">Guidance · not registered advice</span>}
+                  <button className="linkbtn" onClick={() => speak(m.speech || m.content, m.lang ?? 'hi')} style={{ border: 0, background: 'transparent', color: 'var(--green-ink)', cursor: 'pointer', padding: 0, fontSize: 12.5 }}>▶ {uiLang === 'hi' ? 'फिर सुनें' : 'Replay'}</button>
+                </div>
+              )}
+            </div>
+            {m.role === 'assistant' && !!m.trace?.length && (
+              <details className="math"><summary>{uiLang === 'hi' ? 'हिसाब देखें' : 'Show the math'}</summary>
+                <span className="sub" style={{ fontSize: 11.5 }}>{m.engine}{m.ms ? ` · ${(m.ms / 1000).toFixed(1)}s` : ''}{m.fallbackReason ? ' · Claude unavailable, used rules' : ''}</span>
+                {m.trace.map((t, k) => <pre key={k}>{`${t.tool}(${JSON.stringify(t.input)})  ${t.ms}ms\n${JSON.stringify(t.result, null, 1)}`}</pre>)}
+              </details>
+            )}
+            {m.role === 'assistant' && m.actions?.map((a) => <ActionCard key={a.id} a={a} fresh={fresh.has(a.id)} onDelete={() => delAction(a.id)} />)}
+          </div>
+        ))}
+        {phase === 'listening' && interim && <div className="msg user"><div className="bubble" style={{ opacity: 0.6 }}>{interim}</div></div>}
+        <div ref={endRef} />
+      </div>
+
+      {phase === 'idle' && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {(msgs.length ? SUGGEST[uiLang].slice(0, 3) : SUGGEST[uiLang]).map((q) => <button key={q} className="chip" style={{ color: 'var(--ink)', borderColor: 'var(--line)', background: 'var(--surface)' }} onClick={() => ask(q)}>{q}</button>)}
+        </div>
       )}
-      <p className="sub" style={{ textAlign: 'center', fontSize: 12 }}>Guidance only, not SEBI-registered investment advice · Numbers come from code, never from the AI</p>
+      <form className="ask" onSubmit={(e) => { e.preventDefault(); ask(text); setText(''); }}>
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={uiLang === 'hi' ? 'या यहाँ लिखें…' : 'Or type here…'} aria-label="Type a question" style={{ background: 'var(--surface)', color: 'var(--ink)', borderColor: 'var(--line)' }} />
+        <button className="btn small" type="submit" disabled={phase !== 'idle' || !text.trim()}>{uiLang === 'hi' ? 'भेजें' : 'Send'}</button>
+      </form>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--muted)' }}>
+        <label><input type="checkbox" checked={voiceOut} onChange={(e) => setVoiceOut(e.target.checked)} /> {uiLang === 'hi' ? 'जवाब बोलकर सुनाएँ' : 'Speak replies'}</label>
+        {!!msgs.length && <button className="btn ghost small" onClick={newChat}>{uiLang === 'hi' ? 'नई बातचीत' : 'New conversation'}</button>}
+        <Link href="/you" style={{ color: 'var(--green-ink)' }}>{uiLang === 'hi' ? 'सारे काम' : 'All actions'} ({actions.length}) →</Link>
+      </div>
+      <p className="sub" style={{ textAlign: 'center', fontSize: 11.5, margin: 0 }}>Guidance only, not SEBI-registered investment advice · Numbers come from code, never from the AI</p>
     </main><BottomNav /></div>
   );
 }
@@ -221,7 +210,7 @@ function Kpi({ label, value, note, tone }: { label: string; value?: string | num
 function ActionCard({ a, fresh, onDelete }: { a: ActionT; fresh: boolean; onDelete: () => void }) {
   const app = useApp();
   const [copied, setCopied] = useState(false);
-  const label = { reminder: 'Reminder', email: 'Email draft', goal: 'Savings goal', prepayment_plan: 'Prepayment plan' }[a.kind];
+  const label = { reminder: 'Reminder saved', email: 'Email draft · not sent', goal: 'Savings goal', prepayment_plan: 'Prepayment plan saved' }[a.kind];
   const rupees = (p: number) => `₹${Math.round(p / 100).toLocaleString('en-IN')}`;
   return (
     <div className={`action ${fresh ? 'fresh' : ''}`}>
@@ -231,10 +220,11 @@ function ActionCard({ a, fresh, onDelete }: { a: ActionT; fresh: boolean; onDele
       {a.goal && <div style={{ fontSize: 13 }}>{rupees(a.goal.target)} by {a.goal.byDate} · {rupees(a.goal.monthlyNeeded)}/month{a.goal.avgSurplus !== null ? ` · avg surplus ${rupees(a.goal.avgSurplus)}` : ''}</div>}
       {a.email && <><div style={{ fontSize: 13 }}>To: {a.email.to}</div><pre>{a.email.body}</pre></>}
       <div className="btns">
-        {(a.reminder || a.plan) && <button className="btn small" onClick={() => void downloadVia(app.api, `/api/actions/${a.id}/ics`, `munim-${a.id}.ics`)}>Add to calendar (.ics)</button>}
+        {(a.reminder || a.plan) && <button className="btn small" onClick={() => void downloadVia(app.api, `/api/actions/${a.id}/ics`, `munim-${a.id}.ics`)}>Add to calendar</button>}
         {a.gcal && <a className="btn small" href={a.gcal} target="_blank" rel="noreferrer">Google Calendar</a>}
         {a.email && <a className="btn small" href={`mailto:${encodeURIComponent(a.email.to)}?subject=${encodeURIComponent(a.email.subject)}&body=${encodeURIComponent(a.email.body)}`}>Open in mail</a>}
         {a.email && <button className="btn small" onClick={() => { navigator.clipboard?.writeText(`${a.email!.subject}\n\n${a.email!.body}`); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? 'Copied' : 'Copy'}</button>}
+        <Link className="btn small ghost" style={{ textDecoration: 'none' }} href="/you">All actions</Link>
         <button className="btn small ghost" onClick={onDelete}>Remove</button>
       </div>
     </div>

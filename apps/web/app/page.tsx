@@ -15,14 +15,15 @@ export default function Home() {
 
   return (
     <Screen
-      title={<div style={{ display: 'grid', gap: 2 }}><span className="sub">{summary?.net_worth?.as_of ? new Date(summary.net_worth.as_of + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}</span><span style={{ fontSize: 22, fontWeight: 700 }}>Namaste{summary?.member && summary.member.relation !== 'self' ? ` · ${summary.member.label}` : ''}</span></div>}
+      title={<div style={{ display: 'grid', gap: 2 }}><span className="sub">{summary?.net_worth?.as_of ? new Date(summary.net_worth.as_of + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' }) : ''}</span><span style={{ fontSize: 22, fontWeight: 700 }}>Namaste{summary?.isSample ? ', Rohan' : ''}{summary?.member && summary.member.relation !== 'self' ? ` · ${summary.member.label}` : ''}</span></div>}
       right={<div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        {!(signedIn && members.length > 1) && <span style={{ fontSize: 13, border: '1px solid var(--line)', background: 'var(--surface)', borderRadius: 999, padding: '6px 12px' }}>{summary?.member?.label ?? 'Me'}</span>}
         {signedIn && members.length > 1 && (
           <select aria-label="Family member" value={summary?.member?.id ?? ''} onChange={(e) => setMemberId(e.target.value)} style={{ border: '1px solid var(--line)', borderRadius: 999, padding: '6px 10px', background: 'var(--surface)' }}>
             {members.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
           </select>
         )}
-        <Link href="/you" aria-label="You: actions, family, files and privacy" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--dark)', color: 'var(--dark-ink)', display: 'grid', placeItems: 'center', textDecoration: 'none', fontWeight: 600 }}>{(summary?.member?.label ?? 'You').slice(0, 1).toUpperCase()}</Link>
+        <Link href="/you" aria-label="You: actions, family, files and privacy" style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--dark)', color: 'var(--dark-ink)', display: 'grid', placeItems: 'center', textDecoration: 'none', fontWeight: 600 }}>{summary?.isSample ? 'R' : (summary?.member?.label ?? 'You').slice(0, 1).toUpperCase()}</Link>
       </div>}
     >
       <WithSummary>{(s) => {

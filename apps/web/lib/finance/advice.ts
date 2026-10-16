@@ -70,7 +70,14 @@ export function foundationPlan(ds: Dataset) {
     finding: high.length ? high.map((x) => `${x.l.lender} ${x.l.type} loan at ${x.l.ratePct}%, outstanding ${inr(x.st.outstanding)}`).join('; ') : 'No loans at or above the high-interest threshold.',
     recommendation: high.length
       ? [
-          ...high.map((x) => (x.sim.allowed ? `Prepay the ${x.l.type} loan first when you have spare cash; it is your costliest debt.` : `The ${x.l.type} loan can't be part-prepaid until ${spokenDate(x.sim.allowedFrom!)}; until then${offer && offer.ratePct < x.l.ratePct ? ` ask ${x.l.lender} to match the ${offer.ratePct}% offer, and` : ''} put spare cash into the emergency fund or the ${best && best.l.id !== x.l.id ? best.l.type + ' loan' : 'next-costliest loan'}.`)),
+          ...high.map((x) => {
+            if (x.sim.allowed) return `Prepay the ${x.l.type} loan first when you have spare cash; it is your costliest debt.`;
+            const spare = `the emergency fund or the ${best && best.l.id !== x.l.id ? best.l.type + ' loan' : 'next-costliest loan'}`;
+            // Action first (design S10): the thing to do now, then why and what to do meanwhile.
+            return offer && offer.ratePct < x.l.ratePct
+              ? `Ask ${x.l.lender} to match the ${offer.ratePct}% offer on your ${x.l.ratePct}% ${x.l.type} loan. It can't be part-prepaid until ${spokenDate(x.sim.allowedFrom!)}; until then, spare cash goes to ${spare}.`
+              : `The ${x.l.type} loan can't be part-prepaid until ${spokenDate(x.sim.allowedFrom!)}; until then, put spare cash into ${spare}.`;
+          }),
         ].join(' ')
       : 'No action needed on loans.',
     basis: `loan documents; threshold ${RULES.highInterestPct}% p.a. or any personal loan; ranking by net interest saved on a ₹50,000 prepayment after charges`,

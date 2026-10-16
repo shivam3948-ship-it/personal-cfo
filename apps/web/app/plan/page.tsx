@@ -27,7 +27,8 @@ export default function Plan() {
           {first && (
             <div className="hero">
               <span className="k">First thing to fix</span>
-              <b style={{ fontSize: 17, lineHeight: 1.35 }}>{first.recommendation}</b>
+              {(() => { const i = first.recommendation.indexOf('. '); const head = i > 0 ? first.recommendation.slice(0, i + 1) : first.recommendation; const rest = i > 0 ? first.recommendation.slice(i + 2) : '';
+                return <><b style={{ fontSize: 17, lineHeight: 1.35 }}>{head}</b>{rest && <span style={{ fontSize: 13.5, lineHeight: 1.45, color: 'var(--dark-muted)' }}>{rest}</span>}</>; })()}
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {saved ? <span style={{ fontSize: 13, color: 'var(--dark-muted)' }}>{saved}</span> : <button className="btn light small" onClick={commit}>I'll do this</button>}
                 <Link className="btn outline-dark small" style={{ textDecoration: 'none' }} href={LINK[first.step] ?? '/'}>Show the math</Link>
