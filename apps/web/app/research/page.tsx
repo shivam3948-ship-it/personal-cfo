@@ -27,7 +27,7 @@ export default function Research() {
   return (
     <main style={{ maxWidth: 760, margin: '0 auto', padding: '24px 16px 60px', display: 'grid', gap: 18 }}>
       <header style={{ display: 'grid', gap: 6 }}>
-        <Link href="/host" style={{ fontSize: 13, color: 'var(--green-ink)' }}>← Back to the embedded demo</Link>
+        <span style={{ display: 'flex', gap: 14, fontSize: 13 }}><Link href="/host" style={{ color: 'var(--green-ink)' }}>← Back to the embedded demo</Link><Link href="/research/bachatt" style={{ color: 'var(--green-ink)' }}>Bachatt deep dive →</Link></span>
         <h1 style={{ margin: 0, fontSize: 26, lineHeight: 1.2 }}>What {fmt(total)} Play Store reviews say about saving apps</h1>
         <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 14.5 }}>
           Bachatt, Jar (micro-savings) and Groww, ET Money (investing). Collected {d.collected}: the newest 3,000 and 1,000 “most relevant” reviews per app, coded into themes with a keyword codebook in Python.

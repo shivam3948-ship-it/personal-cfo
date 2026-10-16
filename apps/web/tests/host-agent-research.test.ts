@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extraDebits, hostRespond, type HostState } from '@/lib/host/agent';
+import { extraDebits, hostRespond, instantSplit, type HostState } from '@/lib/host/agent';
 
 // Scenarios come from the top Play Store complaint themes for savings apps (docs/26).
 const base: HostState = { savedPaise: 1245000, valuePaise: 1302650, dailyPaise: 5000, pausedUntil: null, streakDays: 41, nextDebit: '2026-10-17', monthSavedPaise: 75000, asOf: '2026-10-16',
@@ -69,10 +69,21 @@ describe('value breakdown (theme: got back less than put in)', () => {
 
 describe('every suggestion chip in the demo reaches a real answer (regression: two chips fell to "help")', () => {
   const chips = ['कितना बचा?', 'कितना कमाया?', 'अगली बचत कब कटेगी?', 'आज दो बार पैसे कटे?', 'कम क्यों दिख रहा है?', 'इंसान से बात कराओ', 'रोज़ 30 रुपये कर दो', 'इस हफ़्ते पैसे नहीं हैं, 7 दिन रोक दो', 'रोज़ 100 कर दो',
-    'मेरे पैसे अभी तक नहीं आए', 'कोई चार्ज लगेगा?', 'ये ऐप फ्रॉड तो नहीं?', 'पैसे कब मिलेंगे?', 'How much have I saved?', 'Was I charged twice today?', 'Why is it showing less?', 'Connect me to a person',
+    'मेरे पैसे अभी तक नहीं आए', 'पूरा पैसा एक साथ क्यों नहीं?', "Why can't I withdraw the full amount?", 'कोई चार्ज लगेगा?', 'ये ऐप फ्रॉड तो नहीं?', 'पैसे कब मिलेंगे?', 'How much have I saved?', 'Was I charged twice today?', 'Why is it showing less?', 'Connect me to a person',
     "My money hasn't arrived yet", 'Is there a charge?', 'Is this app a fraud?', 'Make it ₹30 a day', 'Pause for 7 days', 'Make it ₹100 a day', 'How much did I earn?', 'When is the next debit?'];
   for (const c of chips) it(c, () => {
     const r = hostRespond(c, base, 'withdraw', null);
     expect(r.intent).not.toBe('help'); expect(r.check.ok).toBe(true);
+  });
+});
+
+describe('part-withdrawal explainer (Bachatt theme: "only 70–90% comes out, rest blocked")', () => {
+  it('splits by the instant-access cap in integer paise', () => {
+    expect(instantSplit(1302650)).toEqual({ nowPaise: 1172385, laterPaise: 130265 });
+    expect(instantSplit(10000000)).toEqual({ nowPaise: 5000000, laterPaise: 5000000 });
+  });
+  it('answers "why not the full amount" with the split, numbers checked', () => {
+    const r = hostRespond('pura paisa ek saath kyun nahi nikal raha?', { ...base, withdrawals: [] }, 'withdraw', null);
+    expect(r.intent).toBe('partial_withdrawal'); expect(r.answer).toContain('₹11,724'); expect(r.answer).toContain('₹1,303'); expect(r.check.ok).toBe(true);
   });
 });

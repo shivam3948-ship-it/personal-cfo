@@ -34,7 +34,15 @@ export interface HostCtx { misses?: number; lastIntent?: string }
 export interface HostReply { answer: string; lang: HostLang; proposal: Proposal | null; executed: Proposal | null; intent: string; check: NumberCheck }
 
 // ⚠ Demo product rules (fictional host app); a real host passes its own.
-export const RULES = { minDailyPaise: 1000, maxDailyPaise: 1000000, withdrawal: { days: 1, charge: 0 }, humanCallbackHours: 2, refundReplyDays: 2 };
+export const RULES = { minDailyPaise: 1000, maxDailyPaise: 1000000, withdrawal: { days: 1, charge: 0 }, humanCallbackHours: 2, refundReplyDays: 2,
+  // Liquid-fund instant access: lower of ₹50,000 or 90% of value, per investor per day per scheme (SEBI MF Master Circular 27 Jun 2024, 14.9; ⚠ verify against the circular).
+  instant: { maxPaise: 5000000, pct: 90 } };
+
+/** Instant part now and the rest next working day, in paise (integer maths). */
+export function instantSplit(valuePaise: number): { nowPaise: number; laterPaise: number } {
+  const nowPaise = Math.min(RULES.instant.maxPaise, Math.floor((valuePaise * RULES.instant.pct) / 100));
+  return { nowPaise, laterPaise: valuePaise - nowPaise };
+}
 
 const has = (t: string, re: RegExp) => re.test(t);
 const YES = /^(?:\s*(?:haan|han|ha|haa|yes|yeah|ok|okay|sure|kar do|karo|theek hai|thik hai|ji|bilkul|हाँ|हां|जी|ठीक है|कर दो|करो|बिल्कुल)(?=[\s.!,।]|$)[\s.!,।]*)+$/i;
@@ -147,6 +155,14 @@ export function hostRespond(text: string, s: HostState, screen: Screen, pending:
     return done(hi
       ? `पिछले 7 दिन में ${recent.length} बार ${inr(s.dailyPaise)} कटे, कुल ${inr(total)}। हर दिन एक ही बार कटा है, कोई ज़्यादा कटौती नहीं दिखी। अगर बैंक में कुछ और दिखा है, तो बोलिए “इंसान से बात कराओ”।`
       : `In the last 7 days ${inr(s.dailyPaise)} was taken ${recent.length} times, ${inr(total)} in all, once a day. I don't see any extra debit. If your bank shows something else, say “connect me to a person”.`, 'debit_check', null, null, [inr(total), recent.length]);
+  }
+
+  // 3b) "Why can't I take it all out at once?" (Bachatt reviews, docs/27: part-withdrawal reads as "money blocked").
+  if (has(t, /pura|poora|पूरा|पूरे|full (?:amount|money)|all (?:my )?money|entire|sab(?:hi)? (?:paise|paisa)|\b90\s?%|\b70\s?%|\bhalf\b|aadha|adha|आधा|baaki|baki|बाकी|remaining|rest of|blocked|on hold/) && has(t, /nikal|nikl|withdr|निकाल|निकल|paisa|paise|पैसा|पैसे|money|amount|blocked|hold/)) {
+    const sp = instantSplit(s.valuePaise);
+    return done(hi
+      ? `तुरंत निकासी की एक सीमा है: एक दिन में ₹50,000 या कुल कीमत का 90%, जो भी कम हो। आपके ${inr(s.valuePaise)} में से ${inr(sp.nowPaise)} अभी तुरंत आ सकते हैं, और बाकी ${inr(sp.laterPaise)} अगले कामकाजी दिन। पैसा रुका नहीं है, बस दो हिस्सों में आता है।`
+      : `Instant withdrawal has a limit: ₹50,000 a day or 90% of the value, whichever is lower. Of your ${inr(s.valuePaise)}, ${inr(sp.nowPaise)} can come now and the remaining ${inr(sp.laterPaise)} the next working day. Nothing is blocked; it arrives in two parts.`, 'partial_withdrawal', null, null, [inr(sp.nowPaise), inr(sp.laterPaise), inr(RULES.instant.maxPaise), RULES.instant.pct, 50000]);
   }
 
   // 4) "Why is it less?": show the arithmetic, including charges, instead of reassurance.

@@ -40,7 +40,7 @@ const HINT: Record<Screen, Record<Lang, string>> = {
 const CHIPS: Record<Screen, Record<Lang, string[]>> = {
   home: { hi: ['कितना बचा?', 'आज दो बार पैसे कटे?', 'कम क्यों दिख रहा है?', 'इंसान से बात कराओ'], en: ['How much have I saved?', 'Was I charged twice today?', 'Why is it showing less?', 'Connect me to a person'] },
   save: { hi: ['रोज़ 30 रुपये कर दो', 'इस हफ़्ते पैसे नहीं हैं, 7 दिन रोक दो', 'रोज़ 100 कर दो'], en: ['Make it ₹30 a day', 'Pause for 7 days', 'Make it ₹100 a day'] },
-  withdraw: { hi: ['मेरे पैसे अभी तक नहीं आए', 'कोई चार्ज लगेगा?', 'ये ऐप फ्रॉड तो नहीं?', 'इंसान से बात कराओ'], en: ["My money hasn't arrived yet", 'Is there a charge?', 'Is this app a fraud?', 'Connect me to a person'] },
+  withdraw: { hi: ['मेरे पैसे अभी तक नहीं आए', 'पूरा पैसा एक साथ क्यों नहीं?', 'कोई चार्ज लगेगा?', 'ये ऐप फ्रॉड तो नहीं?', 'इंसान से बात कराओ'], en: ["My money hasn't arrived yet", "Why can't I withdraw the full amount?", 'Is there a charge?', 'Is this app a fraud?', 'Connect me to a person'] },
 };
 
 function useFunnel() {
