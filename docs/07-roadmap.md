@@ -1,6 +1,6 @@
 # 07 · Roadmap
 
-**Status:** Draft v0.1 · **Last updated:** 2026-10-03
+**Status:** Draft v0.1 · **Last updated:** 2026-10-03 · **Stages and gates (current position): see [22-product-lifecycle](22-product-lifecycle.md)**
 Now / Next / Later. Dates are targets for a solo builder, re-planned at each phase gate.
 
 ## Now — Phase 0: Foundations (this week)
