@@ -114,6 +114,7 @@ export default function You() {
         <span className={`pill ${summary?.status?.sarvam ? 'ok' : 'warn'}`}>{summary?.status?.sarvam ? 'Sarvam voice' : 'Browser voice'}</span>
         <span className={`pill ${summary?.status?.auth ? 'ok' : 'warn'}`}>{summary?.status?.auth ? 'Sign-in on' : 'Sign-in off'}</span>
       </div>
+      <Link className="tile" href="/host"><span><b>Munim inside another app</b><small>Demo: a fictional savings app with Munim as its voice layer</small></span><span aria-hidden="true">→</span></Link>
       <p className="sub" style={{ textAlign: 'center', fontSize: 11.5 }}>Invite-only beta · Guidance is not SEBI-registered investment advice</p>
     </Screen>
   );

@@ -21,6 +21,9 @@ npm test                     # engine, CAS parser (text + PDF), APIs, privacy
 ## Deploy (Vercel)
 New Project → import `personal-cfo` → **Root Directory: `apps/web`** → add the env vars above → Deploy. Public `NEXT_PUBLIC_*` values are baked in at build time, so redeploy after changing them.
 
+## Embedded voice demo (`/host`)
+A fictional savings app with Munim as its voice layer: in-task voice hints, a proactive offer when the user hesitates on Withdraw, and voice actions (change or pause the daily saving) that only happen after a spoken or tapped "haan". The host owns the data and applies changes; Munim only answers from the state it is given and proposes (`lib/host/agent.ts`, `/api/host/agent`). Growth plan: [docs/23](../../docs/23-voice-agent-growth.md).
+
 ## How the data flows
 | Data | Where it is read | What is stored |
 |---|---|---|
