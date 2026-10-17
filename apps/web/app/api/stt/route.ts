@@ -1,11 +1,13 @@
 import { sarvamConfigured, sarvamStt } from '@/lib/voice/sarvam';
 import { json } from '@/lib/http';
+import { allow, clientKey, LIMITS } from '@/lib/ratelimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   if (!sarvamConfigured()) return json({ error: 'SARVAM_API_KEY not set', fallback: 'browser' }, 501);
+  if (!allow(clientKey(req, 'stt'), LIMITS.stt)) return json({ error: 'Too many requests. Wait a minute and try again.', fallback: 'browser' }, 429);
   const form = await req.formData();
   const file = form.get('file');
   const lang = (form.get('lang') as 'hi' | 'en' | 'auto' | null) ?? 'auto';

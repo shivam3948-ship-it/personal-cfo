@@ -1,6 +1,7 @@
 import { ingest } from '@/lib/ingest';
 import { datasetFor, isUsingUploads } from '@/lib/store';
 import { json } from '@/lib/http';
+import { allow, clientKey, LIMITS } from '@/lib/ratelimit';
 import { resolve } from '@/lib/session';
 import { clearPending } from '@/lib/agent/offline';
 
@@ -12,6 +13,8 @@ const MAX_FILES = 40; const MAX_BYTES = 15_000_000;
 
 export async function POST(req: Request) {
   const ctx = await resolve(req); const sid = ctx.sid;
+  if (sid === 'anon') return json({ error: 'Reload the page and try again (no session).' }, 400);
+  if (!allow(clientKey(req, 'upload'), LIMITS.upload)) return json({ error: 'Too many uploads. Wait a minute and try again.' }, 429);
   const form = await req.formData();
   const files = form.getAll('files').filter((f): f is File => f instanceof File);
   if (!files.length) return json({ error: 'No files' }, 400);

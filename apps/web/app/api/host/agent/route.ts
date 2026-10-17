@@ -8,6 +8,7 @@ import { forSpeech } from '@/lib/agent/lang';
 import { getClient, MODEL } from '@/lib/llm';
 import { inr } from '@/lib/money';
 import { redact } from '@/lib/privacy/redact';
+import { allow, clientKey, LIMITS } from '@/lib/ratelimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
   let engine = 'rules';
 
   const client = getClient();
-  if (r.intent === 'help' && client) {
+  if (r.intent === 'help' && client && allow(clientKey(req, 'host-agent'), LIMITS.hostAgent)) {
     // Open question: Claude answers briefly, from the host state only; the number guard still applies.
     const facts = { saved: inr(state.savedPaise), value_now: inr(state.valuePaise), earned: inr(state.valuePaise - state.savedPaise), daily: inr(state.dailyPaise), this_month: inr(state.monthSavedPaise), streak_days: state.streakDays, paused_until: state.pausedUntil, next_debit: state.nextDebit, screen };
     try {
