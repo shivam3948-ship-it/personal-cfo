@@ -97,6 +97,10 @@ Before v14 the button only closed the card, so the user's correction went nowher
    - "Back to check-in" completes the card. The card then shows "Updated by you: …" and the usual "You chose · Change".
 - The usual day is recalculated overnight, not on the spot, so the comparison never jumps mid-session.
 - Corrections feed categorisation only for that user's own rules (no silent learning across users in Phase 1).
+- **Where corrections live (proposal, 19 Oct):** Spends owns transaction corrections. It has one correction component, and the check-in opens the same component as a sheet, so Today never navigates away.
+  - The sheet adds "See all of yesterday in Spends" for anyone who wants the full list.
+  - Rules made here ("all Zomato orders") are listed and editable in Spends.
+  - The fraud path stays in the sheet: speed beats context.
 
 ## Verdict line
 - One sentence plus one short reason, computed by rules, not by the AI. Examples:
