@@ -1,7 +1,7 @@
 # 38 · Today screen: layout rules (19 Oct 2026)
 
 **Status:** design rules. Nothing is built yet.
-- Mock: "Today v8" on the Munim v2 design canvas. It has Tweaks for `scenario` and `bills`.
+- Mock: "Today v11" on the Munim v2 design canvas (v8–v10 kept for comparison). It has Tweaks for `scenario` and `bills`.
 - Autopay logic: docs/37.
 
 ## Design goals, in priority order (user, 19 Oct)
@@ -12,8 +12,8 @@
 ## Look (user choice, 19 Oct): Monsoon colours + editorial restraint
 - **Colours:**
   - mist background (#F2F7F6), white cards with hairline borders (no heavy shadows);
-  - one teal (#0F5E58) for actions and good news;
-  - marigold (#F2A93B) only for saving and the streak.
+  - one teal (#0F5E58) for **every** primary button and for good news;
+  - marigold (#F2A93B) only for rewards: the streak, the flame and the "All done" state. **Never on a button** (v11, 19 Oct): against a white card marigold measures 2.0:1, under the 3:1 minimum for a button's edge (WCAG 1.4.11), while teal measures 7.6:1. This made the autopay button, the most important one, the weakest on screen.
 - **Type:** serif display (Noto Serif + Noto Serif Devanagari) for the verdict and big numbers, IBM Plex Sans for everything else. A sans display is the fallback if the serif tests poorly.
 - **Superseded looks** (kept on the canvas for comparison): Sunrise (v4–v8) and editorial white (v9).
 - **Glass Night:** night mode only, not a default.
@@ -36,14 +36,15 @@
 
 | Card | Primary | Secondary (text) |
 |---|---|---|
-| Save (autopay off) | Turn on autopay | Not now |
+| Save (autopay off) | Set up autopay | Not now |
 | Yesterday | Looks right | Something's off? |
 | One fix | e.g. Show me how to cancel | I still use it |
 | Bill due soon | Pay now | Remind me tomorrow |
 
 - **Advance:** doing either action completes the card and moves to the next one automatically.
 - **Order** follows autopay state (docs/37 §6): Save first while autopay is off.
-- **Amount:** pre-set to ₹50 a day. "Change amount" opens the chips only when tapped.
+- **Amount:** pre-set to ₹50 a day. The amount chips sit in the autopay setup sheet, not on the card (v11), so the card has only two tappable things. The card's detail line says "Change the amount or stop anytime".
+- **Label honesty:** the button reads "Set up autopay", not "Turn on autopay", because it opens a setup step (today a fake door: "Reserve my autopay", marked Coming soon).
 
 ## Verdict line
 - One sentence plus one short reason, computed by rules, not by the AI. Examples:
