@@ -17,6 +17,9 @@
 - **Type:** serif display (Noto Serif + Noto Serif Devanagari) for the verdict and big numbers, IBM Plex Sans for everything else. A sans display is the fallback if the serif tests poorly.
 - **Superseded looks** (kept on the canvas for comparison): Sunrise (v4–v8) and editorial white (v9).
 - **Glass Night:** night mode only, not a default.
+- **Voice button (Von Restorff, v12):** the "Ask Munim" orb is the only indigo element in the app. It uses a gradient of #8E7CF0 → #5B47D6 → #2E2A7A, a slow breathing glow (off under reduced motion) and an indigo label.
+  - Teal hue is about 175°, indigo about 248° and marigold about 36°, so the orb never competes with an action colour or a reward colour.
+  - The same orb and indigo accent appear wherever Munim speaks: the talk sheet and the Sunday call.
 
 ## Dark mode and screen states (v11, 19 Oct)
 - **Dark is the same Monsoon system, not Glass Night.** Every colour is a named token with a light and a dark value. The mock's token sheet is the source for the build's CSS variables.
@@ -49,12 +52,18 @@
 
 | Card | Primary | Secondary (text) |
 |---|---|---|
-| Save (autopay off) | Set up autopay | Not now |
+| Save (autopay off) | Set up autopay | Two equal text options: **Save ₹50 once** · **Not now** (v12: user control, no dark patterns; docs/37 §3) |
 | Yesterday | Looks right | Something's off? |
 | One fix | e.g. Show me how to cancel | I still use it |
 | Bill due soon | Pay now | Remind me tomorrow |
 
-- **Advance:** doing either action completes the card and moves to the next one automatically.
+- **Advance:** any action completes the card and moves to the next one automatically.
+- **See or change your answers (v12):**
+  - "All done" has a "See or change today's answers" button.
+  - The dots open any card, done or not.
+  - A done card shows "✓ Done", the choice made ("You chose: Not now") and **Change**, which brings the buttons back.
+  - **Lock rule:** if money already moved (a payment or a one-time save once those are live), Change is replaced by one line saying why it can't be undone here and where to go (e.g. "Payments are final · see receipt"). Everything else stays changeable until midnight.
+  - On Sunday and salary day, the recap card has "Do today's 3 cards instead".
 - **Order** follows autopay state (docs/37 §6): Save first while autopay is off.
 - **Amount:** pre-set to ₹50 a day. The amount chips sit in the autopay setup sheet, not on the card (v11), so the card has only two tappable things. The card's detail line says "Change the amount or stop anytime".
 - **Label honesty:** the button reads "Set up autopay", not "Turn on autopay", because it opens a setup step (today a fake door: "Reserve my autopay", marked Coming soon).

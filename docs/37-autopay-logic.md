@@ -37,7 +37,7 @@
 Every ask is a choice; none is pre-selected.
 1. **Save card first** while the state is `off` or `stopped`. Card 1 is the only one every user sees.
 2. **One autopay ask per day at most**, across the card, sheets and notifications.
-3. **Frequency cap:** after **5 consecutive days** of "Just today" or "Skip", stop asking daily. From then on, ask only on a *good day*:
+3. **Frequency cap:** after **5 consecutive days** of "Save ₹50 once" or "Not now", stop asking daily. From then on, ask only on a *good day*:
    - yesterday's spend was below the usual day (§5); or
    - it is salary day; or
    - after a 3-day manual streak.
@@ -54,8 +54,8 @@ Every ask is a choice; none is pre-selected.
 7. **Copy rules:**
    - No fake urgency.
    - No "everyone is doing it" claims unless measured.
-   - The secondary button ("Just today") always visible.
-   - "Skip" always available.
+   - **User control, no dark patterns (19 Oct, v12):** the card always shows three choices: "Set up autopay" (primary), "Save ₹50 once" (one-time, no mandate) and "Not now". The two text options have equal size. Declining needs no extra step and costs nothing (the streak still counts).
+   - No confirmshaming ("No, I don't want to save"), no pre-selected options, no hiding the one-time option after repeated declines.
 
 ## 4. Daily cycle (state `active`)
 1. **Pre-debit notice:** the bank or partner sends one; mirror it in-app ("₹50 will be saved tomorrow morning"). ⚠ Verify against RBI's e-mandate rules: as I understand them, a pre-debit notification is required before each recurring debit. If that means an SMS every day, consider defaulting to a weekly debit with a daily *display* of progress.
@@ -81,8 +81,8 @@ Every ask is a choice; none is pre-selected.
   - `active`/`paused`/`failed_today`: **Yesterday → One fix → Save**.
 - **The Save step is complete when** any of these happen:
   - "Reserve my autopay" → Done;
-  - "Just today";
-  - "Skip";
+  - "Save ₹50 once" (fake door: "Tell me when it's ready");
+  - "Not now";
   - an auto-tick on a successful debit;
   - "Okay" on a failed debit.
   Saving is never required to finish the check-in.

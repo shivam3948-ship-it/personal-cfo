@@ -35,7 +35,11 @@
 | `verdict_shown` | `verdict` (okay / bill_due / overspent / …), `bills_mode` (due_soon / pending / paid) |
 | `checkin_card_shown` | `card` (save / yesterday / fix / bill / sunday_call / month_close), `position` (1–3), `card_type` (Phase 2 pool, docs/38) |
 | `checkin_card_completed` | `card`, `position`, `action` (primary / secondary), `time_on_card_ms` |
-| `checkin_dot_tapped` | `from_card`, `to_card` |
+| `checkin_dot_tapped` | `from_card`, `to_card`, `to_done` (bool) |
+| `checkin_answers_reviewed` | `entry` (all_done_button / dot) |
+| `checkin_answer_changed` | `card`, `from_choice`, `to_choice`, `minutes_since_first` (a high rate means the first choice was unclear) |
+| `checkin_answer_locked_shown` | `card`, `lock_reason` (payment_final / …) |
+| `recap_day_daily_cards_opened` | `recap_kind` (sunday_call / month_close) |
 | `checkin_all_done` | `cards_done` (2–3), `total_ms`, `streak_days_after` |
 | `yesterday_flagged` | `reason` (later: wrong_category / not_mine / duplicate) |
 | `fix_action_tapped` | `fix_type` (unused_sub / price_rise / duplicate / fee), `annual_band` |
@@ -47,7 +51,7 @@
 | `recaps_row_tapped` | `latest` (sunday_call / month_close) |
 | `tool_tapped` | `tool` (goals / fire / insurance / family) |
 | `fake_door_shown` / `fake_door_notify_tapped` | `feature` (autopay / topup / bill_pay / save_now / bank_sync / …) |
-| Save card and autopay | docs/37 §9: `save_card_shown`, `autopay_cta_tapped`, `autopay_reserved`, … |
+| Save card and autopay | docs/37 §9: `save_card_shown`, `autopay_cta_tapped`, `autopay_reserved`, `save_just_today` (fires on "Save ₹50 once"), `save_skipped` (fires on "Not now"), … |
 
 ## Sunday Money Call
 | Event | Properties |
@@ -79,7 +83,7 @@
 ## Ask Munim (talk sheet)
 | Event | Properties |
 |---|---|
-| `ask_opened` | `entry` (nav_orb / sunday_interrupt / suggestion), `first_time` |
+| `ask_opened` | `entry` (nav_orb / sunday_interrupt / suggestion), `first_time`, `days_since_last_ask` (measures whether the indigo orb gets found and reused) |
 | `ask_listen_started` | `lang_hint` (hi / en / auto) |
 | `ask_listen_stopped` | `speech_ms`, `stop_kind` (tap / silence / cancel) |
 | `ask_suggestion_tapped` | `suggestion_id` (the ID only; never the text) |
