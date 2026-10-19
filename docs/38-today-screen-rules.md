@@ -17,9 +17,13 @@
 - **Type:** serif display (Noto Serif + Noto Serif Devanagari) for the verdict and big numbers, IBM Plex Sans for everything else. A sans display is the fallback if the serif tests poorly.
 - **Superseded looks** (kept on the canvas for comparison): Sunrise (v4–v8) and editorial white (v9).
 - **Glass Night:** night mode only, not a default.
-- **Voice button (Von Restorff, v12):** the "Ask Munim" orb is the only indigo element in the app. It uses a gradient of #8E7CF0 → #5B47D6 → #2E2A7A, a slow breathing glow (off under reduced motion) and an indigo label.
-  - Teal hue is about 175°, indigo about 248° and marigold about 36°, so the orb never competes with an action colour or a reward colour.
-  - The same orb and indigo accent appear wherever Munim speaks: the talk sheet and the Sunday call.
+- **Voice button (Von Restorff, v13):** the "Ask Munim" orb stays **teal**, the brand colour, and stands out by **form and motion** instead of hue.
+  - It's the only raised circle breaking the nav line, and the only element with a luminous gradient (other teal is flat).
+  - It's the only moving element on screen: a slow light ring rotates around it, and stops under reduced motion.
+  - It has a stronger glow and the only bold label in the nav.
+  - **Why teal:** it keeps three colours (teal, marigold, neutrals). Indigo, tried in v12, isolated it by hue, which is the strongest cue, but it added a fourth colour.
+  - **Risk:** the orb shares a hue with the teal primary button just above it. If tests show people miss it, go back to v12 indigo. Both are on the canvas board "Voice button".
+  - **Motion rule (proposal):** the ring runs until the user has asked Munim 3 times, then only on days with something new to ask about. Motion that never stops becomes noise.
 
 ## Dark mode and screen states (v11, 19 Oct)
 - **Dark is the same Monsoon system, not Glass Night.** Every colour is a named token with a light and a dark value. The mock's token sheet is the source for the build's CSS variables.
@@ -52,7 +56,7 @@
 
 | Card | Primary | Secondary (text) |
 |---|---|---|
-| Save (autopay off) | Set up autopay | Two equal text options: **Save ₹50 once** · **Not now** (v12: user control, no dark patterns; docs/37 §3) |
+| Save (autopay off) | Set up autopay | Two equal text options: **Save once** · **Not now** (user control, no dark patterns; docs/37 §2–3). "Save once" picks no amount for the user: the sheet asks "How much, just this once?" |
 | Yesterday | Looks right | Something's off? |
 | One fix | e.g. Show me how to cancel | I still use it |
 | Bill due soon | Pay now | Remind me tomorrow |

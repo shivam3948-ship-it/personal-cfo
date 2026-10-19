@@ -21,7 +21,12 @@
 **Rule:** state changes only on an explicit user action or a bank/partner event. Munim never turns autopay on, raises it or resumes it by itself.
 
 ## 2. Amounts and the money shown
-- **Presets:** ₹20, ₹50 (default), ₹100. A custom amount comes later ⚠ (minimum to set with the partner).
+- **Autopay presets:** ₹20, ₹50 (default, shown in the card's title), ₹100, plus **Other**, an editable amount (₹10–₹5,000 a day ⚠; limits to confirm with the partner).
+- **One-time save ("Save once"):**
+  - **Nothing pre-selected.** Munim doesn't choose a one-off amount for the user.
+  - Presets: ₹50, ₹100, ₹500, plus **Other**, an editable amount (₹10–₹1,00,000 ⚠; UPI and partner limits to verify).
+  - The button stays "Choose an amount" until a valid amount is picked.
+- Out-of-range input shows the allowed range in red. Nothing is rounded or changed silently.
 - **Frequency:** daily for now. Offer weekly as a fallback after repeated failures (§4).
 - **Yearly line:** amount × 365, labelled "before any returns". Computed in code:
 
@@ -54,7 +59,7 @@ Every ask is a choice; none is pre-selected.
 7. **Copy rules:**
    - No fake urgency.
    - No "everyone is doing it" claims unless measured.
-   - **User control, no dark patterns (19 Oct, v12):** the card always shows three choices: "Set up autopay" (primary), "Save ₹50 once" (one-time, no mandate) and "Not now". The two text options have equal size. Declining needs no extra step and costs nothing (the streak still counts).
+   - **User control, no dark patterns (19 Oct, v12–v13):** the card always shows three choices: "Set up autopay" (primary), "Save once" (one-time, no mandate, amount chosen by the user) and "Not now". The two text options have equal size. Declining needs no extra step and costs nothing (the streak still counts).
    - No confirmshaming ("No, I don't want to save"), no pre-selected options, no hiding the one-time option after repeated declines.
 
 ## 4. Daily cycle (state `active`)
@@ -81,7 +86,7 @@ Every ask is a choice; none is pre-selected.
   - `active`/`paused`/`failed_today`: **Yesterday → One fix → Save**.
 - **The Save step is complete when** any of these happen:
   - "Reserve my autopay" → Done;
-  - "Save ₹50 once" (fake door: "Tell me when it's ready");
+  - "Save once" with a chosen amount (fake door: "Tell me when I can save ₹X");
   - "Not now";
   - an auto-tick on a successful debit;
   - "Okay" on a failed debit.

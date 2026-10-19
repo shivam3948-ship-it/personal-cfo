@@ -36,6 +36,7 @@
 | `checkin_card_shown` | `card` (save / yesterday / fix / bill / sunday_call / month_close), `position` (1–3), `card_type` (Phase 2 pool, docs/38) |
 | `checkin_card_completed` | `card`, `position`, `action` (primary / secondary), `time_on_card_ms` |
 | `checkin_dot_tapped` | `from_card`, `to_card`, `to_done` (bool) |
+| `save_amount_chosen` | `flow` (autopay / once), `kind` (preset / custom), `amount` (preset value, or a band for custom), `custom_invalid_shown` (bool) |
 | `checkin_answers_reviewed` | `entry` (all_done_button / dot) |
 | `checkin_answer_changed` | `card`, `from_choice`, `to_choice`, `minutes_since_first` (a high rate means the first choice was unclear) |
 | `checkin_answer_locked_shown` | `card`, `lock_reason` (payment_final / …) |
@@ -51,7 +52,7 @@
 | `recaps_row_tapped` | `latest` (sunday_call / month_close) |
 | `tool_tapped` | `tool` (goals / fire / insurance / family) |
 | `fake_door_shown` / `fake_door_notify_tapped` | `feature` (autopay / topup / bill_pay / save_now / bank_sync / …) |
-| Save card and autopay | docs/37 §9: `save_card_shown`, `autopay_cta_tapped`, `autopay_reserved`, `save_just_today` (fires on "Save ₹50 once"), `save_skipped` (fires on "Not now"), … |
+| Save card and autopay | docs/37 §9: `save_card_shown`, `autopay_cta_tapped`, `autopay_reserved`, `save_just_today` (fires on "Save once" after an amount is confirmed), `save_skipped` (fires on "Not now"), … |
 
 ## Sunday Money Call
 | Event | Properties |
