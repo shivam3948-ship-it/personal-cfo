@@ -78,3 +78,16 @@ This is the interview artefact: product judgement + AI craft + regulatory awaren
 - Fund-selection methodology for v2 (new purchases)
 - Recruit a practising RIA/CFP for the blind review (§6)
 - Tax rules: populate `tax_rules.yaml` from primary sources (Income-tax Act / Finance Act) with dates
+
+## Advice ladder for Munim v2 (19 Oct 2026)
+The user's goal: graduate to advice, starting with generic recommendations. Each rung is gated server-side by `advice_mode` (rule 1), and each one shows where it appears in the v2 tabs.
+
+| Rung | What it says | Example | Who sees it | Where |
+|---|---|---|---|---|
+| **0 · Facts** | What is true about your money, with the math | "7 subscriptions cost ₹45,078 a year" | Everyone | Every tab |
+| **1 · Generic guidance** | Rules of thumb that are the same for everyone, labelled as general education | "An emergency fund is usually 3–6 months of expenses" | Everyone | Learn cards, Ask Munim |
+| **2 · Personal, category level** | A next step for *you*, at category level, with the disclaimer | "Your emergency fund covers 1.2 months; consider building it in a liquid or overnight fund category" | `guided` (invite-only, free), `internal`, `demo` | An "Ideas" section in Invest; the check-in's Best fix slot |
+| **3 · Product level** | Specific funds or products, switching plans | "Move fund X (regular) to its direct plan" | `advised` only, after the RIA licence | Invest |
+
+- "Generic recommendations" = rung 1 for everyone now, and rung 2 for invite-only `guided` users. Nothing moves to rung 3 or public marketing before the licence (D-021, AGENTS.md rule 1).
+- ⚠ Where general education ends and personalised advice begins under the SEBI Investment Advisers Regulations is a legal call. Get counsel to review rung-1 and rung-2 copy before any wider rollout (L-8). I'm not certain where the regulator draws the line for app-based guidance.
