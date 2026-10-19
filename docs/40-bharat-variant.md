@@ -12,7 +12,7 @@
 | Standard | Bharat (Hindi) | Why |
 |---|---|---|
 | Today | आज | — |
-| Invest | बचत (savings) | "निवेश" (invest) can feel intimidating to first-time savers. बचत covers saving and investing. ⚠ test both |
+| Invest | निवेश (invest) | Chosen by the user (19 Oct): बचत is avoided for now because it is close to the Bachatt brand name. Watch whether "निवेश" intimidates first-time savers in testing |
 | Ask Munim | मुनीम से पूछें | — |
 | Spends | खर्च | — |
 | Credit | उधार | Everyday word for borrowing. ⚠ "लोन" may test better for formal loans; test |
