@@ -1,0 +1,58 @@
+/* Munim design tokens (from the design canvas S01–S12). Layout: one 390px-first column, bottom nav, cards only where a block is its own object. */
+:root {
+  --bg: #F3F4EF; --surface: #FFFFFF; --ink: #16201B; --ink-2: #3A463F; --muted: #5D6862; --line: #DADFD6; --line-2: #ECEFE9;
+  --green: #136F4B; --green-ink: #0F5F40; --green-soft: #E3EFE7; --amber: #8A520A; --amber-soft: #FBF1E2; --red: #A23B2A; --red-soft: #F8E7E3;
+  --dark: #16201B; --dark-ink: #F3F4EF; --dark-muted: #B9C4BC; --mic: #2C8C62;
+  --font: 'IBM Plex Sans', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --r-lg: 18px; --r-md: 14px; --r-sm: 10px; --nav-h: 68px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101512; --surface: #18201B; --ink: #E8ECE6; --ink-2: #C9D1C8; --muted: #9AA59D; --line: #2A342E; --line-2: #222B25;
+  --green: #3FA878; --green-ink: #6CC79C; --green-soft: #1B2E24; --amber: #E0A657; --amber-soft: #2D2416; --red: #E58B7A; --red-soft: #2F1C18;
+  --dark: #0B0F0D; --dark-ink: #E8ECE6; --dark-muted: #9AA59D; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #101512; --surface: #18201B; --ink: #E8ECE6; --ink-2: #C9D1C8; --muted: #9AA59D; --line: #2A342E; --line-2: #222B25;
+  --green: #3FA878; --green-ink: #6CC79C; --green-soft: #1B2E24; --amber: #E0A657; --amber-soft: #2D2416; --red: #E58B7A; --red-soft: #2F1C18;
+  --dark: #0B0F0D; --dark-ink: #E8ECE6; --dark-muted: #9AA59D; color-scheme: dark }
+
+* { box-sizing: border-box }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.45 }
+a { color: inherit }
+button { font: inherit; color: inherit }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 6px }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important } }
+
+.shell { min-height: 100dvh; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column }
+.screen { flex: 1; display: flex; flex-direction: column; gap: 12px;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) calc(var(--nav-h) + 20px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)) }
+
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums }
+.eyebrow { font-size: 12.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: 4px }
+.muted { color: var(--muted) }
+.neg { color: var(--red) } .pos { color: var(--green-ink) }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px }
+.row-link { display: flex; justify-content: space-between; align-items: center; gap: 10px; text-decoration: none; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 14px; min-height: 56px }
+.row-link:active { transform: scale(.995) }
+.row-link b { font-size: 14.5px; font-weight: 600; display: block; line-height: 1.3 }
+.row-link small { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px }
+
+.banner { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 13px; background: var(--amber-soft); color: var(--ink-2); border-radius: var(--r-sm); padding: 9px 12px }
+.banner a { color: var(--green-ink); font-weight: 600 }
+
+.skel { background: linear-gradient(90deg, var(--line-2), var(--surface), var(--line-2)); background-size: 200% 100%; animation: shimmer 1.2s infinite linear; border-radius: var(--r-lg) }
+@keyframes shimmer { to { background-position: -200% 0 } }
+
+details.math { font-size: 13px }
+details.math summary { cursor: pointer; color: var(--green-ink); font-weight: 600; list-style: none }
+details.math summary::-webkit-details-marker { display: none }
+details.math[open] summary { margin-bottom: 8px }
+.math-body { background: var(--line-2); border-radius: var(--r-sm); padding: 10px 12px; display: grid; gap: 6px; color: var(--ink-2) }
+.math-body .part { display: flex; justify-content: space-between; gap: 10px }
+
+.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom) }
+.nav ul { list-style: none; margin: 0 auto; padding: 0; max-width: 480px; height: var(--nav-h); display: grid; grid-template-columns: repeat(5, 1fr) }
+.nav a { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; color: var(--ink-2); text-decoration: none }
+.nav a[aria-current="page"] { color: var(--green-ink); font-weight: 700 }

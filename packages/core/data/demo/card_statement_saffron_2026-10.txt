@@ -1,0 +1,32 @@
+SAFFRON BANK (fictional) - REWARDS CREDIT CARD STATEMENT
+Card Number: XXXX XXXX XXXX 9012        Name: ROHAN MEHTA
+Statement Date: 04-Oct-2026    Statement Period: 05-Sep-2026 to 04-Oct-2026
+Payment Due Date: 24-Oct-2026    Credit Limit: 2,00,000.00
+
+ACCOUNT SUMMARY
+Previous Balance          56,900.00
+Payments Received         56,900.00
+Purchases & Debits        36,926.00
+Other Credits             583.00
+Finance Charges           0.00
+Total Amount Due          36,343.00
+Minimum Amount Due        1,817.00
+
+TRANSACTION DETAILS
+Date        Description                                   Amount (Rs)
+06/09/2026  CASHBACK CREDIT PREVIOUS CYCLE                583.00 Cr
+08/09/2026  AMAZON PAY INDIA ECOM                         1,177.00
+09/09/2026  SPOTIFY INDIA SUBSCRIPTION                    119.00
+09/09/2026  HPCL FUEL STN SOHNA RD                        1,570.00
+12/09/2026  IOCL COCO MG ROAD                             2,299.00
+12/09/2026  POS TRUFFLES CAFE GURUGRAM                    1,928.00
+12/09/2026  POS BIRYANI BLUES DLF PH4                     2,548.00
+12/09/2026  MAKEMYTRIP INDIA PVT LTD                      14,200.00
+13/09/2026  GOA BEACH RESORT CANDOLIM                     6,800.00
+14/09/2026  GOOGLE YOUTUBEPREMIUM                         149.00
+22/09/2026  PAYMENT RECEIVED - THANK YOU                  56,900.00 Cr
+23/09/2026  AMAZON PAY INDIA ECOM                         1,235.00
+27/09/2026  AMAZON PAY INDIA ECOM                         2,172.00
+04/10/2026  POS CHAAYOS SECTOR 29                         2,729.00
+
+Cashback shown is earned on the previous cycle and credited in this cycle. Paying only the minimum attracts finance charges at 3.6% per month.
