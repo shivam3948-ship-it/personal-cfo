@@ -89,3 +89,7 @@
 - "Something's off?" rate (a trust signal).
 
 A/B test the "Fresh" slot against a fixed slot before rolling it out.
+
+**Rhythm rule (user, 19 Oct):** daily actions vary; weekly and monthly recaps keep a **fixed structure**, so they can be compared over time.
+- Sunday call: always the same 5 beats in the same order. Only the numbers and the closing "one decision" change.
+- Month close: always the same 6 steps, with the report card showing the last 3 months side by side.
