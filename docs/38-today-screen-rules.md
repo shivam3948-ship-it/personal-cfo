@@ -1,7 +1,7 @@
 # 38 · Today screen: layout rules (19 Oct 2026)
 
 **Status:** design rules. Nothing is built yet.
-- Mock: "Today v11" on the Munim v2 design canvas (v8–v10 kept for comparison). It has Tweaks for `scenario` and `bills`.
+- Mock: "Today v11" on the Munim v2 design canvas (v8–v10 kept for comparison). It has Tweaks for `scenario`, `bills`, `theme` and `state`.
 - Autopay logic: docs/37.
 
 ## Design goals, in priority order (user, 19 Oct)
@@ -17,6 +17,19 @@
 - **Type:** serif display (Noto Serif + Noto Serif Devanagari) for the verdict and big numbers, IBM Plex Sans for everything else. A sans display is the fallback if the serif tests poorly.
 - **Superseded looks** (kept on the canvas for comparison): Sunrise (v4–v8) and editorial white (v9).
 - **Glass Night:** night mode only, not a default.
+
+## Dark mode and screen states (v11, 19 Oct)
+- **Dark is the same Monsoon system, not Glass Night.** Every colour is a named token with a light and a dark value. The mock's token sheet is the source for the build's CSS variables.
+  - Dark values: background #0B1413, card #14201E, ink #E6F0EE, muted #93ABA6, button #5CC2B4 with dark text #06201C, link #7ED3C7.
+  - Marigold stays #F2A93B in both themes.
+  - All text pairs were checked in code at 4.5:1 or better: muted on card is 6.0:1 light and 6.9:1 dark, and the button is 7.6:1 light and 7.8:1 dark.
+- **Every screen has the same four states,** switchable in Tweaks:
+  - **ready.**
+  - **loading:** a skeleton in the screen's own shape plus one plain line saying what's happening. No spinners.
+  - **error:** keep the last good data on screen with a time stamp and a Retry, wherever there is data to keep. Never blank a screen that had numbers. Use a full error card only when nothing is cached.
+  - **empty:** say when the thing will exist and what unlocks it. Give one button, never a dead end.
+- **Built per component during the build, not in the mock:** skeleton timing (show after 300 ms), retry backoff, offline cache rules.
+- **Event names for every screen:** docs/39.
 
 ## Section order (dynamic)
 | Context | Order |
