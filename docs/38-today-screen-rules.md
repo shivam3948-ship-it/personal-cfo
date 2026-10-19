@@ -72,6 +72,32 @@
 - **Amount:** pre-set to ₹50 a day. The amount chips sit in the autopay setup sheet, not on the card (v11), so the card has only two tappable things. The card's detail line says "Change the amount or stop anytime".
 - **Label honesty:** the button reads "Set up autopay", not "Turn on autopay", because it opens a setup step (today a fake door: "Reserve my autopay", marked Coming soon).
 
+## "Something's off?" on Yesterday's card (v14, 19 Oct)
+Before v14 the button only closed the card, so the user's correction went nowhere. Now it opens a sheet. Every path ends with the number updated on the spot, an undo, and a return to the check-in.
+
+1. **What's off?**
+   - **A transaction is wrong** → pick it (Zomato ₹626 / YouTube Premium ₹149) → what's wrong:
+     - **Wrong category** → choose a category (nothing pre-selected), then **Change this one** (primary) or **Change all Zomato orders** (a rule, only if the user picks it; editable later in Spends).
+     - **Shared, or someone will pay me back** → left out of everyday spending, still listed in Spends.
+     - **Charged twice** → the copy is left out, with how to get a refund (merchant first, then bank).
+     - **I didn't make this** → fraud path.
+   - **Something's missing** → amount pills plus Other (editable) and what it was for → added to yesterday, and points to adding that account's statement.
+   - **I didn't make a payment** → fraud path directly, one tap from the top.
+   - "See how ₹775 was worked out": the sources and the as-of time.
+2. **Fraud path:**
+   - block the card or UPI in the bank app (or call the number on the card);
+   - report on 1930 or cybercrime.gov.in ⚠ (national cyber-fraud helpline; verify before launch);
+   - do it today.
+   - Munim never shows a bank phone number it hasn't verified and never asks for a PIN, OTP or card number.
+   - "I've reported it" marks the transaction disputed and leaves it out of spending.
+   - ⚠ The RBI rules on customer liability for unauthorised transactions depend on how fast it's reported. The copy says "reporting quickly limits what you can lose" until the exact current rule is verified.
+3. **Done:**
+   - "Yesterday is updated: ₹149 (was ₹775, ₹626 less)", in code.
+   - One line on what changed and where to undo it.
+   - "Back to check-in" completes the card. The card then shows "Updated by you: …" and the usual "You chose · Change".
+- The usual day is recalculated overnight, not on the spot, so the comparison never jumps mid-session.
+- Corrections feed categorisation only for that user's own rules (no silent learning across users in Phase 1).
+
 ## Verdict line
 - One sentence plus one short reason, computed by rules, not by the AI. Examples:
   - "Bills covered · spent below a usual day"

@@ -42,7 +42,12 @@
 | `checkin_answer_locked_shown` | `card`, `lock_reason` (payment_final / …) |
 | `recap_day_daily_cards_opened` | `recap_kind` (sunday_call / month_close) |
 | `checkin_all_done` | `cards_done` (2–3), `total_ms`, `streak_days_after` |
-| `yesterday_flagged` | `reason` (later: wrong_category / not_mine / duplicate) |
+| `yday_off_opened` | (none) |
+| `yday_off_reason` | `reason` (txn_wrong / missing / fraud) |
+| `txn_fixed` | `fix` (category / shared / duplicate / disputed), `scope` (once / always), `from_category`, `to_category`, `amount_band` |
+| `missing_spend_added` | `kind` (preset / custom), `amount_band`, `category` |
+| `fraud_help_shown` / `fraud_call_tapped` / `fraud_reported_marked` | `entry` (reasons / transaction) |
+| `yday_fix_undone` | `fix` |
 | `fix_action_tapped` | `fix_type` (unused_sub / price_rise / duplicate / fee), `annual_band` |
 | `bill_pay_tapped` | `bill_type`, `days_to_due`, `amount_band` (fake door until bill pay ships) |
 | `bill_remind_tapped` | `bill_type`, `days_to_due` |
@@ -107,5 +112,5 @@
 - **Trust and quality:**
   - `screen_error_shown` rate and median `load_ms` per screen;
   - share of Ask answers that pass the fact check;
-  - `yesterday_flagged` rate.
+  - `txn_fixed` and `missing_spend_added` rates (how often our numbers are wrong), and the share of fixes that become rules.
 - **Fake-door demand:** `fake_door_notify_tapped` ÷ `fake_door_shown` per feature. This ranks which integration to build first.
