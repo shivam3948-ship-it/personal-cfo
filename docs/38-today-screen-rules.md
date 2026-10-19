@@ -102,6 +102,27 @@ Before v14 the button only closed the card, so the user's correction went nowher
   - Rules made here ("all Zomato orders") are listed and editable in Spends.
   - The fraud path stays in the sheet: speed beats context.
 
+## Today borrows, tabs own (proposal, 19 Oct)
+Each tab owns the components for its kind of money. Today's check-in only borrows them as sheets, so the user never leaves the check-in, and each action has one source of truth.
+
+| Check-in card | Owning tab | Component Today opens as a sheet | "See more" link in the sheet |
+|---|---|---|---|
+| Yesterday / "Something's off?" | **Spends** | Transaction fix (recategorise, shared, charged twice, fraud, add missing) | "See all of yesterday in Spends" |
+| Save (autopay off) | **Invest** (the savings pot lives here) | Autopay setup · Save once (amount pills + Other) | "See your savings in Invest" |
+| Save receipt (autopay on) | **Invest** | Pause · Change amount · Top-up (underspend) | "See your savings in Invest" |
+| Salary-day raise (month close) | **Invest** | Raise autopay | (inside Close your month) |
+| Bill due soon | **Credit** | Pay now · Remind me | "See all bills in Credit" |
+| One fix (subscription leak) | **Spends** | Keep or cancel, how to cancel | "See all subscriptions in Spends" |
+
+- **Invest tab "Savings" section owns:**
+  - the pot's balance and history (every autopay debit, one-time save and top-up, each with its source);
+  - the controls (pause, change amount, stop);
+  - the destination (docs/37 §8, undecided);
+  - the "Saving looks wrong?" fix: a missed or failed debit, an amount that doesn't match the bank, a double debit.
+  - The investments section follows the same rule for statement problems: "Holdings look wrong?" → a statement out of date or a missing folio → add a newer CAS.
+- **Pre-licence boundary (AGENTS.md rule 1):** the Invest tab's savings sheets move or schedule the user's own money. They never recommend a fund or product, and the destination is shown as a fact, not a pick.
+- **Why:** one component per action, so a fix in the check-in and a fix in the tab can't drift apart. The check-in stays a 60-second ritual, and the tabs hold the depth.
+
 ## Verdict line
 - One sentence plus one short reason, computed by rules, not by the AI. Examples:
   - "Bills covered · spent below a usual day"
