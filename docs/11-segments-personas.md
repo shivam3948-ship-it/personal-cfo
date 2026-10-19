@@ -80,3 +80,13 @@ C1 users rarely come on their own, so this persona is a **pair**: the person who
 - **Interviews (T-3), recruit mix:** 6 × B (time-poor engaged), 3 × proxies of C1 investors, 1–2 × A (DIY, as control). Optional: 2 × persona 3 for the Phase 1.5 demo
 - **Screener:** "Do you hold mutual funds?" (must be yes, except persona 3) · "How many hours a month do you spend on your investments?" (B: < 2; A: > 5) · "Who chose your funds?"
 - **Pilot recruiting:** DIY users are fine as early adopters, but metrics are reported **per segment**, so A's enthusiasm doesn't mask B's needs
+
+## Update 19 Oct 2026 (D-035): one user, three stages
+The segments above are kept for history. For Munim v2 they collapse into **stages of one person**:
+1. **Saver:** bank account and UPI, maybe no investments. Today leads with Save and Spends.
+2. **Saver and investor:** has added a mutual fund statement (CAS). Portfolio cards compete in the same check-in, and Invest opens on holdings.
+3. **Advised:** after a licence (not pursued now).
+
+- **Tie-break:** when stages want different things (card 1, Invest's default view, amounts, tone), design for the earlier stage.
+- **The tier-2/3 version** (docs/40) is mostly stage 1 in Hindi with smaller amounts.
+- **Current goal:** a full working product to demo. Research starts once it's live.
