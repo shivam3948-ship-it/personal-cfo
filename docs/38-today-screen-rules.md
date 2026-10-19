@@ -9,6 +9,15 @@
 2. **Minimise motor load.** Fewest taps, big targets, thumb-friendly.
 3. **Minimise visual load.** Fewest boxes and colours on screen.
 
+## Look (user choice, 19 Oct): Monsoon colours + editorial restraint
+- **Colours:**
+  - mist background (#F2F7F6), white cards with hairline borders (no heavy shadows);
+  - one teal (#0F5E58) for actions and good news;
+  - marigold (#F2A93B) only for saving and the streak.
+- **Type:** serif display (Noto Serif + Noto Serif Devanagari) for the verdict and big numbers, IBM Plex Sans for everything else. A sans display is the fallback if the serif tests poorly.
+- **Superseded looks** (kept on the canvas for comparison): Sunrise (v4–v8) and editorial white (v9).
+- **Glass Night:** night mode only, not a default.
+
 ## Section order (dynamic)
 | Context | Order |
 |---|---|
