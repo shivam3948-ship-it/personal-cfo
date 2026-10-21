@@ -100,6 +100,17 @@
 | `ask_error_shown` | `error_kind` (no_speech / mic_denied / offline / timeout / refused) |
 | `ask_feedback` | `rating` (up / down), `intent` (later) |
 
+## Spends (v4 mock, docs/41)
+| Event | Properties |
+|---|---|
+| `pace_chart_scrubbed` | `day` (1–31) |
+| `pace_how_opened` | `pace` (below / above), `delta_band` |
+| `money_in_opened` | `earner_type` (salaried / irregular), `credits_count` |
+| `spends_change_tapped` | `fix_type` (pace / unused_sub / duplicate / trial / rate), `rupee_band` |
+| `save_difference_tapped` | `amount_band` |
+| `skip_save_chosen` | `category` (food_delivery / …), `orders` (1–3), `amount_band` |
+| `skip_save_undone` | `category`, `seconds_since_save` |
+
 ## Metrics these unlock
 - **Habit:**
   - check-in completion: `checkin_all_done` ÷ `screen_viewed` (Today) per day;

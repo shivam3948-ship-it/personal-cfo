@@ -1,4 +1,4 @@
-# 41 · Spends tab: design rules (21 Oct 2026, v1 mock)
+# 41 · Spends tab: design rules (21 Oct 2026, v4 mock)
 
 **Status:** design. Mocks "Spends v3" (v1, v2 kept), "Category detail v1", "All transactions v1", "Subscriptions v1" and "Your rules v1" are on the Munim v2 canvas, with Tweaks for theme, state and variant.
 - All figures come from `packages/core` on the sample family, as of 15 Oct.
@@ -32,17 +32,20 @@
 | Trend per category (6 months) | Small bar chart inside category detail | Next, with the category screen |
 
 - **Rejected:** pie and donut charts (slices are hard to compare, and the labels don't fit on a phone) and dual-axis charts.
-- Identity never relies on colour alone: there's a legend for the two lines, and direct values sit under the split bar.
+- Identity never relies on colour alone: the two pace lines are **labelled directly** ("This month" beside the teal dot, "Usual month" under the dashed line's end), with no separate legend box. Direct values sit under the split bar.
 
-## Screen order (v3, 21 Oct)
+## Screen order (v4, 21 Oct)
 1. **Hero:**
-   - everyday spending and the pace line, with a **small 120×44 sparkline** (this month against a dashed usual). Tapping it opens the **Spending pace** sheet: the full chart with tap/hover values, the 3-month math and the Not counted amount. In v2 the full chart and legend took about 200px on the main screen (user, 21 Oct).
+   - everyday spending, the pace line ("₹3,512 below your usual pace · How?") and a **medium pace chart (326×88 plot, about 100px)**: this month in teal against a dashed usual month, labelled directly on the lines, with day marks 1 · Today · 31 and tap/hover values (v4, user, 21 Oct).
+     - Why medium: the v2 chart lost its space to the legend row and the separate math button, not to the chart itself. The v3 sparkline (120×44) saved space but read as decoration and hid the values behind a sheet.
+     - **How?** opens the "How your pace is worked out" sheet: the 3-month math and the Not counted amount.
    - the split bar (Everyday / Fixed / Others, with the month's total);
-   - **Money in ₹1,45,000 · left after spending ₹63,220**, which links to All transactions filtered to Money in.
+   - **Money in ₹1,45,000 · left after spending ₹63,220**. It opens the **Money in sheet** (v4), described below.
    - Below the hero: **"✓ Every statement balances to the rupee · Your data"**. This opens the data sheet: each file read, its period, its transaction count and the checks it passed (from the ingest log: balance walk, opening + credits − debits = closing, card total due, SMS continuity, 11/11 cross-document checks). Files never leave the phone.
    - **Month switcher:** a sheet of months with totals. The current month is ticked; a past month opens its Close your month report card.
 2. **What you can change**, collapsible and **collapsed by default**:
-   - The header shows a summary ("Save ₹3,500 · 4 more fixes").
+   - The header shows a summary ("Save ₹3,500 · 5 more fixes").
+   - v4 adds a **pace fix** at the top of the list when a category runs ≥20% above its usual by the same day: "Food delivery up 28% this month · Skip 2 orders, save ₹1,094". It opens the category screen.
    - The **savings card stays visible even when collapsed** (savings come first).
    - The fixes open on tap.
 3. **Where it went:** top 6 categories. **Each row is tappable**: Subscriptions opens the Subscriptions screen; other categories open the transactions for that category. The separate Subscriptions card is removed.
@@ -74,12 +77,21 @@
   - So Munim shows **"Ask Orbit to match 11.25%: saves ₹6,739"**, labelled "Munim earns nothing from this", and never pushes the Neem offer.
   - Computed with `compareRefinance`.
 
-## Category detail (v1: Food delivery)
+## Category detail (v2: Food delivery)
 - **Hero:** month to date ₹4,923, 28% above the usual by the 15th (usual ₹3,854), 9 orders at ₹547 on average.
 - **Bars by month:** Jul–Oct, with the current month emphasised and the past months grey. The current month is labelled "so far".
 - **Where from:** merchants ranked (Swiggy ₹2,511 · 5 orders, Zomato ₹2,412 · 4 orders).
-- **Heads-up (proposal):** "Tell me when food delivery passes ₹6,000 / ₹8,000 / Other". It's a notification only and never blocks.
-  - ⚠ This is the first budget-like feature. Decide whether heads-ups belong in v1 at all; they add a settings surface.
+- **Save what you skip (v2, replaces the heads-up):**
+  - "Order a little less for the rest of the month and save the difference now."
+  - Pills: ₹547 (1 order fewer) · ₹1,094 (2) · ₹1,641 (3), using this month's average order (₹4,923 ÷ 9). **Nothing is preselected** (docs/37).
+  - **Save ₹X** moves the money now, with Undo; **Not now** dismisses. "Munim never blocks an order."
+  - The 28%-above-usual line in the hero is the spike signal. It needs no setup.
+- **Heads-up alerts ("tell me when it passes ₹X") move to phase 2** (D-039). Reasons:
+  - they need a settings surface;
+  - web push is unreliable, especially on iPhone;
+  - they add copy and states in two languages;
+  - too many alerts read as nagging.
+  - Spike lines and the pace fix already deliver most of the value with zero setup. Phase 2 can target the categories where users actually overspend.
 - **This month's orders:** each row opens the transaction detail.
 
 ## Money in (credits): how each kind is treated (21 Oct)
@@ -90,9 +102,28 @@
 | Cashback (card, previous cycle) | Not income, not spending. Shown as **net cashback earned** | Card section in Credit. A cashback shortfall against card rules becomes a fix |
 | Card bill "payment received" (card side) | Not counted: the bank-side payment is the same money | Hidden from totals, visible in All transactions (Not counted) |
 | Transfer from your own account | Not counted | Same |
-| Savings interest | Small income | Money in |
+| Savings interest | Small income | Money in. ⚠ **Engine gap:** core `categorize` files `Interest` as `non_spend`, so Sep's ₹1,186 is missing from income. Fix it before the build |
 | Money from friends or family | **Matched against "Shared" spends** of a similar amount nearby in time (e.g. Swiggy ₹1,200 shared, friend sends ₹600 → your share is ₹600). Unmatched → asked "What's this?" | Transaction detail and a fix |
 | Large unlabelled credit | Asked once: "What's this?" (gift, loan, sale, refund) | What you can change (security first) |
+
+## Money in sheet (v4, 21 Oct)
+- **Why a sheet, not a tab:** salaried users get one credit a month, and what matters is "how much is left". Irregular earners (freelancers, shop owners, gig workers: many first-stage and tier-2/3 users, D-035) live by when and how much comes in. A sheet serves both without turning Spends into a cash-flow screen.
+- **Contents:**
+  - the month's income credits, each with date and source;
+  - a forward-looking card;
+  - bars for the last 3 months plus this month so far (one series, values on the bars, no legend);
+  - the math: Money in − Spent this month = Left;
+  - what is not counted as income.
+- **Salaried (sample family, packages/core):**
+  - Salary ₹1,45,000 on 1 Oct.
+  - "Next salary expected around 1 Nov": `nextSalaryDate` is the last salary + 1 month.
+  - "It has come on the 1st for 3 months running, the same amount each time." This is computed by checking dates and amounts.
+- **Irregular (illustrative sample, fictional clients; Tweak `earner`):**
+  - Oct: Brightleaf Studio ₹62,000 and Kestrel Labs ₹35,000.
+  - Jul–Sep: ₹1,12,000 / ₹1,68,000 / ₹91,000.
+  - **"Plan on ₹91,000 a month"**, the lowest of the last 3 months: "Planning on your lowest month keeps you safe; anything above it goes to savings first."
+  - ⚠ The engine has no income-variability function yet. It needs `incomeRange()` (min, max, median over complete months) before the build.
+  - The safe-plan rule (lowest month) is our proposal, not an industry standard.
 
 ## Borrowed from the Spend Analyser skill (21 Oct)
 - **Verify before showing:**
@@ -147,5 +178,6 @@ Spends is where Munim learns what each person needs. It **finds** an opportunity
 - ⚠ A native speaker must review the copy before any user sees it.
 
 ## Open
-- The month switcher, the category detail screen, and transaction search and list.
-- Which events from docs/39 fire on Spends; add `spends_change_tapped` (fix type, rupee band) and `save_difference_tapped` (amount band).
+- Category detail for the other categories; past-month view; the uncategorised sort flow; search (later).
+- Engine before build: `Interest` → income group; `incomeRange()` for irregular earners.
+- Which events from docs/39 fire on Spends; add `spends_change_tapped` (fix type, rupee band), `save_difference_tapped` (amount band), `pace_how_opened`, `money_in_opened` (`earner_type`: salaried / irregular) and `skip_save_chosen` (`orders`: 1–3, `undone`).
