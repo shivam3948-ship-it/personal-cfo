@@ -70,7 +70,11 @@ Mock: the Munim v2 canvas, page **Invest** (Tweaks: `cas` added/none, theme, sta
 - **Hindi copy:** a native speaker must review it.
 - **Events to add to docs/39:** `invest_plan_chosen` (amount band, months), `essentials_opened`, `xirr_explained_opened`, `regular_fees_opened`, `holdings_wrong_tapped`, `cas_add_tapped`.
 
-## v2 options (21 Oct, pending the user's pick)
+## v2 (current, D-041, 21 Oct): option B with A's guard
+- **Screen:** investing card → spare money (with money-path position, "Step 3 of 5 ›") → cover row. Without a CAS: next move → Add CAS → cover. States: loading, error, empty; light and dark. ⚠ The Hindi variant for v2 and the x-ray is still to do.
+- The v1 "Screen order" above is kept as history.
+
+### How we chose (options explored)
 **User's priorities:**
 - P0 is "Is my investing working?" (overpaying is part of it); first-time savers see the next move first;
 - P1 is spare money;
