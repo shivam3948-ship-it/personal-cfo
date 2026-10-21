@@ -1,7 +1,7 @@
 # 14 · Benchmark: the "10 AI finance prompts" thread vs Personal CFO
 
 **Status:** v0.1 · **Last updated:** 2026-10-15
-**Source:** a viral X thread (Sep 2026) claiming 10 ChatGPT prompts "replace $3,000 financial advisors". Prompts 1–5 were reviewed by title only; 6–10 in full. The thread is US-centric.
+**Source:** a viral X thread (Sep 2026) claiming 10 ChatGPT prompts "replace $3,000 financial advisors". Prompts 1–5 were first reviewed by title only and 6–10 in full; all 10 texts are now in the appendix (21 Oct). The thread is US-centric.
 **Why this doc:** it's the real substitute our users already try (docs/02 §1). For each prompt we note what a bare prompt gets wrong for an Indian user, where we cover it, and what we adopt.
 
 ## 1. Bottom line
@@ -43,13 +43,111 @@
 
 ## Appendix: prompt texts
 
-Prompts 1–5: titles only. x.com blocked the browser before the text could be read.
+Prompts 1–5: full text, read from the thread with Claude in Chrome on 21 Oct 2026.
 
-1. The Complete Budget Builder
-2. The Expense Analyzer & Money Leak Finder
-3. The Debt Elimination Strategy
-4. The Emergency Fund Calculator
-5. The Savings Goal Architect
+### 1/ The Complete Budget Builder
+```
+You are a Certified Financial Planner (CFP) with 15 years of experience. I need a complete zero-based budget system tailored to my financial situation.
+
+Please provide:
+
+- Income breakdown: After-tax income, side income, passive income, and true monthly average if variable
+- Essential expenses allocation: Housing, transportation, food, insurance, debt payments (should be under 50% of income)
+- Flexible spending analysis: Dining, entertainment, subscriptions, hobbies with current vs. optimal percentages
+- Financial goals prioritization: Emergency fund target, debt payoff strategy, retirement savings (15%+ of gross), short-term goals
+- 50/30/20 rule optimization: Compare my current split to ideal, identify overspending categories, recommend 5 specific cuts
+- Automation roadmap: Which bills to auto-pay, automatic savings transfers with amounts and dates, buffer amount for checking
+- Monthly budget table: Every category with dollar amounts, percentages, and variance from optimal
+- Action priority list: Top 3 changes to implement this week ranked by impact
+
+Format as a financial advisor-grade budget with clear tables and immediate action steps.
+
+My financial situation: [MONTHLY INCOME] / [MAJOR EXPENSES] / [CURRENT DEBTS] / [SAVINGS GOALS]
+```
+
+### 2/ The Expense Analyzer & Money Leak Finder
+```
+You are a forensic accountant specializing in personal finance optimization. I need you to analyze my spending and find exactly where money is being wasted.
+
+Please provide:
+
+- Spending categorization: Group all transactions into 15 categories with totals and monthly averages
+- Top expense analysis: 10 largest expenses and 10 most frequent purchases with patterns identified
+- Subscription audit: Every recurring charge identified, total monthly cost calculated, unused subscriptions flagged with annual savings estimate
+- Spending pattern diagnosis: Highest spending day of week, impulse triggers (late night, weekend, emotional), month-over-month trend analysis
+- Money leak identification: Bank fees, ATM charges, credit card interest, food waste (grocery vs. eating out), convenience fees, daily micro-purchases that compound
+- Comparison benchmarking: My spending vs. national averages for my income bracket by category
+- Optimization roadmap: 3 painless cuts I won't miss, 5 reductions requiring small behavior changes, 2 big lifestyle cuts with major impact
+- Savings calculation: Total potential monthly and annual savings for each tier of cuts
+- Spending scorecard: Grade by category (A-F), comparison to similar income earners, biggest financial weakness identified
+
+Format as a detailed spending audit report with category tables, red flags highlighted, and a prioritized savings action plan.
+
+My expense data: [PASTE LAST 3 MONTHS OF TRANSACTIONS OR DESCRIBE SPENDING PATTERNS]
+```
+
+### 3/ The Debt Elimination Strategy
+```
+You are a certified credit counselor and debt elimination strategist. I need the fastest, most cost-effective plan to become debt-free.
+
+Please provide:
+
+- Complete debt inventory: Each debt listed with balance, interest rate, minimum payment, creditor, total debt sum, weighted average interest rate
+- Monthly cost breakdown: How much goes to interest vs. principal across all debts
+- Payoff method comparison: Debt Snowball (smallest first) vs. Debt Avalanche (highest rate first) with complete timeline and total interest for each
+- Method recommendation: Which strategy fits my psychology and situation best,with clear reasoning
+- Accelerated payoff scenarios: Timeline and interest savings if I add $100, $250, $500 extra monthly; break-even analysis vs. investing
+- Consolidation analysis: Should I consolidate? Compare current debts to a potential consolidation loan, calculate savings, or identify traps
+- Month-by-month payment schedule: Exact payment amounts to each debt, balance reduction tracking, milestone dates (first payoff, 50% debt-free, final payment)
+- Snowball acceleration points: How extra payment capacity grows as each debt is eliminated
+- Behavioral rules: 5 non-negotiable rules while paying off debt, strategies to avoid new debt, how to handle windfalls (bonuses, tax refunds)
+
+Format as a complete debt payoff roadmap with a payment schedule table, timeline visualization, and total savings calculation.
+
+My debts: [LIST EACH: TYPE, BALANCE, INTEREST RATE, MINIMUM PAYMENT]
+
+Extra payment capacity: [MONTHLY AMOUNT AVAILABLE]
+```
+
+### 4/ The Emergency Fund Calculator
+```
+You are a financial planner specializing in risk management. I need to calculate my ideal emergency fund size and create a plan to build it.
+
+Please provide:
+
+- Essential monthly expense calculation: Housing, utilities, food, insurance, transportation, minimum debt payments with total
+- Emergency fund targets: 3-month minimum, 6-month recommended, 12-month maximum with dollar amounts for each
+- Target recommendation: Which fund size is right based on job stability, income type, dependents, health situation
+- Current state assessment: Gap between current savings and target, months of coverage I have today, preparedness risk score (1-10)
+- Savings plan options: Monthly amount needed to hit 3-month target in 12 months, 6-month target in 18 months, timeline if I can only save [AMOUNT]
+- Funding source analysis: Where to cut spending or boost income to accelerate savings
+- Account comparison: Traditional savings vs. HYSA vs. money market with current rates and specific institution recommendations
+- Emergency definition framework: What qualifies as real emergency vs. wants, decision tree for "should I use this fund?"
+- Maintenance strategy: What to do once fully funded, review frequency, replenishment plan if used
+
+Format as emergency fund roadmap with target amounts, monthly savings plan, account recommendations, and progress milestones.
+
+My situation: [MONTHLY ESSENTIAL EXPENSES] / [CURRENT SAVINGS] / [JOB STABILITY] / [DEPENDENTS]
+```
+
+### 5/ The Savings Goal Architect
+```
+You are a goal-based financial coach. I have a specific savings target and I need you to reverse-engineer exactly how to reach it.
+
+Please provide:
+
+- Goal framework: Target amount, target date, months available, deadline flexibility, consequences if missed
+- Savings calculations: Monthly savings required, weekly equivalent, daily equivalent, reality check against current budget
+- Accelerated scenarios: Monthly amount to finish 3 months early, 6 months early, catch-up amount if starting late
+- Investment vehicle recommendation: If under 2 years (HYSA, money market), 2-5 years (conservative investments), 5+ years (growth investments) with specific account types and current rates
+- Funding strategy: 5 specific budget cuts to fund monthly savings, side income opportunities, one-time windfalls to apply (tax refunds, bonuses)
+- Progress milestones: Where balance should be after months 3, 6, 9, 12 with catch-up strategies if behind and reallocation options if ahead
+- Motivation system: Savings challenges, gamification tactics, milestone rewards
+
+Format as goal-focused savings blueprint with monthly targets, account recommendations, and visual progress tracker.
+
+My goal: [WHAT I'M SAVING FOR] / [TARGET AMOUNT] / [TARGET DATE] / [MONTHLY BUDGET AVAILABLE]
+```
 
 Prompts 6–10: full text, as pasted in chat on 15 Oct 2026.
 
