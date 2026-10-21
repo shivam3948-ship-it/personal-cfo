@@ -1,6 +1,6 @@
 # 41 · Spends tab: design rules (21 Oct 2026, v1 mock)
 
-**Status:** design. Mocks "Spends v2" (v1 kept), "All transactions v1", "Subscriptions v1" and "Your rules v1" are on the Munim v2 canvas, with Tweaks for theme, state and variant.
+**Status:** design. Mocks "Spends v3" (v1, v2 kept), "Category detail v1", "All transactions v1", "Subscriptions v1" and "Your rules v1" are on the Munim v2 canvas, with Tweaks for theme, state and variant.
 - All figures come from `packages/core` on the sample family, as of 15 Oct.
 
 ## The job (user, 21 Oct)
@@ -34,11 +34,13 @@
 - **Rejected:** pie and donut charts (slices are hard to compare, and the labels don't fit on a phone) and dual-axis charts.
 - Identity never relies on colour alone: there's a legend for the two lines, and direct values sit under the split bar.
 
-## Screen order (v2)
+## Screen order (v3, 21 Oct)
 1. **Hero:**
-   - everyday spending, the pace line and the pace chart;
+   - everyday spending and the pace line, with a **small 120×44 sparkline** (this month against a dashed usual). Tapping it opens the **Spending pace** sheet: the full chart with tap/hover values, the 3-month math and the Not counted amount. In v2 the full chart and legend took about 200px on the main screen (user, 21 Oct).
    - the split bar (Everyday / Fixed / Others, with the month's total);
-   - "Show the math" (the pace months and the Not counted amount).
+   - **Money in ₹1,45,000 · left after spending ₹63,220**, which links to All transactions filtered to Money in.
+   - Below the hero: **"✓ Every statement balances to the rupee · Your data"**. This opens the data sheet: each file read, its period, its transaction count and the checks it passed (from the ingest log: balance walk, opening + credits − debits = closing, card total due, SMS continuity, 11/11 cross-document checks). Files never leave the phone.
+   - **Month switcher:** a sheet of months with totals. The current month is ticked; a past month opens its Close your month report card.
 2. **What you can change**, collapsible and **collapsed by default**:
    - The header shows a summary ("Save ₹3,500 · 4 more fixes").
    - The **savings card stays visible even when collapsed** (savings come first).
@@ -65,10 +67,54 @@
 - **Earn only when the user measurably saves.** Every offer shows the net saving, computed from their data, and says if Munim may earn a fee. The test is "would we show this if we earned nothing?"
 - **Spends finds opportunities; the owning tab acts on them.** Loans go to Credit; insurance and tax go to Invest.
 - **Rejected:** merchant-funded offers that make money from more spending.
-- **Worked example (in the mock):**
-  - Moving the Orbit Finserv loan (13.5%, ₹2,35,916 outstanding) to a hypothetical 11.5% lender would **lose ₹10,710**: interest saved ₹5,993, minus the 1% fee with GST (₹2,784) and foreclosure charges (₹13,919). Switching is also only allowed from 20 Dec.
-  - So Munim shows **"Ask Orbit to match 11.5%: saves ₹5,993"**, labelled "Munim earns nothing from this", and no refinance offer.
-  - Computed with `compareRefinance`. The 11.5% offer is illustrative.
+- **Worked example (in the mock, real sample data):**
+  - Rohan has a pre-approved Neem Bank offer at 11.25% (email of 6 Oct, 1% fee + GST, valid until 31 Oct). His Orbit Finserv loan is at 13.5%, with ₹2,35,916 outstanding.
+  - Switching **loses ₹9,964**: interest saved ₹6,739, minus the processing fee (₹2,784) and the 5% + GST foreclosure charge (₹13,919).
+  - It's also **not allowed until 20 Dec**, and the offer expires before then.
+  - So Munim shows **"Ask Orbit to match 11.25%: saves ₹6,739"**, labelled "Munim earns nothing from this", and never pushes the Neem offer.
+  - Computed with `compareRefinance`.
+
+## Category detail (v1: Food delivery)
+- **Hero:** month to date ₹4,923, 28% above the usual by the 15th (usual ₹3,854), 9 orders at ₹547 on average.
+- **Bars by month:** Jul–Oct, with the current month emphasised and the past months grey. The current month is labelled "so far".
+- **Where from:** merchants ranked (Swiggy ₹2,511 · 5 orders, Zomato ₹2,412 · 4 orders).
+- **Heads-up (proposal):** "Tell me when food delivery passes ₹6,000 / ₹8,000 / Other". It's a notification only and never blocks.
+  - ⚠ This is the first budget-like feature. Decide whether heads-ups belong in v1 at all; they add a settings surface.
+- **This month's orders:** each row opens the transaction detail.
+
+## Money in (credits): how each kind is treated (21 Oct)
+| Credit | Treated as | Where it shows |
+|---|---|---|
+| Salary or other income | Income: never reduces spending | "Money in" line and month close |
+| Refund (e.g. Myntra ₹1,299 in Aug) | **Nets against the original category** (core `refundCategory`): a refund lowers that category's spending | Transaction tagged "Refund · from <original>". A refund with no matching earlier debit is flagged "Refund we can't match" |
+| Cashback (card, previous cycle) | Not income, not spending. Shown as **net cashback earned** | Card section in Credit. A cashback shortfall against card rules becomes a fix |
+| Card bill "payment received" (card side) | Not counted: the bank-side payment is the same money | Hidden from totals, visible in All transactions (Not counted) |
+| Transfer from your own account | Not counted | Same |
+| Savings interest | Small income | Money in |
+| Money from friends or family | **Matched against "Shared" spends** of a similar amount nearby in time (e.g. Swiggy ₹1,200 shared, friend sends ₹600 → your share is ₹600). Unmatched → asked "What's this?" | Transaction detail and a fix |
+| Large unlabelled credit | Asked once: "What's this?" (gift, loan, sale, refund) | What you can change (security first) |
+
+## Borrowed from the Spend Analyser skill (21 Oct)
+- **Verify before showing:**
+  - Every statement must reconcile (balance walk, opening and closing, card total due) before its numbers appear.
+  - A mismatch is investigated, never adjusted to fit.
+  - Hence the "✓ Every statement balances" line and the data sheet.
+- **No double counting across your own accounts:** the not-spending set (self-transfers, card bill payments, cashback, interest, investments) and pass-through chains (only the final leg to the real payee counts).
+- **Flag, don't force:**
+  - Unexplained gaps stay open: an unmatched refund, a split that's short.
+  - "Eligible for EMI" is an offer, not a conversion.
+- **Suspicious items, in severity order:**
+  1. large unlabelled credits;
+  2. large vague transfers;
+  3. same-day duplicate charges;
+  4. EMI conversions;
+  5. cashback shortfalls;
+  6. unmatched refunds.
+  - These rank **above savings** in "What you can change": security first, then savings, then fixes.
+- **Merchant grouping:** gateway variants of one merchant are grouped (Swiggy via PYU*/RAZ*/Cashfree…).
+- **Categorisation:** word-boundary rules, priority-ordered (already in `categorize.ts`).
+- **Recurring fixed-amount items named:** rent, SIP, premiums, allowance transfers.
+- **Shared-expense detection:** same amount and date across people or cards → "Split with someone?"
 
 ## Business opportunities found in spending (brainstorm, 21 Oct)
 Spends is where Munim learns what each person needs. It **finds** an opportunity and the owning tab acts on it. Every row must pass the rule above.
