@@ -130,6 +130,12 @@ Each tab owns the components for its kind of money. Today's check-in only borrow
 - **Finishing a step** = a celebration card in the check-in.
 - **The full path** lives in the Invest tab.
 - **Options rejected:** a path strip on Today (clutter; feels stuck during long steps); fully hidden (the advice feels random, and there's no sense of progress).
+- **Mock (Today v16, Tweaks `moneyStep`), card 1 by step:**
+  - **Buffer and emergency fund:** the Save card shows the goal's progress (e.g. "Emergency fund: ₹1,41,764 of ₹2,40,000").
+  - **Debt:** "₹48,200 carried on your card · about ₹1,687 interest this month", with **Plan an extra payment** (amount pills plus Other; a reminder only, no money moves), Save instead, and Not now.
+  - **Insurance:** "✓ Emergency fund ready · Do you have term and health insurance?", with Yes, both / Not sure / No. Not sure and No lead to general guidance plus a reminder.
+  - **Invest:** "You're ready to start investing".
+  - Sample numbers: essential spend ₹40,000 a month; interest = balance × 3.5% (computed in code). The card rate is illustrative; use the user's actual rate from the statement.
 
 ## Verdict line
 - One sentence plus one short reason, computed by rules, not by the AI. Examples:
