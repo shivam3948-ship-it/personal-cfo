@@ -40,3 +40,115 @@
 | Retirement as the first Phase 3 goal template; projections as ranges | docs/07, docs/12 |
 | L-9: confirm the IRDAI boundary for insurance diagnosis vs advice | docs/03 |
 | Demo idea for interviews: run the thread's master prompt in ChatGPT on Rohan's sample data, next to our x-ray, and show where numbers differ | docs/research |
+
+## Appendix: prompt texts
+
+Prompts 1–5: titles only. x.com blocked the browser before the text could be read.
+
+1. The Complete Budget Builder
+2. The Expense Analyzer & Money Leak Finder
+3. The Debt Elimination Strategy
+4. The Emergency Fund Calculator
+5. The Savings Goal Architect
+
+Prompts 6–10: full text, as pasted in chat on 15 Oct 2026.
+
+### 6/ The Tax Optimization Audit
+```
+You are a CPA and tax strategist. I need you to identify every legal strategy to reduce my tax liability.
+
+Please provide:
+
+-  Tax profile summary: Filing status, gross income, current federal and state bracket, estimated total tax liability, effective tax rate
+-  Deduction strategy: Standard vs. itemized comparison with calculations, above-the-line deductions I'm missing (student loan interest, IRA, HSA, self-employment), tax savings for each
+-  Retirement account optimization: Current 401(k) contribution vs. max, tax savings if maxed, Traditional vs. Roth analysis for my situation, IRA eligibility and benefits, self-employment options (SEP IRA, Solo 401k)
+-  Tax-advantaged account audit: HSA eligibility and contribution gap with triple tax advantage calculation, 529 plan for education with state benefits, FSA optimization strategy
+-  Tax credit inventory: EITC, Child Tax Credit, education credits, energy credits, Saver's Credit eligibility with dollar value for each
+-  Year-end tax moves: Tax-loss harvesting opportunities, deduction bunching strategy, Roth conversion analysis, charitable giving optimization (donor-advised funds, stock donations)
+-  Total savings calculation: Estimated tax reduction if all strategies implemented, prioritized by impact, effort vs. reward rating for each
+
+Format as tax optimization action plan with estimated savings per strategy and implementation timeline.
+
+My tax situation: [FILING STATUS] / [GROSS INCOME] / [CURRENT DEDUCTIONS] / [RETIREMENT CONTRIBUTIONS] / [DEPENDENTS]
+```
+
+### 7/ The Net Worth Tracker
+```
+You are a private wealth advisor. I need you to calculate my current net worth and build a tracking system.
+
+Please provide:
+
+-  Complete asset inventory: Liquid assets (checking, savings, cash), investment accounts (401k, IRA, brokerage, HSA), real estate (current market value), vehicles (fair market value), business equity, other valuable assets with total
+-  Complete liability inventory: Mortgage(s), auto loans, student loans, credit cards, personal loans, other debts with total
+-  Net worth calculation: Total assets minus total liabilities, liquid net worth (cash + investments - debts), investable assets (excluding primary home and cars)
+-  Comparative analysis: My net worth vs. average for my age and income, year-over-year growth rate if historical data available, asset allocation percentages
+-  Financial health metrics: Debt-to-asset ratio (flag if over 40%), liquidity ratio, investment diversification score
+-  Net worth goals: Target for my age, required annual growth rate to reach $[TARGET] by age [AGE], monthly savings and investment requirement
+-  Milestone roadmap: When I'll hit $100k, $250k, $500k, $1M at current growth rate
+-  Quarterly tracking system: Key metrics to monitor, rebalancing triggers, progress celebration points
+
+Format as comprehensive net worth statement with asset/liability tables, growth projections, and tracking framework.
+My financial position: [LIST ALL ASSETS WITH VALUES] / [LIST ALL DEBTS WITH BALANCES] / [AGE] / [INCOME]
+```
+
+### 8/ The Retirement Readiness Analyzer
+```
+You are a retirement planning specialist. I need to know if I'm on track and exactly what I need to do to retire comfortably.
+
+Please provide:
+
+-  Retirement need calculation: Desired annual retirement income, replacement ratio (typically 70-80% of current income), total nest egg needed using 4% rule, inflation adjustment to retirement date
+-  Current retirement asset inventory: 401k, IRA, taxable brokerage, pensions, Social Security estimate (use ssa gov estimate if available) with total
+-  Savings rate analysis: Current annual contributions, employer match capture, percentage of gross income saved, comparison to 15% benchmark
+-  Projection modeling: Current trajectory – what will I have at retirement age, gap analysis vs. what I need, years until retirement, required growth rate assumptions
+-  Catch-up scenarios: If behind, how much extra monthly to close gap, impact of working 2-5 years longer, part-time income in early retirement
+-  Tax diversification check: Balance across Traditional (pre-tax), Roth (tax-free), Taxable accounts, recommended allocation shift for tax optimization in retirement
+-  Withdrawal strategy: 4% rule application, tax-efficient withdrawal sequencing, Social Security claiming strategy (age 62 vs. 67 vs. 70), required minimum distributions (RMD) planning
+-  Risk assessment: Investment allocation vs. age, years to retirement, risk tolerance check, rebalancing recommendations
+
+Format as retirement readiness report with current vs. needed comparison, gap-closing strategies, and confidence score.
+
+My retirement info: [CURRENT AGE] / [DESIRED RETIREMENT AGE] / [RETIREMENT ACCOUNT BALANCES] / [ANNUAL CONTRIBUTIONS] / [DESIRED RETIREMENT INCOME]
+```
+
+### 9/ The Insurance Coverage Audit
+```
+You are an insurance advisor with no sales agenda. I need an objective analysis of my insurance coverage to find gaps and eliminate waste.
+
+Please provide:
+
+-  Life insurance analysis: Current coverage amount and type (term, whole, universal), coverage need calculation (10x income rule, DIME method), gap identification, term vs. permanent recommendation for my situation
+-  Health insurance optimization: Current plan type, deductible vs. premium tradeoff analysis, HSA eligibility check, out-of-pocket max evaluation, coverage adequacy for my health profile
+-  Disability insurance assessment: Current coverage (individual, employer), income replacement percentage, benefit period, elimination period, coverage gap vs. 60-70% income replacement standard
+-  Homeowners/renters evaluation: Dwelling coverage vs. rebuild cost, personal property coverage adequacy, liability limits check (recommend $300k-$500k), additional riders needed (jewelry, electronics, flood)
+-  Auto insurance review: Liability limits (recommend 100/300/100 minimum), collision/comprehensive deductible optimization, umbrella policy need assessment
+-  Umbrella policy recommendation: Do I need it based on net worth and risk exposure, recommended coverage amount, cost-benefit analysis
+-  Coverage gap summary: What I'm underinsured on with risk level, what I'm overinsured on with savings opportunity, policies to add, policies to drop or reduce
+-  Premium optimization: Bundling opportunities, discount audit, coverage reduction strategies without increasing risk
+
+Format as insurance portfolio audit with coverage gap analysis, risk exposure ratings, and premium optimization recommendations.
+
+My current coverage: [LIST ALL POLICIES: TYPE, COVERAGE AMOUNTS, PREMIUMS] / [AGE] / [DEPENDENTS] / [ASSETS] / [INCOME]
+```
+
+### 10/ The Complete Financial Health Checkup (Master Prompt)
+```
+You are a Certified Financial Planner presenting a comprehensive financial plan. I need a complete financial health assessment with prioritized action steps.
+
+Please provide:
+
+-  Executive summary: 3-paragraph overview of my financial health, biggest strengths, critical weaknesses, immediate priorities
+-  Financial vital signs scorecard: Emergency fund status, debt-to-income ratio, savings rate, net worth trajectory, retirement readiness, insurance coverage, tax efficiency – each scored 1-10 with benchmarks
+-  Cash flow optimization: Monthly income vs. expenses, positive or negative cash flow, spending efficiency score, recommended budget adjustments
+-  Debt management verdict: Total debt load assessment, good debt vs. bad debt breakdown, payoff priority ranking, recommended aggressive vs. conservative approach
+-  Savings & investment strategy: Current allocation vs. optimal for my age and goals, diversification score, fee audit, rebalancing needs, tax-location optimization
+-  Risk protection analysis: Insurance coverage gaps prioritized by severity, emergency fund adequacy, estate planning checklist (will, power of attorney, beneficiaries)
+-  Goal alignment check: Are my current financial behaviors aligned with stated goals, trade-off analysis (current lifestyle vs. future goals), required behavioral changes
+-  90-day action plan: Top 10 financial moves ranked by impact, quick wins (do this week), medium-term projects (do this month), long-term initiatives (do this quarter)
+-  Annual financial calendar: When to review budget, rebalance investments, tax plan, insurance audit, net worth tracking
+-  The one thing: If I could only fix ONE thing in the next 30 days, what would have the biggest impact on my financial future
+
+Format as comprehensive financial plan with scoring dashboard, prioritized action list, and implementation timeline.
+
+My complete financial picture: [INCOME] / [EXPENSES] / [DEBTS] / [ASSETS] / [GOALS] / [AGE] / [DEPENDENTS] / [RISK TOLERANCE]
+```
