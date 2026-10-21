@@ -110,6 +110,10 @@
 | `save_difference_tapped` | `amount_band` |
 | `skip_save_chosen` | `category` (food_delivery / …), `orders` (1–3), `amount_band` |
 | `skip_save_undone` | `category`, `seconds_since_save` |
+| `category_opened` | `category`, `kind` (choice / need / cash / member), `card` (skip / below / usual / essential / cash / member) |
+| `cash_use_answered` | `use` (household_help / groceries / family / other), `scope` (rule / once) |
+| `txn_fixed` (Transactions) | as on Today (docs/38): `fix` (category / shared / duplicate / not_mine / note), `scope` (once / rule), `from_category`, `to_category`, `amount_band`; plus `undone` (bool) |
+| `duplicate_check_result` | `found` (bool) |
 
 ## Metrics these unlock
 - **Habit:**

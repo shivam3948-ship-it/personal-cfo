@@ -64,6 +64,15 @@
   - category with **Change**, and "Counts as" (the bucket);
   - Shared / pay me back, Charged twice, Add a note, I didn't make this.
   - This is the same fix component as Today's "Something's off?" (docs/38). Munim asks before turning a fix into a rule.
+- **Fix flows (v2, 21 Oct; v1 had no handlers: "Change" did nothing, user report):**
+  - **Change:** categories grouped by bucket (Everyday / Fixed costs / Others / Not counted; credits get Salary / Other income / Refund / Self transfer), with the current one ticked. Then **"Only this payment"** or **"All N Zomato payments, and future ones"**, which makes a rule. The list, chips and "Your rules" count update.
+    - A UPI transfer to a person, or to your own account, never becomes a merchant rule, because "Person-to-person" isn't one payee. It changes only that payment.
+  - **Shared:** "Half was mine" (rounded to whole rupees, so your share plus what comes back equals the payment) or "None of it was mine". Only your share counts as spending.
+  - **Charged twice:** looks for the same merchant and amount within 2 days. If found, Munim leaves the second one out and gives refund steps (merchant first, then a bank dispute after 7 days). If not found, it says so plainly; no row is touched.
+  - **Note:** up to 60 characters, kept on the phone and never sent to the AI.
+  - **I didn't make this:** block the card or UPI, report to 1930 or cybercrime.gov.in, and raise a written dispute. Optionally mark it "Not mine", which leaves it out of spending.
+  - Every fix shows a confirmation line with **Undo**.
+  - ⚠ The mock keeps fixes per screen; the Rules screen doesn't yet show rules made here. The build must share one store.
 
 ## Business rule (user, 21 Oct; D-038)
 - **Priority:** 1. grow savings, 2. revenue per user.
@@ -76,6 +85,22 @@
   - It's also **not allowed until 20 Dec**, and the offer expires before then.
   - So Munim shows **"Ask Orbit to match 11.25%: saves ₹6,739"**, labelled "Munim earns nothing from this", and never pushes the Neem offer.
   - Computed with `compareRefinance`.
+
+## Category detail (v3: every category, 21 Oct)
+- **One screen for every category** (`Category.dc.html`, built per category by `tools/build_categories.py` from a packages/core probe). Spends' "Where it went" rows open it; Subscriptions keeps its own screen.
+- **Hero, bars and "Where from" are the same for all.** "Where from" shows only when there are 2 or more merchants. The "above / below / about usual" line uses the 20% threshold from Spends.
+- **The card under the chart depends on the kind of category:**
+
+| Kind | Categories | Card |
+|---|---|---|
+| Choice, ≥20% above usual, 2+ payments | Food delivery, Quick commerce, Dining, Shopping, Cabs | **Save what you skip** (below) |
+| Choice, ≥20% below usual | same | "₹1,747 below your usual here. It's already part of the Savings first amount on Spends." No second save button, so savings aren't counted twice |
+| Choice, within ±20% | same | "In line with your usual. Nothing to change here." |
+| Essential | Fuel, Utilities, Mobile & internet | "An essential cost. Munim won't push savings here; it flags only an unusual jump." |
+| Cash | Cash withdrawal | **Blind spot:** "You take out ₹5,000 in cash every month. What is it for?" Household help / Groceries / Family / Something else, then "Yes, every month" (a rule) or "Just this time". This is the first piece of the uncategorised sort flow |
+| Membership | Fitness | cult.fit unused since July · ₹23,988 a year → Subscriptions (how to cancel) |
+
+- New category **Household help** counts as Fixed costs.
 
 ## Category detail (v2: Food delivery)
 - **Hero:** month to date ₹4,923, 28% above the usual by the 15th (usual ₹3,854), 9 orders at ₹547 on average.
@@ -178,6 +203,6 @@ Spends is where Munim learns what each person needs. It **finds** an opportunity
 - ⚠ A native speaker must review the copy before any user sees it.
 
 ## Open
-- Category detail for the other categories; past-month view; the uncategorised sort flow; search (later).
+- Past-month view; the rest of the uncategorised sort flow (cash is done); search (later).
 - Engine before build: `Interest` → income group; `incomeRange()` for irregular earners.
 - Which events from docs/39 fire on Spends; add `spends_change_tapped` (fix type, rupee band), `save_difference_tapped` (amount band), `pace_how_opened`, `money_in_opened` (`earner_type`: salaried / irregular) and `skip_save_chosen` (`orders`: 1–3, `undone`).
