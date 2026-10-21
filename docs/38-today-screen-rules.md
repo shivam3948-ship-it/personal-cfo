@@ -123,6 +123,14 @@ Each tab owns the components for its kind of money. Today's check-in only borrow
 - **Pre-licence boundary (AGENTS.md rule 1):** the Invest tab's savings sheets move or schedule the user's own money. They never recommend a fund or product, and the destination is shown as a fact, not a pick.
 - **Why:** one component per action, so a fix in the check-in and a fix in the tab can't drift apart. The check-in stays a 60-second ritual, and the tabs hold the depth.
 
+## Money path on Today (D-037, 21 Oct)
+- **The path (D-036):** starter buffer → pay off costly debt → emergency fund (6 months of essential spend; the savings balance counts) → term and health insurance check → invest. It is guidance, never a gate.
+- **Not shown on Today.** The user's step only changes which cards the check-in picks. For example, on the debt step the Save card's ask becomes "Pay ₹X extra on your card", not autopay.
+- **"Why this?"** on every step-driven card opens the full path, showing where the user is.
+- **Finishing a step** = a celebration card in the check-in.
+- **The full path** lives in the Invest tab.
+- **Options rejected:** a path strip on Today (clutter; feels stuck during long steps); fully hidden (the advice feels random, and there's no sense of progress).
+
 ## Verdict line
 - One sentence plus one short reason, computed by rules, not by the AI. Examples:
   - "Bills covered · spent below a usual day"
