@@ -68,6 +68,7 @@ Mock: the Munim v2 canvas, page **Invest** (Tweaks: `cas` added/none, theme, sta
 - **Insurance step:** a deeper screen for term and health.
 - **Goals and tools:** goals, FIRE and the insurance calculator may move here from Today.
 - **Hindi copy:** a native speaker must review it.
+- **Ideas from the JM Financial playbook review** (B1–B10, docs/research/jm-playbook-review.md): waiting for Shivam to pick. Recommended: nomination check, step-up SIP from salary rises, risk capacity vs appetite.
 - **Events to add to docs/39:** `invest_plan_chosen` (amount band, months), `essentials_opened`, `xirr_explained_opened`, `regular_fees_opened`, `holdings_wrong_tapped`, `cas_add_tapped`.
 
 ## v2 (current, D-041, 21 Oct): option B with A's guard
