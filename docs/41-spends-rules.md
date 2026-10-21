@@ -1,4 +1,4 @@
-# 41 · Spends tab: design rules (21 Oct 2026, v4 mock)
+# 41 · Spends tab: design rules (21 Oct 2026, v5 mock)
 
 **Status:** design. Mocks "Spends v3" (v1, v2 kept), "Category detail v1", "All transactions v1", "Subscriptions v1" and "Your rules v1" are on the Munim v2 canvas, with Tweaks for theme, state and variant.
 - All figures come from `packages/core` on the sample family, as of 15 Oct.
@@ -150,6 +150,45 @@
   - ⚠ The engine has no income-variability function yet. It needs `incomeRange()` (min, max, median over complete months) before the build.
   - The safe-plan rule (lowest month) is our proposal, not an industry standard.
 
+## Past months (v5, 21 Oct)
+- The **month menu** (the period chip) switches Spends to July, August or September. Before, a past month only opened the Close your month report card.
+- **What changes in a past month:**
+  - a "Viewing September · Back to October" bar;
+  - the hero compares with **the month before**: "₹21,478 less than August". The "usual month" is the middle of the same 3 months, so it would compare a month with itself. July, the first month in the statements, says so instead;
+  - the chart shows the whole month against the usual month, still labelled on the lines;
+  - the split bar and Money in for that month. **A month that spent more than came in says "spent more than came in ₹6,770"** (August), in amber, never "left ₹-6,770";
+  - "What you can change" is hidden, because you can't save in the past. In its place: the **September report card** link (the first month closed in Munim). Jul and Aug say report cards start from September;
+  - "Where it went" is compared with the previous month ("new" for categories absent then). Rows aren't tappable yet, because category screens show the current month only;
+  - "Biggest payments" replaces Recent.
+- **Numbers (packages/core `monthPictures`, re-checked in a separate script):**
+
+| Month | Everyday | Fixed | Total | Left |
+|---|---|---|---|---|
+| Jul | ₹42,749 | ₹72,682 | ₹1,25,431 | ₹19,569 |
+| Aug | ₹87,988 | ₹53,782 | ₹1,51,770 | −₹6,770 |
+| Sep | ₹66,510 | ₹53,782 | ₹1,30,292 | ₹14,708 |
+
+## Sorting what Munim couldn't (v5, 21 Oct)
+- **The queue shows only when something is unsorted.** The sample family has none, because every line matched a rule. The Tweak `unsorted = sample` adds 3 illustrative payments with fictional payees: a ₹2,340 shop payment, a ₹1,500 UPI transfer to a person and an ₹8,000 credit.
+- **Entry:** a card under the trust line: "3 payments need you · ₹3,840 out · ₹8,000 in". Until answered, the debits sit in Others as uncategorised (the split bar shows "Family ₹10,000 · uncategorised ₹3,840"), and the credit is **not counted as income**.
+- **Sort sheet:**
+  - one payment at a time, "1 of 3", with the bank's raw text;
+  - 6 likely answers, each showing where it will count:
+    - shop: Groceries, Shopping, Household help, Family, Gift, Something else;
+    - money in: Paid me back, Side income, A gift to me, A loan to me, Sold something, Something else;
+  - **"Remember for <payee>" is off unless you turn it on**;
+  - Save, or Skip for now (skipped items come back last).
+- **Spends updates as you answer:**
+  - Groceries ₹2,340 makes everyday spending ₹30,519 and the save amount ₹1,100;
+  - Household help makes fixed costs ₹45,101;
+  - Side income makes Money in ₹1,53,000.
+- **Done:** a summary of every answer, with "Undo all".
+- The cash withdrawal question on its category screen is the same pattern for a payment Munim *did* categorise but can't see inside.
+- New category **Household help** counts as Fixed costs.
+
+## All categories
+- "See all 11 categories" now expands the list in place (top 6 ↔ all). It used to go to All transactions.
+
 ## Borrowed from the Spend Analyser skill (21 Oct)
 - **Verify before showing:**
   - Every statement must reconcile (balance walk, opening and closing, card total due) before its numbers appear.
@@ -203,6 +242,10 @@ Spends is where Munim learns what each person needs. It **finds** an opportunity
 - ⚠ A native speaker must review the copy before any user sees it.
 
 ## Open
-- Past-month view; the rest of the uncategorised sort flow (cash is done); search (later).
+- **Build-time (code, not design):**
+  - one store shared by Spends, Transactions, Rules and category screens, so a rule made anywhere shows everywhere;
+  - category screens and All transactions take a month, so past-month rows can open;
+  - engine: `Interest` → income group; `incomeRange()` for irregular earners; an "unsorted" flag on low-confidence lines.
+- Search (user: later). Native-speaker review of the Hindi copy.
 - Engine before build: `Interest` → income group; `incomeRange()` for irregular earners.
 - Which events from docs/39 fire on Spends; add `spends_change_tapped` (fix type, rupee band), `save_difference_tapped` (amount band), `pace_how_opened`, `money_in_opened` (`earner_type`: salaried / irregular) and `skip_save_chosen` (`orders`: 1–3, `undone`).

@@ -114,6 +114,11 @@
 | `cash_use_answered` | `use` (household_help / groceries / family / other), `scope` (rule / once) |
 | `txn_fixed` (Transactions) | as on Today (docs/38): `fix` (category / shared / duplicate / not_mine / note), `scope` (once / rule), `from_category`, `to_category`, `amount_band`; plus `undone` (bool) |
 | `duplicate_check_result` | `found` (bool) |
+| `spends_month_switched` | `to` (current / past), `months_back` |
+| `unsorted_shown` | `count`, `out_band`, `in_band` |
+| `unsorted_answered` | `kind` (shop / person / in), `answer`, `remember` (bool), `position` |
+| `unsorted_skipped` | `kind`, `position` |
+| `all_categories_toggled` | `open` (bool) |
 
 ## Metrics these unlock
 - **Habit:**
