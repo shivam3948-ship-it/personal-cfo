@@ -29,7 +29,7 @@
 | "Am I on track this month?" | **Line: this month (teal) against a usual month (dashed grey)**, day 1–31. Tap or hover for the day's values. | Pace is a trend over time. One line is the point and the other is context, so emphasis colouring is used, not a palette. |
 | "Where does my money go, broadly?" | **One split bar:** Everyday / Fixed / Others, with values below it | Part of a whole with 3 parts. A bar reads better than a pie and fits a phone. |
 | "Which categories?" | **Horizontal bars**, ranked; each row opens its detail | Ranking is the strongest reading task for bars. |
-| Trend per category (6 months) | Small bar chart inside category detail | Next, with the category screen |
+| Category trend | Bars of **spend by the 15th** for each month (Jul, Aug, Sep, Oct) with a dashed line at the usual (their middle) | Same window in every month (v3, 21 Oct). Before, October's 15 days sat next to full months, so Food delivery looked lower than July while running 28% above pace |
 
 - **Rejected:** pie and donut charts (slices are hard to compare, and the labels don't fit on a phone) and dual-axis charts.
 - Identity never relies on colour alone: the two pace lines are **labelled directly** ("This month" beside the teal dot, "Usual month" under the dashed line's end), with no separate legend box. Direct values sit under the split bar.
