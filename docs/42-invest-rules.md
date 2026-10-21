@@ -69,3 +69,27 @@ Mock: the Munim v2 canvas, page **Invest** (Tweaks: `cas` added/none, theme, sta
 - **Goals and tools:** goals, FIRE and the insurance calculator may move here from Today.
 - **Hindi copy:** a native speaker must review it.
 - **Events to add to docs/39:** `invest_plan_chosen` (amount band, months), `essentials_opened`, `xirr_explained_opened`, `regular_fees_opened`, `holdings_wrong_tapped`, `cas_add_tapped`.
+
+## v2 options (21 Oct, pending the user's pick)
+**User's priorities:**
+- P0 is "Is my investing working?" (overpaying is part of it); first-time savers see the next move first;
+- P1 is spare money;
+- P2 is cover.
+
+**The three options:**
+- **A (Claude):** safety first while the safety steps are open; the order follows the money-path step. Shown: path strip, next move, investing, cover.
+- **B (Shivam):** investing first for anyone with a CAS; next move first without one.
+- **C:** v1.
+
+**Shared by A and B:**
+- 3–4 compact cards; detail moves into sheets (plan, path, cover) and the **Portfolio x-ray** screen;
+- "Ask Munim" entry points on the investing card, the cover sheet and the x-ray.
+
+**Your money vs your funds** (docs/09 J4, P2), now in the x-ray:
+- **"Fund"** = the fund's own growth from your first purchase to today, from the CAS's own NAVs (what factsheets advertise).
+- **"You"** = your XIRR.
+- **Sample:** ahead on 3 of 5 (Kestrel +2.3, Banyan +5, Monsoon +2.5 points), about even on 2; no SIP pauses or sells since Jan 2021.
+- **Honest caveat shown in the UI:** SIP returns can beat the headline after a fall and recovery. Being ahead isn't skill; pausing in falls is what puts investors behind.
+- **Engine:** `fundGrowth()` from the first and last CAS NAV per scheme, plus SIP-gap and sell detection from the CAS flows. Not in packages/core yet.
+
+**Not yet:** fund overlap (needs AMFI holdings, D-OPEN-3) and the benchmark comparison. Both are shown as "Soon".
