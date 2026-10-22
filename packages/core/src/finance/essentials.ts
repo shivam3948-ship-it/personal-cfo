@@ -42,7 +42,8 @@ export function safetyNet(ds: Dataset, targetMonths = 6): EmergencyFund {
   const ess = Object.values(essentialsByMonth(ds));
   const perMonth = ess.length ? Math.round(sum(ess.map((r) => sum(Object.values(r)))) / ess.length) : 0;
   const bank = latestBankBalance(ds)?.balance ?? 0;
-  const debtFunds = sum((ds.portfolio?.holdings ?? []).filter((h) => h.asset === 'debt').map((h) => h.value));
+  // Debt and liquid funds, plus arbitrage funds (equity-taxed but hedged, liquid-like): all withdrawable in 1–3 working days.
+  const debtFunds = sum((ds.portfolio?.holdings ?? []).filter((h) => h.asset === 'debt' || h.category === 'Arbitrage').map((h) => h.value));
   const have = bank + debtFunds, target = perMonth * targetMonths;
   return {
     bank, debtFunds, have, essentialsPerMonth: perMonth, target, gap: Math.max(0, target - have), targetMonths,
@@ -51,8 +52,8 @@ export function safetyNet(ds: Dataset, targetMonths = 6): EmergencyFund {
   };
 }
 
-/** Average monthly salary over the complete months (null when there is no salary credit). */
+/** Average monthly salary over the complete months (null when there is no salary credit). Planning uses salary, not interest or refunds. */
 export function monthlyIncome(ds: Dataset): Paise | null {
-  const pics = monthPictures(ds).filter((m) => m.complete && m.income > 0);
-  return pics.length ? Math.round(sum(pics.map((m) => m.income)) / pics.length) : null;
+  const pics = monthPictures(ds).filter((m) => m.complete && (m.byCategory.Salary ?? 0) > 0);
+  return pics.length ? Math.round(sum(pics.map((m) => m.byCategory.Salary ?? 0)) / pics.length) : null;
 }

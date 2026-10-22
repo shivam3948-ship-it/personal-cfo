@@ -65,7 +65,7 @@ describe('CAS edge cases', () => {
     const r = parseCas(mini);
     expect(r.holdings).toHaveLength(1);
     const h = r.holdings[0];
-    expect(h.flows).toEqual([{ date: '2025-04-01', amount: -1000000, nav: 100 }, { date: '2025-06-01', amount: 550000, nav: 110 }]);
+    expect(h.flows).toEqual([{ date: '2025-04-01', amount: -1000000, nav: 100, units: 100 }, { date: '2025-06-01', amount: 550000, nav: 110, units: -50 }]);
     expect(h.plan).toBe('Direct'); expect(h.category).toBe('Liquid'); expect(h.asset).toBe('debt');
     expect(r.checks.every((c) => c.ok)).toBe(true);
   });

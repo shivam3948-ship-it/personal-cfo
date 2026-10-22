@@ -11,7 +11,9 @@ describe('money picture', () => {
       const out = Object.entries(m.byCategory).filter(([k]) => groupOf(k) !== 'income').reduce((s, [, v]) => s + v, 0);
       expect(out).toBe(m.spend + m.committed);
       expect(m.surplus).toBe(m.income - m.spend - m.committed);
-      expect(m.income).toBe(14500000); // salary only; interest and cashback are not income
+      // salary + bank interest is income; cashback and refunds are not (interest became income on 22 Oct, docs/42)
+      expect(m.income).toBe(14500000 + (m.byCategory.Interest ?? 0));
+      expect(m.byCategory.Cashback).toBeUndefined();
     }
   });
   it('card bill payments and self-transfers are excluded from spend (no double count)', async () => {
