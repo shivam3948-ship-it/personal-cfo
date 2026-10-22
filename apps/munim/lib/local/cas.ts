@@ -4,30 +4,15 @@
 import { parseCas, type CasResult, type Holding } from '@core/portfolio/cas';
 import { pdfLines, PdfPasswordError } from '@core/ingest/pdfLines';
 import type { Portfolio } from '@/lib/views/portfolioBlocks';
+import { idbGet, idbPut, idbDel } from './idb';
 
 export { PdfPasswordError };
 export interface LocalCas extends Portfolio { checks: CasResult['checks']; addedAt: string; skipped: string[] }
 
-const DB = 'munim', STORE = 'local', KEY = 'cas';
-let memory: LocalCas | null = null; // fallback when IndexedDB is blocked (private mode): lasts until the tab closes
-
-function db(): Promise<IDBDatabase> {
-  return new Promise((res, rej) => {
-    const r = indexedDB.open(DB, 1);
-    r.onupgradeneeded = () => r.result.createObjectStore(STORE);
-    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
-  });
-}
-async function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T>): Promise<T> {
-  const d = await db();
-  return new Promise((res, rej) => { const q = fn(d.transaction(STORE, mode).objectStore(STORE)); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
-}
-
-export async function loadCas(): Promise<LocalCas | null> {
-  try { return ((await tx('readonly', (s) => s.get(KEY))) as LocalCas | undefined) ?? memory; } catch { return memory; }
-}
-export async function saveCas(c: LocalCas) { memory = c; try { await tx('readwrite', (s) => s.put(c, KEY)); } catch { /* memory only */ } }
-export async function deleteCas() { memory = null; try { await tx('readwrite', (s) => s.delete(KEY)); } catch { /* nothing stored */ } }
+const KEY = 'cas';
+export async function loadCas(): Promise<LocalCas | null> { return (await idbGet<LocalCas>(KEY)) ?? null; }
+export async function saveCas(c: LocalCas) { await idbPut(KEY, c); }
+export async function deleteCas() { await idbDel(KEY); }
 
 /** Only fields the engine needs; AMC kept only when it looks like a fund house (the line it comes from sits near the investor's name). */
 function clean(h: Holding): Holding {
@@ -43,7 +28,11 @@ export async function readCas(file: File, password?: string): Promise<ReadResult
   let lines: string[]; let pages = 0;
   if (isPdf) ({ lines, pages } = await pdfLines(bytes, password));
   else lines = new TextDecoder().decode(bytes).split(/\r?\n/);
-  const r = parseCas(lines.join('\n'));
+  return readCasLines(lines, parseCas(lines.join('\n')), pages);
+}
+
+/** Checks → keep only funds that add up → the on-phone record (no personal details) + privacy-safe diagnostics. */
+export async function readCasLines(lines: string[], r: CasResult, pages = 0): Promise<ReadResult> {
   const failed = r.checks.filter((c) => !c.ok);
   const badIsins = new Set(failed.filter((c) => c.id.startsWith('units:') || c.id.startsWith('value:')).map((c) => c.id.split(':')[1]));
   const holdings = r.holdings.filter((h) => !badIsins.has(h.isin)).map(clean); // a fund that doesn't add up is left out, never guessed

@@ -17,30 +17,37 @@ class Component extends DCLogic {
     var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
     // ---- inputs: paise, from packages/core on the sample family. m = monthPictures().byCategory for Jul, Aug, Sep, Oct 1–15; u15 = the same category's spend on days 1–15 of Jul, Aug, Sep; tx = October debits ----
     var DATA = this.props.data.DATA;
+    // ---- when: META.cur = this month (0–11), META.day = the day we're on, META.past = the complete months the bars compare (0–11), META.idle = an unused membership the engine found (or null) ----
+    var META = this.props.data.META;
+    var M3 = hi ? ['जन.', 'फ़र.', 'मार्च', 'अप्रै.', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितं.', 'अक्टू.', 'नवं.', 'दिसं.'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var MFULL = hi ? ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'] : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var DAY = META.day, th = function (n) { return n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'); };
+    var byDay = hi ? DAY + ' तारीख़ तक' : 'by the ' + th(DAY);
     // ---- what Munim offers depends on the kind of category (docs/41) ----
     var KIND = { 'Food delivery': 'choice', 'Quick commerce': 'choice', 'Dining': 'choice', 'Shopping': 'choice', 'Cabs': 'choice', 'Fuel': 'need', 'Utilities': 'need', 'Mobile & internet': 'need', 'Cash withdrawal': 'cash', 'Fitness': 'member' };
     var HI_CAT = { 'Food delivery': 'फ़ूड डिलीवरी', 'Dining': 'बाहर खाना', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Cabs': 'कैब', 'Fuel': 'पेट्रोल', 'Utilities': 'बिजली-पानी', 'Mobile & internet': 'मोबाइल-इंटरनेट', 'Cash withdrawal': 'कैश निकासी', 'Fitness': 'जिम' };
     var UNIT = { 'Food delivery': ['order', 'orders', 'ऑर्डर'], 'Quick commerce': ['order', 'orders', 'ऑर्डर'], 'Dining': ['visit', 'visits', 'बार'], 'Shopping': ['order', 'orders', 'ऑर्डर'], 'Cabs': ['ride', 'rides', 'राइड'] };
-    var D = DATA[cat], kind = KIND[cat];
+    var D = DATA[cat] || { m: [], u15: [], tx: [] }, kind = KIND[cat] || 'choice';
     var total = D.tx.reduce(function (t, x) { return t + x[2]; }, 0);
-    var usual = D.u15.slice().sort(function (a, b) { return a - b; })[1];
+    var srt = D.u15.slice().sort(function (a, b) { return a - b; }), mid = srt.length >> 1;
+    var usual = !srt.length ? 0 : srt.length % 2 ? srt[mid] : Math.round((srt[mid - 1] + srt[mid]) / 2); // the middle month
     var pct = usual ? Math.round((total - usual) / usual * 100) : null;
     var n = D.tx.length, avg = n ? Math.round(total / n) : 0;
     var unit = UNIT[cat] || ['payment', 'payments', 'भुगतान'];
-    var MN = hi ? ['जुलाई', 'अगस्त', 'सितंबर', 'अक्टू.'] : ['Jul', 'Aug', 'Sep', 'Oct'];
+    var MN = META.past.slice(-D.u15.length).map(function (i) { return M3[i]; }).concat([M3[META.cur]]);
     // ---- bars compare the same window in every month (days 1–15), so October isn't a half month next to full ones; the dashed line is the usual (their middle) ----
     var B15 = D.u15.concat([total]), maxM = Math.max.apply(null, B15) || 1;
-    var bars = B15.map(function (v, i) { return { l: MN[i], v: R(v), h: Math.round(v / maxM * 88) + 'px', fill: i < 3 ? 'var(--hair2)' : 'var(--btn)' }; });
+    var bars = B15.map(function (v, i) { return { l: MN[i], v: R(v), h: Math.round(v / maxM * 88) + 'px', fill: i < B15.length - 1 ? 'var(--hair2)' : 'var(--btn)' }; });
     var byM = {}; D.tx.forEach(function (x) { var b = byM[x[1]] = byM[x[1]] || { v: 0, n: 0 }; b.v += x[2]; b.n++; });
     var mk = Object.keys(byM).sort(function (a, b) { return byM[b].v - byM[a].v; });
     var merchants = mk.map(function (k) { return { name: k, n: byM[k].n + ' ' + (hi ? unit[2] : (byM[k].n === 1 ? unit[0] : unit[1])), v: R(byM[k].v), w: Math.round(byM[k].v / byM[mk[0]].v * 100) + '%' }; });
     var big = pct !== null && Math.abs(pct) >= 20;
     var vsUsual = pct === null ? (hi ? 'पिछले महीनों से तुलना अभी नहीं' : 'Not enough history to compare yet')
-      : !big ? (hi ? 'आम तौर जैसा (15 तारीख़ तक आम ' + R(usual) + ')' : 'About your usual by the 15th (usual ' + R(usual) + ')')
-      : hi ? '15 तारीख़ तक आम तौर से ' + Math.abs(pct) + '% ' + (pct > 0 ? 'ज़्यादा' : 'कम') + ' (आम ' + R(usual) + ')'
-      : Math.abs(pct) + '% ' + (pct > 0 ? 'above' : 'below') + ' your usual by the 15th (usual ' + R(usual) + ')';
+      : !big ? (hi ? 'आम तौर जैसा (' + byDay + ' आम ' + R(usual) + ')' : 'About your usual ' + byDay + ' (usual ' + R(usual) + ')')
+      : hi ? byDay + ' आम तौर से ' + Math.abs(pct) + '% ' + (pct > 0 ? 'ज़्यादा' : 'कम') + ' (आम ' + R(usual) + ')'
+      : Math.abs(pct) + '% ' + (pct > 0 ? 'above' : 'below') + ' your usual ' + byDay + ' (usual ' + R(usual) + ')';
     var vsInk = big && pct > 0 && kind !== 'need' && kind !== 'member' ? 'var(--warn)' : big && pct < 0 ? 'var(--link)' : 'var(--ink2)';
-    var dm = function (iso) { return Number(iso.slice(8)) + (hi ? ' अक्टूबर' : ' Oct'); };
+    var dm = function (iso) { return Number(iso.slice(8)) + ' ' + (hi ? MFULL : M3)[Number(iso.slice(5, 7)) - 1]; };
     // ---- the one card under the chart ----
     var a = { isSkip: false, isCash: false, isLink: false, isNote: false, href: '#', linkTitle: '', linkSub: '', noteTitle: '', noteSub: '', skips: [], uses: [], hasUse: false };
     var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
@@ -55,7 +62,7 @@ class Component extends DCLogic {
       a.skipNote = hi ? 'इस महीने औसत ' + R(avg) + ' प्रति ' + unit[2] + '। Munim कुछ नहीं रोकता।' : 'Your average this month is ' + R(avg) + (/^[aeiou]/.test(unit[0]) ? ' an ' : ' a ') + unit[0] + '. Munim never blocks a payment.';
     } else if (kind === 'cash') {
       a.isCash = true;
-      var same = D.m.slice(0, 3).every(function (v) { return v === D.m[3]; });
+      var same = D.m.length > 1 && D.m.slice(0, -1).every(function (v) { return v === D.m[D.m.length - 1]; });
       a.cashTitle = hi ? (same ? 'हर महीने ' + R(total) + ' कैश निकलता है। यह किस पर खर्च होता है?' : R(total) + ' कैश किस पर खर्च हुआ?') : (same ? 'You take out ' + R(total) + ' in cash every month. What is it for?' : 'What did the ' + R(total) + ' in cash go on?');
       var USES = hi ? [['help', 'घरेलू मदद', 'तय खर्च'], ['groc', 'किराना', 'रोज़ का'], ['family', 'परिवार', 'अन्य'], ['other', 'कुछ और', 'अन्य']] : [['help', 'Household help', 'Fixed costs'], ['groc', 'Groceries', 'Everyday'], ['family', 'Family', 'Others'], ['other', 'Something else', 'Others']];
       a.uses = USES.map(function (u) { var on = s.use === u[0], cs = chip(on); return { label: u[1], on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ use: u[0] }); } }; });
@@ -63,9 +70,9 @@ class Component extends DCLogic {
       a.hasUse = !!picked;
       a.scopeQ = picked ? (hi ? 'हर महीने की ' + R(total) + ' निकासी को "' + picked[1] + '" मानें?' : 'Treat the monthly ' + R(total) + ' withdrawal as ' + picked[1] + ' from now on?') : '';
       a.cashDoneLine = picked ? (hi ? '✓ ' + picked[1] + ' · गिनती: ' + picked[2] + (s.cashScope === 'always' ? ' · नियम बना' : '') : '✓ ' + picked[1] + ' · counts as ' + picked[2] + (s.cashScope === 'always' ? ' · rule saved' : '')) : '';
-    } else if (kind === 'member') {
+    } else if (kind === 'member' && META.idle && total > 0) {
       a.isLink = true; a.href = 'Subscriptions.dc.html';
-      a.linkTitle = hi ? 'cult.fit जुलाई से बंद पड़ा' : 'cult.fit unused since July';
+      a.linkTitle = hi ? META.idle.hi : META.idle.en;
       a.linkSub = hi ? R(total) + ' हर महीने · ' + R(total * 12) + ' साल में · रद्द करने का तरीका देखें' : R(total) + ' a month · ' + R(total * 12) + ' a year · see how to cancel';
     } else {
       a.isNote = true;
@@ -80,14 +87,15 @@ class Component extends DCLogic {
         a.noteSub = hi ? 'यहाँ बदलने को कुछ नहीं।' : 'Nothing to change here.';
       }
     }
-    var C = hi ? { back: 'खर्च पर वापस', heroLabel: 'अक्टूबर 1–15', whereHead: 'कहाँ से', yourCall: 'आपकी मर्ज़ी', blindSpot: 'छिपा खर्च', notNow: 'अभी नहीं', undo: 'वापस लें', everyMonth: 'हाँ, हर महीने', justThis: 'सिर्फ़ इस बार', cashNote: 'Munim नियम बनाने से पहले पूछता है। आप इसे "आपके नियम" में कभी भी बदल सकते हैं।' }
-      : { back: 'Back to Spends', heroLabel: 'October 1–15', whereHead: 'Where from', yourCall: 'Your call', blindSpot: 'Blind spot', notNow: 'Not now', undo: 'Undo', everyMonth: 'Yes, every month', justThis: 'Just this time', cashNote: 'Munim asks before making a rule. You can change it any time in Your rules.' };
+    var C = hi ? { back: 'खर्च पर वापस', heroLabel: MFULL[META.cur] + ' 1–' + DAY, whereHead: 'कहाँ से', yourCall: 'आपकी मर्ज़ी', blindSpot: 'छिपा खर्च', notNow: 'अभी नहीं', undo: 'वापस लें', everyMonth: 'हाँ, हर महीने', justThis: 'सिर्फ़ इस बार', cashNote: 'Munim नियम बनाने से पहले पूछता है। आप इसे "आपके नियम" में कभी भी बदल सकते हैं।' }
+      : { back: 'Back to Spends', heroLabel: MFULL[META.cur] + ' 1–' + DAY, whereHead: 'Where from', yourCall: 'Your call', blindSpot: 'Blind spot', notNow: 'Not now', undo: 'Undo', everyMonth: 'Yes, every month', justThis: 'Just this time', cashNote: 'Munim asks before making a rule. You can change it any time in Your rules.' };
     var d = {
-      title: hi ? HI_CAT[cat] : cat, total: R(total), vsUsual: vsUsual, vsInk: vsInk,
+      title: hi ? (HI_CAT[cat] || cat) : cat, total: R(total), vsUsual: vsUsual, vsInk: vsInk,
       orders: hi ? n + ' ' + unit[2] + (n > 1 ? ' · औसत ' + R(avg) : '') : n + ' ' + (n === 1 ? unit[0] : unit[1]) + (n > 1 ? ' · ' + R(avg) + ' on average' : ''),
-      chartLabel: (hi ? HI_CAT[cat] + ', हर महीने 15 तारीख़ तक: ' : cat + ', spent by the 15th each month: ') + bars.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
+      chartLabel: (hi ? HI_CAT[cat] + ', हर महीने ' + byDay + ': ' : cat + ', spent ' + byDay + ' each month: ') + bars.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
       bars: bars, merchants: merchants, hasMerchants: mk.length >= 2, usualH: Math.round(usual / maxM * 88) + 'px',
-      chartCap: hi ? 'हर महीने 15 तारीख़ तक का खर्च · डैश लाइन = आपका आम (' + R(usual) + ')' : 'Spent by the 15th, each month · dashed line = your usual (' + R(usual) + ')',
+      chartCap: hi ? 'हर महीने ' + byDay + ' का खर्च · डैश लाइन = आपका आम (' + R(usual) + ')' : 'Spent ' + byDay + ', each month · dashed line = your usual (' + R(usual) + ')',
+      hasTx: D.tx.length > 0,
       txHead: hi ? 'इस महीने के भुगतान' : 'This month’s payments',
       tx: D.tx.map(function (x, i) { return { name: x[1], when: dm(x[0]) + ' · ' + (x[3].indexOf('card') === 0 ? (hi ? 'कार्ड ••' : 'Card ••') : (hi ? 'बैंक ••' : 'Bank ••')) + x[3].split(':')[1], amt: '−' + R(x[2]), rule: i < D.tx.length - 1 ? '1px solid var(--hair)' : '0' }; })
     };
@@ -136,8 +144,10 @@ export default function Category(props) {
           <a href={route(V.a?.href)} style={{"flex": "none", "position": "relative", "background": "var(--mari-tint)", "borderRadius": "18px", "padding": "14px", "display": "flex", "gap": "12px", "alignItems": "center", "textDecoration": "none", "color": "var(--ink)"}}><span style={{"flex": "1", "display": "grid", "gap": "2px"}}><b style={{"fontSize": "15.5px", "fontWeight": "600", "lineHeight": "1.35"}}>{V.a?.linkTitle}</b><span style={{"fontSize": "13px", "color": "var(--ink2)"}}>{V.a?.linkSub}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--mari-ink)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></a>
         </>)}{!!(V.a?.isNote) && (<>
           <section style={{"flex": "none", "position": "relative", "background": "var(--card)", "borderRadius": "18px", "padding": "12px 14px", "display": "flex", "gap": "10px", "alignItems": "flex-start", "boxShadow": "0 0 0 1px var(--hair)"}}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--link)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{"flex": "none", "marginTop": "2px"}}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg><span style={{"display": "grid", "gap": "2px"}}><b style={{"fontSize": "15px", "fontWeight": "600"}}>{V.a?.noteTitle}</b><span style={{"fontSize": "13px", "color": "var(--ink2)"}}>{V.a?.noteSub}</span></span></section>
-        </>)}<section style={{"flex": "none", "position": "relative", "background": "var(--card)", "borderRadius": "22px", "padding": "6px 16px", "boxShadow": "0 0 0 1px var(--hair)"}}><h2 style={{"margin": "8px 0 2px", "fontSize": "16px", "fontWeight": "600"}}>{V.d?.txHead}</h2>{(V.d?.tx || []).map((t, i6) => (<Fragment key={i6}>
-            <a href={route("Transactions.dc.html")} style={{"display": "flex", "alignItems": "center", "gap": "10px", "minHeight": "50px", "borderBottom": t?.rule, "textDecoration": "none", "color": "var(--ink)"}}><span style={{"flex": "1", "display": "grid"}}><span style={{"fontSize": "15px", "fontWeight": "500"}}>{t?.name}</span><span style={{"fontSize": "12.5px", "color": "var(--muted)"}}>{t?.when}</span></span><b style={{"fontSize": "15px", "fontWeight": "600"}}>{t?.amt}</b></a>
-          </Fragment>))}</section></div><a href={route("Voice.dc.html")} aria-label="Ask Munim" className="orb-teal" style={{"position": "absolute", "right": "16px", "bottom": "24px", "zIndex": "5", "width": "58px", "height": "58px", "borderRadius": "50%", "border": "3px solid var(--card)", "boxSizing": "border-box", "display": "grid", "placeItems": "center", "textDecoration": "none"}}><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg></a></div>
+        </>)}{!!(V.d?.hasTx) && (<>
+          <section style={{"flex": "none", "position": "relative", "background": "var(--card)", "borderRadius": "22px", "padding": "6px 16px", "boxShadow": "0 0 0 1px var(--hair)"}}><h2 style={{"margin": "8px 0 2px", "fontSize": "16px", "fontWeight": "600"}}>{V.d?.txHead}</h2>{(V.d?.tx || []).map((t, i6) => (<Fragment key={i6}>
+              <a href={route("Transactions.dc.html")} style={{"display": "flex", "alignItems": "center", "gap": "10px", "minHeight": "50px", "borderBottom": t?.rule, "textDecoration": "none", "color": "var(--ink)"}}><span style={{"flex": "1", "display": "grid"}}><span style={{"fontSize": "15px", "fontWeight": "500"}}>{t?.name}</span><span style={{"fontSize": "12.5px", "color": "var(--muted)"}}>{t?.when}</span></span><b style={{"fontSize": "15px", "fontWeight": "600"}}>{t?.amt}</b></a>
+            </Fragment>))}</section>
+        </>)}</div><a href={route("Voice.dc.html")} aria-label="Ask Munim" className="orb-teal" style={{"position": "absolute", "right": "16px", "bottom": "24px", "zIndex": "5", "width": "58px", "height": "58px", "borderRadius": "50%", "border": "3px solid var(--card)", "boxSizing": "border-box", "display": "grid", "placeItems": "center", "textDecoration": "none"}}><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg></a></div>
   </>);
 }

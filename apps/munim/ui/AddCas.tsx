@@ -3,9 +3,11 @@
 // the password is used once and dropped, and only scheme/units/NAV/value/dated flows are saved in this browser.
 import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
-import { readCas, saveCas, loadCas, deleteCas, PdfPasswordError, type LocalCas, type ReadResult } from '@/lib/local/cas';
+import { saveCas, loadCas, deleteCas, PdfPasswordError, type LocalCas, type ReadResult } from '@/lib/local/cas';
+import { readAny, loadStatements, deleteStatement, type SavedStatement } from '@/lib/local/statements';
+import type { BankRead } from '@core/ingest/banks';
 
-type Step = 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'partial' | 'mismatch' | 'unknown';
+type Step = 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'partial' | 'mismatch' | 'unknown' | 'bank';
 const R = (p: number) => '₹' + Math.round(p / 100).toLocaleString('en-IN');
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = (iso: string) => (iso ? `${+iso.slice(8, 10)} ${MON[+iso.slice(5, 7) - 1]} ${iso.slice(0, 4)}` : '');
@@ -24,16 +26,27 @@ export default function AddCas() {
   const [saved, setSaved] = useState<LocalCas | null>(null);
   const [copied, setCopied] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [bank, setBank] = useState<{ read: BankRead; ok: boolean } | null>(null);
+  const [stmts, setStmts] = useState<SavedStatement[]>([]);
+  const [diag, setDiag] = useState('');
   const picker = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { loadCas().then((c) => { if (c) { setSaved(c); setStep('done'); } }); track('cas_add_opened'); }, []);
+  useEffect(() => { loadCas().then((c) => { if (c) { setSaved(c); setStep('done'); } }); loadStatements().then(setStmts); track('cas_add_opened'); }, []);
 
   const choose = () => { setErr(null); picker.current?.click(); };
   async function read(f: File, password?: string) {
     setStep('reading'); setProgress(1); setErr(null); setWrong(false);
     const tick = setInterval(() => setProgress((p) => Math.min(3, p + 1)), 600);
     try {
-      const r = await readCas(f, password);
+      const any = await readAny(f, password);
+      setPw(''); // used once, never kept
+      if (any.type === 'bank') {
+        setBank({ read: any.read, ok: any.ok }); setDiag(''); setStmts(await loadStatements());
+        track('statement_read', { format: any.read.format, ok: any.ok, rows: any.read.txns.length });
+        setStep('bank'); return;
+      }
+      if (any.type === 'unknown') { setDiag(any.diagnostics); setRes(null); setStep('unknown'); track('cas_read', { result: 'unrecognised' }); return; }
+      const r = any.cas;
       setRes(r);
       if (r.cas) { await saveCas(r.cas); setSaved(r.cas); }
       setPw(''); // used once, never kept
@@ -42,12 +55,13 @@ export default function AddCas() {
       setStep(next);
     } catch (e) {
       if (e instanceof PdfPasswordError) { setWrong(e.reason === 'wrong'); setStep('password'); track('cas_read', { result: e.reason === 'wrong' ? 'wrong_password' : 'needs_password' }); }
-      else { setErr('Couldn’t read this file. Is it the CAS PDF from CAMS or KFintech?'); setStep('intro'); track('cas_read', { result: 'unreadable' }); }
+      else { setErr('Couldn’t read this file. Is it a CAS, or an HDFC or SBI statement PDF?'); setStep('intro'); track('cas_read', { result: 'unreadable' }); }
     } finally { clearInterval(tick); }
   }
   const onPick = (f?: File) => { if (!f) return; setFile(f); setPw(''); setWrong(false); read(f); }; // try without a password first
   const del = async () => { await deleteCas(); setSaved(null); setRes(null); setFile(null); setStep('intro'); track('cas_deleted'); };
-  const copyDiag = async () => { if (!res) return; try { await navigator.clipboard.writeText(res.diagnostics); setCopied(true); } catch { setCopied(false); } };
+  const copyDiag = async () => { const t = res?.diagnostics || diag; if (!t) return; try { await navigator.clipboard.writeText(t); setCopied(true); } catch { setCopied(false); } };
+  const delStmt = async (key: string) => { await deleteStatement(key); setStmts(await loadStatements()); track('statement_deleted'); };
 
   const cas = saved;
   const funds = cas?.holdings.length ?? 0, flows = cas ? cas.holdings.reduce((a, h) => a + h.flows.length, 0) : 0;
@@ -62,7 +76,7 @@ export default function AddCas() {
       <div style={S.scroll}>
         <header style={S.head}>
           <a href="/invest" aria-label="Back" style={S.back}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg></a>
-          <h1 className="serif" style={{ margin: 0, fontSize: 26 }}>{step === 'done' ? 'Your statement' : 'Add your statements'}</h1>
+          <h1 className="serif" style={{ margin: 0, fontSize: 26 }}>{step === 'done' ? 'Your statements' : 'Add your statements'}</h1>
         </header>
 
         {err && <p role="alert" style={S.err}>{err}</p>}
@@ -80,10 +94,27 @@ export default function AddCas() {
               <li>The PDF arrives by email in a few minutes. Save it to your phone.</li>
             </ol>}
           </section>
-          <section style={{ ...S.card, display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' }}>
-            <span style={{ flex: 1, display: 'grid', gap: 2 }}><b style={{ fontSize: 15, fontWeight: 600 }}>Bank and card statements</b><span style={{ fontSize: 13, color: 'var(--muted)' }}>HDFC, SBI and ICICI · next</span></span>
-            <span style={S.soon}>Coming next</span>
+          <section style={S.card}>
+            <span style={S.kicker}>Bank and card statements</span>
+            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>See where your own money went</b>
+            <span style={S.sub}>HDFC and SBI savings accounts, HDFC credit cards. Each statement is checked against its own totals to the paisa before Munim uses it.</span>
+            <button type="button" onClick={choose} style={S.primary}>Choose statement PDF</button>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>ICICI and other banks: coming next.</span>
           </section>
+          <StatementList list={stmts} onDelete={delStmt} />
+        </>}
+
+        {step === 'bank' && bank && <>
+          <section role={bank.ok ? undefined : 'alert'} style={S.card}>
+            <span style={bank.ok ? S.okTag : S.warnTag}>{bank.ok ? '✓ Balances to the paisa' : 'Didn’t add up'}</span>
+            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{bank.read.account.label}</b>
+            <span style={S.sub}>{bank.read.period ? `${day(bank.read.period.from)} – ${day(bank.read.period.to)} · ` : ''}{bank.read.txns.length} transactions{bank.read.stmt ? ` · total due ${R(bank.read.stmt.totalDue)}` : ''}</span>
+            <div style={{ display: 'grid', gap: 6 }}>{bank.read.checks.map((c) => <span key={c.id} style={{ display: 'flex', gap: 8, fontSize: 13.5, color: 'var(--ink2)' }}><span style={{ color: c.ok ? 'var(--link)' : 'var(--err-ink)', fontWeight: 700 }}>{c.ok ? '✓' : '✕'}</span>{c.label}</span>)}</div>
+            {bank.ok ? <a href="/spends" style={{ ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }}>See your spends</a>
+              : <span style={S.sub}>Munim didn’t save it: a statement is only used when it reconciles. Try the PDF straight from your bank’s site.</span>}
+            <button type="button" onClick={choose} style={S.link}>Add another statement</button>
+          </section>
+          <StatementList list={stmts} onDelete={delStmt} />
         </>}
 
         {step === 'password' && file && <section style={S.card}>
@@ -131,6 +162,12 @@ export default function AddCas() {
               <button type="button" onClick={del} style={{ ...S.inlineLink, padding: 0, color: 'var(--err-ink)' }}>Delete from this phone</button>
             </div>
           </section>
+          <section style={{ ...S.card, gap: 8, padding: '14px 16px' }}>
+            <b style={{ fontSize: 15, fontWeight: 600 }}>Bank and card statements</b>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>HDFC and SBI savings, HDFC credit cards</span>
+            <button type="button" onClick={choose} style={{ ...S.inlineLink, padding: 0, justifySelf: 'start' }}>Add a statement</button>
+          </section>
+          <StatementList list={stmts} onDelete={delStmt} />
         </>}
 
         {(step === 'summary' || step === 'partial' || step === 'mismatch' || step === 'unknown') && <section role="alert" style={S.card}>
@@ -145,11 +182,28 @@ export default function AddCas() {
               : 'Munim couldn’t find any funds in it. If it is a CAMS or KFintech detailed CAS, copy the diagnostics below and send them to us: they have no amounts, names or account numbers.'}</span>
           {step === 'mismatch' ? <button type="button" onClick={() => setStep('done')} style={S.primary}>Continue with {funds} fund{funds === 1 ? '' : 's'}</button>
             : <button type="button" onClick={() => { setStep('intro'); setHow(true); }} style={S.primary}>{step === 'summary' || step === 'partial' ? 'How to get the right CAS' : 'Try another file'}</button>}
-          {(step === 'mismatch' || step === 'unknown') && res && <button type="button" onClick={copyDiag} style={S.link}>{copied ? '✓ Copied (no amounts or names)' : 'Copy diagnostics'}</button>}
+          {(step === 'mismatch' || step === 'unknown') && (res || diag) && <button type="button" onClick={copyDiag} style={S.link}>{copied ? '✓ Copied (no amounts or names)' : 'Copy diagnostics'}</button>}
           {(step === 'summary' || step === 'partial') && <button type="button" onClick={choose} style={S.link}>Choose another file</button>}
         </section>}
       </div>
     </div>
+  );
+}
+
+function StatementList({ list, onDelete }: { list: SavedStatement[]; onDelete: (key: string) => void }) {
+  if (!list.length) return null;
+  const sorted = [...list].sort((a, b) => a.account.label.localeCompare(b.account.label) || (a.period?.from ?? '').localeCompare(b.period?.from ?? ''));
+  return (
+    <section style={{ ...S.card, gap: 0, padding: '6px 16px' }}>
+      {sorted.map((s, i) => (
+        <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: i ? '1px solid var(--hair)' : 0 }}>
+          <span style={{ color: 'var(--link)', fontWeight: 700 }} aria-hidden="true">✓</span>
+          <span style={{ flex: 1, minWidth: 0, display: 'grid', gap: 2 }}><b style={{ fontSize: 14.5, fontWeight: 600 }}>{s.account.label}</b>
+            <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{s.period ? `${day(s.period.from)} – ${day(s.period.to)} · ` : ''}{s.txns.length} transactions</span></span>
+          <button type="button" onClick={() => onDelete(s.key)} aria-label={`Delete ${s.account.label} statement`} style={{ ...S.inlineLink, color: 'var(--err-ink)' }}>Delete</button>
+        </div>))}
+      <a href="/spends" style={{ ...S.inlineLink, display: 'block', padding: '10px 0', textDecoration: 'none' }}>See your spends ›</a>
+    </section>
   );
 }
 

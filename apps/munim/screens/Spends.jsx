@@ -25,49 +25,56 @@ class Component extends DCLogic {
     var RECENT = this.props.data.RECENT;
     var HI_CAT = { 'Subscriptions': 'सब्सक्रिप्शन', 'Cash withdrawal': 'कैश निकासी', 'Food delivery': 'फ़ूड डिलीवरी', 'Dining': 'बाहर खाना', 'Fuel': 'पेट्रोल', 'Fitness': 'जिम', 'Utilities': 'बिजली-पानी', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Cabs': 'कैब', 'Mobile & internet': 'मोबाइल-इंटरनेट' };
     var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
-    var med = PACE.map(function (x) { return x.v; }).sort(function (a, b) { return a - b; })[1];
+    var med = (function (v) { return v.length ? v[Math.floor(v.length / 2)] : 0; })(PACE.map(function (x) { return x.v; }).sort(function (a, b) { return a - b; }));
     var orbitMatch = this.props.data.orbitMatch, orbitSwitchNet = this.props.data.orbitSwitchNet;   // compareRefinance vs Neem Bank's real pre-approved 11.25% offer (email, 6 Oct), 1% fee + GST; switching allowed only from 20 Dec, offer expires 31 Oct
     var INCOME = this.props.data.INCOME, MONTHS = this.props.data.MONTHS;
+    var INSAL = this.props.data.INSAL;   // salaried money in (engine)
     var FOOD = this.props.data.FOOD;   // CategoryFood: 9 orders, 1–15 Oct
     var foodPct = Math.round((FOOD.amt - FOOD.usual15) / FOOD.usual15 * 100), foodSkip2 = 2 * Math.round(FOOD.amt / FOOD.orders);
     var LEAK = this.props.data.LEAK;
+    // whose month is on screen (data): month index, day reached, bank last 4, data sources, report-card start, yearly-charge note
+    var META = this.props.data.META;
+    var FIXES = this.props.data.FIXES;   // "What you can change" from the engine (null = the sample list below)
+    var M3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var MFULL = hi ? ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'] : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var DAY = META.day, curFull = MFULL[META.cur], cur3 = M3[META.cur], th = function (n) { return n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'); };
     var C = hi ? {
-      title: 'खर्च', period: 'अक्टूबर · 1–15', heroLabel: 'रोज़ का खर्च, 1–15 अक्टूबर', show: 'हिसाब देखें', hide: 'हिसाब छिपाएँ',
+      title: 'खर्च', period: curFull + ' · 1–' + DAY, heroLabel: 'रोज़ का खर्च, 1–' + DAY + ' ' + curFull, show: 'हिसाब देखें', hide: 'हिसाब छिपाएँ',
       paceBelow: function (x) { return 'आम रफ़्तार से ' + x + ' कम'; }, paceAbove: function (x) { return 'आम रफ़्तार से ' + x + ' ज़्यादा'; },
       legendYou: 'इस महीने', legendUsual: 'आम महीना', how: 'कैसे?', day1: '1', today: 'आज', paceTitle: 'रफ़्तार का हिसाब', close: 'बंद करें',
-      moneyTitle: 'आमदनी', moneyPeriod: 'अक्टूबर 1–15', last3: 'पिछले 3 महीने और यह महीना', spentSoFar: 'इस महीने कुल खर्च', leftLabel: 'बचे', notIncome: 'आमदनी में नहीं गिना: रिफ़ंड (ये उसी कैटेगरी का खर्च घटाते हैं), कार्ड कैशबैक, कार्ड बिल भुगतान और अपने ही खातों के बीच ट्रांसफ़र।',
+      moneyTitle: 'आमदनी', moneyPeriod: curFull + ' 1–' + DAY, last3: 'पिछले 3 महीने और यह महीना', spentSoFar: 'इस महीने कुल खर्च', leftLabel: 'बचे', notIncome: 'आमदनी में नहीं गिना: रिफ़ंड (ये उसी कैटेगरी का खर्च घटाते हैं), कार्ड कैशबैक, कार्ड बिल भुगतान और अपने ही खातों के बीच ट्रांसफ़र।',
       moneyIn: 'आमदनी', leftAfter: 'खर्च के बाद बचे', trust: 'हर स्टेटमेंट का हिसाब मिलता है ·', yourData: 'आपका डेटा', dataTitle: 'आपका डेटा', dataIntro: 'Munim ने ये फ़ाइलें आपके फ़ोन पर पढ़ीं। हर स्टेटमेंट के टोटल रुपये तक मिलाए गए।', addStatement: 'नया स्टेटमेंट जोड़ें', dataPrivacy: 'फ़ाइलें आपके फ़ोन से बाहर नहीं जातीं।',
-      monthsTitle: 'महीने', monthsNote: 'पिछला महीना चुनने पर उसका रिपोर्ट कार्ड खुलता है।', mathHead: '15 तारीख़ तक रोज़ का खर्च, पिछले 3 महीने', mathFoot: 'बीच वाला महीना ही "आम तौर" है।', notCounted: 'गिना नहीं गया', notCountedWhat: 'अपने खातों में ट्रांसफ़र, कार्ड बिल भुगतान और निवेश।',
+      monthsTitle: 'महीने', monthsNote: 'पिछला महीना चुनने पर उसका रिपोर्ट कार्ड खुलता है।', mathHead: DAY + ' तारीख़ तक रोज़ का खर्च, पिछले ' + META.pastN + ' महीने', mathFoot: 'बीच वाला महीना ही "आम तौर" है।', notCounted: 'गिना नहीं गया', notCountedWhat: 'अपने खातों में ट्रांसफ़र, कार्ड बिल भुगतान और निवेश।',
       outLabel: 'इस महीने कुल खर्च', everyday: 'रोज़ का', fixed: 'तय खर्च', others: 'अन्य', othersSub: 'परिवार, बिना कैटेगरी',
       changeHead: 'आप क्या बदल सकते हैं', saveKicker: 'सबसे पहले बचत', otherAmount: 'दूसरी रक़म', whereHead: 'पैसा कहाँ गया', vsUsual: 'आम तौर से तुलना', recentHead: 'हाल के लेन-देन',
       retry: 'फिर कोशिश करें', errLine: 'ताज़ा नहीं हो पाया। 7:40 बजे तक का हिसाब दिख रहा है।', loading: 'आपका खर्च जोड़ा जा रहा है…',
       emptyTitle: 'अपना पहला बैंक स्टेटमेंट जोड़ें', emptyBody: 'Munim स्टेटमेंट आपके फ़ोन पर ही पढ़ता है और बताता है पैसा कहाँ गया।', emptyCta: 'बैंक स्टेटमेंट जोड़ें', emptyAlt: 'सैंपल डेटा से देखें', emptyNote: 'अभी HDFC और SBI खाते, HDFC और ICICI क्रेडिट कार्ड।'
     } : {
-      title: 'Spends', period: 'October · 1–15', heroLabel: 'Everyday spending, 1–15 Oct', show: 'Show the math', hide: 'Hide the math',
+      title: 'Spends', period: curFull + ' · 1–' + DAY, heroLabel: 'Everyday spending, 1–' + DAY + ' ' + cur3, show: 'Show the math', hide: 'Hide the math',
       paceBelow: function (x) { return x + ' below your usual pace'; }, paceAbove: function (x) { return x + ' above your usual pace'; },
       legendYou: 'This month', legendUsual: 'Usual month', how: 'How?', day1: '1', today: 'Today', paceTitle: 'How your pace is worked out', close: 'Close',
-      moneyTitle: 'Money in', moneyPeriod: 'October 1–15', last3: 'Last 3 months and this month', spentSoFar: 'Spent this month', leftLabel: 'Left', notIncome: 'Not counted as income: refunds (they lower spending in their category), card cashback, card bill payments and transfers between your own accounts.',
+      moneyTitle: 'Money in', moneyPeriod: curFull + ' 1–' + DAY, last3: 'Last 3 months and this month', spentSoFar: 'Spent this month', leftLabel: 'Left', notIncome: 'Not counted as income: refunds (they lower spending in their category), card cashback, card bill payments and transfers between your own accounts.',
       moneyIn: 'Money in', leftAfter: 'left after spending', trust: 'Every statement balances to the rupee ·', yourData: 'Your data', dataTitle: 'Your data', dataIntro: 'Munim read these files on your phone and matched every statement\u2019s totals to the rupee.', addStatement: 'Add a statement', dataPrivacy: 'Files never leave your phone.',
-      monthsTitle: 'Months', monthsNote: 'Picking a past month opens its report card.', mathHead: 'Everyday spending by the 15th, last 3 months', mathFoot: 'The middle month is your usual pace.', notCounted: 'Not counted', notCountedWhat: 'Transfers between your own accounts, card bill payments and investments.',
+      monthsTitle: 'Months', monthsNote: 'Picking a past month opens its report card.', mathHead: 'Everyday spending by the ' + th(DAY) + ', last ' + (META.pastN === 1 ? 'month' : META.pastN + ' months'), mathFoot: 'The middle month is your usual pace.', notCounted: 'Not counted', notCountedWhat: 'Transfers between your own accounts, card bill payments and investments.',
       outLabel: 'Total spent this month', everyday: 'Everyday', fixed: 'Fixed costs', others: 'Others', othersSub: 'Family, uncategorised',
       changeHead: 'What you can change', saveKicker: 'Savings first', otherAmount: 'Other amount', whereHead: 'Where it went', vsUsual: 'vs a usual month', recentHead: 'Recent',
       retry: 'Retry', errLine: 'Couldn’t refresh. Showing numbers from 7:40 am.', loading: 'Adding up your spending…',
       emptyTitle: 'Add your first bank statement', emptyBody: 'Munim reads it on your phone and shows where your money went, and what you can change.', emptyCta: 'Add bank statement', emptyAlt: 'Try with sample data', emptyNote: 'Supported now: HDFC and SBI accounts, HDFC and ICICI credit cards.'
     };
     Object.assign(C, hi ? {
-      backToNow: 'अक्टूबर पर लौटें', reportSub: 'महीना बंद: क्या बदला, क्या रखें, आगे का प्लान', noReport: 'रिपोर्ट कार्ड सितंबर से शुरू होते हैं, जो Munim में बंद किया पहला महीना था। ये महीने आपके अपलोड किए स्टेटमेंट से हैं।',
+      backToNow: curFull + ' पर लौटें', reportSub: 'महीना बंद: क्या बदला, क्या रखें, आगे का प्लान', noReport: 'रिपोर्ट कार्ड सितंबर से शुरू होते हैं, जो Munim में बंद किया पहला महीना था। ये महीने आपके अपलोड किए स्टेटमेंट से हैं।',
       pastTxNote: 'इस महीने के रोज़ के खर्च के चार सबसे बड़े भुगतान।', sortNow: 'छाँटें', sortTitle: 'इन्हें छाँटने में मदद करें', rememberSub: 'अपने आप बंद रहता है। नियम बनाने से पहले Munim पूछता है।', skipForNow: 'अभी छोड़ें',
       sortDoneNote: 'आपके जवाबों से खर्च टैब अपडेट हो गया। इन्हें "सारे लेन-देन" में कभी भी बदलें।', done: 'हो गया', startOver: 'सब वापस लें'
     } : {
-      backToNow: 'Back to October', reportSub: 'Close your month: what changed, what to keep, the plan', noReport: 'Report cards start from September, the first month you closed in Munim. These months come from your uploaded statements.',
+      backToNow: 'Back to ' + curFull, reportSub: 'Close your month: what changed, what to keep, the plan', noReport: (META.reportFrom ? 'Report cards start from ' + META.reportFrom + ', the first month you closed in Munim. ' : 'Report cards start from the first month you close in Munim. ') + 'These months come from your uploaded statements.',
       pastTxNote: 'The four largest everyday payments in the month.', sortNow: 'Sort', sortTitle: 'Help Munim sort these', rememberSub: 'Off unless you turn it on. Munim asks before making a rule.', skipForNow: 'Skip for now',
       sortDoneNote: 'Spends has updated with your answers. You can change any of them in All transactions.', done: 'Done', startOver: 'Undo all'
     });
     // ---- past months: packages/core monthPictures() for the 3 complete months; ev = everyday categories, fx = fixed, fam = family, unc = uncategorised, cum = everyday spending by day ----
     var PAST = this.props.data.PAST;
-    var PKEYS = ['07', '08', '09'], PSHORT = { '07': 'Jul', '08': 'Aug', '09': 'Sep' };
+    var PKEYS = Object.keys(PAST).sort(), PSHORT = {}; PKEYS.forEach(function (k) { PSHORT[k] = M3[+k - 1]; });
     var past = s.month && PAST[s.month] ? s.month : null, P = past ? PAST[past] : null;
-    var MN = hi ? { Jul: 'जुलाई', Aug: 'अगस्त', Sep: 'सितंबर', Oct: 'अक्टूबर' } : { Jul: 'July', Aug: 'August', Sep: 'September', Oct: 'October' };
+    var MN = {}; M3.forEach(function (m, i) { MN[m] = MFULL[i]; });
     var sumv = function (o) { return Object.keys(o).reduce(function (t, k) { return t + o[k]; }, 0); };
     // ---- payments Munim couldn't sort (illustrative scenario, fictional payees; Tweak `unsorted`). The sample family has none: every line matched a rule ----
     var UNS = (this.props.unsorted ?? 'none') === 'sample' ? [
@@ -120,11 +127,11 @@ class Component extends DCLogic {
       hov = { on: true, x: X(i), left: Math.min(Math.max(X(i), 124), W - 124) + 'px',
         text: (hi ? i + 1 + ' तारीख़ · ' : 'Day ' + (i + 1) + ' · ') + (you !== null ? (past ? MN[PSHORT[past]] + ' ' : (hi ? 'इस महीने ' : 'You ')) + R(you) + ' · ' : '') + (hi ? 'आम ' : 'Usual ') + R(USUALCUM[i]) };
     }
-    var months = MONTHS.slice().reverse().map(function (mm) { var key = { Jul: '07', Aug: '08', Sep: '09', Oct: null }[mm[0]], on = key === past;
+    var months = MONTHS.slice().reverse().map(function (mm) { var key = mm[4] ? String(M3.indexOf(mm[0]) + 1).padStart(2, '0') : null, on = key === past;
       var ev = key ? sumv(PAST[key].ev) : everyday, fx = key ? PAST[key].fx : fixedV, ot = key ? PAST[key].fam + PAST[key].unc : famV + uncV;
-      return { name: MN[mm[0]] + (mm[4] ? '' : (hi ? ' · 1–15' : ' · 1–15 so far')), sub: (hi ? 'रोज़ का ' : 'Everyday ') + R(ev) + (hi ? ' · तय ' : ' · fixed ') + R(fx), total: R(ev + fx + ot), mark: on ? '✓' : '', on: on,
+      return { name: MN[mm[0]] + (mm[4] ? '' : (hi ? ' · 1–' + DAY : ' · 1–' + DAY + ' so far')), sub: (hi ? 'रोज़ का ' : 'Everyday ') + R(ev) + (hi ? ' · तय ' : ' · fixed ') + R(fx), total: R(ev + fx + ot), mark: on ? '✓' : '', on: on,
         pick: function () { self.setState({ month: key, sheet: null, hov: null, allCats: false }); } }; });
-    var files = hi ? [
+    var files = !hi && META.files ? META.files : hi ? [
       { name: 'बैंक स्टेटमेंट ••4521 · 1 जुलाई–30 सितंबर', what: '133 लेन-देन', check: '✓ हर लाइन पर बैलेंस मिला · ओपनिंग + जमा − निकासी = क्लोज़िंग' },
       { name: 'क्रेडिट कार्ड ••9012 · 4 स्टेटमेंट', what: 'जुलाई–अक्टूबर बिल', check: '✓ हर बिल का कुल बकाया मिला' },
       { name: 'बैंक SMS · 1–15 अक्टूबर', what: '30 लेन-देन (3 OTP/प्रोमो छोड़े)', check: '✓ स्टेटमेंट के क्लोज़िंग बैलेंस से आगे मिलता है' },
@@ -140,9 +147,9 @@ class Component extends DCLogic {
     var maxC = catMap[catsSorted[0]];
     var prevEv = past && PKEYS.indexOf(past) > 0 ? PAST[PKEYS[PKEYS.indexOf(past) - 1]].ev : null;
     var cats = (s.allCats ? catsSorted : catsSorted.slice(0, 6)).map(function (k) {
-      var yearly = !past && k === 'Subscriptions';
+      var yearly = !past && k === 'Subscriptions' && !!META.subNote;
       var u = past ? (prevEv ? prevEv[k] : null) : USUAL15[k], dl = (u && !yearly) ? Math.round((catMap[k] - u) / u * 100) : null, big = dl !== null && Math.abs(dl) >= 20;
-      var note = yearly ? (hi ? 'LingoPro का सालाना ₹4,999 इसी महीने कटा' : 'Includes LingoPro’s yearly ₹4,999') : '';
+      var note = yearly ? (hi ? 'LingoPro का सालाना ₹4,999 इसी महीने कटा' : META.subNote) : '';
       var name = hi ? (HI_CAT[k] || k) : k;
       var delta = yearly ? (hi ? 'सालाना चार्ज' : 'yearly charge') : (past && prevEv && !u) ? (hi ? 'नया' : 'new') : (past && !prevEv) ? '' : dl === null || dl === 0 ? (hi ? 'जैसा' : 'usual') : (dl > 0 ? '↑ ' + dl + '%' : '↓ ' + (-dl) + '%');
       return { name: name, amt: R(catMap[k]), w: Math.round(catMap[k] / maxC * 100) + '%', href: yearly ? 'Subscriptions.dc.html' : (CATPAGE[k] || 'Transactions.dc.html'), aria: name + ', ' + R(catMap[k]) + (hi ? ', खोलें' : ', open'),
@@ -154,7 +161,7 @@ class Component extends DCLogic {
       { icon: '2×', title: 'Netflix ने दो बार पैसे काटे', sub: '18 सितंबर · रिफ़ंड माँगें', gain: R(LEAK.dup) },
       { icon: '₹', title: 'LingoPro ट्रायल पेड हो गया', sub: 'रद्द करें या रिफ़ंड माँगें', gain: R(LEAK.lingo) },
       { icon: '%', title: 'Orbit से 11.25% ब्याज माँगें', sub: 'Neem का ऑफ़र लेने पर फ़ीस से ' + R(-orbitSwitchNet) + ' का घाटा', gain: R(orbitMatch), tag: 'Munim को इससे कुछ नहीं मिलता', kind: 'rate' }
-    ] : [
+    ] : FIXES ? FIXES.map(function (f) { return Object.assign({}, f); }) : [
       { kind: 'pace', icon: '↑', title: 'Food delivery up ' + foodPct + '% this month', sub: 'Skip 2 orders, save ' + R(foodSkip2), gain: R(foodSkip2), href: 'CategoryFood.dc.html' },
       { icon: '!', title: 'cult.fit unused since July', sub: R(199900) + ' a month', gain: R(LEAK.cult) + '/yr' },
       { icon: '2×', title: 'Netflix charged twice', sub: '18 Sep · ask for a refund', gain: R(LEAK.dup) },
@@ -172,16 +179,20 @@ class Component extends DCLogic {
     var MON = hi ? ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var IN = irregular
       ? { credits: [['2026-10-03', 'Brightleaf Studio', 'client', 6200000], ['2026-10-11', 'Kestrel Labs', 'client', 3500000]], hist: [['Jul', 11200000], ['Aug', 16800000], ['Sep', 9100000]] }
-      : { credits: [['2026-10-01', 'Salary', 'salary', 14500000]], hist: [['Jul', 14500000], ['Aug', 14500000], ['Sep', 14500000]], salDates: ['2026-07-01', '2026-08-01', '2026-09-01', '2026-10-01'] };
-    UNS.forEach(function (u, i) { var a = s.sorted[i]; if (a && USE[a.use][1] === 'income') IN.credits.push(['2026-10-' + String(u.day).padStart(2, '0'), u.name, 'side', u.amt]); });
+      : INSAL;
+    IN = { credits: IN.credits.slice(), hist: IN.hist, salDates: IN.salDates || [] };
+    UNS.forEach(function (u, i) { var a = s.sorted[i]; if (a && USE[a.use][1] === 'income') IN.credits.push(['2026-' + String(META.cur + 1).padStart(2, '0') + '-' + String(u.day).padStart(2, '0'), u.name, 'side', u.amt]); });
     var dm = function (iso) { var p = iso.split('-'); return parseInt(p[2], 10) + ' ' + MON[parseInt(p[1], 10) - 1]; };
     var inTotal = IN.credits.reduce(function (t, x) { return t + x[3]; }, 0);
-    var hv = IN.hist.map(function (h) { return h[1]; }), lo = Math.min.apply(null, hv), hiV = Math.max.apply(null, hv);
+    var hv = IN.hist.map(function (h) { return h[1]; }), lo = hv.length ? Math.min.apply(null, hv) : 0, hiV = hv.length ? Math.max.apply(null, hv) : 0;
     var nextHead, nextBody;
     if (irregular) {
       nextHead = hi ? 'हर महीने ' + R(lo) + ' मानकर चलें' : 'Plan on ' + R(lo) + ' a month';
       nextBody = hi ? 'कोई तय तारीख़ नहीं। पिछले 3 महीनों में आमदनी ' + R(lo) + ' से ' + R(hiV) + ' रही। सबसे कम वाले महीने पर प्लान करना सुरक्षित है; उससे ऊपर जो आए, वह पहले बचत में।'
         : 'No fixed payday. Your income ranged ' + R(lo) + '–' + R(hiV) + ' over the last 3 months. Planning on your lowest month keeps you safe; anything above it goes to savings first.';
+    } else if (!IN.salDates.length) {
+      nextHead = hi ? 'इन स्टेटमेंट में सैलरी नहीं दिखी' : 'No salary in these statements';
+      nextBody = hi ? 'Munim उसी पर प्लान करता है जो सच में आया।' : 'Munim plans on what actually came in, month by month.';
     } else {
       var sd = IN.salDates, last = sd[sd.length - 1].split('-'), nm = parseInt(last[1], 10) % 12, ny = parseInt(last[0], 10) + (nm === 0 ? 1 : 0);
       var next = ny + '-' + String(nm + 1).padStart(2, '0') + '-' + last[2];
@@ -191,9 +202,9 @@ class Component extends DCLogic {
       nextBody = hi ? (sameDay ? 'पिछले ' + (sd.length - 1) + ' महीने से हर बार ' + parseInt(last[2], 10) + ' तारीख़ को आई' : 'आने की तारीख़ बदलती रही है') + (sameAmt ? ', रक़म भी वही।' : '।')
         : (sameDay ? 'It has come on the ' + parseInt(last[2], 10) + (parseInt(last[2], 10) === 1 ? 'st' : 'th') + ' for ' + (sd.length - 1) + ' months running' : 'The date has varied') + (sameAmt ? ', the same amount each time.' : '.');
     }
-    var barMax = Math.max(hiV, inTotal);
+    var barMax = Math.max(hiV, inTotal, 1);
     var mBars = IN.hist.map(function (h) { return { l: MON[['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(h[0])], v: R(h[1]), h: Math.round(h[1] / barMax * 60) + 'px', fill: 'var(--hair2)' }; })
-      .concat([{ l: MON[9] + (hi ? ' (अब तक)' : ' so far'), v: R(inTotal), h: Math.round(inTotal / barMax * 60) + 'px', fill: 'var(--btn)' }]);
+      .concat([{ l: MON[META.cur] + (hi ? ' (अब तक)' : ' so far'), v: R(inTotal), h: Math.round(inTotal / barMax * 60) + 'px', fill: 'var(--btn)' }]);
     var rowLeftV = past ? P.inc - outTotal : null;
     var curOut = sumv(cat2) + FIXED + fixedAdd + FAMILY + famAdd + uncatV;
     if (rowLeftV === null) rowLeftV = inTotal - curOut;
@@ -202,7 +213,7 @@ class Component extends DCLogic {
       rowTotal: R(past ? P.inc : inTotal), rowLeft: R(Math.abs(rowLeftV)), leftInk: rowLeftV < 0 ? 'var(--warn)' : 'var(--link)',
       leftWord: rowLeftV < 0 ? (hi ? 'आमदनी से ज़्यादा खर्च' : 'spent more than came in') : C.leftAfter,
       chartLabel: (hi ? 'हर महीने की आमदनी: ' : 'Money in by month: ') + mBars.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
-      rows: IN.credits.map(function (x) { return { name: x[2] === 'salary' ? (hi ? 'सैलरी' : 'Salary') : x[1], sub: dm(x[0]) + (x[2] === 'salary' ? (hi ? ' · बैंक ••4521' : ' · bank ••4521') : x[2] === 'side' ? (hi ? ' · साइड इनकम' : ' · side income') : (hi ? ' · क्लाइंट पेमेंट' : ' · client payment')), amt: '+' + R(x[3]) }; })
+      rows: IN.credits.map(function (x) { return { name: x[2] === 'salary' ? (hi ? 'सैलरी' : 'Salary') : x[1], sub: dm(x[0]) + (x[2] === 'salary' ? (hi ? ' · बैंक ••' + META.bank : ' · bank ••' + META.bank) : x[2] === 'side' ? (hi ? ' · साइड इनकम' : ' · side income') : (hi ? ' · क्लाइंट पेमेंट' : ' · client payment')), amt: '+' + R(x[3]) }; })
     };
     // ---- sort queue ----
     var pending = UNS.map(function (u, i) { return i; }).filter(function (i) { return !s.sorted[i]; });
@@ -225,15 +236,15 @@ class Component extends DCLogic {
     u.doneRows = UNS.map(function (x, i) { var a = s.sorted[i]; return a ? { name: x.name, sub: USE[a.use][0] + ' · ' + BUCKETL[USE[a.use][1]] + (a.remember ? (hi ? ' · नियम बना' : ' · rule saved') : ''), amt: (x.dir === 'credit' ? '+' : '−') + R(x.amt), ink: x.dir === 'credit' ? 'var(--link)' : 'var(--ink)' } : null; }).filter(Boolean);
     var d = {
       everyday: R(everyday), paceLine: paceLine, paceInk: paceInk,
-      chartLabel: past ? (hi ? 'रोज़ का खर्च दिन-ब-दिन, ' : 'Everyday spending by day, ') + MN[PSHORT[past]] + ' ' + R(everyday) : (hi ? 'रोज़ का खर्च, दिन-ब-दिन: इस महीने ' : 'Everyday spending by day: this month ') + R(everyday) + (hi ? ', आम महीना ' : ' by the 15th, usual month ') + R(med),
+      chartLabel: past ? (hi ? 'रोज़ का खर्च दिन-ब-दिन, ' : 'Everyday spending by day, ') + MN[PSHORT[past]] + ' ' + R(everyday) : (hi ? 'रोज़ का खर्च, दिन-ब-दिन: इस महीने ' : 'Everyday spending by day: this month ') + R(everyday) + (hi ? ', आम महीना ' : ' by the ' + th(DAY) + ', usual month ') + R(med),
       months: months, files: files,
       usualPts: pts(USUALCUM), youPts: pts(cumV), youX: youX, youY: youY, usualY: Y(USUALCUM[li]),
       youLabel: past ? MN[PSHORT[past]] : C.legendYou, youLabelX: lab.yx, youLabelY: lab.yy, youLabelT: lab.yt, usualLabelX: lab.ux, usualLabelY: lab.uy, usualLabelT: lab.ut,
       todayLbl: past ? '' : C.today, lastDay: String(past ? cumV.length : 31),
-      paceRows: PACE.map(function (x) { return { l: (hi ? ({ Jul: 'जुलाई', Aug: 'अगस्त', Sep: 'सितंबर' })[x.m] : x.m) + ' 1–15' + (x.v === med ? (hi ? ' · आम तौर' : ' · usual') : ''), v: R(x.v) }; }).concat([{ l: hi ? 'अक्टूबर 1–15' : 'Oct 1–15', v: R(everyday) }]),
+      paceRows: PACE.map(function (x) { return { l: (hi ? MN[x.m] : x.m) + ' 1–' + DAY + (x.v === med ? (hi ? ' · आम तौर' : ' · usual') : ''), v: R(x.v) }; }).concat([{ l: (hi ? curFull : cur3) + ' 1–' + DAY, v: R(everyday) }]),
       notCounted: R(NOTCOUNTED), outTotal: R(outTotal), split: split,
       splitLabel: split.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
-      changeSummary: hi ? R(saveAmt) + ' बचत · ' + fixes.length + ' और सुधार' : 'Save ' + R(saveAmt) + ' · ' + fixes.length + ' more fixes',
+      changeSummary: hi ? R(saveAmt) + ' बचत · ' + fixes.length + ' और सुधार' : 'Save ' + R(saveAmt) + ' · ' + fixes.length + (fixes.length === 1 ? ' more fix' : ' more fixes'),
       saveTitle: hi ? 'जो ' + R(saveAmt) + ' कम खर्च हुए, उन्हें बचत में डालें' : 'Save the ' + R(saveAmt) + ' you didn’t spend', saveCta: hi ? R(saveAmt) + ' बचाएँ' : 'Save ' + R(saveAmt),
       fixes: fixes, cats: cats,
       allCats: catsSorted.length <= 6 ? '' : s.allCats ? (hi ? 'सिर्फ़ ऊपर की 6 दिखाएँ' : 'Show the top 6') : (hi ? 'सभी ' + catsSorted.length + ' कैटेगरी देखें' : 'See all ' + catsSorted.length + ' categories'),
@@ -279,7 +290,7 @@ export default function Spends(props) {
         </>)}{!!(V.isLoading) && (<>
           <div aria-busy="true" style={{"flex": "none", "position": "relative", "display": "grid", "gap": "12px"}}><div style={{"background": "var(--card)", "borderRadius": "24px", "padding": "18px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)"}}><span className="skel" style={{"height": "14px", "width": "50%"}}></span><span className="skel" style={{"height": "36px", "width": "45%"}}></span><span className="skel" style={{"height": "14px", "width": "70%"}}></span></div><span className="skel" style={{"height": "150px", "borderRadius": "20px"}}></span><span className="skel" style={{"height": "220px", "borderRadius": "20px"}}></span><span style={{"fontSize": "13.5px", "color": "var(--muted)", "textAlign": "center"}}>{V.c?.loading}</span></div>
         </>)}{!!(V.isEmpty) && (<>
-          <section style={{"flex": "none", "position": "relative", "background": "var(--card)", "borderRadius": "24px", "padding": "18px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)"}}><b className="serif" style={{"fontSize": "25px", "lineHeight": "1.15"}}>{V.c?.emptyTitle}</b><span style={{"fontSize": "15px", "color": "var(--ink2)"}}>{V.c?.emptyBody}</span><button type="button" style={{"marginTop": "4px", "minHeight": "52px", "borderRadius": "999px", "border": "0", "background": "var(--btn)", "color": "var(--on-btn)", "fontSize": "16px", "fontWeight": "600", "cursor": "pointer"}}>{V.c?.emptyCta}</button><button type="button" style={{"minHeight": "44px", "border": "0", "background": "transparent", "fontSize": "14.5px", "color": "var(--muted)", "cursor": "pointer"}}>{V.c?.emptyAlt}</button><span style={{"fontSize": "12.5px", "color": "var(--muted)"}}>{V.c?.emptyNote}</span></section>
+          <section style={{"flex": "none", "position": "relative", "background": "var(--card)", "borderRadius": "24px", "padding": "18px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)"}}><b className="serif" style={{"fontSize": "25px", "lineHeight": "1.15"}}>{V.c?.emptyTitle}</b><span style={{"fontSize": "15px", "color": "var(--ink2)"}}>{V.c?.emptyBody}</span><a href={route("Upload.dc.html")} style={{"marginTop": "4px", "minHeight": "52px", "borderRadius": "999px", "background": "var(--btn)", "color": "var(--on-btn)", "fontSize": "16px", "fontWeight": "600", "display": "grid", "placeItems": "center", "textDecoration": "none"}}>{V.c?.emptyCta}</a><button type="button" style={{"minHeight": "44px", "border": "0", "background": "transparent", "fontSize": "14.5px", "color": "var(--muted)", "cursor": "pointer"}}>{V.c?.emptyAlt}</button><span style={{"fontSize": "12.5px", "color": "var(--muted)"}}>{V.c?.emptyNote}</span></section>
         </>)}{!!(V.showData) && (<>
           <section aria-labelledby="hero" style={{"flex": "none", "position": "relative", "background": "var(--card)", "borderRadius": "24px", "padding": "16px 16px 12px", "display": "grid", "gap": "4px", "boxShadow": "0 0 0 1px var(--hair)"}}><span id="hero" style={{"fontSize": "14px", "color": "var(--muted)"}}>{V.c?.heroLabel}</span><b className="serif" style={{"fontSize": "36px", "lineHeight": "1.05"}}>{V.d?.everyday}</b><button type="button" onClick={V.paceClick} aria-haspopup="dialog" style={{"justifySelf": "start", "minHeight": "36px", "border": "0", "background": "transparent", "padding": "0", "cursor": "pointer", "textAlign": "left", "fontSize": "14px", "fontWeight": "600", "color": V.d?.paceInk}}>{V.d?.paceLine}{' '}{!!(V.isCurrent) && (<>
                 <span style={{"color": "var(--link)"}}>· {V.c?.how} ›</span>
@@ -343,7 +354,7 @@ export default function Spends(props) {
       </>)}{!!(V.dataOpen) && (<>
         <div style={{"position": "absolute", "inset": "0", "background": "var(--scrim)"}}><section className="sheet" role="dialog" aria-label={V.c?.dataTitle} style={{"position": "absolute", "left": "0", "right": "0", "bottom": "0", "maxHeight": "90%", "overflowY": "auto", "background": "var(--card)", "borderRadius": "26px 26px 0 0", "padding": "10px 20px 24px", "boxSizing": "border-box", "display": "grid", "gridTemplateColumns": "minmax(0, 1fr)", "gap": "8px"}}><span aria-hidden="true" style={{"width": "40px", "height": "4px", "borderRadius": "2px", "background": "var(--hair2)", "justifySelf": "center"}}></span><div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center"}}><h2 className="serif" style={{"margin": "0", "fontSize": "24px"}}>{V.c?.dataTitle}</h2><button type="button" aria-label={V.c?.close} onClick={V.closeSheets} style={{"width": "44px", "height": "44px", "marginRight": "-10px", "border": "0", "background": "transparent", "borderRadius": "50%", "display": "grid", "placeItems": "center", "cursor": "pointer", "color": "var(--ink2)"}}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div><span style={{"fontSize": "14px", "color": "var(--ink2)", "marginTop": "-4px"}}>{V.c?.dataIntro}</span>{(V.d?.files || []).map((f, i8) => (<Fragment key={i8}>
               <div style={{"display": "flex", "gap": "10px", "alignItems": "flex-start", "padding": "10px 0", "borderBottom": "1px solid var(--hair)"}}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--link)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{"flex": "none", "marginTop": "2px"}}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg><span style={{"display": "grid", "gap": "1px"}}><b style={{"fontSize": "14.5px", "fontWeight": "600"}}>{f?.name}</b><span style={{"fontSize": "13px", "color": "var(--muted)"}}>{f?.what}</span><span style={{"fontSize": "12.5px", "color": "var(--link)"}}>{f?.check}</span></span></div>
-            </Fragment>))}<div style={{"display": "grid", "marginTop": "4px"}}><button type="button" style={{"minHeight": "52px", "borderRadius": "999px", "border": "0", "background": "var(--btn)", "color": "var(--on-btn)", "fontSize": "16px", "fontWeight": "600", "cursor": "pointer"}}>{V.c?.addStatement}</button><span style={{"fontSize": "12.5px", "color": "var(--muted)", "textAlign": "center", "paddingTop": "8px"}}>{V.c?.dataPrivacy}</span></div></section></div>
+            </Fragment>))}<div style={{"display": "grid", "marginTop": "4px"}}><a href={route("Upload.dc.html")} style={{"minHeight": "52px", "borderRadius": "999px", "background": "var(--btn)", "color": "var(--on-btn)", "fontSize": "16px", "fontWeight": "600", "display": "grid", "placeItems": "center", "textDecoration": "none"}}>{V.c?.addStatement}</a><span style={{"fontSize": "12.5px", "color": "var(--muted)", "textAlign": "center", "paddingTop": "8px"}}>{V.c?.dataPrivacy}</span></div></section></div>
       </>)}{!!(V.moneyOpen) && (<>
         <div style={{"position": "absolute", "inset": "0", "background": "var(--scrim)"}}><section className="sheet" role="dialog" aria-label={V.c?.moneyTitle} style={{"position": "absolute", "left": "0", "right": "0", "bottom": "0", "maxHeight": "92%", "overflowY": "auto", "background": "var(--card)", "borderRadius": "26px 26px 0 0", "padding": "10px 20px 24px", "boxSizing": "border-box", "display": "grid", "gridTemplateColumns": "minmax(0, 1fr)", "gap": "8px"}}><span aria-hidden="true" style={{"width": "40px", "height": "4px", "borderRadius": "2px", "background": "var(--hair2)", "justifySelf": "center"}}></span><div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center"}}><h2 className="serif" style={{"margin": "0", "fontSize": "24px"}}>{V.c?.moneyTitle}</h2><button type="button" aria-label={V.c?.close} onClick={V.closeSheets} style={{"width": "44px", "height": "44px", "marginRight": "-10px", "border": "0", "background": "transparent", "borderRadius": "50%", "display": "grid", "placeItems": "center", "cursor": "pointer", "color": "var(--ink2)"}}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div><span style={{"fontSize": "14px", "color": "var(--muted)", "marginTop": "-6px"}}>{V.c?.moneyPeriod}</span><b className="serif" style={{"fontSize": "32px", "lineHeight": "1.05"}}>{V.m?.total}</b><div>{(V.m?.rows || []).map((r, i9) => (<Fragment key={i9}>
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px", "minHeight": "52px", "borderBottom": "1px solid var(--hair)"}}><span style={{"flex": "1", "minWidth": "0", "display": "grid"}}><span style={{"fontSize": "15px", "fontWeight": "500"}}>{r?.name}</span><span style={{"fontSize": "12.5px", "color": "var(--muted)"}}>{r?.sub}</span></span><b style={{"fontSize": "15px", "fontWeight": "600", "color": "var(--link)"}}>{r?.amt}</b></div>

@@ -1,5 +1,6 @@
 'use client';
 import Transactions from '@/screens/Transactions';
 import { Screen } from '@/ui/Screen';
+import { withMyStatementsTx } from '@/lib/local/patch';
 
-export default function Page() { return <Screen C={Transactions} view="transactions" />; }
+export default function Page() { return <Screen C={Transactions} view="transactions" patch={withMyStatementsTx} />; }

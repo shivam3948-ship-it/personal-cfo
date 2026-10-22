@@ -10,7 +10,9 @@ export const EVENTS = {
   credit_notify_tapped: 'credit_notify_tapped', // {} fake door: interest in the Credit tab
   cas_add_opened: 'cas_add_opened',             // {}
   cas_read: 'cas_read',                         // { result, funds } (never amounts or names)
-  cas_deleted: 'cas_deleted',                   // {}
+  cas_deleted: 'cas_deleted',
+  statement_read: 'statement_read',             // { format, ok, rows } (never amounts or descriptions)
+  statement_deleted: 'statement_deleted',                   // {}
   ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
   voice_started: 'voice_started',               // { ctx, mode }
   answer_listened: 'answer_listened',           // { ctx, how: tap | auto }

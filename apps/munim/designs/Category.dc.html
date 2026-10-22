@@ -142,6 +142,7 @@ button{font:inherit;color:inherit}
       </section>
     </sc-if>
 
+    <sc-if value="{{d.hasTx}}" hint-placeholder-val="{{ true }}">
     <section style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 6px 16px; box-shadow: 0 0 0 1px var(--hair)">
       <h2 style="margin: 8px 0 2px; font-size: 16px; font-weight: 600">{{d.txHead}}</h2>
       <sc-for list="{{d.tx}}" as="t" hint-placeholder-count="5">
@@ -151,6 +152,7 @@ button{font:inherit;color:inherit}
         </a>
       </sc-for>
     </section>
+    </sc-if>
   </div>
   <a href="Voice.dc.html" aria-label="Ask Munim" class="orb-teal" style="position: absolute; right: 16px; bottom: 24px; z-index: 5; width: 58px; height: 58px; border-radius: 50%; border: 3px solid var(--card); box-sizing: border-box; display: grid; place-items: center; text-decoration: none">
     <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
@@ -167,30 +169,37 @@ class Component extends DCLogic {
     var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
     // ---- inputs: paise, from packages/core on the sample family. m = monthPictures().byCategory for Jul, Aug, Sep, Oct 1–15; u15 = the same category's spend on days 1–15 of Jul, Aug, Sep; tx = October debits ----
     var DATA = {"Food delivery": {"m": [505100, 541900, 1044100, 492300], "u15": [134800, 385400, 526200], "tx": [["2026-10-14", "Zomato", 62600, "bank:4521"], ["2026-10-13", "Zomato", 67000, "bank:4521"], ["2026-10-09", "Swiggy", 52600, "bank:4521"], ["2026-10-05", "Swiggy", 49300, "bank:4521"], ["2026-10-05", "Zomato", 41500, "bank:4521"], ["2026-10-03", "Swiggy", 47800, "bank:4521"], ["2026-10-03", "Swiggy", 39500, "bank:4521"], ["2026-10-01", "Swiggy", 61900, "bank:4521"], ["2026-10-01", "Zomato", 70100, "bank:4521"]]}, "Quick commerce": {"m": [275300, 277600, 261100, 138200], "u15": [152600, 152000, 143800], "tx": [["2026-10-07", "Blinkit", 74800, "bank:4521"], ["2026-10-03", "Blinkit", 63400, "bank:4521"]]}, "Dining": {"m": [643600, 600200, 447600, 272900], "u15": [259300, 479500, 447600], "tx": [["2026-10-04", "Chaayos", 272900, "card:9012"]]}, "Shopping": {"m": [561900, 753000, 458400, 127200], "u15": [0, 282800, 117700], "tx": [["2026-10-06", "Amazon", 127200, "card:9012"]]}, "Cabs": {"m": [188300, 204600, 211500, 82800], "u15": [164600, 108400, 145900], "tx": [["2026-10-12", "Uber", 29500, "bank:4521"], ["2026-10-04", "Rapido", 26100, "bank:4521"], ["2026-10-04", "Uber", 27200, "bank:4521"]]}, "Fuel": {"m": [237700, 617600, 386900, 220000], "u15": [0, 617600, 386900], "tx": [["2026-10-13", "HPCL", 220000, "card:9012"]]}, "Utilities": {"m": [214000, 286000, 241000, 198000], "u15": [214000, 286000, 241000], "tx": [["2026-10-12", "DHBVN Electricity", 198000, "bank:4521"]]}, "Mobile & internet": {"m": [165800, 165800, 165800, 59900], "u15": [59900, 59900, 59900], "tx": [["2026-10-15", "Airtel", 59900, "bank:4521"]]}, "Cash withdrawal": {"m": [500000, 500000, 500000, 500000], "u15": [500000, 500000, 500000], "tx": [["2026-10-09", "ATM cash", 500000, "bank:4521"]]}, "Fitness": {"m": [199900, 199900, 199900, 199900], "u15": [199900, 199900, 199900], "tx": [["2026-10-08", "cult.fit", 199900, "bank:4521"]]}};
+    // ---- when: META.cur = this month (0–11), META.day = the day we're on, META.past = the complete months the bars compare (0–11), META.idle = an unused membership the engine found (or null) ----
+    var META = { cur: 9, day: 15, past: [6, 7, 8], idle: { en: 'cult.fit unused since July', hi: 'cult.fit जुलाई से बंद पड़ा' } };
+    var M3 = hi ? ['जन.', 'फ़र.', 'मार्च', 'अप्रै.', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितं.', 'अक्टू.', 'नवं.', 'दिसं.'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var MFULL = hi ? ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'] : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var DAY = META.day, th = function (n) { return n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'); };
+    var byDay = hi ? DAY + ' तारीख़ तक' : 'by the ' + th(DAY);
     // ---- what Munim offers depends on the kind of category (docs/41) ----
     var KIND = { 'Food delivery': 'choice', 'Quick commerce': 'choice', 'Dining': 'choice', 'Shopping': 'choice', 'Cabs': 'choice', 'Fuel': 'need', 'Utilities': 'need', 'Mobile & internet': 'need', 'Cash withdrawal': 'cash', 'Fitness': 'member' };
     var HI_CAT = { 'Food delivery': 'फ़ूड डिलीवरी', 'Dining': 'बाहर खाना', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Cabs': 'कैब', 'Fuel': 'पेट्रोल', 'Utilities': 'बिजली-पानी', 'Mobile & internet': 'मोबाइल-इंटरनेट', 'Cash withdrawal': 'कैश निकासी', 'Fitness': 'जिम' };
     var UNIT = { 'Food delivery': ['order', 'orders', 'ऑर्डर'], 'Quick commerce': ['order', 'orders', 'ऑर्डर'], 'Dining': ['visit', 'visits', 'बार'], 'Shopping': ['order', 'orders', 'ऑर्डर'], 'Cabs': ['ride', 'rides', 'राइड'] };
-    var D = DATA[cat], kind = KIND[cat];
+    var D = DATA[cat] || { m: [], u15: [], tx: [] }, kind = KIND[cat] || 'choice';
     var total = D.tx.reduce(function (t, x) { return t + x[2]; }, 0);
-    var usual = D.u15.slice().sort(function (a, b) { return a - b; })[1];
+    var srt = D.u15.slice().sort(function (a, b) { return a - b; }), mid = srt.length >> 1;
+    var usual = !srt.length ? 0 : srt.length % 2 ? srt[mid] : Math.round((srt[mid - 1] + srt[mid]) / 2); // the middle month
     var pct = usual ? Math.round((total - usual) / usual * 100) : null;
     var n = D.tx.length, avg = n ? Math.round(total / n) : 0;
     var unit = UNIT[cat] || ['payment', 'payments', 'भुगतान'];
-    var MN = hi ? ['जुलाई', 'अगस्त', 'सितंबर', 'अक्टू.'] : ['Jul', 'Aug', 'Sep', 'Oct'];
+    var MN = META.past.slice(-D.u15.length).map(function (i) { return M3[i]; }).concat([M3[META.cur]]);
     // ---- bars compare the same window in every month (days 1–15), so October isn't a half month next to full ones; the dashed line is the usual (their middle) ----
     var B15 = D.u15.concat([total]), maxM = Math.max.apply(null, B15) || 1;
-    var bars = B15.map(function (v, i) { return { l: MN[i], v: R(v), h: Math.round(v / maxM * 88) + 'px', fill: i < 3 ? 'var(--hair2)' : 'var(--btn)' }; });
+    var bars = B15.map(function (v, i) { return { l: MN[i], v: R(v), h: Math.round(v / maxM * 88) + 'px', fill: i < B15.length - 1 ? 'var(--hair2)' : 'var(--btn)' }; });
     var byM = {}; D.tx.forEach(function (x) { var b = byM[x[1]] = byM[x[1]] || { v: 0, n: 0 }; b.v += x[2]; b.n++; });
     var mk = Object.keys(byM).sort(function (a, b) { return byM[b].v - byM[a].v; });
     var merchants = mk.map(function (k) { return { name: k, n: byM[k].n + ' ' + (hi ? unit[2] : (byM[k].n === 1 ? unit[0] : unit[1])), v: R(byM[k].v), w: Math.round(byM[k].v / byM[mk[0]].v * 100) + '%' }; });
     var big = pct !== null && Math.abs(pct) >= 20;
     var vsUsual = pct === null ? (hi ? 'पिछले महीनों से तुलना अभी नहीं' : 'Not enough history to compare yet')
-      : !big ? (hi ? 'आम तौर जैसा (15 तारीख़ तक आम ' + R(usual) + ')' : 'About your usual by the 15th (usual ' + R(usual) + ')')
-      : hi ? '15 तारीख़ तक आम तौर से ' + Math.abs(pct) + '% ' + (pct > 0 ? 'ज़्यादा' : 'कम') + ' (आम ' + R(usual) + ')'
-      : Math.abs(pct) + '% ' + (pct > 0 ? 'above' : 'below') + ' your usual by the 15th (usual ' + R(usual) + ')';
+      : !big ? (hi ? 'आम तौर जैसा (' + byDay + ' आम ' + R(usual) + ')' : 'About your usual ' + byDay + ' (usual ' + R(usual) + ')')
+      : hi ? byDay + ' आम तौर से ' + Math.abs(pct) + '% ' + (pct > 0 ? 'ज़्यादा' : 'कम') + ' (आम ' + R(usual) + ')'
+      : Math.abs(pct) + '% ' + (pct > 0 ? 'above' : 'below') + ' your usual ' + byDay + ' (usual ' + R(usual) + ')';
     var vsInk = big && pct > 0 && kind !== 'need' && kind !== 'member' ? 'var(--warn)' : big && pct < 0 ? 'var(--link)' : 'var(--ink2)';
-    var dm = function (iso) { return Number(iso.slice(8)) + (hi ? ' अक्टूबर' : ' Oct'); };
+    var dm = function (iso) { return Number(iso.slice(8)) + ' ' + (hi ? MFULL : M3)[Number(iso.slice(5, 7)) - 1]; };
     // ---- the one card under the chart ----
     var a = { isSkip: false, isCash: false, isLink: false, isNote: false, href: '#', linkTitle: '', linkSub: '', noteTitle: '', noteSub: '', skips: [], uses: [], hasUse: false };
     var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
@@ -205,7 +214,7 @@ class Component extends DCLogic {
       a.skipNote = hi ? 'इस महीने औसत ' + R(avg) + ' प्रति ' + unit[2] + '। Munim कुछ नहीं रोकता।' : 'Your average this month is ' + R(avg) + (/^[aeiou]/.test(unit[0]) ? ' an ' : ' a ') + unit[0] + '. Munim never blocks a payment.';
     } else if (kind === 'cash') {
       a.isCash = true;
-      var same = D.m.slice(0, 3).every(function (v) { return v === D.m[3]; });
+      var same = D.m.length > 1 && D.m.slice(0, -1).every(function (v) { return v === D.m[D.m.length - 1]; });
       a.cashTitle = hi ? (same ? 'हर महीने ' + R(total) + ' कैश निकलता है। यह किस पर खर्च होता है?' : R(total) + ' कैश किस पर खर्च हुआ?') : (same ? 'You take out ' + R(total) + ' in cash every month. What is it for?' : 'What did the ' + R(total) + ' in cash go on?');
       var USES = hi ? [['help', 'घरेलू मदद', 'तय खर्च'], ['groc', 'किराना', 'रोज़ का'], ['family', 'परिवार', 'अन्य'], ['other', 'कुछ और', 'अन्य']] : [['help', 'Household help', 'Fixed costs'], ['groc', 'Groceries', 'Everyday'], ['family', 'Family', 'Others'], ['other', 'Something else', 'Others']];
       a.uses = USES.map(function (u) { var on = s.use === u[0], cs = chip(on); return { label: u[1], on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ use: u[0] }); } }; });
@@ -213,9 +222,9 @@ class Component extends DCLogic {
       a.hasUse = !!picked;
       a.scopeQ = picked ? (hi ? 'हर महीने की ' + R(total) + ' निकासी को "' + picked[1] + '" मानें?' : 'Treat the monthly ' + R(total) + ' withdrawal as ' + picked[1] + ' from now on?') : '';
       a.cashDoneLine = picked ? (hi ? '✓ ' + picked[1] + ' · गिनती: ' + picked[2] + (s.cashScope === 'always' ? ' · नियम बना' : '') : '✓ ' + picked[1] + ' · counts as ' + picked[2] + (s.cashScope === 'always' ? ' · rule saved' : '')) : '';
-    } else if (kind === 'member') {
+    } else if (kind === 'member' && META.idle && total > 0) {
       a.isLink = true; a.href = 'Subscriptions.dc.html';
-      a.linkTitle = hi ? 'cult.fit जुलाई से बंद पड़ा' : 'cult.fit unused since July';
+      a.linkTitle = hi ? META.idle.hi : META.idle.en;
       a.linkSub = hi ? R(total) + ' हर महीने · ' + R(total * 12) + ' साल में · रद्द करने का तरीका देखें' : R(total) + ' a month · ' + R(total * 12) + ' a year · see how to cancel';
     } else {
       a.isNote = true;
@@ -230,14 +239,15 @@ class Component extends DCLogic {
         a.noteSub = hi ? 'यहाँ बदलने को कुछ नहीं।' : 'Nothing to change here.';
       }
     }
-    var C = hi ? { back: 'खर्च पर वापस', heroLabel: 'अक्टूबर 1–15', whereHead: 'कहाँ से', yourCall: 'आपकी मर्ज़ी', blindSpot: 'छिपा खर्च', notNow: 'अभी नहीं', undo: 'वापस लें', everyMonth: 'हाँ, हर महीने', justThis: 'सिर्फ़ इस बार', cashNote: 'Munim नियम बनाने से पहले पूछता है। आप इसे "आपके नियम" में कभी भी बदल सकते हैं।' }
-      : { back: 'Back to Spends', heroLabel: 'October 1–15', whereHead: 'Where from', yourCall: 'Your call', blindSpot: 'Blind spot', notNow: 'Not now', undo: 'Undo', everyMonth: 'Yes, every month', justThis: 'Just this time', cashNote: 'Munim asks before making a rule. You can change it any time in Your rules.' };
+    var C = hi ? { back: 'खर्च पर वापस', heroLabel: MFULL[META.cur] + ' 1–' + DAY, whereHead: 'कहाँ से', yourCall: 'आपकी मर्ज़ी', blindSpot: 'छिपा खर्च', notNow: 'अभी नहीं', undo: 'वापस लें', everyMonth: 'हाँ, हर महीने', justThis: 'सिर्फ़ इस बार', cashNote: 'Munim नियम बनाने से पहले पूछता है। आप इसे "आपके नियम" में कभी भी बदल सकते हैं।' }
+      : { back: 'Back to Spends', heroLabel: MFULL[META.cur] + ' 1–' + DAY, whereHead: 'Where from', yourCall: 'Your call', blindSpot: 'Blind spot', notNow: 'Not now', undo: 'Undo', everyMonth: 'Yes, every month', justThis: 'Just this time', cashNote: 'Munim asks before making a rule. You can change it any time in Your rules.' };
     var d = {
-      title: hi ? HI_CAT[cat] : cat, total: R(total), vsUsual: vsUsual, vsInk: vsInk,
+      title: hi ? (HI_CAT[cat] || cat) : cat, total: R(total), vsUsual: vsUsual, vsInk: vsInk,
       orders: hi ? n + ' ' + unit[2] + (n > 1 ? ' · औसत ' + R(avg) : '') : n + ' ' + (n === 1 ? unit[0] : unit[1]) + (n > 1 ? ' · ' + R(avg) + ' on average' : ''),
-      chartLabel: (hi ? HI_CAT[cat] + ', हर महीने 15 तारीख़ तक: ' : cat + ', spent by the 15th each month: ') + bars.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
+      chartLabel: (hi ? HI_CAT[cat] + ', हर महीने ' + byDay + ': ' : cat + ', spent ' + byDay + ' each month: ') + bars.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
       bars: bars, merchants: merchants, hasMerchants: mk.length >= 2, usualH: Math.round(usual / maxM * 88) + 'px',
-      chartCap: hi ? 'हर महीने 15 तारीख़ तक का खर्च · डैश लाइन = आपका आम (' + R(usual) + ')' : 'Spent by the 15th, each month · dashed line = your usual (' + R(usual) + ')',
+      chartCap: hi ? 'हर महीने ' + byDay + ' का खर्च · डैश लाइन = आपका आम (' + R(usual) + ')' : 'Spent ' + byDay + ', each month · dashed line = your usual (' + R(usual) + ')',
+      hasTx: D.tx.length > 0,
       txHead: hi ? 'इस महीने के भुगतान' : 'This month’s payments',
       tx: D.tx.map(function (x, i) { return { name: x[1], when: dm(x[0]) + ' · ' + (x[3].indexOf('card') === 0 ? (hi ? 'कार्ड ••' : 'Card ••') : (hi ? 'बैंक ••' : 'Bank ••')) + x[3].split(':')[1], amt: '−' + R(x[2]), rule: i < D.tx.length - 1 ? '1px solid var(--hair)' : '0' }; })
     };

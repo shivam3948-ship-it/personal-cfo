@@ -12,7 +12,8 @@ export interface MonthCoverage { key: string; from: string; to: string; complete
 
 /** Months covered by bank-side data (statement or SMS); a month is complete if data spans day 1..last day. */
 export function coverage(ds: Dataset): MonthCoverage[] {
-  const bankTx = ds.txns.filter((t) => t.account.startsWith('bank:'));
+  // bank-side data defines the months; with only card statements, the card rows do
+  const bankTx = ds.txns.some((t) => t.account.startsWith('bank:')) ? ds.txns.filter((t) => t.account.startsWith('bank:')) : ds.txns;
   if (!bankTx.length) return [];
   const dates = bankTx.map((t) => t.date).sort();
   const first = dates[0]; const last = dates[dates.length - 1];
@@ -26,7 +27,7 @@ export function coverage(ds: Dataset): MonthCoverage[] {
   return out;
 }
 
-export const asOfDate = (ds: Dataset): string => process.env.DEMO_AS_OF || ds.txns.map((t) => t.date).sort().at(-1) || new Date().toISOString().slice(0, 10);
+export const asOfDate = (ds: Dataset): string => (typeof process !== 'undefined' ? process.env?.DEMO_AS_OF : undefined) || ds.txns.map((t) => t.date).sort().at(-1) || new Date().toISOString().slice(0, 10);
 
 // ---------- refunds net against the original category ----------
 export function refundCategory(ds: Dataset, r: Txn): string {
@@ -124,7 +125,7 @@ export function duplicates(ds: Dataset): Duplicate[] {
   return [...m.values()].filter((l) => l.length > 1).map((l) => ({ merchant: l[0].merchant ?? l[0].desc, date: l[0].date, amount: l[0].amount, count: l.length, extra: l[0].amount * (l.length - 1), account: l[0].account, ids: l.map((t) => t.id) }));
 }
 
-export interface Leak { kind: 'subscription' | 'duplicate' | 'fee' | 'price_rise' | 'trial_charge' | 'inactive'; title: string; titleHi: string; annualCost: Paise; amount: Paise; merchant: string; evidence: string[]; actionHint: string; deadline?: string }
+export interface Leak { kind: 'subscription' | 'duplicate' | 'fee' | 'price_rise' | 'trial_charge' | 'inactive'; title: string; titleHi: string; since?: string; date?: string; annualCost: Paise; amount: Paise; merchant: string; evidence: string[]; actionHint: string; deadline?: string }
 
 export function leaks(ds: Dataset): Leak[] {
   const out: Leak[] = [];
@@ -135,14 +136,14 @@ export function leaks(ds: Dataset): Leak[] {
     if (n.kind === 'trial_charge') out.push({ kind: 'trial_charge', title: `${merchant} free trial turned into a paid plan`, titleHi: `${merchant} का फ़्री ट्रायल पेड प्लान बन गया`, amount: Number(n.data.amount), annualCost: Number(n.data.amount), merchant, evidence: [n.file], actionHint: 'cancel_and_refund', deadline: n.data.refundBy ? String(n.data.refundBy) : undefined });
     if (n.kind === 'inactivity') {
       const r = rec.find((x) => x.merchant.toLowerCase() === merchant.toLowerCase());
-      out.push({ kind: 'inactive', title: `${merchant} membership unused since ${n.data.lastUsed ? spokenDate(String(n.data.lastUsed)) : 'a while'}`, titleHi: `${merchant} की मेंबरशिप ${n.data.lastUsed ? `${spokenDate(String(n.data.lastUsed), 'hi')} से` : 'काफ़ी समय से'} इस्तेमाल नहीं हुई`, amount: r?.amount ?? Number(n.data.amount ?? 0), annualCost: r?.annualCost ?? Number(n.data.amount ?? 0) * 12, merchant, evidence: [n.file, ...(r ? [`${r.count} charges in statements`] : [])], actionHint: 'cancel' });
+      out.push({ kind: 'inactive', since: n.data.lastUsed ? String(n.data.lastUsed) : undefined, title: `${merchant} membership unused since ${n.data.lastUsed ? spokenDate(String(n.data.lastUsed)) : 'a while'}`, titleHi: `${merchant} की मेंबरशिप ${n.data.lastUsed ? `${spokenDate(String(n.data.lastUsed), 'hi')} से` : 'काफ़ी समय से'} इस्तेमाल नहीं हुई`, amount: r?.amount ?? Number(n.data.amount ?? 0), annualCost: r?.annualCost ?? Number(n.data.amount ?? 0) * 12, merchant, evidence: [n.file, ...(r ? [`${r.count} charges in statements`] : [])], actionHint: 'cancel' });
     }
     if (n.kind === 'price_change') {
       const oldP = Number(n.data.oldPrice), newP = Number(n.data.newPrice);
       out.push({ kind: 'price_rise', title: `${merchant} price rises from ₹${oldP / 100} to ₹${newP / 100} on ${n.data.effective ? spokenDate(String(n.data.effective)) : 'the next bill'}`, titleHi: `${merchant} का दाम ${n.data.effective ? `${spokenDate(String(n.data.effective), 'hi')} से` : 'अगले बिल से'} ₹${oldP / 100} से ₹${newP / 100} हो रहा है`, amount: newP - oldP, annualCost: (newP - oldP) * 12, merchant, evidence: [n.file], actionHint: 'review_plan', deadline: String(n.data.effective) });
     }
   }
-  for (const d of duplicates(ds)) out.push({ kind: 'duplicate', title: `${d.merchant} charged ${d.count} times on ${spokenDate(d.date)}`, titleHi: `${d.merchant} ने ${spokenDate(d.date, 'hi')} को ${d.count} बार पैसे काटे`, amount: d.extra, annualCost: d.extra, merchant: d.merchant, evidence: d.ids, actionHint: 'dispute' });
+  for (const d of duplicates(ds)) out.push({ kind: 'duplicate', date: d.date, title: `${d.merchant} charged ${d.count} times on ${spokenDate(d.date)}`, titleHi: `${d.merchant} ने ${spokenDate(d.date, 'hi')} को ${d.count} बार पैसे काटे`, amount: d.extra, annualCost: d.extra, merchant: d.merchant, evidence: d.ids, actionHint: 'dispute' });
   const fees = ds.txns.filter((t) => t.category === 'Fees & charges' && t.dir === 'debit');
   if (fees.length) {
     const total = sum(fees.map((t) => t.amount));

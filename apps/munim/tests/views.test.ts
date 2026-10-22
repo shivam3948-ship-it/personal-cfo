@@ -45,6 +45,9 @@ describe('view models reproduce the designs from the engine', () => {
     expect(buildTransactions(ds).TX).toEqual((design.Transactions as any).TX);
     const c = buildCategory(ds).DATA, dc = (design.Category as any).DATA;
     for (const k of Object.keys(dc)) { expect(c[k].m, k).toEqual(dc[k].m); expect(c[k].u15, k).toEqual(dc[k].u15); expect(c[k].tx, k).toEqual(dc[k].tx); }
+    const m = buildCategory(ds).META, dm = (design.Category as any).META;
+    expect([m.cur, m.day, m.past]).toEqual([dm.cur, dm.day, dm.past]);
+    expect(m.idle?.en).toMatch(/^cult\.fit .*unused since/);
   });
 
   it('Today: money figures match the design; safety net matches Invest (premiums spread over 12 months, so ESS differs from the design by design)', async () => {
@@ -91,7 +94,16 @@ describe('Spends view reproduces the design from the engine', () => {
     expect(v.USUALCUM.slice(0, 15)).toEqual(d.USUALCUM.slice(0, 15)); expect(v.USUALCUM.at(-1)).toBe(d.USUALCUM.at(-1));
     // 3) merchant names come from the statement cleanup, not hand-shortened ("Biryani Blues Dlf Ph4")
     for (const m of ['07', '08', '09']) expect(v.PAST[m].top.map((t: unknown[]) => t[3])).toEqual(d.PAST[m].top.map((t: unknown[]) => t[3]));
-    for (const k of ['INCOME', 'USUALCUM']) { delete v[k]; delete d[k]; }
+    // 4) the fixes list is now computed (design keeps its literal list as the fallback): it must say exactly what the design said
+    expect(v.FIXES).toEqual([
+      { kind: 'pace', icon: '↑', title: 'Food delivery up 28% this month', sub: 'Skip 2 orders, save ₹1,094', gain: '₹1,094', href: 'CategoryFood.dc.html' },
+      { icon: '!', title: 'cult.fit unused since July', sub: '₹1,999 a month', gain: '₹23,988/yr' },
+      { icon: '2×', title: 'Netflix charged twice', sub: '18 Sep · ask for a refund', gain: '₹649' },
+      { icon: '₹', title: 'LingoPro trial became paid', sub: 'Cancel or ask for a refund', gain: '₹4,999' },
+      { icon: '%', title: 'Ask Orbit to match 11.25%', sub: 'Taking Neem’s offer loses ₹9,964 after fees', gain: '₹6,739', tag: 'Munim earns nothing from this', kind: 'rate' }]);
+    expect(v.INSAL.hist.slice(0, 2)).toEqual(d.INSAL.hist.slice(0, 2)); expect(v.INSAL.hist[2][1] - d.INSAL.hist[2][1]).toBe(118600); // interest (1)
+    for (const k of ['INCOME', 'USUALCUM', 'FIXES']) { delete v[k]; delete d[k]; }
+    delete v.INSAL.hist; delete d.INSAL.hist;
     for (const m of ['07', '08', '09']) { delete v.PAST[m].top; delete d.PAST[m].top; delete v.PAST[m].inc; delete d.PAST[m].inc; }
     expect(v).toEqual(d);
   });

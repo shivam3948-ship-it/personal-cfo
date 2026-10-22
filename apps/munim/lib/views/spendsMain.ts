@@ -2,9 +2,10 @@
 // Buckets (D-038/D-039): everyday = spend-group categories except rent; fixed = rent, loan EMIs, insurance; family = family support;
 // not counted = investments, self transfers, card bill payments (money that stays yours or was already counted).
 import type { Dataset, Txn } from '@core/types';
-import { asOfDate, coverage, refundCategory, leaks } from '@core/finance/picture';
+import { asOfDate, coverage, refundCategory, leaks, recurring } from '@core/finance/picture';
 import { groupOf } from '@core/finance/categorize';
 import { compareRefinance } from '@core/finance/loans';
+import { inr } from '@core/money';
 import { cleanMerchant } from './spends';
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -41,7 +42,15 @@ function period(ds: Dataset, from: string, to: string) {
   return { ev, fx, fam, unc, nc, inc, cum, top, total: sum(Object.values(ev)) };
 }
 
-export function buildSpendsMain(ds: Dataset) {
+const FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// category pages the design knows by short name (ui/dc.js CATEGORY); others link straight to /spends/category/<name>
+const SHORT: Record<string, string> = { 'Food delivery': 'Food', Dining: 'Dining', 'Quick commerce': 'Quick', Shopping: 'Shopping', Cabs: 'Cabs', Fuel: 'Fuel', Utilities: 'Utilities', 'Mobile & internet': 'Mobile', 'Cash withdrawal': 'Cash', Fitness: 'Fitness' };
+const catHref = (c: string) => (SHORT[c] ? `Category${SHORT[c]}.dc.html` : `/spends/category/${encodeURIComponent(c)}`);
+const dm = (iso: string) => `${+iso.slice(8, 10)} ${MON[+iso.slice(5, 7) - 1]}`;
+
+export interface SpendsOpts { reportFrom?: string | null }
+
+export function buildSpendsMain(ds: Dataset, opts: SpendsOpts = { reportFrom: 'September' }) {
   const asOf = asOfDate(ds), d = day(asOf);
   const cov = coverage(ds);
   const done = cov.filter((c) => c.complete), cur = cov.find((c) => !c.complete) ?? cov.at(-1)!;
@@ -49,7 +58,7 @@ export function buildSpendsMain(ds: Dataset) {
   const now = period(ds, cur.from, asOf);
   const keys = Object.keys(P);
   const by15 = (k: string, cat?: string) => { const c = done.find((x) => x.key.slice(5) === k)!; const p = period(ds, c.from, `${c.key}-${String(d).padStart(2, '0')}`); return cat ? p.ev[cat] ?? 0 : p.total; };
-  const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); return s.length % 2 ? s[(s.length - 1) / 2] : Math.round((s[s.length / 2 - 1] + s[s.length / 2]) / 2); };
+  const median = (xs: number[]) => { if (!xs.length) return 0; const s = [...xs].sort((a, b) => a - b); return s.length % 2 ? s[(s.length - 1) / 2] : Math.round((s[s.length / 2 - 1] + s[s.length / 2]) / 2); };
   const cats = Object.keys(now.ev).filter((k) => now.ev[k] > 0).sort((a, b) => now.ev[b] - now.ev[a]);
   const recent = ds.txns.filter((t) => t.dir === 'debit' && t.date >= cur.from && t.date <= asOf && bucketOf(t.category ?? 'Other', 'debit') === 'everyday')
     .sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4)
@@ -58,12 +67,42 @@ export function buildSpendsMain(ds: Dataset) {
   const food = ds.txns.filter((t) => t.dir === 'debit' && t.category === 'Food delivery' && t.date >= cur.from && t.date <= asOf);
   const costliest = [...ds.loans].sort((a, b) => b.ratePct - a.ratePct)[0], offer = [...ds.offers].sort((a, b) => a.ratePct - b.ratePct)[0];
   const refi = costliest && offer ? compareRefinance(costliest, offer, asOf) : null;
+  const usual15 = Object.fromEntries(cats.map((k) => [k, median(keys.map((m) => by15(m, k)))]));
+  // a yearly or trial charge inside this month's subscriptions gets a note, so its jump isn't read as a habit
+  const yearly = ds.txns.find((t) => t.dir === 'debit' && t.category === 'Subscriptions' && t.date >= cur.from && t.date <= asOf
+    && (lk.some((l) => l.kind === 'trial_charge' && l.merchant === t.merchant) || recurring(ds).some((r) => r.cadence === 'yearly' && r.merchant === t.merchant)));
+  // ---- "What you can change": biggest pace overshoot, then leaks the statements prove, then a cheaper-rate ask ----
+  const FIXES: Record<string, unknown>[] = [];
+  const over = cats.filter((k) => !(yearly && k === yearly.category) && usual15[k] > 0 && now.ev[k] >= usual15[k] * 1.2).sort((a, b) => now.ev[b] / usual15[b] - now.ev[a] / usual15[a])[0];
+  if (over) {
+    const n = ds.txns.filter((t) => t.dir === 'debit' && t.category === over && t.date >= cur.from && t.date <= asOf).length || 1;
+    const skip2 = 2 * Math.round(now.ev[over] / n);
+    FIXES.push({ kind: 'pace', icon: '↑', title: `${over} up ${Math.round(((now.ev[over] - usual15[over]) / usual15[over]) * 100)}% this month`,
+      sub: over === 'Food delivery' ? `Skip 2 orders, save ${inr(skip2)}` : `Spend a little less here, save ${inr(skip2)}`, gain: inr(skip2), href: catHref(over) });
+  }
+  for (const kind of ['inactive', 'duplicate', 'trial_charge'] as const) for (const l of lk.filter((x) => x.kind === kind)) {
+    if (kind === 'inactive') FIXES.push({ icon: '!', title: `${l.merchant} unused since ${l.since ? FULL[+l.since.slice(5, 7) - 1] : 'a while'}`, sub: `${inr(l.amount)} a month`, gain: `${inr(l.annualCost)}/yr` });
+    if (kind === 'duplicate') FIXES.push({ icon: '2×', title: `${l.merchant} charged twice`, sub: `${l.date ? dm(l.date) + ' · ' : ''}ask for a refund`, gain: inr(l.amount) });
+    if (kind === 'trial_charge') FIXES.push({ icon: '₹', title: `${l.merchant} trial became paid`, sub: 'Cancel or ask for a refund', gain: inr(l.amount) });
+  }
+  if (refi && refi.switchNetSaving < 0 && refi.matchSaving > 0) FIXES.push({ icon: '%', title: `Ask ${costliest.lender.split(' ')[0]} to match ${refi.offerRatePct}%`, sub: `Taking ${refi.offerLender.split(' ')[0]}’s offer loses ${inr(-refi.switchNetSaving)} after fees`, gain: inr(refi.matchSaving), tag: 'Munim earns nothing from this', kind: 'rate' });
+  // ---- money in (salaried view): this month's credits, income by complete month, salary dates ----
+  const curCredits = ds.txns.filter((t) => t.dir === 'credit' && t.date >= cur.from && t.date <= asOf && (t.category === 'Salary' || t.category === 'Other income'));
+  const salary = ds.txns.filter((t) => t.dir === 'credit' && t.category === 'Salary');
+  const INSAL = {
+    credits: curCredits.map((t) => [t.date, t.category === 'Salary' ? 'Salary' : cleanMerchant(t.merchant ?? t.desc), t.category === 'Salary' ? 'salary' : 'side', t.amount]),
+    hist: keys.map((k) => [MON[Number(k) - 1], P[k].inc]),
+    salDates: salary.map((t) => t.date),
+  };
+  const bankAcct = (salary.at(-1)?.account ?? ds.accounts.find((a) => a.kind === 'bank')?.id ?? '').split(':')[1] ?? '';
+  const META = { cur: Number(cur.key.slice(5)) - 1, day: d, pastN: keys.length, bank: bankAcct, files: null, reportFrom: opts.reportFrom ?? null, subNote: yearly ? `Includes ${yearly.merchant}’s yearly ${inr(yearly.amount)}` : '' };
   return {
+    META, FIXES, INSAL,
     CAT: Object.fromEntries(cats.map((k) => [k, now.ev[k]])),
     // "usual" = the middle month (median), as on the category pages, so one odd month doesn't move it
-    USUAL15: Object.fromEntries(cats.map((k) => [k, median(keys.map((m) => by15(m, k)))])),
+    USUAL15: usual15,
     PACE: keys.map((k) => ({ m: MON[Number(k) - 1], v: by15(k) })),
-    USUALCUM: Array.from({ length: 31 }, (_, i) => median(keys.map((k) => P[k].cum[Math.min(i, P[k].cum.length - 1)]))),
+    USUALCUM: Array.from({ length: 31 }, (_, i) => (keys.length ? median(keys.map((k) => P[k].cum[Math.min(i, P[k].cum.length - 1)])) : 0)),
     OCTCUM: now.cum.slice(0, d),
     FIXED: now.fx, FAMILY: now.fam, UNCAT: now.unc, NOTCOUNTED: now.nc,
     RECENT: recent,

@@ -423,6 +423,46 @@
      ]
     ]
    }
+  },
+  "META": {
+   "cur": 9,
+   "day": 15,
+   "pastN": 3,
+   "bank": "4521",
+   "files": null,
+   "reportFrom": "September",
+   "subNote": "Includes LingoPro’s yearly ₹4,999"
+  },
+  "FIXES": null,
+  "INSAL": {
+   "credits": [
+    [
+     "2026-10-01",
+     "Salary",
+     "salary",
+     14500000
+    ]
+   ],
+   "hist": [
+    [
+     "Jul",
+     14500000
+    ],
+    [
+     "Aug",
+     14500000
+    ],
+    [
+     "Sep",
+     14500000
+    ]
+   ],
+   "salDates": [
+    "2026-07-01",
+    "2026-08-01",
+    "2026-09-01",
+    "2026-10-01"
+   ]
   }
  },
  "Category": {
@@ -702,6 +742,19 @@
       "bank:4521"
      ]
     ]
+   }
+  },
+  "META": {
+   "cur": 9,
+   "day": 15,
+   "past": [
+    6,
+    7,
+    8
+   ],
+   "idle": {
+    "en": "cult.fit unused since July",
+    "hi": "cult.fit जुलाई से बंद पड़ा"
    }
   }
  },

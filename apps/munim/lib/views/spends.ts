@@ -1,6 +1,6 @@
 // Spends view models (transactions, category detail): same shapes as designs/design-data.json, computed from @munim/core.
 import type { Dataset } from '@core/types';
-import { asOfDate, monthPictures } from '@core/finance/picture';
+import { asOfDate, monthPictures, leaks } from '@core/finance/picture';
 import { groupOf } from '@core/finance/categorize';
 
 /** Card descriptors → a readable name: "POS CHAAYOS SECTOR 29" → "Chaayos". */
@@ -38,5 +38,9 @@ export function buildCategory(ds: Dataset) {
         .sort((a, b) => b.date.localeCompare(a.date)).map((t) => [t.date, cleanMerchant(t.merchant ?? t.desc), t.amount, t.account]),
     };
   }
-  return { DATA };
+  // when: this month, the day we're on, and the complete months the bars compare (0–11), so the design never assumes October 15
+  const idleLeak = leaks(ds).find((l) => l.kind === 'inactive'); // shown on the membership (Fitness) card only
+  const META = { cur: Number(month.slice(5, 7)) - 1, day, past: complete.map((p) => Number(p.key.slice(5, 7)) - 1), idle: idleLeak ? { en: idleLeak.title, hi: idleLeak.titleHi } : null };
+  return { DATA, META };
 }
+
