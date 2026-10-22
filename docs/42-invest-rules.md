@@ -115,3 +115,20 @@ v1 described the portfolio; v2 leads with 4 insights, each with a rupee figure, 
 4. Fund vs a plain index fund on your SIP dates.
 
 "Your money vs your funds" and "What you own" are now collapsible below the insights. Competitor scan and numbers: docs/research/portfolio-insights-competitors.md, docs/research/xray_v2_numbers.py. Snapshot: XrayV1 (History page).
+
+## X-ray v3 (22 Oct, last mock before the build)
+- **Five insight cards, kept short.** Each has a title with a ₹ figure, a one-line why, a main button and "+ Sunday call". The math and the options sit behind "Details ›".
+- **The cards:**
+  1. Tax-free gains before 31 Mar;
+  2. Regular → direct (start with new SIPs, ₹0);
+  3. **Fund overlap (new)**: Banyan and Teak share 45% of their stocks, 7 stocks sit in 3 of the 4 equity funds, and the top 5 stocks make up 29.3% of equity. Also notes that Teak is an active regular plan that is 45% index-like;
+  4. ELSS out of lock-in;
+  5. Monsoon vs a plain index fund.
+- **"Did it work?" (new)** sits under the summary. The empty state says what Munim will track. A preview (tweak `history`) shows what card 1 and card 2 would show after 3 months: ₹546 less in fees so far, ₹15,602 less tax later, ₹21,000 of SIPs into direct plans.
+- **Also added:**
+  - an FD comparison in the summary: ₹2,39,089 more than a 7% FD on the same dates (before tax; the 7% is an assumption);
+  - a save/share report button (PDF, with an option to hide amounts);
+  - Ask Munim suggestion chips;
+  - "read on your phone" in the header.
+- **Data gap:** the overlap figures use **synthetic sample holdings**. The build needs AMFI monthly portfolio disclosures (D-OPEN-3).
+- Numbers come from `docs/research/xray_v3_numbers.py`. Snapshot: XrayV2 (History page).
