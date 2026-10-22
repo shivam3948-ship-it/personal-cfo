@@ -55,6 +55,13 @@ export function browserListen(lang: 'hi' | 'en', onInterim: (t: string) => void,
 }
 
 let current: HTMLAudioElement | null = null;
+
+/** Phones only let a page play sound after a tap. Call this inside the mic tap so the spoken answer that arrives
+ *  seconds later is allowed to play (a silent clip for <audio>, an empty utterance for the browser voice). */
+export function unlockAudio() {
+  try { const a = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA='); a.volume = 0; a.play().catch(() => {}); } catch { /* ignore */ }
+  try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch { /* ignore */ }
+}
 export function stopSpeaking() {
   if (current) { current.pause(); current = null; }
   if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();

@@ -4,7 +4,8 @@
 // Voice: mic → /api/stt (Sarvam) or the browser's speech recognition, after a one-time note on where the audio goes.
 import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
-import { record, browserListen, browserSttAvailable, browserSpeak, playBase64, stopSpeaking, type RecorderHandle } from '@/ui/voice';
+import { forSpeech } from '@core/agent/lang';
+import { record, browserListen, browserSttAvailable, browserSpeak, playBase64, stopSpeaking, unlockAudio, type RecorderHandle } from '@/ui/voice';
 
 type Msg = { role: 'user' | 'assistant'; content: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string } };
 type Ctx = 'xray' | 'invest' | 'spends' | 'credit' | 'today';
@@ -46,6 +47,7 @@ export default function AskLive() {
   const [heard, setHeard] = useState('');
   const [sttMode, setSttMode] = useState<'server' | 'browser'>('server');
   const [note, setNote] = useState<string | null>(null); // neutral info (not an error)
+  const [speaking, setSpeaking] = useState<number | null>(null); // which answer is being read aloud
   const rec = useRef<RecorderHandle | { stop: () => void } | null>(null);
   const msgsRef = useRef(msgs); msgsRef.current = msgs;
   const busyRef = useRef(busy); busyRef.current = busy;
@@ -61,6 +63,7 @@ export default function AskLive() {
   async function ask(q: string, via: 'text' | 'voice' = 'text') {
     q = q.trim(); if (!q || busyRef.current) return;
     const next: Msg[] = [...msgsRef.current, { role: 'user', content: q }];
+    stopSpeaking(); setSpeaking(null);
     setMsgs(next); setText(''); setBusy(true); setErr(null);
     track('ask_sent', { ctx, turn: next.filter((m) => m.role === 'user').length, via });
     try {
@@ -68,6 +71,7 @@ export default function AskLive() {
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? 'Munim could not answer just now.');
       setMsgs([...next, { role: 'assistant', content: j.answer, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine } }]);
+      if (via === 'voice') listen(j.answer, next.length, 'auto'); // asked by voice → answered by voice; typed → stays quiet
     } catch (e) { setErr((e as Error).message); setMsgs(next); }
     finally { setBusy(false); input.current?.focus(); }
   }
@@ -78,7 +82,7 @@ export default function AskLive() {
     if (voice === 'listening') { rec.current?.stop(); return; }
     if (busy || voice === 'hearing') return;
     if (!consented()) { setVoice('consent'); return; }
-    stopSpeaking(); setErr(null); setNote(null); setHeard('');
+    stopSpeaking(); setSpeaking(null); unlockAudio(); setErr(null); setNote(null); setHeard('');
     track('voice_started', { ctx, mode: sttMode });
     if (sttMode === 'browser') {
       setVoice('listening');
@@ -103,15 +107,18 @@ export default function AskLive() {
       } });
     } catch { setVoice('idle'); setErr('Couldn’t use the microphone. Allow it in the browser, or type.'); }
   }
-  async function listen(textToSay: string) {
+  async function listen(textToSay: string, idx: number, how: 'tap' | 'auto' = 'tap') {
+    if (speaking === idx) { stopSpeaking(); setSpeaking(null); return; } // second tap stops it
     const lang = /[\u0900-\u097F]/.test(textToSay) ? 'hi' : 'en';
-    track('answer_listened', { ctx });
+    track('answer_listened', { ctx, how });
+    stopSpeaking(); setSpeaking(idx);
     try {
       const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: textToSay, lang }) });
       const j = await r.json();
-      if (r.ok && j.audioBase64) return playBase64(j.audioBase64, j.mime);
-    } catch { /* fall through to the browser voice */ }
-    return browserSpeak(textToSay, lang);
+      if (r.ok && j.audioBase64) { await playBase64(j.audioBase64, j.mime); return; }
+      await browserSpeak(forSpeech(textToSay, lang), lang);
+    } catch { await browserSpeak(forSpeech(textToSay, lang), lang); }
+    finally { setSpeaking((cur) => (cur === idx ? null : cur)); }
   }
 
   return (
@@ -142,8 +149,8 @@ export default function AskLive() {
             : (
               <div key={i} style={S.ans}>
                 <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{m.content}</p>
-                <button type="button" onClick={() => listen(m.content)} style={S.listen} aria-label="Listen to this answer">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>Listen</button>
+                <button type="button" onClick={() => listen(m.content, i)} style={S.listen} aria-label={speaking === i ? 'Stop reading this answer' : 'Listen to this answer'} aria-pressed={speaking === i}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>{speaking === i ? 'Stop' : 'Listen'}</button>
                 {m.meta && (
                   <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>
                     {m.meta.tools.length ? `From ${[...new Set(m.meta.tools.map((t) => TOOL_LABEL[t] ?? 'your documents'))].join(', ')}` : 'General help'}

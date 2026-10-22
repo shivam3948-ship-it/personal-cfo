@@ -10,7 +10,7 @@ export const EVENTS = {
   credit_notify_tapped: 'credit_notify_tapped', // {} fake door: interest in the Credit tab
   ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
   voice_started: 'voice_started',               // { ctx, mode }
-  answer_listened: 'answer_listened',           // { ctx }
+  answer_listened: 'answer_listened',           // { ctx, how: tap | auto }
   ask_sent: 'ask_sent',                         // { ctx, turn } (never the question text)
 } as const;
 export type EventName = keyof typeof EVENTS;
