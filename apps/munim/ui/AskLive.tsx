@@ -147,6 +147,7 @@ export default function AskLive() {
                   <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>
                     {m.meta.tools.length ? `From ${[...new Set(m.meta.tools.map((t) => TOOL_LABEL[t] ?? 'your documents'))].join(', ')}` : 'General help'}
                     {m.meta.checked ? ` · ${m.meta.checked} number${m.meta.checked > 1 ? 's' : ''} ${m.meta.ok ? 'checked' : 'could not be checked'}` : ''}
+                    {disc.test ? ` · ${m.meta.engine === 'claude' ? 'Claude' : 'rules, no AI'}` : ''}
                   </span>
                 )}
               </div>

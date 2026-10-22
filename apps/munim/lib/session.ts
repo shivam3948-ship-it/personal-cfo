@@ -25,7 +25,10 @@ export interface Session {
   dataset(): Promise<Dataset>;
 }
 
-const sample: Session = { id: 'sample', kind: 'sample', memberLabel: 'Me', displayName: 'Rohan', adviceMode: 'demo', dataset: loadDemo };
+// Testing switch: MUNIM_ADVICE_MODE=guided in .env.local previews what real (invited) users will see. Only demo/guided are
+// accepted, and the sample family is always synthetic data. Real users will get their mode from the server, never from this.
+const envMode = process.env.MUNIM_ADVICE_MODE === 'guided' ? 'guided' : 'demo';
+const sample: Session = { id: 'sample', kind: 'sample', memberLabel: 'Me', displayName: 'Rohan', adviceMode: envMode, dataset: loadDemo };
 
 export async function getSession(_req: Request): Promise<Session> {
   return sample;
