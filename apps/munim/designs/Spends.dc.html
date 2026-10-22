@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spends v5</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;700&amp;family=Noto+Serif+Devanagari:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.serif{font-family:'Noto Serif','Noto Serif Devanagari',serif;font-weight:700;letter-spacing:-0.01em}
+@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet{animation:sheet .28s ease-out both}
+@media (prefers-reduced-motion: reduce){.sheet{animation:none}}
+.row{display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 0;border:0;border-bottom:1px solid var(--hair);background:transparent;text-align:left;width:100%;cursor:pointer;color:var(--ink);text-decoration:none}
+.t-light{--bg:#F2F7F6;--band:#DDEEEA;--band2:#CBE5E0;--band3:#BFDFD9;--card:#FFFFFF;--ink:#10201E;--ink2:#34514D;--muted:#4E6863;--hair:#D6E6E2;--hair2:#C7DBD7;--tint:#E8F2F0;--tint2:#E1F0ED;--btn:#0F5E58;--on-btn:#FFFFFF;--link:#0F5E58;--warn:#9A5B00;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#FBF1DD;--mari-ink:#6E4600;--err-tint:#FCEBE8;--err-ink:#A3271C;--scrim:rgba(0,0,0,.45);--skel:#D3E3DF;--ai1:#8E7CF0;--ai2:#5B47D6;--ai3:#2E2A7A;--ai-ink:#4B3BC4;--ai-glow:rgba(91,71,214,.42);--orb1:#86E6D9;--orb2:#14897F;--orb3:#063D39;--orb-glow:rgba(15,94,88,.45);color-scheme:light}
+.t-dark{--bg:#0B1413;--band:#10211E;--band2:#163029;--band3:#1B3A34;--card:#14201E;--ink:#E6F0EE;--ink2:#C2D4D0;--muted:#93ABA6;--hair:#263835;--hair2:#334844;--tint:#1C2D2A;--tint2:#1E3330;--btn:#5CC2B4;--on-btn:#06201C;--link:#7ED3C7;--warn:#F2B860;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#33270F;--mari-ink:#F6C978;--err-tint:#3A1A17;--err-ink:#FF9E92;--scrim:rgba(0,0,0,.62);--skel:#1D2E2B;--ai1:#9C8CFF;--ai2:#6A55E6;--ai3:#352F8C;--ai-ink:#B9AEFF;--ai-glow:rgba(142,124,240,.38);--orb1:#A6F2E7;--orb2:#2BA295;--orb3:#0A4C46;--orb-glow:rgba(92,194,180,.40);color-scheme:dark}
+@keyframes shimmer{0%{opacity:.55}50%{opacity:1}100%{opacity:.55}}
+.skel{background:var(--skel);border-radius:8px;animation:shimmer 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+@keyframes breathe{0%,100%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 0 var(--ai-glow)}50%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 7px rgba(0,0,0,0)}}
+.ai-orb{background:radial-gradient(circle at 30% 25%,var(--ai1) 0%,var(--ai2) 52%,var(--ai3) 100%);animation:breathe 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.ai-orb{animation:none;box-shadow:0 8px 22px var(--ai-glow)}}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+.orb-teal{background:radial-gradient(circle at 30% 25%,var(--orb1) 0%,var(--orb2) 48%,var(--orb3) 100%);box-shadow:0 10px 24px var(--orb-glow)}
+.orb-teal::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,0,0,0) 0deg,var(--orb1) 80deg,var(--orb2) 120deg,rgba(0,0,0,0) 170deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:orbspin 3.6s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
+</style>
+</helmet>
+<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 200px; background: var(--band); overflow: hidden">
+    <span style="position: absolute; right: -70px; top: -100px; width: 240px; height: 240px; border-radius: 50%; background: var(--band2)"></span>
+  </div>
+
+  <div style="position: absolute; inset: 0 0 80px 0; overflow-y: auto; padding: 12px 16px 32px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+    <header style="flex: none; display: flex; justify-content: space-between; align-items: center; position: relative">
+      <h1 class="serif" style="margin: 0; font-size: 30px">{{c.title}}</h1>
+      <button type="button" onClick="{{openMonths}}" aria-haspopup="dialog" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--card); box-shadow: 0 0 0 1px var(--hair); font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer">{{c.period}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+    </header>
+
+    <sc-if value="{{isPast}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="flex: none; position: relative; display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 14px; padding: 4px 4px 4px 14px; box-shadow: 0 0 0 1px var(--hair)">
+        <span style="flex: 1; font-size: 14px; color: var(--ink2)">{{d.pastBanner}}</span>
+        <button type="button" onClick="{{toCurrent}}" style="min-height: 40px; padding: 0 12px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{c.backToNow}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="flex: none; position: relative; display: flex; align-items: center; gap: 10px; background: var(--err-tint); color: var(--err-ink); border-radius: 16px; padding: 6px 6px 6px 14px">
+        <span style="flex: 1; font-size: 14px">{{c.errLine}}</span>
+        <button type="button" onClick="{{retry}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--card); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{c.retry}}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" style="flex: none; position: relative; display: grid; gap: 12px">
+        <div style="background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+          <span class="skel" style="height: 14px; width: 50%"></span><span class="skel" style="height: 36px; width: 45%"></span><span class="skel" style="height: 14px; width: 70%"></span>
+        </div>
+        <span class="skel" style="height: 150px; border-radius: 20px"></span>
+        <span class="skel" style="height: 220px; border-radius: 20px"></span>
+        <span style="font-size: 13.5px; color: var(--muted); text-align: center">{{c.loading}}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <section style="flex: none; position: relative; background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+        <b class="serif" style="font-size: 25px; line-height: 1.15">{{c.emptyTitle}}</b>
+        <span style="font-size: 15px; color: var(--ink2)">{{c.emptyBody}}</span>
+        <button type="button" style="margin-top: 4px; min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">{{c.emptyCta}}</button>
+        <button type="button" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">{{c.emptyAlt}}</button>
+        <span style="font-size: 12.5px; color: var(--muted)">{{c.emptyNote}}</span>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="hero" style="flex: none; position: relative; background: var(--card); border-radius: 24px; padding: 16px 16px 12px; display: grid; gap: 4px; box-shadow: 0 0 0 1px var(--hair)">
+        <span id="hero" style="font-size: 14px; color: var(--muted)">{{c.heroLabel}}</span>
+        <b class="serif" style="font-size: 36px; line-height: 1.05">{{d.everyday}}</b>
+        <button type="button" onClick="{{paceClick}}" aria-haspopup="dialog" style="justify-self: start; min-height: 36px; border: 0; background: transparent; padding: 0; cursor: pointer; text-align: left; font-size: 14px; font-weight: 600; color: {{d.paceInk}}">{{d.paceLine}} <sc-if value="{{isCurrent}}" hint-placeholder-val="{{ true }}"><span style="color: var(--link)">· {{c.how}} ›</span></sc-if></button>
+        <figure style="margin: 2px 0 0; position: relative">
+          <svg width="326" height="104" viewBox="0 0 326 104" role="img" aria-label="{{d.chartLabel}}" style="display: block; overflow: visible">
+            <line x1="0" y1="88" x2="326" y2="88" stroke="var(--hair)" stroke-width="1"></line>
+            <polyline points="{{d.usualPts}}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 4" stroke-linejoin="round" opacity="0.75"></polyline>
+            <polyline points="{{d.youPts}}" fill="none" stroke="var(--link)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+            <circle cx="{{d.youX}}" cy="{{d.usualY}}" r="3.5" fill="var(--card)" stroke="var(--muted)" stroke-width="1.6"></circle>
+            <circle cx="{{d.youX}}" cy="{{d.youY}}" r="5" fill="var(--link)" stroke="var(--card)" stroke-width="2"></circle>
+            <sc-if value="{{hov.on}}" hint-placeholder-val="{{ false }}">
+              <line x1="{{hov.x}}" y1="0" x2="{{hov.x}}" y2="88" stroke="var(--ink2)" stroke-width="1"></line>
+            </sc-if>
+            <rect x="0" y="0" width="326" height="88" fill="transparent" onPointerMove="{{onMove}}" onPointerDown="{{onMove}}" onPointerLeave="{{onLeave}}" style="cursor: crosshair"></rect>
+          </svg>
+          <span aria-hidden="true" style="position: absolute; left: {{d.youLabelX}}px; top: {{d.youLabelY}}px; transform: {{d.youLabelT}}; white-space: nowrap; font-size: 12px; font-weight: 600; color: var(--ink2); pointer-events: none">{{d.youLabel}}</span>
+          <span aria-hidden="true" style="position: absolute; left: {{d.usualLabelX}}px; top: {{d.usualLabelY}}px; transform: {{d.usualLabelT}}; white-space: nowrap; font-size: 12px; color: var(--ink2); pointer-events: none">{{c.legendUsual}}</span>
+          <span aria-hidden="true" style="position: absolute; left: 0; top: 91px; font-size: 11px; color: var(--muted)">{{c.day1}}</span>
+          <span aria-hidden="true" style="position: absolute; left: {{d.youX}}px; top: 91px; transform: translateX(-50%); font-size: 11px; color: var(--muted)">{{d.todayLbl}}</span>
+          <span aria-hidden="true" style="position: absolute; right: 0; top: 91px; font-size: 11px; color: var(--muted)">{{d.lastDay}}</span>
+          <sc-if value="{{hov.on}}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="position: absolute; top: -10px; left: {{hov.left}}; transform: translateX(-50%); background: var(--ink); color: var(--on-btn); border-radius: 10px; padding: 6px 10px; font-size: 12.5px; white-space: nowrap; pointer-events: none">{{hov.text}}</div>
+          </sc-if>
+        </figure>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--hair); display: grid; gap: 8px">
+          <span style="font-size: 12.5px; color: var(--muted)">{{c.outLabel}} · {{d.outTotal}}</span>
+          <div role="img" aria-label="{{d.splitLabel}}" style="display: flex; gap: 2px; height: 10px">
+            <sc-for list="{{d.split}}" as="b" hint-placeholder-count="3">
+              <span style="flex: {{b.flex}}; border-radius: 4px; background: {{b.fill}}"></span>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: start">
+            <sc-for list="{{d.split}}" as="b" hint-placeholder-count="3">
+              <span style="display: grid; gap: 1px"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted)"><span style="width: 8px; height: 8px; border-radius: 2px; background: {{b.fill}}"></span>{{b.l}}</span><b style="font-size: 16px; font-weight: 600">{{b.v}}</b><span style="font-size: 11.5px; color: var(--muted)">{{b.sub}}</span></span>
+            </sc-for>
+          </div>
+        </div>
+        <button type="button" onClick="{{moneyClick}}" aria-haspopup="dialog" style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; margin-top: 4px; padding: 0; border: 0; border-top: 1px solid var(--hair); background: transparent; cursor: pointer; text-align: left; color: var(--ink); font-size: 13.5px">
+          <span><span style="color: var(--muted)">{{c.moneyIn}}</span> <b style="font-weight: 600">{{m.rowTotal}}</b> <span style="color: var(--muted)">· {{m.leftWord}}</span> <b style="font-weight: 600; color: {{m.leftInk}}">{{m.rowLeft}}</b></span>
+          <sc-if value="{{isCurrent}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></sc-if>
+        </button>
+      </section>
+      <button type="button" onClick="{{openData}}" style="flex: none; position: relative; margin-top: -4px; min-height: 36px; border: 0; background: transparent; padding: 0 2px; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink2); cursor: pointer; text-align: left">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>{{c.trust}} <b style="font-weight: 600; color: var(--link)">{{c.yourData}} ›</b>
+      </button>
+
+      <sc-if value="{{hasUnsorted}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{openSort}}" aria-haspopup="dialog" style="flex: none; position: relative; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px; border: 0; border-radius: 18px; background: var(--mari-tint); color: var(--ink); text-align: left; cursor: pointer">
+          <span style="flex: none; width: 36px; height: 36px; border-radius: 10px; background: var(--card); color: var(--mari-ink); display: grid; place-items: center; font-size: 16px; font-weight: 700">?</span>
+          <span style="flex: 1; display: grid; gap: 1px"><b style="font-size: 15px; font-weight: 600">{{u.entryTitle}}</b><span style="font-size: 13px; color: var(--ink2)">{{u.entrySub}}</span></span>
+          <span style="font-size: 14px; font-weight: 600; color: var(--mari-ink)">{{c.sortNow}} ›</span>
+        </button>
+      </sc-if>
+
+      <sc-if value="{{isCurrent}}" hint-placeholder-val="{{ true }}">
+      <section aria-labelledby="chg" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 6px 16px 14px; box-shadow: 0 0 0 1px var(--hair)">
+        <button type="button" id="chg" onClick="{{toggleChange}}" aria-expanded="{{changeOpen}}" style="width: 100%; min-height: 52px; border: 0; background: transparent; padding: 0; display: flex; align-items: center; gap: 8px; text-align: left; cursor: pointer; color: var(--ink)">
+          <span style="flex: 1; display: grid; gap: 1px"><b style="font-size: 16px; font-weight: 600">{{c.changeHead}}</b><span style="font-size: 13px; color: var(--muted)">{{d.changeSummary}}</span></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate({{chev}}); transition: transform .2s"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <div style="background: var(--tint); border-radius: 16px; padding: 12px; display: grid; gap: 8px">
+          <span style="font-size: 12.5px; font-weight: 600; color: var(--link)">{{c.saveKicker}}</span>
+          <b style="font-size: 16px; font-weight: 600; line-height: 1.3">{{d.saveTitle}}</b>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 15px; font-weight: 600; cursor: pointer">{{d.saveCta}}</button>
+            <button type="button" style="min-height: 44px; padding: 0 10px; border: 0; background: transparent; font-size: 14px; color: var(--muted); cursor: pointer">{{c.otherAmount}}</button>
+          </div>
+        </div>
+        <sc-if value="{{changeOpen}}" hint-placeholder-val="{{ false }}">
+          <div role="list">
+            <sc-for list="{{d.fixes}}" as="f" hint-placeholder-count="5">
+              <a href="{{f.href}}" role="listitem" class="row" style="border-bottom: {{f.rule}}">
+                <span style="flex: none; width: 36px; height: 36px; border-radius: 10px; background: {{f.iconBg}}; color: {{f.iconInk}}; display: grid; place-items: center; font-size: 15px; font-weight: 700">{{f.icon}}</span>
+                <span style="flex: 1; min-width: 0; display: grid; gap: 1px"><b style="font-size: 15px; font-weight: 600; line-height: 1.3">{{f.title}}</b><span style="font-size: 13px; color: var(--muted)">{{f.sub}}</span>
+                  <sc-if value="{{f.hasTag}}" hint-placeholder-val="{{ false }}"><span style="justify-self: start; margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--link); background: var(--tint2); border-radius: 999px; padding: 2px 8px">{{f.tag}}</span></sc-if>
+                </span>
+                <b style="flex: none; font-size: 14.5px; font-weight: 600; color: var(--link)">{{f.gain}}</b>
+              </a>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+      </sc-if>
+      <sc-if value="{{isPast}}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{d.hasReport}}" hint-placeholder-val="{{ false }}">
+          <a href="MonthClose.dc.html" style="flex: none; position: relative; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 16px; border-radius: 18px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); text-decoration: none; color: var(--ink)">
+            <span style="flex: 1; display: grid; gap: 1px"><b style="font-size: 15.5px; font-weight: 600">{{d.reportTitle}}</b><span style="font-size: 13px; color: var(--muted)">{{c.reportSub}}</span></span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+          </a>
+        </sc-if>
+        <sc-if value="{{d.noReport}}" hint-placeholder-val="{{ false }}">
+          <p style="flex: none; position: relative; margin: 0; padding: 0 4px; font-size: 13px; color: var(--muted)">{{c.noReport}}</p>
+        </sc-if>
+      </sc-if>
+
+      <section aria-labelledby="where" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 14px 16px 6px; box-shadow: 0 0 0 1px var(--hair)">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <h2 id="where" style="margin: 0; font-size: 16px; font-weight: 600">{{c.whereHead}}</h2>
+          <span style="font-size: 13px; color: var(--muted)">{{d.vsHead}}</span>
+        </div>
+        <div style="display: grid; margin: 6px 0 4px">
+          <sc-for list="{{d.cats}}" as="k" hint-placeholder-count="6">
+            <sc-if value="{{k.link}}" hint-placeholder-val="{{ true }}">
+              <a href="{{k.href}}" aria-label="{{k.aria}}" style="display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; padding: 9px 0; text-decoration: none; color: var(--ink)">
+                <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 14.5px"><span>{{k.name}}</span><span><b style="font-weight: 600">{{k.amt}}</b><span style="margin-left: 8px; font-size: 12.5px; color: {{k.deltaInk}}">{{k.delta}}</span></span></span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="grid-row: span 2"><path d="m9 6 6 6-6 6"></path></svg>
+                <span style="height: 6px; border-radius: 3px; background: var(--tint)"><span style="display: block; height: 6px; width: {{k.w}}; border-radius: 3px; background: {{k.bar}}"></span></span>
+                <sc-if value="{{k.hasNote}}" hint-placeholder-val="{{ false }}"><span style="grid-column: 1 / -1; font-size: 12.5px; color: var(--muted)">{{k.note}}</span></sc-if>
+              </a>
+            </sc-if>
+            <sc-if value="{{k.plain}}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; gap: 4px; padding: 9px 0">
+                <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 14.5px"><span>{{k.name}}</span><span><b style="font-weight: 600">{{k.amt}}</b><span style="margin-left: 8px; font-size: 12.5px; color: {{k.deltaInk}}">{{k.delta}}</span></span></span>
+                <span style="height: 6px; border-radius: 3px; background: var(--tint)"><span style="display: block; height: 6px; width: {{k.w}}; border-radius: 3px; background: {{k.bar}}"></span></span>
+              </div>
+            </sc-if>
+          </sc-for>
+        </div>
+        <button type="button" onClick="{{toggleCats}}" aria-expanded="{{allCatsOpen}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{d.allCats}}</button>
+      </section>
+
+      <section aria-labelledby="recent" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 14px 16px 6px; box-shadow: 0 0 0 1px var(--hair)">
+        <h2 id="recent" style="margin: 0; font-size: 16px; font-weight: 600">{{d.recentHead}}</h2>
+        <div style="display: grid; margin-top: 4px">
+          <sc-for list="{{d.recent}}" as="t" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; border-bottom: 1px solid var(--hair); color: var(--ink)">
+              <span style="flex: 1; min-width: 0; display: grid"><span style="font-size: 15px; font-weight: 500">{{t.name}}</span><span style="font-size: 12.5px; color: var(--muted)">{{t.sub}}</span></span>
+              <b style="font-size: 15px; font-weight: 600; color: {{t.ink}}">{{t.amt}}</b>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{isCurrent}}" hint-placeholder-val="{{ true }}"><a href="Transactions.dc.html" style="display: flex; align-items: center; justify-content: space-between; min-height: 48px; font-size: 14.5px; font-weight: 600; color: var(--link); text-decoration: none">{{d.seeAll}}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg></a></sc-if>
+        <sc-if value="{{isPast}}" hint-placeholder-val="{{ false }}"><span style="display: block; padding: 10px 0 12px; font-size: 12.5px; color: var(--muted)">{{c.pastTxNote}}</span></sc-if>
+      </section>
+    </sc-if>
+  </div>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: var(--card); border-top: 1px solid var(--hair)">
+    <div style="height: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center">
+      <a href="Main.dc.html" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>{{nav.today}}</a>
+      <a href="Invest.dc.html" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"></path><path d="M4 19h16"></path><path d="m7 14 4-4 3 3 5-6"></path></svg>{{nav.invest}}</a>
+      <a href="Voice.dc.html" aria-label="{{nav.ask}}" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; padding-bottom: 10px; box-sizing: border-box; font-size: 12.5px; text-decoration: none; color: var(--link); font-weight: 700">
+        <span class="orb-teal" style="position: relative; width: 60px; height: 60px; margin-top: -32px; border-radius: 50%; border: 4px solid var(--card); display: grid; place-items: center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+        </span>{{nav.ask}}</a>
+      <a href="#" aria-current="page" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--link); font-weight: 700">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>{{nav.spends}}</a>
+      <a href="#" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"></rect><path d="M2.5 10h19M6.5 15h4"></path></svg>{{nav.credit}}</a>
+    </div>
+  </nav>
+  <sc-if value="{{paceOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="{{c.paceTitle}}" style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 16px 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">{{c.paceTitle}}</h2>
+          <button type="button" aria-label="{{c.close}}" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <span style="font-size: 14px; font-weight: 600; color: {{d.paceInk}}; margin-top: -4px">{{d.paceLine}}</span>
+        <div style="background: var(--tint); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; font-size: 13.5px; color: var(--ink2)">
+          <span>{{c.mathHead}}</span>
+          <sc-for list="{{d.paceRows}}" as="r" hint-placeholder-count="4">
+            <div style="display: flex; justify-content: space-between"><span>{{r.l}}</span><span>{{r.v}}</span></div>
+          </sc-for>
+          <span style="color: var(--muted)">{{c.mathFoot}}</span>
+          <div style="display: flex; justify-content: space-between; padding-top: 6px; border-top: 1px solid var(--hair2)"><span>{{c.notCounted}}</span><span>{{d.notCounted}}</span></div>
+          <span style="color: var(--muted)">{{c.notCountedWhat}}</span>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{monthsOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="{{c.monthsTitle}}" style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">{{c.monthsTitle}}</h2>
+          <button type="button" aria-label="{{c.close}}" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <sc-for list="{{d.months}}" as="mo" hint-placeholder-count="4">
+          <button type="button" onClick="{{mo.pick}}" aria-pressed="{{mo.on}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0; border: 0; border-bottom: 1px solid var(--hair); background: transparent; text-align: left; cursor: pointer; color: var(--ink)">
+            <span style="flex: 1; display: grid"><b style="font-size: 15.5px; font-weight: 600">{{mo.name}}</b><span style="font-size: 13px; color: var(--muted)">{{mo.sub}}</span></span>
+            <b style="font-size: 15px; font-weight: 600">{{mo.total}}</b>
+            <span style="width: 18px; color: var(--link); font-weight: 700">{{mo.mark}}</span>
+          </button>
+        </sc-for>
+        <span style="font-size: 12.5px; color: var(--muted)">{{c.monthsNote}}</span>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{dataOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="{{c.dataTitle}}" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 90%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">{{c.dataTitle}}</h2>
+          <button type="button" aria-label="{{c.close}}" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <span style="font-size: 14px; color: var(--ink2); margin-top: -4px">{{c.dataIntro}}</span>
+        <sc-for list="{{d.files}}" as="f" hint-placeholder-count="4">
+          <div style="display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--hair)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>
+            <span style="display: grid; gap: 1px"><b style="font-size: 14.5px; font-weight: 600">{{f.name}}</b><span style="font-size: 13px; color: var(--muted)">{{f.what}}</span><span style="font-size: 12.5px; color: var(--link)">{{f.check}}</span></span>
+          </div>
+        </sc-for>
+        <div style="display: grid; margin-top: 4px">
+          <button type="button" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">{{c.addStatement}}</button>
+          <span style="font-size: 12.5px; color: var(--muted); text-align: center; padding-top: 8px">{{c.dataPrivacy}}</span>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{moneyOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="{{c.moneyTitle}}" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">{{c.moneyTitle}}</h2>
+          <button type="button" aria-label="{{c.close}}" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <span style="font-size: 14px; color: var(--muted); margin-top: -6px">{{c.moneyPeriod}}</span>
+        <b class="serif" style="font-size: 32px; line-height: 1.05">{{m.total}}</b>
+        <div>
+          <sc-for list="{{m.rows}}" as="r" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; border-bottom: 1px solid var(--hair)">
+              <span style="flex: 1; min-width: 0; display: grid"><span style="font-size: 15px; font-weight: 500">{{r.name}}</span><span style="font-size: 12.5px; color: var(--muted)">{{r.sub}}</span></span>
+              <b style="font-size: 15px; font-weight: 600; color: var(--link)">{{r.amt}}</b>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background: var(--tint); border-radius: 14px; padding: 12px; display: grid; gap: 4px">
+          <b style="font-size: 15px; font-weight: 600; line-height: 1.35">{{m.nextHead}}</b>
+          <span style="font-size: 13.5px; color: var(--ink2)">{{m.nextBody}}</span>
+        </div>
+        <figure style="margin: 6px 0 0" aria-label="{{m.chartLabel}}">
+          <figcaption style="font-size: 13px; color: var(--muted); margin-bottom: 6px">{{c.last3}}</figcaption>
+          <div role="img" aria-label="{{m.chartLabel}}" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: end; height: 92px; border-bottom: 1px solid var(--hair)">
+            <sc-for list="{{m.bars}}" as="b" hint-placeholder-count="4">
+              <div style="display: grid; justify-items: center; gap: 4px; align-content: end; height: 100%">
+                <span style="font-size: 12px; color: var(--ink2)">{{b.v}}</span>
+                <span style="width: 100%; max-width: 44px; height: {{b.h}}; border-radius: 4px 4px 0 0; background: {{b.fill}}"></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 6px">
+            <sc-for list="{{m.bars}}" as="b" hint-placeholder-count="4"><span style="text-align: center; font-size: 12px; color: var(--muted)">{{b.l}}</span></sc-for>
+          </div>
+        </figure>
+        <div style="display: grid; gap: 6px; font-size: 14px; padding-top: 4px">
+          <div style="display: flex; justify-content: space-between"><span style="color: var(--ink2)">{{c.moneyIn}}</span><span>{{m.total}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span style="color: var(--ink2)">{{c.spentSoFar}}</span><span>−{{d.outTotal}}</span></div>
+          <div style="display: flex; justify-content: space-between; padding-top: 6px; border-top: 1px solid var(--hair2)"><b style="font-weight: 600">{{c.leftLabel}}</b><b style="font-weight: 600; color: var(--link)">{{m.left}}</b></div>
+        </div>
+        <span style="font-size: 12.5px; color: var(--muted)">{{c.notIncome}}</span>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{sortOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="{{c.sortTitle}}" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">{{c.sortTitle}}</h2><button type="button" aria-label="{{c.close}}" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <sc-if value="{{u.hasCur}}" hint-placeholder-val="{{ true }}">
+          <span style="font-size: 13px; font-weight: 600; color: var(--muted); margin-top: -6px">{{u.progress}}</span>
+          <div style="border-radius: 16px; padding: 12px 14px; box-shadow: inset 0 0 0 1px var(--hair2); display: grid; gap: 2px">
+            <div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline"><b style="font-size: 16px; font-weight: 600">{{u.cur.name}}</b><b class="serif" style="font-size: 22px; color: {{u.cur.ink}}">{{u.cur.amt}}</b></div>
+            <span style="font-size: 13px; color: var(--muted)">{{u.cur.sub}}</span>
+            <span style="font-size: 12px; color: var(--muted); font-family: ui-monospace, Menlo, monospace; overflow-wrap: anywhere">{{u.cur.raw}}</span>
+          </div>
+          <b style="font-size: 15.5px; font-weight: 600">{{u.cur.q}}</b>
+          <div role="radiogroup" aria-label="{{u.cur.q}}" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{u.opts}}" as="o" hint-placeholder-count="6">
+              <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="min-height: 52px; border-radius: 12px; border: 0; background: {{o.bg}}; color: {{o.ink}}; box-shadow: {{o.ring}}; cursor: pointer; display: grid; place-content: center; gap: 1px; padding: 4px 8px"><b style="font-size: 14.5px; font-weight: 600">{{o.label}}</b><span style="font-size: 11.5px; opacity: .8">{{o.counts}}</span></button>
+            </sc-for>
+          </div>
+          <sc-if value="{{u.canRemember}}" hint-placeholder-val="{{ false }}">
+            <button type="button" role="switch" aria-checked="{{u.remember}}" onClick="{{toggleRemember}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0; border: 0; background: transparent; text-align: left; cursor: pointer; color: var(--ink)">
+              <span style="flex: 1; display: grid"><span style="font-size: 14.5px; font-weight: 600">{{u.rememberLabel}}</span><span style="font-size: 12.5px; color: var(--muted)">{{c.rememberSub}}</span></span>
+              <span aria-hidden="true" style="flex: none; width: 44px; height: 26px; border-radius: 999px; background: {{u.swBg}}; position: relative"><span style="position: absolute; top: 3px; left: {{u.swX}}; width: 20px; height: 20px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 2px rgba(0,0,0,.2)"></span></span>
+            </button>
+          </sc-if>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button type="button" onClick="{{saveSort}}" aria-disabled="{{u.noPick}}" style="flex: 1; min-height: 50px; border-radius: 999px; border: 0; background: {{u.ctaBg}}; color: {{u.ctaInk}}; font-size: 15.5px; font-weight: 600; cursor: pointer">{{u.cta}}</button>
+            <button type="button" onClick="{{skipSort}}" style="min-height: 50px; padding: 0 14px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">{{c.skipForNow}}</button>
+          </div>
+          <span style="font-size: 12.5px; color: var(--muted)">{{u.cur.note}}</span>
+        </sc-if>
+        <sc-if value="{{u.allDone}}" hint-placeholder-val="{{ false }}">
+          <b style="font-size: 17px; font-weight: 600; color: var(--link)">{{u.doneTitle}}</b>
+          <div>
+            <sc-for list="{{u.doneRows}}" as="r" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; border-bottom: 1px solid var(--hair)">
+                <span style="flex: 1; display: grid"><span style="font-size: 15px; font-weight: 500">{{r.name}}</span><span style="font-size: 12.5px; color: var(--muted)">{{r.sub}}</span></span>
+                <b style="font-size: 15px; font-weight: 600; color: {{r.ink}}">{{r.amt}}</b>
+              </div>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; color: var(--ink2)">{{c.sortDoneNote}}</span>
+          <div style="display: flex; gap: 8px">
+            <button type="button" onClick="{{closeSheets}}" style="flex: 1; min-height: 50px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 15.5px; font-weight: 600; cursor: pointer">{{c.done}}</button>
+            <button type="button" onClick="{{undoSort}}" style="min-height: 50px; padding: 0 14px; border: 0; background: transparent; font-size: 14.5px; font-weight: 600; color: var(--link); cursor: pointer">{{c.startOver}}</button>
+          </div>
+        </sc-if>
+      </section>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"variant":{"editor":"enum","options":["standard","bharat"],"default":"standard"},"earner":{"editor":"enum","options":["salaried","irregular"],"default":"salaried"},"unsorted":{"editor":"enum","options":["none","sample"],"default":"none"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { retried: false, changeOpen: false, hov: null, sheet: null, month: null, allCats: false, sorted: {}, skipped: [], sortPick: null, remember: false }; }
+  renderVals() {
+    var s = this.state, self = this;
+    var st = s.retried ? 'ready' : (this.props.state ?? 'ready');
+    var hi = (this.props.variant ?? 'standard') === 'bharat';
+    var irregular = (this.props.earner ?? 'salaried') === 'irregular';
+    // ---- inputs: paise, from packages/core on the sample family (monthPictures, recurring, leaks, compareRefinance, daily cumulative), as of 15 Oct ----
+    var CAT = { 'Subscriptions': 526700, 'Cash withdrawal': 500000, 'Food delivery': 492300, 'Dining': 272900, 'Fuel': 220000, 'Fitness': 199900, 'Utilities': 198000, 'Quick commerce': 138200, 'Shopping': 127200, 'Cabs': 82800, 'Mobile & internet': 59900 };
+    var USUAL15 = { 'Subscriptions': 26800, 'Cash withdrawal': 500000, 'Food delivery': 385400, 'Dining': 447600, 'Fuel': 386900, 'Fitness': 199900, 'Utilities': 241000, 'Quick commerce': 152000, 'Shopping': 117700, 'Cabs': 145900, 'Mobile & internet': 59900 };
+    var PACE = [{ m: 'Jul', v: 1711900 }, { m: 'Aug', v: 3169100 }, { m: 'Sep', v: 4895700 }];
+    var USUALCUM = [107500,107500,166500,290000,332200,332200,332200,745400,1047700,1047700,1615800,2941400,2941400,3109200,3169100,3275000,3555000,3619900,3670400,3670400,3735700,3884200,3928400,4313600,4939800,4939800,5029700,6393100,6393100,6650970,6650970];
+    var OCTCUM = [132000,132000,282700,608900,699700,826900,901700,1101600,1666100,1666100,2166000,2393500,2680500,2758000,2817900];
+    var FIXED = 2600000 + 1260100 + 500000, FAMILY = 1000000, UNCAT = 0, NOTCOUNTED = 1000000 + 1000000;
+    var RECENT = [['15 Oct', 'Airtel', 'Mobile & internet', 59900], ['14 Oct', 'Zomato', 'Food delivery', 62600], ['14 Oct', 'YouTube Premium', 'Subscriptions', 14900], ['13 Oct', 'Zomato', 'Food delivery', 67000]];
+    var HI_CAT = { 'Subscriptions': 'सब्सक्रिप्शन', 'Cash withdrawal': 'कैश निकासी', 'Food delivery': 'फ़ूड डिलीवरी', 'Dining': 'बाहर खाना', 'Fuel': 'पेट्रोल', 'Fitness': 'जिम', 'Utilities': 'बिजली-पानी', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Cabs': 'कैब', 'Mobile & internet': 'मोबाइल-इंटरनेट' };
+    var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
+    var med = PACE.map(function (x) { return x.v; }).sort(function (a, b) { return a - b; })[1];
+    var orbitMatch = 673892, orbitSwitchNet = -996393;   // compareRefinance vs Neem Bank's real pre-approved 11.25% offer (email, 6 Oct), 1% fee + GST; switching allowed only from 20 Dec, offer expires 31 Oct
+    var INCOME = 14500000, MONTHS = [['Jul', 4274900, 7268200, 1000000, true], ['Aug', 8798800, 5378200, 1000000, true], ['Sep', 6650970, 5378200, 1000000, true], ['Oct', 2817900, 4360100, 1000000, false]];
+    var FOOD = { amt: 492300, usual15: 385400, orders: 9 };   // CategoryFood: 9 orders, 1–15 Oct
+    var foodPct = Math.round((FOOD.amt - FOOD.usual15) / FOOD.usual15 * 100), foodSkip2 = 2 * Math.round(FOOD.amt / FOOD.orders);
+    var LEAK = { cult: 199900 * 12, dup: 64900, lingo: 499900, subsYear: 778800 + 358800 + 178800 + 142800 + 149900 + 499900 + 2398800 };
+    var C = hi ? {
+      title: 'खर्च', period: 'अक्टूबर · 1–15', heroLabel: 'रोज़ का खर्च, 1–15 अक्टूबर', show: 'हिसाब देखें', hide: 'हिसाब छिपाएँ',
+      paceBelow: function (x) { return 'आम रफ़्तार से ' + x + ' कम'; }, paceAbove: function (x) { return 'आम रफ़्तार से ' + x + ' ज़्यादा'; },
+      legendYou: 'इस महीने', legendUsual: 'आम महीना', how: 'कैसे?', day1: '1', today: 'आज', paceTitle: 'रफ़्तार का हिसाब', close: 'बंद करें',
+      moneyTitle: 'आमदनी', moneyPeriod: 'अक्टूबर 1–15', last3: 'पिछले 3 महीने और यह महीना', spentSoFar: 'इस महीने कुल खर्च', leftLabel: 'बचे', notIncome: 'आमदनी में नहीं गिना: रिफ़ंड (ये उसी कैटेगरी का खर्च घटाते हैं), कार्ड कैशबैक, कार्ड बिल भुगतान और अपने ही खातों के बीच ट्रांसफ़र।',
+      moneyIn: 'आमदनी', leftAfter: 'खर्च के बाद बचे', trust: 'हर स्टेटमेंट का हिसाब मिलता है ·', yourData: 'आपका डेटा', dataTitle: 'आपका डेटा', dataIntro: 'Munim ने ये फ़ाइलें आपके फ़ोन पर पढ़ीं। हर स्टेटमेंट के टोटल रुपये तक मिलाए गए।', addStatement: 'नया स्टेटमेंट जोड़ें', dataPrivacy: 'फ़ाइलें आपके फ़ोन से बाहर नहीं जातीं।',
+      monthsTitle: 'महीने', monthsNote: 'पिछला महीना चुनने पर उसका रिपोर्ट कार्ड खुलता है।', mathHead: '15 तारीख़ तक रोज़ का खर्च, पिछले 3 महीने', mathFoot: 'बीच वाला महीना ही "आम तौर" है।', notCounted: 'गिना नहीं गया', notCountedWhat: 'अपने खातों में ट्रांसफ़र, कार्ड बिल भुगतान और निवेश।',
+      outLabel: 'इस महीने कुल खर्च', everyday: 'रोज़ का', fixed: 'तय खर्च', others: 'अन्य', othersSub: 'परिवार, बिना कैटेगरी',
+      changeHead: 'आप क्या बदल सकते हैं', saveKicker: 'सबसे पहले बचत', otherAmount: 'दूसरी रक़म', whereHead: 'पैसा कहाँ गया', vsUsual: 'आम तौर से तुलना', recentHead: 'हाल के लेन-देन',
+      retry: 'फिर कोशिश करें', errLine: 'ताज़ा नहीं हो पाया। 7:40 बजे तक का हिसाब दिख रहा है।', loading: 'आपका खर्च जोड़ा जा रहा है…',
+      emptyTitle: 'अपना पहला बैंक स्टेटमेंट जोड़ें', emptyBody: 'Munim स्टेटमेंट आपके फ़ोन पर ही पढ़ता है और बताता है पैसा कहाँ गया।', emptyCta: 'बैंक स्टेटमेंट जोड़ें', emptyAlt: 'सैंपल डेटा से देखें', emptyNote: 'अभी HDFC और SBI खाते, HDFC और ICICI क्रेडिट कार्ड।'
+    } : {
+      title: 'Spends', period: 'October · 1–15', heroLabel: 'Everyday spending, 1–15 Oct', show: 'Show the math', hide: 'Hide the math',
+      paceBelow: function (x) { return x + ' below your usual pace'; }, paceAbove: function (x) { return x + ' above your usual pace'; },
+      legendYou: 'This month', legendUsual: 'Usual month', how: 'How?', day1: '1', today: 'Today', paceTitle: 'How your pace is worked out', close: 'Close',
+      moneyTitle: 'Money in', moneyPeriod: 'October 1–15', last3: 'Last 3 months and this month', spentSoFar: 'Spent this month', leftLabel: 'Left', notIncome: 'Not counted as income: refunds (they lower spending in their category), card cashback, card bill payments and transfers between your own accounts.',
+      moneyIn: 'Money in', leftAfter: 'left after spending', trust: 'Every statement balances to the rupee ·', yourData: 'Your data', dataTitle: 'Your data', dataIntro: 'Munim read these files on your phone and matched every statement\u2019s totals to the rupee.', addStatement: 'Add a statement', dataPrivacy: 'Files never leave your phone.',
+      monthsTitle: 'Months', monthsNote: 'Picking a past month opens its report card.', mathHead: 'Everyday spending by the 15th, last 3 months', mathFoot: 'The middle month is your usual pace.', notCounted: 'Not counted', notCountedWhat: 'Transfers between your own accounts, card bill payments and investments.',
+      outLabel: 'Total spent this month', everyday: 'Everyday', fixed: 'Fixed costs', others: 'Others', othersSub: 'Family, uncategorised',
+      changeHead: 'What you can change', saveKicker: 'Savings first', otherAmount: 'Other amount', whereHead: 'Where it went', vsUsual: 'vs a usual month', recentHead: 'Recent',
+      retry: 'Retry', errLine: 'Couldn’t refresh. Showing numbers from 7:40 am.', loading: 'Adding up your spending…',
+      emptyTitle: 'Add your first bank statement', emptyBody: 'Munim reads it on your phone and shows where your money went, and what you can change.', emptyCta: 'Add bank statement', emptyAlt: 'Try with sample data', emptyNote: 'Supported now: HDFC and SBI accounts, HDFC and ICICI credit cards.'
+    };
+    Object.assign(C, hi ? {
+      backToNow: 'अक्टूबर पर लौटें', reportSub: 'महीना बंद: क्या बदला, क्या रखें, आगे का प्लान', noReport: 'रिपोर्ट कार्ड सितंबर से शुरू होते हैं, जो Munim में बंद किया पहला महीना था। ये महीने आपके अपलोड किए स्टेटमेंट से हैं।',
+      pastTxNote: 'इस महीने के रोज़ के खर्च के चार सबसे बड़े भुगतान।', sortNow: 'छाँटें', sortTitle: 'इन्हें छाँटने में मदद करें', rememberSub: 'अपने आप बंद रहता है। नियम बनाने से पहले Munim पूछता है।', skipForNow: 'अभी छोड़ें',
+      sortDoneNote: 'आपके जवाबों से खर्च टैब अपडेट हो गया। इन्हें "सारे लेन-देन" में कभी भी बदलें।', done: 'हो गया', startOver: 'सब वापस लें'
+    } : {
+      backToNow: 'Back to October', reportSub: 'Close your month: what changed, what to keep, the plan', noReport: 'Report cards start from September, the first month you closed in Munim. These months come from your uploaded statements.',
+      pastTxNote: 'The four largest everyday payments in the month.', sortNow: 'Sort', sortTitle: 'Help Munim sort these', rememberSub: 'Off unless you turn it on. Munim asks before making a rule.', skipForNow: 'Skip for now',
+      sortDoneNote: 'Spends has updated with your answers. You can change any of them in All transactions.', done: 'Done', startOver: 'Undo all'
+    });
+    // ---- past months: packages/core monthPictures() for the 3 complete months; ev = everyday categories, fx = fixed, fam = family, unc = uncategorised, cum = everyday spending by day ----
+    var PAST = {"07": {"inc": 14500000, "ev": {"Cabs": 188300, "Food delivery": 505100, "Quick commerce": 275300, "Fitness": 199900, "Subscriptions": 271500, "Utilities": 214000, "Dining": 643600, "Cash withdrawal": 500000, "Mobile & internet": 165800, "Shopping": 561900, "Fuel": 237700, "Groceries": 511800}, "fx": 7268200, "fam": 1000000, "unc": 0, "nc": 3439100, "cum": [0, 48700, 48700, 63200, 89300, 153600, 212000, 411900, 423800, 525600, 525600, 998900, 1548800, 1652000, 1711900, 2092000, 2160100, 2451300, 2451300, 2784600, 3102100, 3158700, 3158700, 3158700, 3353700, 3387100, 3456300, 3456300, 3456300, 3956100, 4274900], "top": [["2026-07-13", "ATM cash", "Cash withdrawal", 500000], ["2026-07-31", "DMart", "Groceries", 318800], ["2026-07-16", "Social, Cyberhub", "Dining", 274200], ["2026-07-12", "Social, Cyberhub", "Dining", 259300]]}, "08": {"inc": 14500000, "ev": {"Fees & charges": 70800, "Quick commerce": 277600, "Fuel": 617600, "Food delivery": 541900, "Cabs": 204600, "Fitness": 199900, "Dining": 600200, "Cash withdrawal": 500000, "Subscriptions": 121600, "Shopping": 753000, "Utilities": 286000, "Mobile & internet": 165800, "Groceries": 560800, "Electronics": 3899000}, "fx": 5378200, "fam": 1000000, "unc": 0, "nc": 3793900, "cum": [325500, 389700, 389700, 438000, 472200, 602000, 889500, 1380100, 2381400, 2511300, 2511300, 2941400, 2941400, 3109200, 3169100, 3145100, 3425100, 3490000, 3540500, 3540500, 3605800, 3754300, 3798500, 4183700, 4809900, 4809900, 4899800, 8798800, 8798800, 8798800, 8798800], "top": [["2026-08-28", "Croma", "Electronics", 3899000], ["2026-08-09", "ATM cash", "Cash withdrawal", 500000], ["2026-08-25", "Amazon", "Shopping", 315500], ["2026-08-12", "DHBVN Electricity", "Utilities", 286000]]}, "09": {"inc": 14500000, "ev": {"Food delivery": 1044100, "Cabs": 211500, "Quick commerce": 261100, "Fitness": 199900, "Shopping": 458400, "Subscriptions": 186500, "Fuel": 386900, "Cash withdrawal": 500000, "Utilities": 241000, "Dining": 447600, "Travel": 2100000, "Mobile & internet": 165800, "Groceries": 446400, "Fees & charges": 1770}, "fx": 5378200, "fam": 1000000, "unc": 0, "nc": 7690000, "cum": [107500, 107500, 166500, 290000, 332200, 332200, 332200, 745400, 1047700, 1047700, 1615800, 3986300, 4698400, 4835800, 4895700, 5001600, 5077300, 5371400, 5565600, 5565600, 5565600, 5565600, 5689100, 5894600, 5968800, 6018400, 6277200, 6393100, 6393100, 6650970], "top": [["2026-09-12", "MakeMyTrip", "Travel", 1420000], ["2026-09-13", "Goa Beach Resort", "Travel", 680000], ["2026-09-11", "ATM cash", "Cash withdrawal", 500000], ["2026-09-12", "Biryani Blues", "Dining", 254800]]}};
+    var PKEYS = ['07', '08', '09'], PSHORT = { '07': 'Jul', '08': 'Aug', '09': 'Sep' };
+    var past = s.month && PAST[s.month] ? s.month : null, P = past ? PAST[past] : null;
+    var MN = hi ? { Jul: 'जुलाई', Aug: 'अगस्त', Sep: 'सितंबर', Oct: 'अक्टूबर' } : { Jul: 'July', Aug: 'August', Sep: 'September', Oct: 'October' };
+    var sumv = function (o) { return Object.keys(o).reduce(function (t, k) { return t + o[k]; }, 0); };
+    // ---- payments Munim couldn't sort (illustrative scenario, fictional payees; Tweak `unsorted`). The sample family has none: every line matched a rule ----
+    var UNS = (this.props.unsorted ?? 'none') === 'sample' ? [
+      { day: 8, dir: 'debit', name: 'Mahalaxmi Traders', raw: 'POS 4471 MAHALAXMI TRADERS GURGAON', amt: 234000, acct: 'Card ••9012', kind: 'shop' },
+      { day: 11, dir: 'debit', name: 'Suresh Kumar', raw: 'UPI/P2P/SURESH KUMAR/98XXXXXX21', amt: 150000, acct: 'Bank ••4521', kind: 'person' },
+      { day: 12, dir: 'credit', name: 'Anil Verma', raw: 'NEFT CR-ANIL VERMA', amt: 800000, acct: 'Bank ••4521', kind: 'in' } ] : [];
+    var USE = hi ? { groc: ['किराना', 'everyday', 'Groceries'], shop: ['शॉपिंग', 'everyday', 'Shopping'], help: ['घरेलू मदद', 'fixed'], family: ['परिवार', 'others'], gift: ['तोहफ़ा', 'others'], other: ['कुछ और', 'uncat'],
+        back: ['पैसे लौटाए', 'not'], igift: ['तोहफ़ा मिला', 'not'], loan: ['उधार मिला', 'not'], side: ['साइड इनकम', 'income'], sale: ['कुछ बेचा', 'not'], iother: ['कुछ और', 'not'] }
+      : { groc: ['Groceries', 'everyday', 'Groceries'], shop: ['Shopping', 'everyday', 'Shopping'], help: ['Household help', 'fixed'], family: ['Family', 'others'], gift: ['Gift', 'others'], other: ['Something else', 'uncat'],
+        back: ['Paid me back', 'not'], igift: ['A gift to me', 'not'], loan: ['A loan to me', 'not'], side: ['Side income', 'income'], sale: ['Sold something', 'not'], iother: ['Something else', 'not'] };
+    var BUCKETL = hi ? { everyday: 'रोज़ का', fixed: 'तय खर्च', others: 'अन्य', uncat: 'अन्य', not: 'आमदनी नहीं', income: 'आमदनी' } : { everyday: 'Everyday', fixed: 'Fixed costs', others: 'Others', uncat: 'Others', not: 'Not income', income: 'Money in' };
+    var ORDER = { shop: ['groc', 'shop', 'help', 'family', 'gift', 'other'], person: ['help', 'family', 'gift', 'groc', 'shop', 'other'], in: ['back', 'side', 'igift', 'loan', 'sale', 'iother'] };
+    var cat2 = Object.assign({}, CAT), cum2 = OCTCUM.slice(), fixedAdd = 0, famAdd = 0, uncatV = 0, incAdd = 0, pendOut = 0, pendIn = 0;
+    UNS.forEach(function (u, i) {
+      var a = s.sorted[i];
+      if (!a) { if (u.dir === 'debit') { uncatV += u.amt; pendOut += u.amt; } else pendIn += u.amt; return; }
+      var b = USE[a.use][1];
+      if (b === 'everyday') { var k = USE[a.use][2]; cat2[k] = (cat2[k] || 0) + u.amt; for (var j = u.day - 1; j < cum2.length; j++) cum2[j] += u.amt; }
+      else if (b === 'fixed') fixedAdd += u.amt; else if (b === 'others') famAdd += u.amt; else if (b === 'uncat') uncatV += u.amt; else if (b === 'income') incAdd += u.amt;
+    });
+    // ---- the month on screen ----
+    var catMap = past ? P.ev : cat2, cumV = past ? P.cum : cum2;
+    var everyday = sumv(catMap), fixedV = past ? P.fx : FIXED + fixedAdd, famV = past ? P.fam : FAMILY + famAdd, uncV = past ? P.unc : uncatV;
+    var below = med - everyday, saveAmt = Math.floor(below / 10000) * 10000;
+    var paceLine, paceInk;
+    if (past) {
+      var pi = PKEYS.indexOf(past), prevK = pi > 0 ? PKEYS[pi - 1] : null;
+      if (prevK) { var diff = everyday - sumv(PAST[prevK].ev), pm = MN[PSHORT[prevK]];
+        paceLine = hi ? pm + ' से ' + R(Math.abs(diff)) + (diff > 0 ? ' ज़्यादा' : ' कम') : R(Math.abs(diff)) + (diff > 0 ? ' more than ' : ' less than ') + pm; paceInk = diff > 0 ? 'var(--warn)' : 'var(--link)'; }
+      else { paceLine = hi ? 'आपके स्टेटमेंट का पहला महीना' : 'The first month in your statements'; paceInk = 'var(--ink2)'; }
+      var full = MN[PSHORT[past]];
+      C.period = full; C.heroLabel = hi ? 'रोज़ का खर्च, ' + full : 'Everyday spending, ' + full; C.outLabel = hi ? full + ' में कुल खर्च' : 'Total spent in ' + full;
+    } else { paceLine = below >= 0 ? C.paceBelow(R(below)) : C.paceAbove(R(-below)); paceInk = below >= 0 ? 'var(--link)' : 'var(--warn)'; }
+    // ---- pace chart on the hero card: 326 x 88 plot, day 1..31 on x, ₹0..max on y; lines labelled directly, no legend box ----
+    var W = 326, H = 88, maxY = Math.max(USUALCUM[30], Math.max.apply(null, cumV));
+    var X = function (i) { return Math.round(i / 30 * W * 10) / 10; }, Y = function (v) { return Math.round((H - 2 - v / maxY * (H - 12)) * 10) / 10; };
+    var pts = function (arr) { return arr.map(function (v, i) { return X(i) + ',' + Y(v); }).join(' '); };
+    var li = cumV.length - 1, youX = X(li), youY = Y(cumV[li]);
+    var lab;
+    if (!past) lab = { yx: youX + 9, yy: youY + 3, yt: 'none', ux: W - 2, uy: Y(Math.min.apply(null, USUALCUM.filter(function (v, i) { return X(i) >= W - 84; }))) + 6, ut: 'translateX(-100%)' };   // usual label sits under the dashed line across its width
+    else if (cumV[li] >= USUALCUM[30]) lab = { yx: youX - 8, yy: youY - 20, yt: 'translateX(-100%)', ux: X(18), uy: Y(USUALCUM[18]) + 5, ut: 'translateX(-50%)' };   // month ended at or above usual: its label above the end dot; usual's under the dashed line mid-month, clear of the late jump
+    else {
+      var bi = 5, bd = -1; for (var q = 5; q <= 22; q++) { var dd = Math.abs(Y(USUALCUM[q]) - Y(cumV[q])); if (dd > bd) { bd = dd; bi = q; } }   // widest gap between the lines
+      var uAbove = Y(USUALCUM[bi]) < Y(cumV[bi]);
+      lab = { yx: youX - 8, yy: youY + (youY <= Y(USUALCUM[li]) ? -20 : 4), yt: 'translateX(-100%)', ux: X(bi), uy: Y(USUALCUM[bi]) + (uAbove ? -20 : 4), ut: 'translateX(-50%)' };
+    }
+    var hov = { on: false, x: 0, left: '0px', text: '' };
+    if (s.hov !== null && s.hov !== undefined) {
+      var i = s.hov, you = i < cumV.length ? cumV[i] : null;
+      hov = { on: true, x: X(i), left: Math.min(Math.max(X(i), 124), W - 124) + 'px',
+        text: (hi ? i + 1 + ' तारीख़ · ' : 'Day ' + (i + 1) + ' · ') + (you !== null ? (past ? MN[PSHORT[past]] + ' ' : (hi ? 'इस महीने ' : 'You ')) + R(you) + ' · ' : '') + (hi ? 'आम ' : 'Usual ') + R(USUALCUM[i]) };
+    }
+    var months = MONTHS.slice().reverse().map(function (mm) { var key = { Jul: '07', Aug: '08', Sep: '09', Oct: null }[mm[0]], on = key === past;
+      var ev = key ? sumv(PAST[key].ev) : everyday, fx = key ? PAST[key].fx : fixedV, ot = key ? PAST[key].fam + PAST[key].unc : famV + uncV;
+      return { name: MN[mm[0]] + (mm[4] ? '' : (hi ? ' · 1–15' : ' · 1–15 so far')), sub: (hi ? 'रोज़ का ' : 'Everyday ') + R(ev) + (hi ? ' · तय ' : ' · fixed ') + R(fx), total: R(ev + fx + ot), mark: on ? '✓' : '', on: on,
+        pick: function () { self.setState({ month: key, sheet: null, hov: null, allCats: false }); } }; });
+    var files = hi ? [
+      { name: 'बैंक स्टेटमेंट ••4521 · 1 जुलाई–30 सितंबर', what: '133 लेन-देन', check: '✓ हर लाइन पर बैलेंस मिला · ओपनिंग + जमा − निकासी = क्लोज़िंग' },
+      { name: 'क्रेडिट कार्ड ••9012 · 4 स्टेटमेंट', what: 'जुलाई–अक्टूबर बिल', check: '✓ हर बिल का कुल बकाया मिला' },
+      { name: 'बैंक SMS · 1–15 अक्टूबर', what: '30 लेन-देन (3 OTP/प्रोमो छोड़े)', check: '✓ स्टेटमेंट के क्लोज़िंग बैलेंस से आगे मिलता है' },
+      { name: 'सभी दस्तावेज़ आपस में', what: 'लोन, पॉलिसी, ईमेल, क्रेडिट रिपोर्ट', check: '✓ 11/11 क्रॉस-चेक पास' } ]
+    : [
+      { name: 'Bank statement ••4521 · 1 Jul–30 Sep', what: '133 transactions', check: '✓ Balance matches on every line · opening + credits − debits = closing' },
+      { name: 'Credit card ••9012 · 4 statements', what: 'Jul–Oct bills', check: '✓ Each bill’s total due matches' },
+      { name: 'Bank SMS alerts · 1–15 Oct', what: '30 transactions (3 OTP/promo skipped)', check: '✓ Continues from the statement’s closing balance' },
+      { name: 'All documents together', what: 'Loans, policies, emails, credit report', check: '✓ 11 of 11 cross-checks pass' } ];
+    Object.assign(HI_CAT, { 'Groceries': 'किराना', 'Electronics': 'इलेक्ट्रॉनिक्स', 'Travel': 'ट्रैवल', 'Fees & charges': 'बैंक चार्ज', 'Education': 'पढ़ाई' });
+    var CATPAGE = { 'Food delivery': 'CategoryFood.dc.html', 'Dining': 'CategoryDining.dc.html', 'Quick commerce': 'CategoryQuick.dc.html', 'Shopping': 'CategoryShopping.dc.html', 'Cabs': 'CategoryCabs.dc.html', 'Fuel': 'CategoryFuel.dc.html', 'Utilities': 'CategoryUtilities.dc.html', 'Mobile & internet': 'CategoryMobile.dc.html', 'Cash withdrawal': 'CategoryCash.dc.html', 'Fitness': 'CategoryFitness.dc.html' };
+    var catsSorted = Object.keys(catMap).filter(function (k) { return catMap[k] > 0; }).sort(function (a, b) { return catMap[b] - catMap[a]; });
+    var maxC = catMap[catsSorted[0]];
+    var prevEv = past && PKEYS.indexOf(past) > 0 ? PAST[PKEYS[PKEYS.indexOf(past) - 1]].ev : null;
+    var cats = (s.allCats ? catsSorted : catsSorted.slice(0, 6)).map(function (k) {
+      var yearly = !past && k === 'Subscriptions';
+      var u = past ? (prevEv ? prevEv[k] : null) : USUAL15[k], dl = (u && !yearly) ? Math.round((catMap[k] - u) / u * 100) : null, big = dl !== null && Math.abs(dl) >= 20;
+      var note = yearly ? (hi ? 'LingoPro का सालाना ₹4,999 इसी महीने कटा' : 'Includes LingoPro’s yearly ₹4,999') : '';
+      var name = hi ? (HI_CAT[k] || k) : k;
+      var delta = yearly ? (hi ? 'सालाना चार्ज' : 'yearly charge') : (past && prevEv && !u) ? (hi ? 'नया' : 'new') : (past && !prevEv) ? '' : dl === null || dl === 0 ? (hi ? 'जैसा' : 'usual') : (dl > 0 ? '↑ ' + dl + '%' : '↓ ' + (-dl) + '%');
+      return { name: name, amt: R(catMap[k]), w: Math.round(catMap[k] / maxC * 100) + '%', href: yearly ? 'Subscriptions.dc.html' : (CATPAGE[k] || 'Transactions.dc.html'), aria: name + ', ' + R(catMap[k]) + (hi ? ', खोलें' : ', open'),
+        delta: delta, deltaInk: big && dl > 0 ? 'var(--warn)' : 'var(--muted)', bar: big && dl > 0 ? 'var(--warn)' : 'var(--btn)', hasNote: !!note, note: note, link: !past, plain: !!past };
+    });
+    var fixes = hi ? [
+      { kind: 'pace', icon: '↑', title: 'फ़ूड डिलीवरी इस महीने ' + foodPct + '% ज़्यादा', sub: '2 ऑर्डर कम करें, ' + R(foodSkip2) + ' बचत में', gain: R(foodSkip2), href: 'CategoryFood.dc.html' },
+      { icon: '!', title: 'cult.fit जुलाई से बंद पड़ा', sub: R(199900) + ' हर महीने', gain: R(LEAK.cult) + '/साल' },
+      { icon: '2×', title: 'Netflix ने दो बार पैसे काटे', sub: '18 सितंबर · रिफ़ंड माँगें', gain: R(LEAK.dup) },
+      { icon: '₹', title: 'LingoPro ट्रायल पेड हो गया', sub: 'रद्द करें या रिफ़ंड माँगें', gain: R(LEAK.lingo) },
+      { icon: '%', title: 'Orbit से 11.25% ब्याज माँगें', sub: 'Neem का ऑफ़र लेने पर फ़ीस से ' + R(-orbitSwitchNet) + ' का घाटा', gain: R(orbitMatch), tag: 'Munim को इससे कुछ नहीं मिलता', kind: 'rate' }
+    ] : [
+      { kind: 'pace', icon: '↑', title: 'Food delivery up ' + foodPct + '% this month', sub: 'Skip 2 orders, save ' + R(foodSkip2), gain: R(foodSkip2), href: 'CategoryFood.dc.html' },
+      { icon: '!', title: 'cult.fit unused since July', sub: R(199900) + ' a month', gain: R(LEAK.cult) + '/yr' },
+      { icon: '2×', title: 'Netflix charged twice', sub: '18 Sep · ask for a refund', gain: R(LEAK.dup) },
+      { icon: '₹', title: 'LingoPro trial became paid', sub: 'Cancel or ask for a refund', gain: R(LEAK.lingo) },
+      { icon: '%', title: 'Ask Orbit to match 11.25%', sub: 'Taking Neem’s offer loses ' + R(-orbitSwitchNet) + ' after fees', gain: R(orbitMatch), tag: 'Munim earns nothing from this', kind: 'rate' }
+    ];
+    fixes.forEach(function (f, i) { f.rule = i < fixes.length - 1 ? '1px solid var(--hair)' : '0'; f.hasTag = !!f.tag; if (!f.tag) f.tag = ''; f.href = f.href || '#'; var calm = f.kind === 'rate' || f.kind === 'pace'; f.iconBg = calm ? 'var(--tint2)' : 'var(--mari-tint)'; f.iconInk = calm ? 'var(--link)' : 'var(--mari-ink)'; });
+    var outTotal = everyday + fixedV + famV + uncV;
+    var split = [
+      { l: C.everyday, v: R(everyday), sub: '', fill: 'var(--btn)', flex: everyday },
+      { l: C.fixed, v: R(fixedV), sub: '', fill: 'var(--muted)', flex: fixedV },
+      { l: C.others, v: R(famV + uncV), sub: uncV ? (hi ? 'परिवार ' + R(famV) + ' · बिना कैटेगरी ' + R(uncV) : 'Family ' + R(famV) + ' · uncategorised ' + R(uncV)) : C.othersSub, fill: 'var(--hair2)', flex: famV + uncV }
+    ];
+    // ---- money in: salaried = packages/core sample family (Salary credits, nextSalaryDate = last + 1 month); irregular = illustrative sample, fictional clients ----
+    var MON = hi ? ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var IN = irregular
+      ? { credits: [['2026-10-03', 'Brightleaf Studio', 'client', 6200000], ['2026-10-11', 'Kestrel Labs', 'client', 3500000]], hist: [['Jul', 11200000], ['Aug', 16800000], ['Sep', 9100000]] }
+      : { credits: [['2026-10-01', 'Salary', 'salary', 14500000]], hist: [['Jul', 14500000], ['Aug', 14500000], ['Sep', 14500000]], salDates: ['2026-07-01', '2026-08-01', '2026-09-01', '2026-10-01'] };
+    UNS.forEach(function (u, i) { var a = s.sorted[i]; if (a && USE[a.use][1] === 'income') IN.credits.push(['2026-10-' + String(u.day).padStart(2, '0'), u.name, 'side', u.amt]); });
+    var dm = function (iso) { var p = iso.split('-'); return parseInt(p[2], 10) + ' ' + MON[parseInt(p[1], 10) - 1]; };
+    var inTotal = IN.credits.reduce(function (t, x) { return t + x[3]; }, 0);
+    var hv = IN.hist.map(function (h) { return h[1]; }), lo = Math.min.apply(null, hv), hiV = Math.max.apply(null, hv);
+    var nextHead, nextBody;
+    if (irregular) {
+      nextHead = hi ? 'हर महीने ' + R(lo) + ' मानकर चलें' : 'Plan on ' + R(lo) + ' a month';
+      nextBody = hi ? 'कोई तय तारीख़ नहीं। पिछले 3 महीनों में आमदनी ' + R(lo) + ' से ' + R(hiV) + ' रही। सबसे कम वाले महीने पर प्लान करना सुरक्षित है; उससे ऊपर जो आए, वह पहले बचत में।'
+        : 'No fixed payday. Your income ranged ' + R(lo) + '–' + R(hiV) + ' over the last 3 months. Planning on your lowest month keeps you safe; anything above it goes to savings first.';
+    } else {
+      var sd = IN.salDates, last = sd[sd.length - 1].split('-'), nm = parseInt(last[1], 10) % 12, ny = parseInt(last[0], 10) + (nm === 0 ? 1 : 0);
+      var next = ny + '-' + String(nm + 1).padStart(2, '0') + '-' + last[2];
+      var salTotal = IN.credits.filter(function (x) { return x[2] === 'salary'; }).reduce(function (t, x) { return t + x[3]; }, 0);
+      var sameDay = sd.every(function (x) { return x.slice(8) === last[2]; }), sameAmt = hv.every(function (v) { return v === hv[0]; }) && hv[0] === salTotal;
+      nextHead = hi ? 'अगली सैलरी लगभग ' + dm(next) + ' को' : 'Next salary expected around ' + dm(next);
+      nextBody = hi ? (sameDay ? 'पिछले ' + (sd.length - 1) + ' महीने से हर बार ' + parseInt(last[2], 10) + ' तारीख़ को आई' : 'आने की तारीख़ बदलती रही है') + (sameAmt ? ', रक़म भी वही।' : '।')
+        : (sameDay ? 'It has come on the ' + parseInt(last[2], 10) + (parseInt(last[2], 10) === 1 ? 'st' : 'th') + ' for ' + (sd.length - 1) + ' months running' : 'The date has varied') + (sameAmt ? ', the same amount each time.' : '.');
+    }
+    var barMax = Math.max(hiV, inTotal);
+    var mBars = IN.hist.map(function (h) { return { l: MON[['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(h[0])], v: R(h[1]), h: Math.round(h[1] / barMax * 60) + 'px', fill: 'var(--hair2)' }; })
+      .concat([{ l: MON[9] + (hi ? ' (अब तक)' : ' so far'), v: R(inTotal), h: Math.round(inTotal / barMax * 60) + 'px', fill: 'var(--btn)' }]);
+    var rowLeftV = past ? P.inc - outTotal : null;
+    var curOut = sumv(cat2) + FIXED + fixedAdd + FAMILY + famAdd + uncatV;
+    if (rowLeftV === null) rowLeftV = inTotal - curOut;
+    var m = {
+      total: R(inTotal), left: R(inTotal - curOut), nextHead: nextHead, nextBody: nextBody, bars: mBars,
+      rowTotal: R(past ? P.inc : inTotal), rowLeft: R(Math.abs(rowLeftV)), leftInk: rowLeftV < 0 ? 'var(--warn)' : 'var(--link)',
+      leftWord: rowLeftV < 0 ? (hi ? 'आमदनी से ज़्यादा खर्च' : 'spent more than came in') : C.leftAfter,
+      chartLabel: (hi ? 'हर महीने की आमदनी: ' : 'Money in by month: ') + mBars.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
+      rows: IN.credits.map(function (x) { return { name: x[2] === 'salary' ? (hi ? 'सैलरी' : 'Salary') : x[1], sub: dm(x[0]) + (x[2] === 'salary' ? (hi ? ' · बैंक ••4521' : ' · bank ••4521') : x[2] === 'side' ? (hi ? ' · साइड इनकम' : ' · side income') : (hi ? ' · क्लाइंट पेमेंट' : ' · client payment')), amt: '+' + R(x[3]) }; })
+    };
+    // ---- sort queue ----
+    var pending = UNS.map(function (u, i) { return i; }).filter(function (i) { return !s.sorted[i]; });
+    var queue = pending.filter(function (i) { return s.skipped.indexOf(i) < 0; }).concat(pending.filter(function (i) { return s.skipped.indexOf(i) >= 0; }));
+    var ci = queue.length ? queue[0] : null, cu = ci !== null ? UNS[ci] : null;
+    var chipS = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
+    var u = { hasCur: !!cu, allDone: UNS.length > 0 && pending.length === 0, opts: [], cur: { name: '', amt: '', ink: 'var(--ink)', sub: '', raw: '', q: '', note: '' }, canRemember: false, remember: s.remember,
+      swBg: s.remember ? 'var(--btn)' : 'var(--hair2)', swX: s.remember ? '21px' : '3px', noPick: !s.sortPick, ctaBg: s.sortPick ? 'var(--btn)' : 'var(--hair2)', ctaInk: s.sortPick ? 'var(--on-btn)' : 'var(--muted)', cta: '', rememberLabel: '',
+      entryTitle: hi ? pending.length + ' भुगतान आपसे पूछने हैं' : pending.length + (pending.length === 1 ? ' payment needs you' : ' payments need you'),
+      entrySub: (pendOut ? R(pendOut) + (hi ? ' गया' : ' out') : '') + (pendOut && pendIn ? ' · ' : '') + (pendIn ? R(pendIn) + (hi ? ' आया' : ' in') : '') + (hi ? ' · Munim पहचान नहीं पाया' : ' · Munim couldn’t tell what they were'),
+      progress: hi ? (UNS.length - pending.length + 1) + ' / ' + UNS.length : (UNS.length - pending.length + 1) + ' of ' + UNS.length, doneTitle: hi ? '✓ सब छँट गया' : '✓ All sorted', doneRows: [] };
+    if (cu) {
+      u.cur = { name: cu.name, amt: (cu.dir === 'credit' ? '+' : '−') + R(cu.amt), ink: cu.dir === 'credit' ? 'var(--link)' : 'var(--ink)', sub: cu.day + (hi ? ' अक्टूबर · ' : ' Oct · ') + cu.acct, raw: cu.raw,
+        q: cu.dir === 'credit' ? (hi ? 'यह पैसा किस लिए आया?' : 'What was this money for?') : (hi ? 'यह किस पर खर्च हुआ?' : 'What was this for?'),
+        note: cu.dir === 'credit' ? (hi ? 'जवाब मिलने तक इसे आमदनी में नहीं गिना जाता।' : 'Not counted as income until you tell us.') : (hi ? 'जवाब मिलने तक यह "अन्य · बिना कैटेगरी" में है।' : 'Until you answer, it sits in Others as uncategorised.') };
+      u.opts = ORDER[cu.kind].map(function (k) { var on = s.sortPick === k, cs = chipS(on); return { label: USE[k][0], counts: BUCKETL[USE[k][1]], on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ sortPick: k }); } }; });
+      u.canRemember = !!s.sortPick; u.rememberLabel = hi ? cu.name + ' के लिए याद रखें' : 'Remember for ' + cu.name;
+      u.cta = s.sortPick ? (hi ? 'सेव करें' : 'Save') : (hi ? 'एक चुनें' : 'Pick one');
+    }
+    u.doneRows = UNS.map(function (x, i) { var a = s.sorted[i]; return a ? { name: x.name, sub: USE[a.use][0] + ' · ' + BUCKETL[USE[a.use][1]] + (a.remember ? (hi ? ' · नियम बना' : ' · rule saved') : ''), amt: (x.dir === 'credit' ? '+' : '−') + R(x.amt), ink: x.dir === 'credit' ? 'var(--link)' : 'var(--ink)' } : null; }).filter(Boolean);
+    var d = {
+      everyday: R(everyday), paceLine: paceLine, paceInk: paceInk,
+      chartLabel: past ? (hi ? 'रोज़ का खर्च दिन-ब-दिन, ' : 'Everyday spending by day, ') + MN[PSHORT[past]] + ' ' + R(everyday) : (hi ? 'रोज़ का खर्च, दिन-ब-दिन: इस महीने ' : 'Everyday spending by day: this month ') + R(everyday) + (hi ? ', आम महीना ' : ' by the 15th, usual month ') + R(med),
+      months: months, files: files,
+      usualPts: pts(USUALCUM), youPts: pts(cumV), youX: youX, youY: youY, usualY: Y(USUALCUM[li]),
+      youLabel: past ? MN[PSHORT[past]] : C.legendYou, youLabelX: lab.yx, youLabelY: lab.yy, youLabelT: lab.yt, usualLabelX: lab.ux, usualLabelY: lab.uy, usualLabelT: lab.ut,
+      todayLbl: past ? '' : C.today, lastDay: String(past ? cumV.length : 31),
+      paceRows: PACE.map(function (x) { return { l: (hi ? ({ Jul: 'जुलाई', Aug: 'अगस्त', Sep: 'सितंबर' })[x.m] : x.m) + ' 1–15' + (x.v === med ? (hi ? ' · आम तौर' : ' · usual') : ''), v: R(x.v) }; }).concat([{ l: hi ? 'अक्टूबर 1–15' : 'Oct 1–15', v: R(everyday) }]),
+      notCounted: R(NOTCOUNTED), outTotal: R(outTotal), split: split,
+      splitLabel: split.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
+      changeSummary: hi ? R(saveAmt) + ' बचत · ' + fixes.length + ' और सुधार' : 'Save ' + R(saveAmt) + ' · ' + fixes.length + ' more fixes',
+      saveTitle: hi ? 'जो ' + R(saveAmt) + ' कम खर्च हुए, उन्हें बचत में डालें' : 'Save the ' + R(saveAmt) + ' you didn’t spend', saveCta: hi ? R(saveAmt) + ' बचाएँ' : 'Save ' + R(saveAmt),
+      fixes: fixes, cats: cats,
+      allCats: catsSorted.length <= 6 ? '' : s.allCats ? (hi ? 'सिर्फ़ ऊपर की 6 दिखाएँ' : 'Show the top 6') : (hi ? 'सभी ' + catsSorted.length + ' कैटेगरी देखें' : 'See all ' + catsSorted.length + ' categories'),
+      vsHead: past ? (prevEv ? (hi ? MN[PSHORT[PKEYS[PKEYS.indexOf(past) - 1]]] + ' से तुलना' : 'vs ' + MN[PSHORT[PKEYS[PKEYS.indexOf(past) - 1]]]) : '') : C.vsUsual,
+      recentHead: past ? (hi ? 'सबसे बड़े भुगतान' : 'Biggest payments') : C.recentHead,
+      recent: past ? P.top.map(function (t) { return { name: t[1], sub: Number(t[0].slice(8)) + ' ' + MN[PSHORT[past]].slice(0, hi ? 99 : 3) + ' · ' + (hi ? (HI_CAT[t[2]] || t[2]) : t[2]), amt: '−' + R(t[3]), ink: 'var(--ink)' }; })
+        : RECENT.map(function (t) { return { name: t[1], sub: t[0] + ' · ' + (hi ? HI_CAT[t[2]] : t[2]), amt: '−' + R(t[3]), ink: 'var(--ink)' }; }),
+      seeAll: hi ? 'सारे लेन-देन देखें' : 'See all transactions',
+      pastBanner: past ? (hi ? MN[PSHORT[past]] + ' देख रहे हैं' : 'Viewing ' + MN[PSHORT[past]]) : '',
+      hasReport: past === '09', noReport: !!past && past !== '09', reportTitle: hi ? 'सितंबर का रिपोर्ट कार्ड' : 'September report card'
+    };
+    return {
+      theme: this.props.theme ?? 'light', c: C, d: d, m: m, u: u, hov: hov,
+      nav: hi ? { today: 'आज', invest: 'निवेश', spends: 'खर्च', credit: 'उधार', ask: 'मुनीम से पूछें' } : { today: 'Today', invest: 'Invest', spends: 'Spends', credit: 'Credit', ask: 'Ask Munim' },
+      isLoading: st === 'loading', isError: st === 'error', isEmpty: st === 'empty', showData: st === 'ready' || st === 'error',
+      isPast: !!past, isCurrent: !past, hasUnsorted: !past && pending.length > 0,
+      retry: function () { self.setState({ retried: true }); },
+      changeOpen: s.changeOpen, chev: s.changeOpen ? '180deg' : '0deg', toggleChange: function () { self.setState({ changeOpen: !s.changeOpen }); },
+      allCatsOpen: !!s.allCats, toggleCats: function () { self.setState({ allCats: !s.allCats }); },
+      toCurrent: function () { self.setState({ month: null, hov: null, allCats: false }); },
+      paceOpen: s.sheet === 'pace', monthsOpen: s.sheet === 'months', dataOpen: s.sheet === 'data', moneyOpen: s.sheet === 'money', sortOpen: s.sheet === 'sort',
+      moneyClick: function () { if (!past) self.setState({ sheet: 'money' }); }, paceClick: function () { if (!past) self.setState({ sheet: 'pace' }); },
+      openMoney: function () { self.setState({ sheet: 'money' }); }, openSort: function () { self.setState({ sheet: 'sort', sortPick: null, remember: false }); },
+      openPace: function () { self.setState({ sheet: 'pace' }); }, openMonths: function () { self.setState({ sheet: 'months' }); }, openData: function () { self.setState({ sheet: 'data' }); }, closeSheets: function () { self.setState({ sheet: null, hov: null }); },
+      toggleRemember: function () { self.setState({ remember: !s.remember }); },
+      saveSort: function () { if (ci === null || !s.sortPick) return; var so = Object.assign({}, s.sorted); so[ci] = { use: s.sortPick, remember: s.remember }; self.setState({ sorted: so, sortPick: null, remember: false }); },
+      skipSort: function () { if (ci === null) return; var sk = s.skipped.filter(function (x) { return x !== ci; }).concat([ci]); self.setState({ skipped: sk, sortPick: null, remember: false }); },
+      undoSort: function () { self.setState({ sorted: {}, skipped: [], sortPick: null, remember: false }); },
+      onMove: function (e) { var r = e.currentTarget.getBoundingClientRect(); var i = Math.round((e.clientX - r.left) / r.width * 30); self.setState({ hov: Math.max(0, Math.min(30, i)) }); },
+      onLeave: function () { self.setState({ hov: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

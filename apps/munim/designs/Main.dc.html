@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Munim Today v16</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;700&amp;family=Noto+Serif+Devanagari:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.pop{animation:pop .45s ease-out both}
+.rise{animation:rise .32s ease-out both}
+.sheet{animation:sheet .28s ease-out both}
+@media (prefers-reduced-motion: reduce){.pop,.rise,.sheet{animation:none}}
+.t-light{--bg:#F2F7F6;--band:#DDEEEA;--band2:#CBE5E0;--band3:#BFDFD9;--card:#FFFFFF;--ink:#10201E;--ink2:#34514D;--muted:#4E6863;--hair:#D6E6E2;--hair2:#C7DBD7;--tint:#E8F2F0;--tint2:#E1F0ED;--btn:#0F5E58;--on-btn:#FFFFFF;--link:#0F5E58;--warn:#9A5B00;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#FBF1DD;--mari-ink:#6E4600;--err-tint:#FCEBE8;--err-ink:#A3271C;--scrim:rgba(0,0,0,.45);--skel:#D3E3DF;--ai1:#8E7CF0;--ai2:#5B47D6;--ai3:#2E2A7A;--ai-ink:#4B3BC4;--ai-glow:rgba(91,71,214,.42);--orb1:#86E6D9;--orb2:#14897F;--orb3:#063D39;--orb-glow:rgba(15,94,88,.45);color-scheme:light}
+.t-dark{--bg:#0B1413;--band:#10211E;--band2:#163029;--band3:#1B3A34;--card:#14201E;--ink:#E6F0EE;--ink2:#C2D4D0;--muted:#93ABA6;--hair:#263835;--hair2:#334844;--tint:#1C2D2A;--tint2:#1E3330;--btn:#5CC2B4;--on-btn:#06201C;--link:#7ED3C7;--warn:#F2B860;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#33270F;--mari-ink:#F6C978;--err-tint:#3A1A17;--err-ink:#FF9E92;--scrim:rgba(0,0,0,.62);--skel:#1D2E2B;--ai1:#9C8CFF;--ai2:#6A55E6;--ai3:#352F8C;--ai-ink:#B9AEFF;--ai-glow:rgba(142,124,240,.38);--orb1:#A6F2E7;--orb2:#2BA295;--orb3:#0A4C46;--orb-glow:rgba(92,194,180,.40);color-scheme:dark}
+@keyframes shimmer{0%{opacity:.55}50%{opacity:1}100%{opacity:.55}}
+.skel{background:var(--skel);border-radius:8px;animation:shimmer 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+@keyframes breathe{0%,100%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 0 var(--ai-glow)}50%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 7px rgba(0,0,0,0)}}
+.ai-orb{background:radial-gradient(circle at 30% 25%,var(--ai1) 0%,var(--ai2) 52%,var(--ai3) 100%);animation:breathe 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.ai-orb{animation:none;box-shadow:0 8px 22px var(--ai-glow)}}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+.orb-teal{background:radial-gradient(circle at 30% 25%,var(--orb1) 0%,var(--orb2) 48%,var(--orb3) 100%);box-shadow:0 10px 24px var(--orb-glow)}
+.orb-teal::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,0,0,0) 0deg,var(--orb1) 80deg,var(--orb2) 120deg,rgba(0,0,0,0) 170deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:orbspin 3.6s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
+</style>
+</helmet>
+<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
+
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 210px; background: var(--band); overflow: hidden">
+    <span style="position: absolute; right: -70px; top: -90px; width: 260px; height: 260px; border-radius: 50%; background: var(--band2)"></span>
+    <span style="position: absolute; right: 40px; top: 120px; width: 70px; height: 70px; border-radius: 50%; background: var(--band3)"></span>
+  </div>
+
+  <div style="position: absolute; inset: 0 0 80px 0; overflow-y: auto; padding: 12px 16px 40px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+
+    <header style="flex: none; display: flex; justify-content: space-between; align-items: center; gap: 10px">
+      <span style="font-size: 14px; color: var(--muted)">{{dateLabel}}</span>
+      <div style="display: flex; gap: 8px; align-items: center">
+        <button type="button" onClick="{{openStreak}}" aria-label="{{streakLabel}}" style="display: inline-flex; align-items: center; gap: 5px; min-height: 40px; border: 0; font-size: 15px; font-weight: 700; background: {{streakBg}}; color: {{streakInk}}; border-radius: 999px; padding: 0 14px; cursor: pointer; box-shadow: 0 0 0 1px var(--hair)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5 5 5.5 5 10.5A5 5 0 0 1 7 12.5c0-2.2 1.2-3.6 2.4-4.6.2 1.6 1 2.6 2.1 3C11.2 8 11 5 12 2z"></path></svg>
+          <sc-if value="{{allDone}}" hint-placeholder-val="{{ false }}"><span class="pop">{{streakAfter}}</span></sc-if>
+          <sc-if value="{{notAllDone}}" hint-placeholder-val="{{ true }}"><span>{{streakBefore}}</span></sc-if>
+        </button>
+        <a href="#" aria-label="You: family, files and privacy" style="width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--on-btn); display: grid; place-items: center; text-decoration: none; font-weight: 600">R</a>
+      </div>
+    </header>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" aria-label="Loading today" style="flex: none; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: grid; gap: 8px; padding: 4px 2px 6px">
+          <span class="skel" style="height: 30px; width: 85%"></span>
+          <span class="skel" style="height: 30px; width: 40%"></span>
+          <span class="skel" style="height: 14px; width: 62%"></span>
+        </div>
+        <div style="background: var(--card); border-radius: 24px; padding: 16px; display: grid; gap: 12px; box-shadow: 0 0 0 1px var(--hair)">
+          <span class="skel" style="height: 14px; width: 40%"></span>
+          <span class="skel" style="height: 26px; width: 80%"></span>
+          <span class="skel" style="height: 14px; width: 65%"></span>
+          <span class="skel" style="height: 52px; border-radius: 999px; margin-top: 8px"></span>
+        </div>
+        <div style="background: var(--card); border-radius: 20px; padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+          <span class="skel" style="height: 14px; width: 50%"></span>
+          <span class="skel" style="height: 30px; width: 55%"></span>
+        </div>
+        <span style="font-size: 13.5px; color: var(--muted); text-align: center">Getting today's numbers…</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="flex: none; display: flex; align-items: center; gap: 10px; background: var(--err-tint); color: var(--err-ink); border-radius: 16px; padding: 6px 6px 6px 14px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0"></path><path d="M3 3l18 18"></path></svg>
+        <span style="flex: 1; font-size: 14px">Couldn't refresh. Showing numbers from 7:40 am.</span>
+        <button type="button" onClick="{{retry}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--card); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">Retry</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
+    <section aria-label="Today's verdict" style="flex: none; display: grid; gap: 2px; padding: 4px 2px 6px">
+      <h1 style="margin: 0; font-family: {{df}}; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em; color: var(--ink)">Rohan, your money's okay today</h1>
+      <span style="font-size: 14.5px; color: var(--muted)">{{verdictSub}}</span>
+    </section>
+
+    <sc-if value="{{isRecapDay}}" hint-placeholder-val="{{ false }}">
+      <section aria-label="{{rd.title}}" style="flex: none; background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+        <span style="font-size: 13px; font-weight: 600; color: var(--warn)">{{rd.kicker}}</span>
+        <b style="font-family: {{df}}; font-size: 28px; font-weight: 700; line-height: 1.1">{{rd.title}}</b>
+        <span style="font-size: 14.5px; color: var(--ink2)">{{rd.sub}}</span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px">
+          <a href="{{rd.href}}" style="min-height: 48px; display: inline-flex; align-items: center; gap: 8px; padding: 0 20px; border-radius: 999px; background: var(--btn); color: var(--on-btn); font-size: 15px; font-weight: 600; text-decoration: none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--on-btn)" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>{{rd.cta}}</a>
+          <a href="{{rd.href}}" style="min-height: 48px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 999px; background: var(--tint); font-size: 15px; text-decoration: none">{{rd.alt}}</a>
+        </div>
+        <span style="font-size: 12.5px; color: var(--muted)">Counts as today's check-in. Available until {{rd.until}}.</span>
+        <button type="button" onClick="{{doDaily}}" style="justify-self: start; min-height: 44px; padding: 0; border: 0; background: transparent; font-size: 14.5px; font-weight: 600; color: var(--link); cursor: pointer">Do today's 3 cards instead</button>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{notRecapDay}}" hint-placeholder-val="{{ true }}">
+    <section aria-labelledby="ci" style="flex: none; background: var(--card); border-radius: 24px; padding: 16px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+        <sc-if value="{{notBackToSummary}}" hint-placeholder-val="{{ true }}"><h2 id="ci" style="margin: 0; font-size: 15px; font-weight: 600">Today's check-in</h2></sc-if>
+        <sc-if value="{{showBackToSummary}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{backToSummary}}" style="min-height: 40px; margin-left: -6px; padding: 0 6px; border: 0; background: transparent; display: inline-flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 600; color: var(--link); cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg>All done</button></sc-if>
+        <div style="display: flex; align-items: center; margin-right: -8px">
+          <sc-for list="{{steps}}" as="st" hint-placeholder-count="3">
+            <button type="button" aria-label="{{st.aria}}" onClick="{{st.go}}" style="width: 28px; height: 32px; padding: 0; border: 0; background: transparent; display: grid; place-items: center; cursor: pointer"><span style="width: {{st.w}}; height: 6px; border-radius: 3px; background: {{st.bg}}"></span></button>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{showCard}}" hint-placeholder-val="{{ true }}">
+        <div class="rise" style="display: grid; gap: 8px; min-height: 172px; align-content: start">
+          <span style="font-size: 13px; font-weight: 600; color: {{cur.kickerInk}}">{{cur.kicker}}</span>
+          <b style="font-family: {{df}}; font-size: {{cur.titleSize}}; font-weight: 700; line-height: 1.15">{{cur.title}}</b>
+          <span style="font-size: 14.5px; color: var(--ink2)">{{cur.sub}}</span>
+          <sc-if value="{{cur.hasWhy}}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{openWhy}}" style="justify-self: start; min-height: 36px; margin-top: -4px; padding: 0; border: 0; background: transparent; display: inline-flex; align-items: center; gap: 4px; font-size: 13.5px; font-weight: 600; color: var(--link); cursor: pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 2-2.3 3.5M12 17h.01"></path></svg>Why this?</button>
+          </sc-if>
+          <sc-if value="{{cur.hasTags}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap">
+              <span style="font-size: 13px; background: var(--tint); border-radius: 8px; padding: 3px 8px">Zomato {{m.zomato}}</span>
+              <span style="font-size: 13px; background: var(--tint); border-radius: 8px; padding: 3px 8px">YouTube Premium {{m.yt}}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{cur.hasAmounts}}" hint-placeholder-val="{{ false }}">
+            <div role="radiogroup" aria-label="Daily amount" style="display: flex; gap: 6px">
+              <sc-for list="{{amounts}}" as="a" hint-placeholder-count="3">
+                <button type="button" role="radio" aria-checked="{{a.on}}" onClick="{{a.pick}}" style="min-height: 38px; min-width: 64px; padding: 0 12px; border-radius: 12px; border: 0; background: {{a.bg}}; color: {{a.ink}}; box-shadow: {{a.ring}}; font-size: 14.5px; font-weight: 700; cursor: pointer">{{a.label}}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{cur.hasTopup}}" hint-placeholder-val="{{ false }}">
+            <div style="background: var(--tint); border-radius: 14px; padding: 12px; display: grid; gap: 8px">
+              <span style="font-size: 14.5px">Yesterday you spent <b>{{m.under}}</b> less than a usual day. Save the difference?</span>
+              <div style="display: flex; gap: 8px; align-items: center">
+                <button type="button" onClick="{{openTopup}}" style="min-height: 44px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 14.5px; font-weight: 600; cursor: pointer">Save {{m.topup}}</button>
+                <button type="button" onClick="{{dismissTopup}}" style="min-height: 44px; padding: 0 10px; border: 0; background: transparent; font-size: 14px; color: var(--muted); cursor: pointer">Not today</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{cur.hasControls}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; gap: 4px">
+              <button type="button" style="min-height: 44px; padding: 0 10px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">Pause</button>
+              <button type="button" style="min-height: 44px; padding: 0 10px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">Change amount</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{cur.hasAmountLink}}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{openAmounts}}" style="justify-self: start; min-height: 36px; padding: 0; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">Change amount</button>
+          </sc-if>
+          <sc-if value="{{showButtons}}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; gap: 0; margin-top: 6px">
+              <button type="button" onClick="{{cur.primary}}" style="min-height: 52px; border-radius: 999px; border: 0; background: {{cur.primaryBg}}; color: {{cur.primaryInk}}; font-size: 16px; font-weight: 600; cursor: pointer">{{cur.primaryLabel}}</button>
+              <sc-if value="{{cur.noTertiary}}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{cur.secondary}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">{{cur.secondaryLabel}}</button>
+              </sc-if>
+              <sc-if value="{{cur.hasTertiary}}" hint-placeholder-val="{{ false }}">
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+                  <button type="button" onClick="{{cur.secondary}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; font-weight: 600; color: var(--link); cursor: pointer">{{cur.secondaryLabel}}</button>
+                  <button type="button" onClick="{{cur.tertiary}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">{{cur.tertiaryLabel}}</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{reviewing}}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top: 6px; display: flex; align-items: center; gap: 10px; background: var(--tint); border-radius: 14px; padding: 6px 6px 6px 14px; min-height: 52px; box-sizing: border-box">
+              <span style="flex: 1; display: grid; font-size: 14px"><span style="color: var(--muted); font-size: 12.5px">You chose</span><b style="font-weight: 600">{{choice.label}}</b></span>
+              <sc-if value="{{canChange}}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{changeAnswer}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--card); color: var(--link); font-size: 14px; font-weight: 600; cursor: pointer">Change</button>
+              </sc-if>
+              <sc-if value="{{locked}}" hint-placeholder-val="{{ false }}">
+                <span style="max-width: 140px; font-size: 12.5px; color: var(--muted); padding-right: 8px">{{choice.lock}}</span>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{showSummary}}" hint-placeholder-val="{{ false }}">
+        <div aria-live="polite" style="min-height: 172px; display: grid; place-items: center; align-content: center; text-align: center; gap: 4px; background: var(--mari-tint); color: var(--mari-ink); border-radius: 16px; padding: 14px">
+          <svg class="pop" width="48" height="48" viewBox="0 0 24 24" fill="#F2A93B" aria-hidden="true"><path d="M12 2c1 3.5 5 5.5 5 10.5A5 5 0 0 1 7 12.5c0-2.2 1.2-3.6 2.4-4.6.2 1.6 1 2.6 2.1 3C11.2 8 11 5 12 2z"></path></svg>
+          <b style="font-family: {{df}}; font-size: 24px; line-height: 1.1">All done for today</b>
+          <span style="font-size: 14.5px">Your streak is {{streakAfterText}}. See you tomorrow.</span>
+          <button type="button" onClick="{{reviewCards}}" style="margin-top: 4px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--card); color: var(--ink); font-size: 14.5px; font-weight: 600; cursor: pointer">See or change today's answers</button>
+        </div>
+      </sc-if>
+
+    </section>
+    </sc-if>
+
+
+    <section aria-labelledby="bp" style="flex: none; background: var(--card); border-radius: 20px; padding: 10px 8px 10px 16px; display: grid; gap: 2px; box-shadow: 0 0 0 1px var(--hair)">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+        <h2 id="bp" style="margin: 0; font-size: 14px; font-weight: 500; color: var(--muted)">Your big picture · net worth</h2>
+        <button type="button" aria-label="{{eyeLabel}}" aria-pressed="{{hidden}}" onClick="{{toggleHidden}}" style="width: 44px; height: 40px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)">
+          <sc-if value="{{hidden}}" hint-placeholder-val="{{ false }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 9 4.5 10 6-.4.6-1.3 1.8-2.6 3"></path><path d="M6.6 6.6C4.3 8 2.7 10.2 2 12c1 1.5 5 6 10 6 1.7 0 3.2-.5 4.5-1.2"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>
+          </sc-if>
+          <sc-if value="{{shown}}" hint-placeholder-val="{{ true }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12c1-1.5 5-6 10-6s9 4.5 10 6c-1 1.5-5 6-10 6S3 13.5 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </sc-if>
+        </button>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding-right: 8px">
+        <span style="font-family: {{df}}; font-size: 30px; font-weight: 700; line-height: 1.05">{{m.total}}</span>
+        <button type="button" onClick="{{toggleMath}}" aria-expanded="{{mathOpen}}" style="min-height: 40px; border: 0; background: transparent; padding: 0; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{mathLabel}}</button>
+      </div>
+      <span style="font-size: 13.5px; color: var(--link); padding-right: 8px">Investments {{m.gain}} above what you put in · 14.2% a year</span>
+      <sc-if value="{{mathOpen}}" hint-placeholder-val="{{ false }}">
+        <div style="margin: 6px 8px 0 0; background: var(--tint); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; font-size: 14px; color: var(--ink2)">
+          <span>Investments + Bank − Loans outstanding</span>
+          <div style="display: flex; justify-content: space-between"><span>Investments (CAS, 15 Oct)</span><span>{{m.inv}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span>Bank (SMS alerts)</span><span>{{m.bank}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span>Loans outstanding (2)</span><span>{{m.loans}}</span></div>
+        </div>
+      </sc-if>
+    </section>
+
+    <sc-if value="{{billsPending}}" hint-placeholder-val="{{ true }}">
+      <a href="#" style="flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 48px; box-sizing: border-box; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); text-decoration: none; color: var(--ink)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        <span style="font-size: 15px; flex: 1"><b>Card bill {{m.card}}</b> · due 24 Oct</span>
+        <span style="font-size: 14px; font-weight: 600; color: var(--link)">Covered ✓</span>
+      </a>
+    </sc-if>
+
+    <a href="Recaps.dc.html" style="flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 48px; box-sizing: border-box; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); text-decoration: none; color: var(--ink)">
+      <span style="flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--btn); display: grid; place-items: center">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--on-btn)" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>
+      </span>
+      <span style="font-size: 15px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><b>Recaps</b> · Last Sunday's call · September ✓</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+    </a>
+
+    <sc-if value="{{billsPaid}}" hint-placeholder-val="{{ false }}">
+      <div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 44px; box-sizing: border-box; border-radius: 16px; color: var(--muted)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>
+        <span style="font-size: 14.5px; flex: 1">Paid this month · card bill {{m.card}}</span>
+      </div>
+    </sc-if>
+
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <section aria-label="Get started" style="flex: none; display: grid; gap: 2px; padding: 4px 2px 6px">
+        <h1 style="margin: 0; font-family: {{df}}; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em">Welcome, Rohan</h1>
+        <span style="font-size: 14.5px; color: var(--muted)">Add one statement and Munim does the rest.</span>
+      </section>
+      <section aria-labelledby="gs" style="flex: none; background: var(--card); border-radius: 24px; padding: 16px; display: grid; gap: 12px; box-shadow: 0 0 0 1px var(--hair)">
+        <h2 id="gs" style="margin: 0; font-size: 15px; font-weight: 600">Your first check-in</h2>
+        <b style="font-family: {{df}}; font-size: 24px; font-weight: 700; line-height: 1.15">See where your money went last month</b>
+        <span style="font-size: 14.5px; color: var(--ink2)">Add a bank statement PDF. Takes about 1 minute; it's read on your phone.</span>
+        <ol style="margin: 0; padding: 0; list-style: none; display: grid; gap: 8px">
+          <li style="display: flex; gap: 10px; align-items: center; font-size: 14.5px"><span style="flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--on-btn); display: grid; place-items: center; font-size: 12.5px; font-weight: 700">1</span>Bank statement · spends and bills</li>
+          <li style="display: flex; gap: 10px; align-items: center; font-size: 14.5px; color: var(--muted)"><span style="flex: none; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--hair2); display: grid; place-items: center; font-size: 12.5px; font-weight: 700">2</span>Mutual fund statement (CAS) · net worth</li>
+          <li style="display: flex; gap: 10px; align-items: center; font-size: 14.5px; color: var(--muted)"><span style="flex: none; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--hair2); display: grid; place-items: center; font-size: 12.5px; font-weight: 700">3</span>Auto-sync with your bank · coming soon</li>
+        </ol>
+        <div style="display: grid; margin-top: 4px">
+          <button type="button" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Add bank statement</button>
+          <button type="button" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Try with sample data</button>
+        </div>
+      </section>
+      <div style="flex: none; border-radius: 20px; padding: 14px 16px; display: grid; gap: 2px; box-shadow: inset 0 0 0 1.5px var(--hair2)">
+        <span style="font-size: 14px; color: var(--muted)">Your big picture · net worth</span>
+        <span style="font-size: 14.5px; color: var(--ink2)">Appears after your first statement.</span>
+      </div>
+    </sc-if>
+
+    <nav aria-label="Tools" style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{tools}}" as="tool" hint-placeholder-count="4">
+        <a href="#" style="text-decoration: none; color: var(--ink); display: grid; justify-items: center; gap: 4px; padding: 2px 0">
+          <span style="width: 46px; height: 46px; border-radius: 15px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); display: grid; place-items: center; color: var(--warn)">
+            <sc-if value="{{tool.isGoals}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.5"></circle></svg></sc-if>
+            <sc-if value="{{tool.isFire}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18h18"></path><path d="M6 18a6 6 0 0 1 12 0"></path><path d="M12 4v3M4.9 8.9l2 2M19.1 8.9l-2 2"></path></svg></sc-if>
+            <sc-if value="{{tool.isIns}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg></sc-if>
+            <sc-if value="{{tool.isFam}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3 20a6 6 0 0 1 12 0M14.5 20a4.5 4.5 0 0 1 7-3.7"></path></svg></sc-if>
+          </span>
+          <span style="font-size: 12.5px; font-weight: 500">{{tool.name}}</span>
+        </a>
+      </sc-for>
+    </nav>
+  </div>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: var(--card); border-top: 1px solid var(--hair)">
+    <div style="height: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center">
+      <a href="#" aria-current="page" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--link); font-weight: 700">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>{{nav.today}}</a>
+      <a href="Invest.dc.html" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"></path><path d="M4 19h16"></path><path d="m7 14 4-4 3 3 5-6"></path></svg>{{nav.invest}}</a>
+      <a href="Voice.dc.html" aria-label="{{nav.ask}}" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; padding-bottom: 10px; box-sizing: border-box; font-size: 12.5px; text-decoration: none; color: var(--link); font-weight: 700">
+        <span class="orb-teal" style="position: relative; width: 60px; height: 60px; margin-top: -32px; border-radius: 50%; border: 4px solid var(--card); display: grid; place-items: center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+          <span style="position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%; background: var(--card); border: 1px solid var(--hair); display: grid; place-items: center">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--link)" aria-hidden="true"><path d="M12 1.5l2.6 7.9 7.9 2.6-7.9 2.6L12 22.5l-2.6-7.9L1.5 12l7.9-2.6z"></path></svg>
+          </span>
+        </span>{{nav.ask}}</a>
+      <a href="#" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>{{nav.spends}}</a>
+      <a href="#" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"></rect><path d="M2.5 10h19M6.5 15h4"></path></svg>{{nav.credit}}</a>
+    </div>
+  </nav>
+
+  <sc-if value="{{streakOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="Your streak" style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 26px 26px 0 0; padding: 12px 20px 28px; display: grid; gap: 16px; overflow: hidden">
+        <span aria-hidden="true" style="position: absolute; right: -60px; top: -80px; width: 200px; height: 200px; border-radius: 50%; background: var(--tint)"></span>
+        <div style="position: relative; display: flex; justify-content: space-between; align-items: center">
+          <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2)"></span>
+          <button type="button" aria-label="Close" onClick="{{closeStreak}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+          </button>
+        </div>
+        <div style="position: relative; display: flex; align-items: center; gap: 14px">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="#F2A93B" aria-hidden="true"><path d="M12 2c1 3.5 5 5.5 5 10.5A5 5 0 0 1 7 12.5c0-2.2 1.2-3.6 2.4-4.6.2 1.6 1 2.6 2.1 3C11.2 8 11 5 12 2z"></path></svg>
+          <div style="display: grid">
+            <b style="font-family: {{df}}; font-size: 34px; line-height: 1">{{streakDays}}</b>
+            <span style="font-size: 14.5px; color: var(--ink2)">Check in daily to grow it</span>
+          </div>
+        </div>
+        <div style="position: relative; background: var(--card); border-radius: 18px; padding: 14px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+          <div style="display: flex; justify-content: space-between; align-items: baseline">
+            <b style="font-size: 15px">This week</b>
+            <span style="font-size: 13.5px; color: var(--muted)">Goal: 5 of 7 days · {{weekCount}} done</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; text-align: center">
+            <sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+              <div style="display: grid; justify-items: center; gap: 4px">
+                <span style="width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: {{d.bg}}; color: {{d.ink}}; box-shadow: {{d.ring}}; font-size: 13px; font-weight: 700">{{d.mark}}</span>
+                <span style="font-size: 12px; color: var(--muted)">{{d.l}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="position: relative; display: grid; gap: 8px">
+          <b style="font-size: 15px">Recaps</b>
+          <a href="SundayCall.dc.html" style="display: flex; justify-content: space-between; align-items: center; min-height: 48px; background: var(--card); border-radius: 14px; padding: 0 14px; box-shadow: 0 0 0 1px var(--hair); text-decoration: none">
+            <span style="font-size: 15px">Sunday Money Call</span>
+            <span style="font-size: 13.5px; color: var(--muted)">Weekly · 2 min</span>
+          </a>
+          <div style="display: flex; justify-content: space-between; align-items: center; min-height: 48px; background: var(--card); border-radius: 14px; padding: 0 14px; box-shadow: 0 0 0 1px var(--hair)">
+            <span style="font-size: 15px">Close your month</span>
+            <span style="font-size: 13.5px; color: var(--muted)">Salary day</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{whyOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="Your money path" style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 26px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0; font-family: {{df}}; font-size: 25px; font-weight: 700; line-height: 1.15">Your money path</h2>
+          <button type="button" aria-label="Close" onClick="{{closeWhy}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        </div>
+        <span style="font-size: 14.5px; color: var(--ink2); margin-top: -6px">Munim picks today’s cards from where you are on this path.</span>
+        <ol style="margin: 0; padding: 0; list-style: none; display: grid; gap: 2px">
+          <sc-for list="{{whySteps}}" as="w" hint-placeholder-count="5">
+            <li style="display: flex; gap: 12px; align-items: flex-start; padding: 10px; border-radius: 14px; background: {{w.rowBg}}">
+              <span style="flex: none; width: 28px; height: 28px; border-radius: 50%; background: {{w.dotBg}}; color: {{w.dotInk}}; box-shadow: {{w.dotRing}}; display: grid; place-items: center; font-size: 13px; font-weight: 700">{{w.mark}}</span>
+              <span style="display: grid; gap: 1px"><b style="font-size: 15px; font-weight: 600">{{w.t}}<sc-if value="{{w.isHere}}" hint-placeholder-val="{{ false }}"><span style="margin-left: 8px; font-size: 12.5px; font-weight: 600; color: var(--link)">You are here</span></sc-if></b><span style="font-size: 13.5px; color: var(--muted)">{{w.d}}</span></span>
+            </li>
+          </sc-for>
+        </ol>
+        <span style="font-size: 13px; color: var(--muted)">This is guidance, not a rule: you can save, pay or invest in any order. General guidance, not investment advice.</span>
+        <button type="button" onClick="{{closeWhy}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Got it</button>
+      </section>
+    </div>
+  </sc-if>
+  <sc-if value="{{offOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="{{off.title}}" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 26px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 44px">
+          <sc-if value="{{off.hasBack}}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{offBack}}" style="min-height: 44px; margin-left: -8px; padding: 0 8px; border: 0; background: transparent; display: inline-flex; align-items: center; gap: 4px; font-size: 14.5px; font-weight: 600; color: var(--link); cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg>Back</button>
+          </sc-if>
+          <sc-if value="{{off.noBack}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: var(--muted)">Yesterday, 14 Oct · {{offWas}}</span></sc-if>
+          <button type="button" aria-label="Close" onClick="{{offClose}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        </div>
+        <h2 style="margin: 0; font-family: {{df}}; font-size: 25px; font-weight: 700; line-height: 1.15">{{off.title}}</h2>
+        <sc-if value="{{off.hasSub}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14.5px; color: var(--ink2); margin-top: -4px">{{off.sub}}</span></sc-if>
+
+        <sc-if value="{{off.hasRows}}" hint-placeholder-val="{{ true }}">
+          <div role="list" style="display: grid">
+            <sc-for list="{{off.rows}}" as="r" hint-placeholder-count="3">
+              <button type="button" role="listitem" onClick="{{r.go}}" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--hair); background: transparent; text-align: left; cursor: pointer">
+                <span style="flex: 1; display: grid; gap: 1px"><b style="font-size: 15.5px; font-weight: 600; color: {{r.ink}}">{{r.label}}</b><span style="font-size: 13.5px; color: var(--muted)">{{r.sub}}</span></span>
+                <sc-if value="{{r.hasRight}}" hint-placeholder-val="{{ false }}"><b style="font-size: 15px; font-weight: 600">{{r.right}}</b></sc-if>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{off.isReasons}}" hint-placeholder-val="{{ true }}">
+          <div style="display: grid; gap: 6px">
+            <button type="button" onClick="{{toggleOffMath}}" aria-expanded="{{offMath}}" style="justify-self: start; min-height: 44px; padding: 0; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{offMathLabel}}</button>
+            <sc-if value="{{offMath}}" hint-placeholder-val="{{ false }}">
+              <div style="background: var(--tint); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; font-size: 13.5px; color: var(--ink2)">
+                <span>Everyday spending on 14 Oct, from bank SMS alerts read up to 15 Oct, 7:40 am</span>
+                <div style="display: flex; justify-content: space-between"><span>Zomato</span><span>₹626</span></div>
+                <div style="display: flex; justify-content: space-between"><span>YouTube Premium</span><span>₹149</span></div>
+                <span style="color: var(--muted)">Not counted: rent, EMIs, investments, transfers to your own accounts.</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{off.isCategory}}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; gap: 10px">
+            <span style="font-size: 13.5px; color: var(--muted)">Now: Food delivery · pick the right one</span>
+            <div role="radiogroup" aria-label="Category" style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{offCats}}" as="c" hint-placeholder-count="6">
+                <button type="button" role="radio" aria-checked="{{c.on}}" onClick="{{c.pick}}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 0; background: {{c.bg}}; color: {{c.ink}}; box-shadow: {{c.ring}}; font-size: 14.5px; font-weight: 600; cursor: pointer">{{c.label}}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{offCatChosen}}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; margin-top: 4px">
+                <button type="button" onClick="{{applyOnce}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Change this one</button>
+                <button type="button" onClick="{{applyAlways}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; font-weight: 600; color: var(--link); cursor: pointer">Change all Zomato orders</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{offCatNotChosen}}" hint-placeholder-val="{{ true }}">
+              <button type="button" disabled aria-disabled="true" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--tint); color: var(--muted); font-size: 16px; font-weight: 600">Choose a category</button>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{off.isMissing}}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; gap: 10px">
+            <span style="font-size: 13.5px; color: var(--muted)">How much?</span>
+            <div role="radiogroup" aria-label="Amount" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{offAmts}}" as="a" hint-placeholder-count="4">
+                <button type="button" role="radio" aria-checked="{{a.on}}" onClick="{{a.pick}}" style="min-height: 48px; border-radius: 14px; border: 0; background: {{a.bg}}; color: {{a.ink}}; box-shadow: {{a.ring}}; font-size: 15.5px; font-weight: 700; cursor: pointer">{{a.label}}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{offAddOther}}" hint-placeholder-val="{{ false }}">
+              <label style="display: flex; align-items: center; gap: 6px; min-height: 52px; padding: 0 14px; border-radius: 14px; box-shadow: inset 0 0 0 2px var(--btn); background: var(--card)">
+                <span style="font-size: 20px; font-weight: 700; color: var(--muted)">₹</span>
+                <input type="text" inputmode="numeric" size="6" aria-label="Missing amount in rupees" placeholder="Type an amount" value="{{offAddCustom}}" onChange="{{offAddInput}}" style="flex: 1; width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; font-size: 20px; font-weight: 700">
+              </label>
+            </sc-if>
+            <span style="font-size: 13.5px; color: var(--muted)">On what?</span>
+            <div role="radiogroup" aria-label="Category" style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{offAddCats}}" as="c" hint-placeholder-count="5">
+                <button type="button" role="radio" aria-checked="{{c.on}}" onClick="{{c.pick}}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 0; background: {{c.bg}}; color: {{c.ink}}; box-shadow: {{c.ring}}; font-size: 14.5px; font-weight: 600; cursor: pointer">{{c.label}}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{offAddReady}}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{addMissing}}" style="margin-top: 4px; min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">{{offAddLabel}}</button>
+            </sc-if>
+            <sc-if value="{{offAddNotReady}}" hint-placeholder-val="{{ true }}">
+              <button type="button" disabled aria-disabled="true" style="margin-top: 4px; min-height: 52px; border-radius: 999px; border: 0; background: var(--tint); color: var(--muted); font-size: 16px; font-weight: 600">Pick an amount and what it was for</button>
+            </sc-if>
+            <span style="font-size: 12.5px; color: var(--muted)">Spending from an account Munim can't see? Adding that account's statement fixes this for good.</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{off.isFraud}}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; gap: 12px">
+            <ol style="margin: 0; padding: 0; list-style: none; display: grid; gap: 10px">
+              <li style="display: flex; gap: 12px; font-size: 15px"><span style="flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--err-tint); color: var(--err-ink); display: grid; place-items: center; font-size: 13px; font-weight: 700">1</span><span><b style="font-weight: 600">Block the card or UPI</b> in your bank's app, or call the number on the back of your card.</span></li>
+              <li style="display: flex; gap: 12px; font-size: 15px"><span style="flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--err-tint); color: var(--err-ink); display: grid; place-items: center; font-size: 13px; font-weight: 700">2</span><span><b style="font-weight: 600">Report it</b> to the national cyber fraud helpline, 1930, or at cybercrime.gov.in.</span></li>
+              <li style="display: flex; gap: 12px; font-size: 15px"><span style="flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--err-tint); color: var(--err-ink); display: grid; place-items: center; font-size: 13px; font-weight: 700">3</span><span><b style="font-weight: 600">Do it today.</b> Reporting quickly limits what you can lose.</span></li>
+            </ol>
+            <div style="display: grid">
+              <a href="tel:1930" style="min-height: 52px; display: grid; place-items: center; border-radius: 999px; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; text-decoration: none">Call 1930</a>
+              <button type="button" onClick="{{markDisputed}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; font-weight: 600; color: var(--link); cursor: pointer">I've reported it · leave it out of my spending</button>
+            </div>
+            <span style="font-size: 12.5px; color: var(--muted)">Munim never asks for your PIN, OTP or card number.</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{off.isDone}}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; gap: 10px">
+            <div style="padding: 12px 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); display: grid; gap: 2px">
+              <span style="font-size: 13.5px; color: var(--muted)">Yesterday's everyday spending</span>
+              <b style="font-family: {{df}}; font-size: 30px; line-height: 1.1">{{offNow}}</b>
+              <span style="font-size: 13.5px; color: var(--muted)">Was {{offWas}} · {{offDiff}}</span>
+            </div>
+            <span style="font-size: 14.5px; color: var(--ink2)">{{offNote}}</span>
+            <button type="button" onClick="{{offFinish}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Back to check-in</button>
+            <button type="button" onClick="{{offUndo}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Undo this change</button>
+          </div>
+        </sc-if>
+      </section>
+    </div>
+  </sc-if>
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="{{sh.title}}" style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 26px 26px 0 0; padding: 12px 20px 28px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <sc-if value="{{shSoon}}" hint-placeholder-val="{{ true }}"><span style="justify-self: start; font-size: 13px; font-weight: 600; background: var(--mari-tint); color: var(--mari-ink); border-radius: 999px; padding: 4px 10px">Coming soon</span></sc-if>
+        <h2 style="margin: 0; font-family: {{df}}; font-size: 26px; font-weight: 700; line-height: 1.15">{{sh.title}}</h2>
+        <sc-if value="{{sh.hasPick}}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; gap: 8px">
+            <span id="pickq" style="font-size: 13.5px; color: var(--muted)">{{pick.question}}</span>
+            <div role="radiogroup" aria-labelledby="pickq" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{pick.chips}}" as="a" hint-placeholder-count="4">
+                <button type="button" role="radio" aria-checked="{{a.on}}" onClick="{{a.pick}}" style="min-height: 48px; border-radius: 14px; border: 0; background: {{a.bg}}; color: {{a.ink}}; box-shadow: {{a.ring}}; font-size: 15.5px; font-weight: 700; cursor: pointer">{{a.label}}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{pick.otherOpen}}" hint-placeholder-val="{{ false }}">
+              <div style="display: grid; gap: 4px">
+                <label style="display: flex; align-items: center; gap: 6px; min-height: 52px; padding: 0 14px; border-radius: 14px; box-shadow: inset 0 0 0 2px {{pick.inputRing}}; background: var(--card)">
+                  <span style="font-size: 20px; font-weight: 700; color: var(--muted)">₹</span>
+                  <input type="text" inputmode="numeric" size="6" aria-label="{{pick.inputLabel}}" placeholder="Type an amount" value="{{pick.custom}}" onChange="{{pick.onInput}}" style="flex: 1; width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; font-size: 20px; font-weight: 700">
+                  <span style="font-size: 13.5px; color: var(--muted)">{{pick.unit}}</span>
+                </label>
+                <span style="font-size: 12.5px; color: {{pick.hintInk}}">{{pick.hint}}</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{showYear}}" hint-placeholder-val="{{ false }}">
+          <div style="background: var(--card); border-radius: 16px; padding: 12px 14px; display: grid; gap: 4px; box-shadow: 0 0 0 1px var(--hair)">
+            <span style="font-size: 13.5px; color: var(--muted)">In a year that adds up to</span>
+            <b style="font-family: {{df}}; font-size: 30px; line-height: 1.05; color: var(--link)">{{amt.year}}</b>
+            <span style="font-size: 13px; color: var(--muted)">{{amt.label}} × 365 days, before any returns</span>
+          </div>
+        </sc-if>
+        <p style="margin: 0; font-size: 15.5px; color: var(--ink2)">{{sh.body}}</p>
+        <sc-if value="{{ctaReady}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{notify}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">{{sh.cta}}</button>
+        </sc-if>
+        <sc-if value="{{ctaWaiting}}" hint-placeholder-val="{{ false }}">
+          <button type="button" disabled aria-disabled="true" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--tint); color: var(--muted); font-size: 16px; font-weight: 600">Choose an amount</button>
+        </sc-if>
+        <sc-if value="{{notified}}" hint-placeholder-val="{{ false }}">
+          <div aria-live="polite" style="display: grid; gap: 10px">
+            <span style="min-height: 52px; display: grid; place-items: center; border-radius: 999px; background: var(--tint2); color: var(--link); font-size: 16px; font-weight: 600">{{sh.okText}}</span>
+            <button type="button" onClick="{{sheetDone}}" style="min-height: 48px; border-radius: 999px; border: 0; background: var(--card); font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 0 0 1px var(--hair)">Done</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{notNotified}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{closeSheet}}" style="min-height: 44px; border: 0; background: transparent; font-size: 15px; color: var(--muted); cursor: pointer">Not now</button>
+        </sc-if>
+        <sc-if value="{{shSoon}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: var(--muted); text-align: center">Munim doesn't move your money yet.</span></sc-if>
+      </section>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"display":{"editor":"enum","options":["serif","sans"],"default":"serif"},"scenario":{"editor":"enum","options":["new","day4","autopayOn","debitFailed","sunday","salaryDay"],"default":"new"},"bills":{"editor":"enum","options":["pending","dueSoon","paid"],"default":"pending"},"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"moneyStep":{"editor":"enum","options":["buffer","debt","emergency","insurance","invest"],"default":"emergency"},"variant":{"editor":"enum","options":["standard","bharat"],"default":"standard"},"offStep":{"editor":"enum","options":["none","reasons","txns","fix","category","missing","fraud","done"],"default":"none"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { cur: null, d: { save: false, yday: false, fix: false }, choice: {}, editing: null, daily: false, why: false, debtSel: null, debtCustom: '', autoOther: false, autoCustom: '', onceSel: null, onceCustom: '', amt: 1, sheet: null, notified: false, streak: false, topupGone: false, hidden: false, mathOpen: false }; }
+  complete(key, label, lock) { var d = Object.assign({}, this.state.d); d[key] = true; var c = Object.assign({}, this.state.choice); c[key] = { label: label || 'Done', lock: lock || '' }; this.setState({ d: d, choice: c, cur: null, editing: null, sheet: null, notified: false }); }
+  offApply(id, kind, scope) {
+    var s = this.state, ex = Object.assign({}, s.offEx || {});
+    var names = { zomato: 'Zomato', yt: 'YouTube Premium' }, n = names[id];
+    var note = '', last = '';
+    if (kind === 'category') {
+      if (s.offCat === 'Work expense') { ex[id] = 'work'; }
+      note = n + ' is now in ' + s.offCat + (scope === 'always' ? ', and future ' + n + ' orders will be too. Change this rule anytime in Spends.' : ', just this once.') + (s.offCat === 'Work expense' ? ' Work expenses stay out of your everyday spending.' : '');
+      last = n + ' → ' + s.offCat + (scope === 'always' ? ' (always)' : '');
+    } else if (kind === 'shared') { ex[id] = 'shared'; note = n + ' is left out of your everyday spending. It still shows in Spends, marked shared.'; last = n + ' marked shared'; }
+    else if (kind === 'duplicate') { ex[id] = 'duplicate'; note = 'The copy is left out. To get the money back, ask ' + n + ' first; if they don’t refund within a few days, raise it with your bank.'; last = n + ' marked as charged twice'; }
+    else if (kind === 'disputed') { ex[id] = 'disputed'; note = n + ' is marked as disputed and left out of your spending until your bank resolves it.'; last = n + ' reported as fraud'; }
+    this.setState({ offEx: ex, offStep: 'done', offNote: note, offLast: last });
+  }
+  renderVals() {
+    var sc0 = this.props.scenario ?? 'new';
+    var st = this.state.retried ? 'ready' : (this.props.state ?? 'ready');
+    var recapScenario = sc0 === 'sunday' || sc0 === 'salaryDay';
+    var recapDay = recapScenario && !this.state.daily;
+    var sc = recapScenario ? 'autopayOn' : sc0;
+    var auto = sc === 'autopayOn' || sc === 'debitFailed';
+    var RD = {
+      sunday: { kicker: 'Sunday · 9 am', title: 'Your Sunday Money Call', sub: '2 minutes: your win, where money went, what’s coming, and one decision.', cta: 'Play · 2 min', alt: 'Read instead', href: 'SundayCall.dc.html', until: 'Tuesday' },
+      salaryDay: { kicker: 'Salary’s in', title: 'Close your September', sub: '5 minutes: report card, subscriptions, card and credit, and next month’s plan.', cta: 'Start · 5 min', alt: 'Later today', href: 'MonthClose.dc.html', until: '2 days from now' }
+    };
+    var s = this.state, self = this;
+    var h = s.hidden, mask = '₹ • • • •';
+    var v = function (x) { return h ? mask : x; };
+    var m = { zomato: v('₹626'), yt: v('₹149'), card: v('₹36,343'), total: v('₹8,58,754'), inv: v('₹12,78,285'), bank: v('₹1,41,764'), loans: v('−₹5,61,294'), gain: v('₹4,31,285'), under: v('₹422'), topup: '₹420' };
+    var AM = [{ label: '₹20', year: '₹7,300' }, { label: '₹50', year: '₹18,250' }, { label: '₹100', year: '₹36,500' }];
+    var fmtR = function (n) { return '₹' + n.toLocaleString('en-IN'); };
+    var toNum = function (x) { var n = parseInt(String(x).replace(/[^0-9]/g, ''), 10); return isNaN(n) ? 0 : n; };
+    var autoCustomN = toNum(s.autoCustom), autoValid = autoCustomN >= 10 && autoCustomN <= 5000;
+    var amt = AM[s.amt];
+    if (s.autoOther && autoValid) amt = { label: fmtR(autoCustomN), year: fmtR(autoCustomN * 365) };
+    var ONCE = [50, 100, 500];
+    var onceN = s.onceSel === 'other' ? toNum(s.onceCustom) : (s.onceSel === null ? 0 : ONCE[s.onceSel]);
+    var onceValid = s.onceSel !== null && onceN >= 10 && onceN <= 100000;
+    var chipStyle = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
+    var amounts = AM.map(function (a, i) {
+      var on = s.amt === i;
+      return { label: a.label, on: on, bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)', pick: function () { self.setState({ amt: i }); } };
+    });
+    var done = { save: s.d.save || sc === 'autopayOn', yday: s.d.yday, fix: s.d.fix };
+    var order = auto ? ['yday', 'fix', 'save'] : ['save', 'yday', 'fix'];
+    var curKey = s.cur || ((this.props.offStep ?? 'none') !== 'none' ? 'yday' : null);
+    if (!curKey) { for (var i = 0; i < order.length; i++) { if (!done[order[i]]) { curKey = order[i]; break; } } }
+    var allDone = done.save && done.yday && done.fix;
+    var showSummary = allDone && !s.cur;
+    var count = (done.save ? 1 : 0) + (done.yday ? 1 : 0) + (done.fix ? 1 : 0);
+    var base = sc === 'new' ? 0 : (sc === 'day4' ? 3 : 14);
+    var pos = function (k) { return (order.indexOf(k) + 1) + ' of 3 · '; };
+    var plain = 'var(--muted)';
+    var ydayTitle = '₹' + (775 - Object.keys(s.offEx || {}).reduce(function (t, k) { return t + ({ zomato: 626, yt: 149 })[k]; }, 0) + (s.offAdded || 0)).toLocaleString('en-IN');
+    var items = {
+      yday: { kicker: pos('yday') + 'Yesterday, 14 Oct', kickerInk: plain, title: v(ydayTitle) + ' spent', titleSize: '30px', sub: s.offLast ? 'Updated by you: ' + s.offLast + '. Usual day ' + v('₹1,197') + '.' : 'Below your usual day of ' + v('₹1,197') + '. Zomato ' + m.zomato + ', YouTube ' + m.yt + '.', hasTags: false, hasButtons: true,
+        primaryLabel: 'Looks right', secondaryLabel: "Something's off?", primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { self.complete('yday', 'Looks right'); }, secondary: function () { self.setState({ offStep: 'reasons' }); } },
+      fix: { kicker: pos('fix') + 'One fix', kickerInk: plain, title: 'cult.fit unused since 12 July', titleSize: '24px', sub: 'It costs ' + v('₹23,988') + ' a year and renews every month.', hasButtons: true,
+        primaryLabel: 'Show me how to cancel', secondaryLabel: 'I still use it', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { self.complete('fix', 'Show me how to cancel'); }, secondary: function () { self.complete('fix', 'I still use it'); } }
+    };
+    var billsMode = this.props.bills ?? 'pending';
+    if (billsMode === 'dueSoon') {
+      items.fix = { kicker: pos('fix') + 'Bill due in 2 days', kickerInk: 'var(--warn)', title: 'Pay your card bill · ' + m.card, titleSize: '24px',
+        sub: 'Due 24 Oct. Your bank balance covers it, and paying in full avoids interest.', hasButtons: true,
+        primaryLabel: 'Pay now', secondaryLabel: 'Remind me tomorrow', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { self.setState({ sheet: 'pay', notified: false }); }, secondary: function () { self.complete('fix', 'Remind me tomorrow'); } };
+    }
+    var openAuto = function () { self.setState({ sheet: 'autopay', notified: false }); };
+    // ---- money path (D-036, D-037): the step decides the Save card; never shown on Today itself ----
+    var STEPS = ['buffer', 'debt', 'emergency', 'insurance', 'invest'];
+    var mstep = this.props.moneyStep ?? 'emergency';
+    var ESS = 83414;                       // essentials per month (D-040): Jul–Sep average of fixed costs + family + groceries, utilities, fuel, mobile (packages/core monthPictures)
+    var BUF = { saved: 12400, target: ESS }, EMG = { saved: 141764 + 128962, target: 6 * ESS };   // emergency fund = bank balance + debt fund (counted, shown separately in Invest)
+    var DEBT = { bal: 48200, rate: 0.035 }; DEBT.interest = Math.round(DEBT.bal * DEBT.rate);
+    var openWhy = function () { self.setState({ why: true }); };
+    if ((sc === 'new' || sc === 'day4') && mstep === 'debt') {
+      items.save = { kicker: pos('save') + 'Clear your card first', kickerInk: 'var(--warn)', title: fmtR(DEBT.bal) + ' carried on your card', titleSize: '24px',
+        sub: 'It costs about ' + fmtR(DEBT.interest) + ' this month in interest (3.5% a month). Paying it down beats saving right now.', hasWhy: true,
+        hasButtons: true, primaryLabel: 'Plan an extra payment', secondaryLabel: 'Save instead', tertiaryLabel: 'Not now', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { self.setState({ sheet: 'debt', notified: false }); }, secondary: openAuto, tertiary: function () { self.complete('save', 'Not now'); } };
+    } else if ((sc === 'new' || sc === 'day4') && mstep === 'insurance') {
+      items.save = { kicker: pos('save') + '✓ Emergency fund ready', kickerInk: 'var(--link)', title: 'Do you have term and health insurance?', titleSize: '24px',
+        sub: 'Before investing, make sure one bad event can\u2019t undo your savings.', hasWhy: true,
+        hasButtons: true, primaryLabel: 'Yes, both', secondaryLabel: 'Not sure', tertiaryLabel: 'No', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { self.complete('save', 'Has term and health insurance'); }, secondary: function () { self.setState({ sheet: 'ins', notified: false }); }, tertiary: function () { self.setState({ sheet: 'ins', notified: false }); } };
+    } else if ((sc === 'new' || sc === 'day4') && mstep === 'invest') {
+      items.save = { kicker: pos('save') + '✓ Safety net in place', kickerInk: 'var(--link)', title: 'You\u2019re ready to start investing', titleSize: '24px',
+        sub: 'Buffer, no costly debt, emergency fund and insurance: all done.', hasWhy: true,
+        hasButtons: true, primaryLabel: 'See where to start', secondaryLabel: 'Not now', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { self.complete('save', 'Opened the investor journey'); }, secondary: function () { self.complete('save', 'Not now'); } };
+    } else if (sc === 'new' || sc === 'day4') {
+      var goal = mstep === 'buffer' ? { name: 'Starter buffer', g: BUF, note: '1 month of essentials' } : { name: 'Emergency fund', g: EMG, note: '6 months of essentials' };
+      items.save = { kicker: pos('save') + (sc === 'day4' ? 'You saved 3 days running' : 'Save · ' + goal.name.toLowerCase()), kickerInk: sc === 'day4' ? 'var(--warn)' : plain,
+        title: sc === 'day4' ? 'Make it automatic?' : 'Save ' + amt.label + ' a day, automatically', titleSize: '24px', sub: goal.name + ': ' + v(fmtR(goal.g.saved)) + ' of ' + v(fmtR(goal.g.target)) + ' (' + goal.note + '). Change or stop anytime.', hasWhy: true,
+        hasAmounts: false, hasAmountLink: false, hasButtons: true, hasSkip: false, primaryLabel: 'Set up autopay', secondaryLabel: 'Save once', tertiaryLabel: 'Not now', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: openAuto, secondary: function () { self.setState({ sheet: 'once', notified: false }); }, tertiary: function () { self.complete('save', 'Not now'); } };
+    } else if (sc === 'autopayOn') {
+      items.save = { kicker: pos('save') + 'Autopay · saved for you at 7:02 am', kickerInk: 'var(--btn)', title: '₹50 saved today ✓', titleSize: '28px', sub: v('₹750') + ' saved since 1 Oct, automatically.',
+        hasTopup: !s.topupGone, hasControls: true, hasButtons: false };
+    } else {
+      items.save = { kicker: pos('save') + 'Autopay', kickerInk: 'var(--warn)', title: 'No ₹50 today', titleSize: '28px', sub: 'Your bank balance was low, so nothing was taken. No charge, and your streak is safe.',
+        hasButtons: true, primaryLabel: 'Save ₹50 now', secondaryLabel: 'Okay', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { self.setState({ sheet: 'now', notified: false }); }, secondary: function () { self.complete('save', 'Okay, skip today'); } };
+    }
+    ['yday', 'fix', 'save'].forEach(function (k) { var it = items[k]; ['hasTags', 'hasAmounts', 'hasAmountLink', 'hasTopup', 'hasControls', 'hasSkip'].forEach(function (f) { if (it[f] === undefined) it[f] = false; }); it.hasTertiary = !!it.tertiaryLabel; it.noTertiary = !it.tertiaryLabel; if (it.hasWhy === undefined) it.hasWhy = false; });
+    var ck = curKey || ((this.props.offStep ?? 'none') !== 'none' ? 'yday' : null) || order.filter(function (k) { return !done[k]; })[0] || order[0];
+    var reviewing = !!(done[ck] && s.choice[ck] && s.editing !== ck);
+    var curView = Object.assign({}, items[ck]);
+    if (done[ck] && s.choice[ck]) { curView.kicker = '✓ Done · ' + curView.kicker; curView.kickerInk = 'var(--link)'; }
+    var choice = s.choice[ck] || { label: '', lock: '' };
+    curKey = ck;
+    var labels = { save: ({ debt: 'Card', insurance: 'Insurance', invest: 'Invest' })[mstep] && (sc === 'new' || sc === 'day4') ? ({ debt: 'Card', insurance: 'Insurance', invest: 'Invest' })[mstep] : 'Save', yday: 'Yesterday', fix: billsMode === 'dueSoon' ? 'Bill' : 'One fix' };
+    var steps = order.map(function (k) {
+      var active = !showSummary && curKey === k, isDone = done[k];
+      return { label: labels[k], done: isDone, active: active,
+        w: active ? '20px' : '7px', bg: active ? 'var(--ink)' : (isDone ? 'var(--btn)' : 'var(--hair2)'),
+        aria: 'Step ' + (order.indexOf(k) + 1) + ': ' + labels[k] + (isDone ? ', done' : ''),
+        go: function () { self.setState({ cur: k, editing: null }); } };
+    });
+    var on = 'var(--btn)', off = 'var(--hair)';
+    var letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    var week = letters.map(function (l, i) {
+      if (i === 3 && allDone) return { l: l, mark: '✓', bg: '#F2A93B', ink: '#2B1D00', ring: 'none' };
+      if (i === 3) return { l: l, mark: '', bg: 'var(--card)', ink: 'var(--ink)', ring: 'inset 0 0 0 2px #F2A93B' };
+      if (sc !== 'new' && i < 3) return { l: l, mark: '✓', bg: '#F2A93B', ink: '#2B1D00', ring: 'none' };
+      return { l: l, mark: '', bg: i < 3 ? 'var(--hair)' : 'var(--card)', ink: 'var(--muted)', ring: i < 3 ? 'none' : 'inset 0 0 0 1px var(--hair)' };
+    });
+    var DEBTP = [2000, 5000, 10000];
+    var debtN = s.debtSel === 'other' ? toNum(s.debtCustom) : (s.debtSel === null ? 0 : DEBTP[s.debtSel]);
+    var debtValid = s.debtSel !== null && debtN >= 100 && debtN <= DEBT.bal;
+    var SH = {
+      autopay: { title: 'Set up your autopay', hasYear: true, hasPick: true, body: 'Autopay by UPI is almost here. You’ll be able to pause or stop it in one tap.', cta: 'Reserve my autopay', okText: '✓ Reserved. We’ll tell you the day it’s live.', doneKey: 'save', doneLabel: 'Reserved autopay · ' + amt.label + ' a day' },
+      once: { title: onceValid ? 'Save ' + fmtR(onceN) + ' once' : 'Save once', hasYear: false, body: 'One-time saves by UPI are almost here: pay once, no autopay, nothing repeats.', cta: onceValid ? 'Tell me when I can save ' + fmtR(onceN) : 'Tell me when it’s ready', okText: '✓ We’ll tell you when it’s ready.', doneKey: 'save', doneLabel: 'Save ' + fmtR(onceN) + ' once · notify me' },
+      topup: { title: 'Save ' + m.topup + ' today', hasYear: false, body: 'One-time top-ups are almost here: add spare money in one tap, on top of your autopay.', cta: 'Tell me when it’s ready', okText: '✓ We’ll tell you when it’s ready.', doneKey: null },
+      pay: { title: 'Pay ' + m.card, hasYear: false, body: 'Paying bills from Munim is almost here. For now, pay from your card or UPI app and we’ll mark it paid when the payment shows up.', cta: 'Tell me when it’s ready', okText: '✓ We’ll tell you when it’s ready.', doneKey: 'fix', doneLabel: 'Pay now · notify me' },
+      debt: { title: debtValid ? 'Pay ' + fmtR(debtN) + ' extra on your card' : 'Pay extra on your card', hasYear: false, body: 'Munim can\u2019t pay your card yet. We\u2019ll remind you on payday to pay this from your bank app, and show how much interest it saves.', cta: debtValid ? 'Remind me to pay ' + fmtR(debtN) : 'Remind me', okText: '\u2713 We\u2019ll remind you on payday.', doneKey: 'save', doneLabel: 'Plan: pay ' + fmtR(debtN) + ' extra on the card' },
+      ins: { title: 'Cover first, then invest', hasYear: false, body: 'General guidance, not advice: term life cover is commonly sized at 10\u201315\u00d7 your yearly income. Health cover from your employer stops if you change jobs, so a policy of your own is worth checking.', cta: 'Remind me this weekend', okText: '\u2713 We\u2019ll remind you on Saturday.', doneKey: 'save', doneLabel: 'Insurance: remind me this weekend' },
+      now: { title: 'Save ₹50 now', hasYear: false, body: 'Paying by UPI right away is almost here, so a missed day can be made up in one tap.', cta: 'Tell me when it’s ready', okText: '✓ We’ll tell you when it’s ready.', doneKey: 'save', doneLabel: 'Save ₹50 now · notify me' }
+    };
+    var sh = SH[s.sheet || 'autopay'];
+    ['autopay', 'once', 'topup', 'pay', 'now', 'debt', 'ins'].forEach(function (k) { if (SH[k]) { SH[k].hasPick = k === 'autopay' || k === 'once' || k === 'debt'; } });
+    var pick;
+    if ((s.sheet || 'autopay') === 'debt') {
+      var dc = DEBTP.map(function (n, i) { var on = s.debtSel === i, cs = chipStyle(on); return { label: fmtR(n), on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ debtSel: i }); } }; });
+      var dO = s.debtSel === 'other', dcs = chipStyle(dO);
+      dc.push({ label: 'Other', on: dO, bg: dcs.bg, ink: dcs.ink, ring: dcs.ring, pick: function () { self.setState({ debtSel: 'other' }); } });
+      var debtBad = dO && s.debtCustom !== '' && !debtValid;
+      pick = { question: 'How much extra this month?', chips: dc, otherOpen: dO, custom: s.debtCustom, unit: 'extra', inputLabel: 'Extra card payment in rupees',
+        onInput: function (e) { self.setState({ debtCustom: e.target.value.replace(/[^0-9]/g, '').slice(0, 6) }); },
+        hint: debtBad ? 'Enter between ₹100 and ' + fmtR(DEBT.bal) : 'Any amount from ₹100 up to your balance, ' + fmtR(DEBT.bal), hintInk: debtBad ? 'var(--err-ink)' : 'var(--muted)', inputRing: debtBad ? 'var(--err-ink)' : 'var(--btn)' };
+    } else if ((s.sheet || 'autopay') === 'once') {
+      var oc = ONCE.map(function (n, i) { var on = s.onceSel === i, cs = chipStyle(on); return { label: fmtR(n), on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ onceSel: i }); } }; });
+      var oo = s.onceSel === 'other', ocs = chipStyle(oo);
+      oc.push({ label: 'Other', on: oo, bg: ocs.bg, ink: ocs.ink, ring: ocs.ring, pick: function () { self.setState({ onceSel: 'other' }); } });
+      var onceBad = oo && s.onceCustom !== '' && !onceValid;
+      pick = { question: 'How much, just this once?', chips: oc, otherOpen: oo, custom: s.onceCustom, unit: 'once', inputLabel: 'One-time amount in rupees',
+        onInput: function (e) { self.setState({ onceCustom: e.target.value.replace(/[^0-9]/g, '').slice(0, 6) }); },
+        hint: onceBad ? 'Enter between ₹10 and ₹1,00,000' : 'Any amount from ₹10 to ₹1,00,000', hintInk: onceBad ? 'var(--err-ink)' : 'var(--muted)', inputRing: onceBad ? 'var(--err-ink)' : 'var(--btn)' };
+    } else {
+      var ac = AM.map(function (a, i) { var on = !s.autoOther && s.amt === i, cs = chipStyle(on); return { label: a.label, on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ amt: i, autoOther: false }); } }; });
+      var ao = !!s.autoOther, acs = chipStyle(ao);
+      ac.push({ label: 'Other', on: ao, bg: acs.bg, ink: acs.ink, ring: acs.ring, pick: function () { self.setState({ autoOther: true }); } });
+      var autoBad = ao && s.autoCustom !== '' && !autoValid;
+      pick = { question: 'How much a day?', chips: ac, otherOpen: ao, custom: s.autoCustom, unit: 'a day', inputLabel: 'Daily amount in rupees',
+        onInput: function (e) { self.setState({ autoCustom: e.target.value.replace(/[^0-9]/g, '').slice(0, 4) }); },
+        hint: autoBad ? 'Enter between ₹10 and ₹5,000 a day' : 'Any amount from ₹10 to ₹5,000 a day', hintInk: autoBad ? 'var(--err-ink)' : 'var(--muted)', inputRing: autoBad ? 'var(--err-ink)' : 'var(--btn)' };
+    }
+    var sheetKey = s.sheet || 'autopay';
+    var amountOk = sheetKey === 'debt' ? debtValid : sheetKey === 'once' ? onceValid : (sheetKey === 'autopay' ? (!s.autoOther || autoValid) : true);
+    var shown = allDone ? base + 1 : base;
+    var mi = STEPS.indexOf(mstep);
+    var WHY = [
+      { t: 'Starter buffer', d: '1 month of essentials, ' + fmtR(BUF.target) + ', so a surprise bill doesn\u2019t go on a card' },
+      { t: 'Clear costly debt', d: 'Credit card balances and expensive loans first' },
+      { t: 'Emergency fund', d: '6 months of essentials, ' + fmtR(EMG.target) + '. Your savings balance counts' },
+      { t: 'Insurance check', d: 'Term and health cover before you invest' },
+      { t: 'Start investing', d: 'With a safety net in place' } ];
+    var whySteps = WHY.map(function (w, i) { var st = i < mi ? 'done' : (i === mi ? 'here' : 'next');
+      return { t: w.t, d: w.d, n: String(i + 1), isDone: st === 'done', isHere: st === 'here', isNext: st === 'next',
+        dotBg: st === 'done' ? 'var(--btn)' : (st === 'here' ? 'var(--card)' : 'var(--card)'), dotInk: st === 'done' ? 'var(--on-btn)' : 'var(--ink)', dotRing: st === 'here' ? 'inset 0 0 0 2px var(--link)' : (st === 'done' ? 'none' : 'inset 0 0 0 1px var(--hair2)'),
+        rowBg: st === 'here' ? 'var(--tint)' : 'transparent', mark: st === 'done' ? '\u2713' : String(i + 1) }; });
+    // ---- "Something's off?" journey ----
+    var TX = { zomato: { name: 'Zomato', amt: 626, when: '8:42 pm', cat: 'Food delivery' }, yt: { name: 'YouTube Premium', amt: 149, when: 'Auto-renewal', cat: 'Subscriptions' } };
+    var offStepProp = this.props.offStep ?? 'none';
+    var offStep = s.offStep !== undefined ? s.offStep : (offStepProp === 'none' ? null : offStepProp);
+    var offTxn = s.offTxn || 'zomato';
+    var ex = s.offEx || (offStepProp === 'done' ? { zomato: 'shared' } : {});
+    var added = s.offAdded || 0;
+    var ydayBase = 775;
+    var ydayNow = ydayBase - Object.keys(ex).reduce(function (t, k) { return t + TX[k].amt; }, 0) + added;
+    var fmtO = function (n) { return '₹' + n.toLocaleString('en-IN'); };
+    var go = function (st, extra) { return function () { self.setState(Object.assign({ offStep: st }, extra || {})); }; };
+    var t = TX[offTxn];
+    var OFF = {
+      reasons: { title: "What's off about yesterday?", rows: [
+        { label: 'A transaction is wrong', sub: 'Wrong category, not mine, or charged twice', go: go('txns'), ink: 'var(--ink)' },
+        { label: "Something's missing", sub: "Cash, or an account Munim can't see", go: go('missing'), ink: 'var(--ink)' },
+        { label: "I didn't make a payment", sub: 'Possible fraud · act today', go: go('fraud', { offTxn: null }), ink: 'var(--err-ink)' } ] },
+      txns: { title: 'Which one?', back: 'reasons', rows: ['zomato', 'yt'].filter(function (k) { return !ex[k]; }).map(function (k) { return { label: TX[k].name, sub: TX[k].when + ' · ' + TX[k].cat, right: fmtO(TX[k].amt), hasRight: true, go: go('fix', { offTxn: k }), ink: 'var(--ink)' }; }) },
+      fix: { title: t.name + ' · ' + fmtO(t.amt), sub: 'What is wrong with it?', back: 'txns', rows: [
+        { label: 'Wrong category', sub: 'Now: ' + t.cat, go: go('category', { offCat: null }), ink: 'var(--ink)' },
+        { label: 'Shared, or someone will pay me back', sub: 'Leave it out of my everyday spending', go: function () { self.offApply(offTxn, 'shared'); }, ink: 'var(--ink)' },
+        { label: 'Charged twice', sub: 'Leave the copy out and show how to get a refund', go: function () { self.offApply(offTxn, 'duplicate'); }, ink: 'var(--ink)' },
+        { label: "I didn't make this", sub: 'Possible fraud · act today', go: go('fraud'), ink: 'var(--err-ink)' } ] },
+      category: { title: 'Pick the right category', sub: t.name + ' · ' + fmtO(t.amt), back: 'fix' },
+      missing: { title: 'Add a missing spend', sub: 'For yesterday, 14 Oct', back: 'reasons' },
+      fraud: { title: 'Act now if you didn’t make it', sub: s.offTxn ? t.name + ' · ' + fmtO(t.amt) : 'Any payment you don’t recognise', back: s.offTxn ? 'fix' : 'reasons' },
+      done: { title: 'Yesterday is updated' }
+    };
+    var off = Object.assign({ sub: '', rows: [], back: null }, OFF[offStep || 'reasons']);
+    off.hasSub = !!off.sub; off.hasRows = off.rows.length > 0; off.hasBack = !!off.back; off.noBack = !off.back;
+    off.rows.forEach(function (r) { if (r.hasRight === undefined) { r.hasRight = false; r.right = ''; } });
+    ['reasons', 'category', 'missing', 'fraud', 'done'].forEach(function (k) { off['is' + k.charAt(0).toUpperCase() + k.slice(1)] = (offStep || 'reasons') === k; });
+    var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
+    var CATS = ['Dining out', 'Groceries', 'Work expense', 'Gift', 'Other'];
+    var offCats = CATS.map(function (c) { var on = s.offCat === c, cs = chip(on); return { label: c, on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ offCat: c }); } }; });
+    var ADD = [100, 200, 500];
+    var offAmts = ADD.map(function (n) { var on = !s.offAddOther && s.offAddAmt === n, cs = chip(on); return { label: fmtO(n), on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ offAddAmt: n, offAddOther: false }); } }; });
+    var oth = chip(!!s.offAddOther); offAmts.push({ label: 'Other', on: !!s.offAddOther, bg: oth.bg, ink: oth.ink, ring: oth.ring, pick: function () { self.setState({ offAddOther: true, offAddAmt: parseInt(s.offAddCustom || '0', 10) || null }); } });
+    var ADDC = ['Cash', 'Food', 'Travel', 'Shopping', 'Other'];
+    var offAddCats = ADDC.map(function (c) { var on = s.offAddCat === c, cs = chip(on); return { label: c, on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ offAddCat: c }); } }; });
+    var diff = ydayNow - ydayBase;
+    var offVals = {
+      offOpen: !!offStep, off: off, offWas: fmtO(ydayBase), offNow: fmtO(ydayNow),
+      offDiff: diff === 0 ? 'no change' : (diff < 0 ? fmtO(-diff) + ' less' : fmtO(diff) + ' more'),
+      offNote: s.offNote || (offStepProp === 'done' ? 'Zomato is left out of your everyday spending. It still shows in Spends, marked shared.' : ''), offCats: offCats, offCatChosen: !!s.offCat, offCatNotChosen: !s.offCat,
+      offAmts: offAmts, offAddOther: !!s.offAddOther, offAddCustom: s.offAddCustom || '',
+      offAddInput: function (e) { var v = e.target.value.replace(/[^0-9]/g, '').slice(0, 6); var n = parseInt(v, 10); self.setState({ offAddCustom: v, offAddAmt: n >= 1 && n <= 100000 ? n : null }); }, offAddCats: offAddCats, offAddReady: !!(s.offAddAmt && s.offAddCat), offAddNotReady: !(s.offAddAmt && s.offAddCat),
+      offAddLabel: s.offAddAmt ? 'Add ' + fmtO(s.offAddAmt) + (s.offAddCat ? ' · ' + s.offAddCat : '') : 'Add',
+      offMath: !!s.offMath, offMathLabel: s.offMath ? 'Hide how ₹775 was worked out' : 'See how ₹775 was worked out',
+      toggleOffMath: function () { self.setState({ offMath: !s.offMath }); },
+      offBack: function () { self.setState({ offStep: off.back }); },
+      offClose: function () { self.setState({ offStep: null }); },
+      applyOnce: function () { self.offApply(offTxn, 'category', 'once'); },
+      applyAlways: function () { self.offApply(offTxn, 'category', 'always'); },
+      addMissing: function () { self.setState({ offAdded: added + s.offAddAmt, offStep: 'done', offNote: fmtO(s.offAddAmt) + ' ' + s.offAddCat.toLowerCase() + ' added to yesterday. Your usual day is recalculated tonight.', offLast: 'Added ' + fmtO(s.offAddAmt) + ' ' + s.offAddCat.toLowerCase() }); },
+      markDisputed: function () { self.offApply(s.offTxn || 'zomato', 'disputed'); },
+      offFinish: function () { self.complete('yday', s.offLast || "Something's off"); self.setState({ offStep: null }); },
+      offUndo: function () { self.setState({ offEx: {}, offAdded: 0, offStep: 'reasons', offNote: '', offLast: '' }); }
+    };
+    return Object.assign(offVals, {
+      theme: this.props.theme ?? 'light',
+      nav: (this.props.variant ?? 'standard') === 'bharat' ? { today: 'आज', invest: 'निवेश', spends: 'खर्च', credit: 'उधार', ask: 'मुनीम से पूछें' } : { today: 'Today', invest: 'Invest', spends: 'Spends', credit: 'Credit', ask: 'Ask Munim' },
+      isLoading: st === 'loading', isError: st === 'error', isEmpty: st === 'empty', showMain: st === 'ready' || st === 'error',
+      retry: function () { self.setState({ retried: true }); },
+      df: (this.props.display ?? 'serif') === 'sans' ? "'IBM Plex Sans', 'IBM Plex Sans Devanagari', sans-serif" : "'Noto Serif', 'Noto Serif Devanagari', serif",
+      isRecapDay: recapDay, notRecapDay: !recapDay, rd: RD[sc0] || RD.sunday,
+      billsPending: billsMode === 'pending' && !(mstep === 'debt' && (sc === 'new' || sc === 'day4')), billsPaid: billsMode === 'paid',
+      verdictSub: mstep === 'debt' && (sc === 'new' || sc === 'day4') ? 'Card balance carried over · plan to clear it' : billsMode === 'paid' ? 'All bills paid · spent below a usual day' : (billsMode === 'dueSoon' ? 'Card bill due in 2 days, and you can cover it' : 'Bills covered · spent below a usual day'),
+      dateLabel: sc0 === 'sunday' ? 'Sunday, 18 Oct' : (sc0 === 'salaryDay' ? 'Salary day' : (billsMode === 'dueSoon' ? 'Tuesday, 22 Oct' : 'Thursday, 15 Oct')),
+      m: m, amt: amt, amounts: amounts, cur: curView,
+      reviewing: reviewing, notReviewing: !reviewing, showButtons: !!curView.hasButtons && !reviewing, canChange: reviewing && !choice.lock, locked: reviewing && !!choice.lock, choice: choice,
+      showBackToSummary: allDone && !!s.cur, notBackToSummary: !(allDone && !!s.cur),
+      changeAnswer: function () { self.setState({ editing: curKey }); },
+      backToSummary: function () { self.setState({ cur: null, editing: null }); },
+      reviewCards: function () { self.setState({ cur: order[0], editing: null }); },
+      doDaily: function () { self.setState({ daily: true }); },
+      showCard: !showSummary, showSummary: showSummary, steps: steps, week: week, done: count,
+      allDone: allDone, notAllDone: !allDone,
+      seg1: count >= 1 ? on : off, seg2: count >= 2 ? on : off, seg3: count >= 3 ? on : off,
+      streakBefore: String(base), streakAfter: String(base + 1), streakAfterText: (base + 1) + ((base + 1) === 1 ? ' day' : ' days'),
+      streakBg: allDone ? '#F2A93B' : 'var(--card)', streakInk: allDone ? '#2B1D00' : 'var(--warn)',
+      streakLabel: 'Streak: ' + shown + (shown === 1 ? ' day' : ' days') + '. Open streak',
+      streakDays: shown + (shown === 1 ? ' day' : ' days'), weekCount: (sc === 'new' ? 0 : 3) + (allDone ? 1 : 0),
+      streakOpen: s.streak, sheetOpen: !!s.sheet, sh: sh, notified: s.notified, notNotified: !s.notified, pick: pick,
+      shSoon: (s.sheet || 'autopay') !== 'ins',
+      whyOpen: !!s.why, whySteps: whySteps, openWhy: openWhy, closeWhy: function () { self.setState({ why: false }); },
+      ctaReady: !s.notified && amountOk, ctaWaiting: !s.notified && !amountOk, showYear: !!sh.hasYear && amountOk,
+      hidden: h, shown: !h, eyeLabel: h ? 'Show amounts' : 'Hide amounts',
+      mathOpen: s.mathOpen, mathLabel: s.mathOpen ? 'Hide math' : 'Show the math',
+      tools: [
+        { name: 'Goals', isGoals: true, isFire: false, isIns: false, isFam: false },
+        { name: 'FIRE', isGoals: false, isFire: true, isIns: false, isFam: false },
+        { name: 'Insurance', isGoals: false, isFire: false, isIns: true, isFam: false },
+        { name: 'Family', isGoals: false, isFire: false, isIns: false, isFam: true }
+      ],
+      openAmounts: function () { self.setState({ amtOpen: true }); },
+      openTopup: function () { self.setState({ sheet: 'topup', notified: false }); },
+      dismissTopup: function () { self.setState({ topupGone: true }); },
+      openStreak: function () { self.setState({ streak: true }); },
+      closeStreak: function () { self.setState({ streak: false }); },
+      notify: function () { self.setState({ notified: true }); },
+      sheetDone: function () { if (sh.doneKey) { self.complete(sh.doneKey, sh.doneLabel); } else { self.setState({ sheet: null, notified: false, topupGone: true }); } },
+      closeSheet: function () { self.setState({ sheet: null }); },
+      toggleHidden: function () { self.setState({ hidden: !s.hidden }); },
+      toggleMath: function () { self.setState({ mathOpen: !s.mathOpen }); }
+    });
+  }
+}
+</script>
+</body>
+</html>

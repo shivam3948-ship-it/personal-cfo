@@ -33,7 +33,7 @@ export const CATEGORIES: Record<string, Category> = {
   'Self transfer': { name: 'Self transfer', group: 'non_spend', hi: 'अपने खाते में' },
   'Card bill payment': { name: 'Card bill payment', group: 'non_spend', hi: 'कार्ड बिल' },
   Cashback: { name: 'Cashback', group: 'non_spend', hi: 'कैशबैक' },
-  Interest: { name: 'Interest', group: 'non_spend', hi: 'ब्याज' },
+  Interest: { name: 'Interest', group: 'income', hi: 'ब्याज' }, // bank interest is income (was non_spend)
   Refund: { name: 'Refund', group: 'non_spend', hi: 'रिफ़ंड' },
 };
 
