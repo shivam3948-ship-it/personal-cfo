@@ -71,9 +71,9 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       return { result: {
         as_of: asOf,
         last_complete_month: last ? { month: monthName(last.key, ctx.lang), income: R(last.income), spend: R(last.spend), committed: R(last.committed), surplus: R(last.surplus), savings_rate: `${last.savingsRatePct}%` } : null,
-        unusual: u.map((x) => ({ what: x.title, amount: R(x.amount), baseline_per_month: R(x.baseline), change: x.changePct !== undefined ? `${x.changePct}%` : undefined })),
-        leaks: lk.map((l) => ({ what: l.title, merchant: l.merchant, amount: R(l.amount), per_year: R(l.annualCost), deadline: l.deadline, suggested_action: l.actionHint })),
-        upcoming_before_salary: cf.dues.map((d) => ({ date: d.date, what: d.title, amount: R(d.amount), note: d.note })),
+        unusual: u.map((x) => ({ what: ctx.lang === 'hi' ? x.titleHi : x.title, amount: R(x.amount), baseline_per_month: R(x.baseline), change: x.changePct !== undefined ? `${x.changePct}%` : undefined })),
+        leaks: lk.map((l) => ({ what: ctx.lang === 'hi' ? l.titleHi : l.title, merchant: l.merchant, amount: R(l.amount), per_year: R(l.annualCost), deadline: l.deadline, suggested_action: l.actionHint })),
+        upcoming_before_salary: cf.dues.map((d) => ({ date: d.date, what: ctx.lang === 'hi' ? d.titleHi : d.title, amount: R(d.amount), note: d.note })),
         cashflow: { balance_now: R(cf.balance), dues_total: R(cf.duesTotal), balance_after_dues: R(cf.balanceAfterDues), next_salary: cf.nextSalary, note: cf.note },
         credit: cr ? { score: cr.score, previous: cr.previousScore, change: cr.change } : null,
       } };
@@ -106,17 +106,17 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const lk = leaks(ds);
       const subs = recurring(ds).filter((r) => r.category === 'Subscriptions' || r.category === 'Fitness');
       return { result: {
-        items: lk.map((l) => ({ kind: l.kind, what: l.title, merchant: l.merchant, amount: R(l.amount), per_year: R(l.annualCost), deadline: l.deadline, suggested_action: l.actionHint })),
+        items: lk.map((l) => ({ kind: l.kind, what: ctx.lang === 'hi' ? l.titleHi : l.title, merchant: l.merchant, amount: R(l.amount), per_year: R(l.annualCost), deadline: l.deadline, suggested_action: l.actionHint })),
         all_subscriptions_per_year: R(sum(subs.map((s) => s.annualCost))),
         subscription_count: subs.length,
       } };
     }
     case 'unusual_spending':
-      return { result: { items: unusual(ds).map((u) => ({ kind: u.kind, what: u.title, amount: R(u.amount), baseline_per_month: R(u.baseline), change: u.changePct !== undefined ? `${u.changePct}%` : undefined, date: u.date, month: u.month })) } };
+      return { result: { items: unusual(ds).map((u) => ({ kind: u.kind, what: ctx.lang === 'hi' ? u.titleHi : u.title, amount: R(u.amount), baseline_per_month: R(u.baseline), change: u.changePct !== undefined ? `${u.changePct}%` : undefined, date: u.date, month: u.month })) } };
     case 'upcoming_dues': {
       const days = Number(input.days ?? 21);
       const d = upcoming(ds, days); const cf = cashflowCheck(ds);
-      return { result: { as_of: asOf, window_days: days, dues: d.map((x) => ({ date: x.date, in_days: daysBetween(asOf, x.date), what: x.title, amount: R(x.amount), note: x.note, source: x.source })), total: R(sum(d.map((x) => x.amount))), cashflow_until_salary: { balance_now: R(cf.balance), dues_before_salary: R(cf.duesTotal), balance_after_dues: R(cf.balanceAfterDues), next_salary: cf.nextSalary, note: cf.note } } };
+      return { result: { as_of: asOf, window_days: days, dues: d.map((x) => ({ date: x.date, in_days: daysBetween(asOf, x.date), what: ctx.lang === 'hi' ? x.titleHi : x.title, amount: R(x.amount), note: x.note, source: x.source })), total: R(sum(d.map((x) => x.amount))), cashflow_until_salary: { balance_now: R(cf.balance), dues_before_salary: R(cf.duesTotal), balance_after_dues: R(cf.balanceAfterDues), next_salary: cf.nextSalary, note: cf.note } } };
     }
     case 'loans_overview': {
       return { result: {

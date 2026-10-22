@@ -19,11 +19,11 @@ DESIGNS, OUT = os.path.join(ROOT, 'designs'), os.path.join(ROOT, 'screens')
 # screen file -> (component name, data vars the server supplies instead of the design's sample literals)
 SCREENS = {
     'Main': ('Today', ['M0', 'ESS', 'EMG']),
-    'Spends': ('Spends', []),
+    'Spends': ('Spends', ['CAT', 'USUAL15', 'PACE', 'USUALCUM', 'OCTCUM', 'FIXED', 'FAMILY', 'UNCAT', 'NOTCOUNTED', 'RECENT', 'orbitMatch', 'orbitSwitchNet', 'INCOME', 'MONTHS', 'FOOD', 'LEAK', 'PAST']),
     'Category': ('Category', ['DATA']),
     'Transactions': ('Transactions', ['TX']),
-    'Invest': ('Invest', ['ESSM', 'BANK', 'PF', 'INCOME_M', 'TERM_COVER', 'ENDOW', 'SAVED_WITH_MUNIM', 'XRS']),
-    'Xray': ('Xray', ['PF', 'XR', 'X3']),
+    'Invest': ('Invest', ['ESSM', 'BANK', 'PF', 'INCOME_M', 'TERM_COVER', 'ENDOW', 'SAVED_WITH_MUNIM', 'XRS', 'DISC']),
+    'Xray': ('Xray', ['PF', 'XR', 'X3', 'MODE', 'DISC']),
     'Voice': ('Ask', []),
     'SundayCall': ('SundayCall', []),
     'Recaps': ('Recaps', []),

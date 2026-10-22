@@ -148,7 +148,7 @@ button{font:inherit;color:inherit}
     </section>
 
     <button type="button" style="flex: none; position: relative; min-height: 44px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">Holdings look wrong? Add a newer statement ›</button>
-    <p style="flex: none; position: relative; margin: 0; padding: 0 4px; font-size: 12px; color: var(--muted)">General guidance, not SEBI-registered investment advice. Tax figures use today’s rules (12.5% on long-term equity gains above ₹1.25 lakh a year); check them for your situation.</p>
+    <p style="flex: none; position: relative; margin: 0; padding: 0 4px; font-size: 12px; color: var(--muted)">{{disc}} Tax figures use today’s rules (12.5% on long-term equity gains above ₹1.25 lakh a year); check them for your situation.</p>
   </div>
 
   <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
@@ -201,11 +201,14 @@ class Component extends DCLogic {
         ['Banyan Nifty 50 Index', 'Direct', 'Index', 'equity', 22165405, 13.2, '2022-04-05', 10, 14.265, 0], ['Lotus Short Duration', 'Direct', 'Debt', 'debt', 12896200, 10, '2024-02-12', 10, 12.8962, 0], ['Monsoon Small Cap', 'Regular', 'Small cap', 'equity', 9244022, 7.2, '2023-06-05', 10, 11.6857, 83196]] };
     var XR = {"regular": {"rows": [{"fund": "Kestrel Flexi Cap", "stValue": 6105438}, {"fund": "Monsoon Small Cap", "stValue": 2509421}, {"fund": "Teak ELSS Tax Saver", "stValue": 0}], "feeTotal": 834902, "ltGainReg": 34351980, "taxIfSwitchAllLT": 2731498, "ltValueReg": 84151980, "feeOnLT": 757368, "paybackMonths": 43.3, "sipReg": 700000, "sipFeeFirstYr": 37800, "paybackYears": 3.6}, "harvest": {"exempt": 12500000, "used": 0, "left": 12500000, "ltGainAll": 39230207, "harvest": 12500000, "taxSavedLater": 1562500, "deadline": "2027-03-31", "daysLeft": 167, "combo": {"gain": 12481723, "value": 24281723, "lots": 26, "feeSavedYr": 218536, "funds": ["Kestrel Flexi Cap", "Monsoon Small Cap"], "futureTax": 1560215}}, "elss": {"fund": "Teak ELSS Tax Saver", "plan": "Regular", "freeValue": 27897843, "freeGain": 12897843, "lockedValue": 0}, "vsIndex": {"Monsoon Small Cap": {"covered": 41, "of": 41, "invested": 8200000, "fundValue": 9244020, "indexValue": 11037278, "diff": -1793258}}};   // xray_v2_numbers.py (FIFO lots, sample CAS)
     var X3 = {"overlap": {"pairs": [["Banyan", "Teak", 45.0], ["Banyan", "Kestrel", 40.0], ["Kestrel", "Teak", 33.0], ["Banyan", "Monsoon", 0], ["Kestrel", "Monsoon", 0], ["Teak", "Monsoon", 0]], "top5": [["HDFC Bank", 10119578, 3], ["ICICI Bank", 8397733, 3], ["Reliance Industries", 6339179, 3], ["Infosys", 4728161, 3], ["Bharti Airtel", 4059377, 3]], "top5Paise": 33644028, "top5PctOfEquity": 29.3, "in3plus": ["Axis Bank", "Bharti Airtel", "HDFC Bank", "ICICI Bank", "Infosys", "Larsen & Toubro", "Reliance Industries"], "dupPaise": 9974432, "equityPaise": 114932250, "asOf": "Sep 2026 factsheets (synthetic sample)"}, "fd": {"rate": 7.0, "invested": 84700000, "fdValue": 103919504, "actual": 127828450, "extra": 23908946}, "did": {"months": 3, "movedPaise": 24281723, "feeSavedSoFar": 54634, "futureTax": 1560215, "sipDirect": 2100000}};   // xray_v3_numbers.py: overlap (synthetic sample holdings), FD at 7%, did-it-work preview
+    var MODE = 'demo';   // advice mode from the server: demo/internal/advised may show the named-fund plan; guided gets facts and categories (D-043)
+    var DISC = 'Test build on sample data. For testing only, not investment advice.';   // the mode's disclaimer, from the server
     var END = new Date('2026-10-15'), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var rows = PF.funds.map(function (f) { var yrs = (END - new Date(f[6])) / (365.25 * 864e5), fund = Math.round((Math.pow(f[8] / f[7], 1 / yrs) - 1) * 1000) / 10; return { f: f, fund: fund, you: f[5], since: MON[+f[6].slice(5, 7) - 1] + ' ' + f[6].slice(0, 4) }; });
     var maxV = Math.max.apply(null, rows.map(function (r) { return Math.max(r.fund, r.you); }));
     var ahead = rows.filter(function (r) { return r.you - r.fund >= 0.5; }).length, behind = rows.filter(function (r) { return r.fund - r.you >= 0.5; }).length, even = rows.length - ahead - behind;
     var eq = sum(PF.funds.filter(function (f) { return f[3] === 'equity'; }).map(function (f) { return f[4]; })), dt = PF.value - eq;
+    var named = MODE !== 'guided' && MODE !== 'off';
     var H = XR.harvest, G = XR.regular, E = XR.elss, C = H.combo, M = XR.vsIndex['Monsoon Small Cap'], O = X3.overlap, FD = X3.fd, DID = X3.did;
     var FULL = { Kestrel: 'Kestrel Flexi Cap', Teak: 'Teak ELSS', Banyan: 'Banyan Nifty 50 Index', Monsoon: 'Monsoon Small Cap' };
     var stValue = sum(G.rows.map(function (r) { return r.stValue; }));
@@ -225,11 +228,11 @@ class Component extends DCLogic {
     var pairMax = 100, top = O.pairs[0];
     var cards = [
       card('harvest', '1 · Tax', H.daysLeft + ' days left', 'deadline', 'Book ' + R(H.left) + ' of gains tax-free by 31 Mar',
-        'About ' + R(H.taxSavedLater) + ' less tax when you finally sell. One move does it, together with card 2.',
-        { hasPlan: true, notes: ['You have ' + R(H.ltGainAll) + ' of long-term gains and haven’t used this year’s limit. Selling and buying back resets your cost; the limit lapses on 31 Mar.', 'The saving assumes your gains are above the yearly limit when you finally sell.'] }),
+        named ? 'About ' + R(H.taxSavedLater) + ' less tax when you finally sell. One move does it, together with card 2.' : 'About ' + R(H.taxSavedLater) + ' less tax when you finally sell, if gains are booked before the limit lapses.',
+        { hasPlan: named, notes: ['You have ' + R(H.ltGainAll) + ' of long-term gains and haven’t used this year’s limit. Selling and buying back resets your cost; the limit lapses on 31 Mar.', 'The saving assumes your gains are above the yearly limit when you finally sell.'] }),
       card('direct', '2 · Costs', 'Estimate', 'est', 'Regular plans cost you about ' + R(G.feeTotal) + ' a year',
-        'Start here: send your ' + R(G.sipReg) + '-a-month SIPs to direct plans. Costs ₹0.',
-        { opts: [
+        named ? 'Start here: send your ' + R(G.sipReg) + '-a-month SIPs to direct plans. Costs ₹0.' : 'The direct plan of the same fund costs less. Switching means selling, so exit load and tax apply.',
+        { opts: !named ? [] : [
           opt('New SIPs to direct', 'Stops commission from the next instalment. Nothing to sell.', 'START HERE', true),
           opt('Move ' + R(C.value) + ' within the tax-free limit', 'Long-term units of ' + C.funds.join(' and ') + ': no tax, about ' + R(C.feeSavedYr) + ' a year less. Same move as card 1.', 'NO TAX', true),
           opt('Move all long-term units (' + R(G.ltValueReg) + ')', 'Tax about ' + R(G.taxIfSwitchAllLT) + ' now; saves about ' + R(G.feeOnLT) + ' a year; pays back in about ' + G.paybackYears + ' years.', 'LATER', false) ],
@@ -272,7 +275,7 @@ class Component extends DCLogic {
         { n: '4', t: 'Repeat next April', d: 'A fresh ' + R(H.exempt) + ' limit every financial year.' } ],
       outcome: [{ v: '₹0', l: 'tax now' }, { v: R(C.futureTax), l: 'less tax later' }, { v: R(C.feeSavedYr), l: 'a year in fees' }]
     };
-    return { theme: this.props.theme ?? 'light', d: d, planOpen: planOpen, hasHistory: hist, noHistory: !hist, toast: !!s.toast,
+    return { theme: this.props.theme ?? 'light', disc: DISC, d: d, planOpen: planOpen, hasHistory: hist, noHistory: !hist, toast: !!s.toast,
       saveReport: function () { self.setState({ toast: true }); }, hideToast: function () { self.setState({ toast: false }); },
       openPlan: function () { self.setState({ plan: true }); }, closePlan: function () { self.setState({ plan: false }); } };
   }

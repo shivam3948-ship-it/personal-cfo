@@ -143,7 +143,7 @@ button{font:inherit;color:inherit}
         </button>
       </sc-if>
     </sc-for>
-    <p style="flex: none; position: relative; margin: 0; padding: 0 4px; font-size: 12px; color: var(--muted)">General guidance, not SEBI-registered investment advice.</p>
+    <p style="flex: none; position: relative; margin: 0; padding: 0 4px; font-size: 12px; color: var(--muted)">{{disc}}</p>
     </sc-if>
   </div>
 
@@ -315,6 +315,7 @@ class Component extends DCLogic {
     var ENDOW = { irrLo: 0.48, irrHi: 4.6 }, TERM_X = Math.round(TERM_COVER / (INCOME_M * 12) * 10) / 10;
     var termNeed = 10 * INCOME_M * 12, termGap = Math.max(0, termNeed - TERM_COVER);
     var SAVED_WITH_MUNIM = 0;
+    var DISC = 'Test build on sample data. For testing only, not investment advice.';   // the advice mode's disclaimer, from the server
     var XRS = { count: 5, taxSave: 1562500, feeYr: 834902, fdExtra: 23908946 };   // from the x-ray (xray_v2/v3_numbers.py): things to act on, tax saved later, regular-plan fees/yr, extra vs a 7% FD   // the savings pot: nothing saved through Munim yet in this scenario
     // ---- safety net (D-040) ----
     var months = Object.keys(ESSM), cats = Object.keys(ESSM[months[0]]);
@@ -371,7 +372,7 @@ class Component extends DCLogic {
       wrongOpts: wrongOpts, hasWrong: !!s.wrong, wrongHelp: s.wrong ? WRONG[s.wrong] : '',
       endowRange: ENDOW.irrLo.toFixed(1) + '–' + ENDOW.irrHi.toFixed(1) + '%/yr', steps: steps, policies: policies
     };
-    return { theme: this.props.theme ?? 'light', d: d, sections: sections,
+    return { theme: this.props.theme ?? 'light', disc: DISC, d: d, sections: sections,
       isLoading: st === 'loading', isError: st === 'error', isEmpty: st === 'empty', showData: st === 'ready' || st === 'error', retry: function () { self.setState({ retried: true }); },
       nav: { today: 'Today', invest: 'Invest', spends: 'Spends', credit: 'Credit', ask: 'Ask Munim' },
       planned: s.planned, notPlanned: !s.planned, noPick: !s.pick,

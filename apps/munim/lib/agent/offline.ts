@@ -25,12 +25,12 @@ const INTENTS: [string, RegExp][] = [
   ['briefing', /sunday|weekly|week|summary|how am i doing|kya chal|kaisa chal|haal|money call|हाल|सारांश|हफ़्ते|हफ्ते|कैसा चल|क्या चल/i],
   ['subscriptions', /subscri|cancel|netflix|cult|gym|leak|trial|lingopro|सब्सक्रिप्शन|रद्द|बंद कर/i],
   ['unusual', /unusual|ajeeb|spike|weird|zyada kharch|असामान्य|अजीब|ज़्यादा खर्च|ज्यादा खर्च/i],
-  ['upcoming', /upcoming|due|aane wale|kab (hai|tak)|bill(s)?\b|payment|देय|आने वाले|बिल|भुगतान/i],
   ['credit', /credit score|cibil|\bscore\b|स्कोर|सिबिल/i],
+  ['upcoming', /upcoming|due|aane wale|kab (hai|tak)|bill(s)?\b|payment|देय|आने वाले|बिल|भुगतान/i],
   ['insurance', /insurance|policy|bima|बीमा|पॉलिसी|term plan|cover/i],
   ['invest', /where (should|do|can) i (invest|put)|invest(ing)? (₹|rs\.?\s?)?\d|spare money|extra money|surplus|kahan invest|kaha invest|कहाँ (निवेश|लगा)|कहां (निवेश|लगा)|बची रकम/i],
   ['emergency', /emergency|safety.?net|buffer|kitne mahine|कितने महीने|इमरजेंसी/i],
-  ['portfolio', /\bfunds?\b|return|tax.?free|फ़ंड|फंड|रिटर्न/i],
+  ['portfolio', /\bfunds?\b|return|tax.?free|टैक्स.?फ़?्री|फ़ंड|फंड|रिटर्न/i],
   ['loans', /loan|emi|लोन|ईएमआई/i],
   ['spend', /where|kahan|kahaan|kharch|spend|spent|money go|paisa|खर्च|कहाँ|कहां|पैसा/i],
 ];
@@ -39,6 +39,19 @@ export function intentOf(text: string): string {
   for (const [k, re] of INTENTS) if (re.test(text)) return k;
   return 'help';
 }
+
+const MONTHS: [RegExp, number][] = [[/jan|जनवरी/i, 1], [/feb|फ़?फरवरी|फ़रवरी/i, 2], [/mar|मार्च/i, 3], [/apr|अप्रैल/i, 4], [/may|मई/i, 5], [/jun|जून/i, 6], [/jul|जुलाई/i, 7], [/aug|अगस्त/i, 8], [/sep|सितंबर|सितम्बर/i, 9], [/oct|अक्टूबर|अक्तूबर/i, 10], [/nov|नवंबर|नवम्बर/i, 11], [/dec|दिसंबर|दिसम्बर/i, 12]];
+/** "31 Oct" / "31 अक्टूबर" → the next such date on or after asOf (YYYY-MM-DD), else null. */
+function dayMonth(text: string, asOf: string): string | null {
+  const m = text.match(/(\d{1,2})\s*(?:st|nd|rd|th)?\s+([A-Za-z\u0900-\u097F]+)/);
+  if (!m || !asOf) return null;
+  const mon = MONTHS.find(([re]) => re.test(m[2]))?.[1]; const day = Number(m[1]);
+  if (!mon || day < 1 || day > 31) return null;
+  let y = Number(asOf.slice(0, 4)); const iso = (yy: number) => `${yy}-${String(mon).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  if (iso(y) < asOf) y += 1;
+  return iso(y);
+}
+const loanHi = (s: unknown) => String(s).replace(/^car loan/i, 'कार लोन').replace(/^personal loan/i, 'पर्सनल लोन').replace(/^home loan/i, 'होम लोन');
 
 export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentReply> {
   const t0 = Date.now();
@@ -150,9 +163,9 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
       if (r.error) { answer = r.error; break; }
       const alt = r.other_loans?.[0];
       answer = r.allowed_now
-        ? say(`${r.loan} में ${r.prepay} अभी जमा करने से ब्याज में ${r.interest_saved} बचेंगे और ${r.months_saved} EMI कम होंगी। लेकिन सैलरी से पहले के भुगतानों के बाद खाते में ${r.balance_after_dues_and_prepayment} ही बचेंगे।${alt && !alt.allowed_now ? ` पर्सनल लोन में ${d(alt.allowed_from)} से पहले प्रीपेमेंट नहीं हो सकता।` : ''} क्या मैं सैलरी के बाद का प्लान सेव कर दूँ?`,
+        ? say(`${loanHi(r.loan)} में ${r.prepay} अभी जमा करने से ब्याज में ${r.interest_saved} बचेंगे और ${r.months_saved} EMI कम होंगी। लेकिन सैलरी से पहले के भुगतानों के बाद खाते में ${r.balance_after_dues_and_prepayment} ही बचेंगे।${alt && !alt.allowed_now ? ` पर्सनल लोन में ${d(alt.allowed_from)} से पहले प्रीपेमेंट नहीं हो सकता।` : ''} क्या मैं सैलरी के बाद का प्लान सेव कर दूँ?`,
           `Prepaying ${r.prepay} on your ${r.loan} saves ${r.interest_saved} in interest and ${r.months_saved} EMIs. But after the dues before salary, your account would be left with ${r.balance_after_dues_and_prepayment}.${alt && !alt.allowed_now ? ` The other loan can't be part-prepaid until ${d(alt.allowed_from)}.` : ''} Shall I save a plan for just after salary?`)
-        : say(`${r.loan} में ${d(r.allowed_from)} से पहले प्रीपेमेंट की इजाज़त नहीं है।`, `Your ${r.loan} can't be part-prepaid until ${d(r.allowed_from)}.`);
+        : say(`${loanHi(r.loan)} में ${d(r.allowed_from)} से पहले प्रीपेमेंट की इजाज़त नहीं है।`, `Your ${r.loan} can't be part-prepaid until ${d(r.allowed_from)}.`);
       if (r.allowed_now) next = { tool: 'save_prepayment_plan', input: { loan: loanQ, amount_rupees: amount, date: r.next_salary ?? '' } };
       break;
     }
@@ -161,7 +174,7 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
       const r = await call('loan_negotiation');
       if (r.error || !r.offer) { const o = await call('loans_overview'); answer = say(`आपकी कुल EMI ${o.total_emi_per_month} महीना है, आमदनी का ${o.emi_share_of_income}।`, `Your EMIs total ${o.total_emi_per_month} a month, ${o.emi_share_of_income} of income.`); break; }
       answer = say(
-        `${r.offer} का ऑफ़र है, पर लोन बदलने पर ${r.switch_costs.foreclosure_charge_incl_gst} फ़ोरक्लोज़र चार्ज लगेगा, तो ${String(r.switch_net_saving).startsWith('-') ? `उल्टा ${String(r.switch_net_saving).slice(1)} का नुकसान होगा` : `कुल फ़ायदा ${r.switch_net_saving} है`}${r.offer_expires_before_switch_allowed ? `, और ऑफ़र ${d(r.offer_valid_till)} को खत्म हो जाएगा` : ''}। बेहतर है ${r.loan.split('(')[1]?.replace(')', '') ?? 'अपने लेंडर'} से यही रेट माँगें, तो बिना फ़ीस ${r.if_current_lender_matches_rate.saving} बचेंगे। क्या मैं रेट कम करने का ईमेल ड्राफ़्ट करूँ?`,
+        `${String(r.offer).replace(' at ', ' का ')} वाला ऑफ़र है, पर लोन बदलने पर ${r.switch_costs.foreclosure_charge_incl_gst} फ़ोरक्लोज़र चार्ज लगेगा, तो ${String(r.switch_net_saving).startsWith('-') ? `उल्टा ${String(r.switch_net_saving).slice(1)} का नुकसान होगा` : `कुल फ़ायदा ${r.switch_net_saving} है`}${r.offer_expires_before_switch_allowed ? `, और ऑफ़र ${d(r.offer_valid_till)} को खत्म हो जाएगा` : ''}। बेहतर है ${r.loan.split('(')[1]?.replace(')', '') ?? 'अपने लेंडर'} से यही रेट माँगें, तो बिना फ़ीस ${r.if_current_lender_matches_rate.saving} बचेंगे। क्या मैं रेट कम करने का ईमेल ड्राफ़्ट करूँ?`,
         `${r.offer} looks cheaper, but switching costs ${r.switch_costs.foreclosure_charge_incl_gst} in foreclosure charges, so ${String(r.switch_net_saving).startsWith('-') ? `you'd lose ${String(r.switch_net_saving).slice(1)}` : `the net saving is ${r.switch_net_saving}`}${r.offer_expires_before_switch_allowed ? `, and the offer expires on ${d(r.offer_valid_till)}, before you're even allowed to foreclose` : ''}. Asking your current lender to match the rate saves ${r.if_current_lender_matches_rate.saving} with no fees. Shall I draft that request?`);
       next = { tool: 'draft_email', input: { kind: 'rate_reduction' } };
       break;
@@ -245,6 +258,11 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
       const dues = (r.dues ?? []) as { what: string; amount: string; date: string; kind?: string }[];
       const kindWanted = /card|कार्ड/i.test(text) ? /card/i : /emi|loan|लोन/i.test(text) ? /emi/i : /premium|insurance|bima|बीमा|प्रीमियम/i.test(text) ? /premium/i : null;
       const named = dues.find((x) => x.what.toLowerCase().split(/[^a-z]+/).some((w) => w.length > 3 && text.toLowerCase().includes(w)));
+      const askedDate = dayMonth(text, String(r.as_of ?? ''));
+      if (!kindWanted && !named && askedDate) { // "remind me on 31 Oct" without saying what: ask, don't guess a bill
+        answer = say(`${d(askedDate)} को किस बात का रिमाइंडर लगाऊँ?`, `What should I remind you about on ${d(askedDate)}?`);
+        break;
+      }
       const first = (kindWanted ? dues.find((x) => kindWanted.test(x.what)) : undefined) ?? named ?? dues[0];
       if (first) { const a = await call('create_reminder', { title: `${first.what} ${first.amount}`, date: prevDay(first.date) }); answer = say(`${first.what} के लिए ${d(a.date)} का रिमाइंडर लगा दिया।`, `Reminder set for ${first.what} on ${d(a.date)}.`); }
       else answer = say('कोई आने वाला भुगतान नहीं मिला।', 'No upcoming dues found.');

@@ -58,3 +58,41 @@ describe('view models reproduce the designs from the engine', () => {
     expect(t.ESS).not.toBe(design.Today.ESS); // design's 83,414 predates spreading premiums (Invest shows the same engine number)
   });
 });
+
+// Advice gate on the X-ray screen itself (D-043): guided users never get the named-fund plan, in the data or on screen.
+describe('X-ray advice gate', () => {
+  it('guided: no fund names in the plan data, no plan button, SEBI disclaimer; demo keeps the plan', async () => {
+    const { renderToString } = await import('react-dom/server');
+    const { createElement } = await import('react');
+    const Xray = (await import('@/screens/Xray')).default;
+    const ds = await loadDemo();
+    const g = buildXray(ds, { adviceMode: 'guided' }) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const d = buildXray(ds, { adviceMode: 'demo' }) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    expect(g.XR.harvest.combo.funds).toEqual([]);
+    expect(d.XR.harvest.combo.funds.length).toBeGreaterThan(0);
+    const html = (data: unknown) => renderToString(createElement(Xray, { theme: 'light', state: 'ready', data }));
+    const hg = html(g), hd = html(d);
+    expect(hg).not.toContain('See the plan');
+    expect(hg).not.toContain('Start here');
+    expect(hg).toContain('SEBI-registered');
+    expect(hd).toContain('See the plan');
+    expect(hd).toContain('For testing only, not investment advice.');
+  });
+});
+
+describe('Spends view reproduces the design from the engine', () => {
+  it('matches, except three intended differences', async () => {
+    const { buildSpendsMain } = await import('@/lib/views/spendsMain');
+    const v = deep(buildSpendsMain(await loadDemo())) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const d = deep(design.Spends) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    // 1) bank interest now counts as income (Sep), so money in is salary + interest
+    expect(v.INCOME - d.INCOME).toBe(118600); expect(v.PAST['09'].inc - d.PAST['09'].inc).toBe(118600);
+    // 2) the usual-month curve nets the 16 Aug refund on its date, like the month totals do (the design's curve didn't, after day 15)
+    expect(v.USUALCUM.slice(0, 15)).toEqual(d.USUALCUM.slice(0, 15)); expect(v.USUALCUM.at(-1)).toBe(d.USUALCUM.at(-1));
+    // 3) merchant names come from the statement cleanup, not hand-shortened ("Biryani Blues Dlf Ph4")
+    for (const m of ['07', '08', '09']) expect(v.PAST[m].top.map((t: unknown[]) => t[3])).toEqual(d.PAST[m].top.map((t: unknown[]) => t[3]));
+    for (const k of ['INCOME', 'USUALCUM']) { delete v[k]; delete d[k]; }
+    for (const m of ['07', '08', '09']) { delete v.PAST[m].top; delete d.PAST[m].top; delete v.PAST[m].inc; delete d.PAST[m].inc; }
+    expect(v).toEqual(d);
+  });
+});

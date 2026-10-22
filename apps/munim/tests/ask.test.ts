@@ -79,3 +79,21 @@ describe('Ask Munim test mode', async () => {
     expect(r.check.unverified).toEqual([]);
   });
 });
+
+// Hindi answers stay in Hindi: brand names (capitalised) and EMI/SIP/FD are fine; plain English words are not.
+describe('Ask Munim Hindi', async () => {
+  const ds = await loadDemo();
+  const QS = ['मेरा पैसा कहाँ जा रहा है?', 'इस हफ़्ते का हाल बताओ', 'कौन से सब्सक्रिप्शन बंद करूँ?', 'कोई अजीब खर्च?', 'आने वाले बिल कौन से हैं?', 'मेरा सिबिल स्कोर?',
+    'मेरी बीमा पॉलिसी कैसी है?', 'ब्याज कम करवा सकते हैं?', 'क्या मैं कार लोन जल्दी चुका सकता हूँ?', 'मुझे क्या करना चाहिए?', 'मेरे फंड कैसे चल रहे हैं?', 'टैक्स-फ्री कितना बुक कर सकता हूँ?', 'हर महीने 10000 कहाँ लगाऊँ?'];
+  it.each(QS)('%s', async (q) => {
+    const r = await respond([{ role: 'user', content: q }], `hi-${q.length}`, ds, 'auto', true, 'demo');
+    expect(r.lang).toBe('hi');
+    expect(r.answer.replace(/cult\.fit/g, '').match(/\b[a-z]{3,}\b/g) ?? []).toEqual([]);
+    expect(r.check.unverified).toEqual([]);
+  });
+  it('a reminder with a date but no subject asks what for, instead of guessing a bill', async () => {
+    const r = await respond([{ role: 'user', content: 'मुझे 31 अक्टूबर को याद दिलाना' }], 'hi-remind', ds, 'auto', true, 'demo');
+    expect(r.actions).toEqual([]);
+    expect(r.answer).toMatch(/किस बात का/);
+  });
+});

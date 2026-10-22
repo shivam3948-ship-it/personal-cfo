@@ -29,7 +29,7 @@ export function coverage(ds: Dataset): MonthCoverage[] {
 export const asOfDate = (ds: Dataset): string => process.env.DEMO_AS_OF || ds.txns.map((t) => t.date).sort().at(-1) || new Date().toISOString().slice(0, 10);
 
 // ---------- refunds net against the original category ----------
-function refundCategory(ds: Dataset, r: Txn): string {
+export function refundCategory(ds: Dataset, r: Txn): string {
   const prior = ds.txns.filter((t) => t.dir === 'debit' && t.merchant === r.merchant && t.date <= r.date && groupOf(t.category ?? 'Other') === 'spend').sort((a, b) => b.date.localeCompare(a.date));
   return prior.find((t) => t.amount === r.amount)?.category ?? prior[0]?.category ?? 'Other';
 }
@@ -124,7 +124,7 @@ export function duplicates(ds: Dataset): Duplicate[] {
   return [...m.values()].filter((l) => l.length > 1).map((l) => ({ merchant: l[0].merchant ?? l[0].desc, date: l[0].date, amount: l[0].amount, count: l.length, extra: l[0].amount * (l.length - 1), account: l[0].account, ids: l.map((t) => t.id) }));
 }
 
-export interface Leak { kind: 'subscription' | 'duplicate' | 'fee' | 'price_rise' | 'trial_charge' | 'inactive'; title: string; annualCost: Paise; amount: Paise; merchant: string; evidence: string[]; actionHint: string; deadline?: string }
+export interface Leak { kind: 'subscription' | 'duplicate' | 'fee' | 'price_rise' | 'trial_charge' | 'inactive'; title: string; titleHi: string; annualCost: Paise; amount: Paise; merchant: string; evidence: string[]; actionHint: string; deadline?: string }
 
 export function leaks(ds: Dataset): Leak[] {
   const out: Leak[] = [];
@@ -132,30 +132,30 @@ export function leaks(ds: Dataset): Leak[] {
   const rec = recurring(ds).filter((r) => r.category === 'Subscriptions' || r.category === 'Fitness');
   for (const n of ds.notices) {
     const merchant = String(n.data.merchant ?? '');
-    if (n.kind === 'trial_charge') out.push({ kind: 'trial_charge', title: `${merchant} free trial turned into a paid plan`, amount: Number(n.data.amount), annualCost: Number(n.data.amount), merchant, evidence: [n.file], actionHint: 'cancel_and_refund', deadline: n.data.refundBy ? String(n.data.refundBy) : undefined });
+    if (n.kind === 'trial_charge') out.push({ kind: 'trial_charge', title: `${merchant} free trial turned into a paid plan`, titleHi: `${merchant} का फ़्री ट्रायल पेड प्लान बन गया`, amount: Number(n.data.amount), annualCost: Number(n.data.amount), merchant, evidence: [n.file], actionHint: 'cancel_and_refund', deadline: n.data.refundBy ? String(n.data.refundBy) : undefined });
     if (n.kind === 'inactivity') {
       const r = rec.find((x) => x.merchant.toLowerCase() === merchant.toLowerCase());
-      out.push({ kind: 'inactive', title: `${merchant} membership unused since ${n.data.lastUsed ? spokenDate(String(n.data.lastUsed)) : 'a while'}`, amount: r?.amount ?? Number(n.data.amount ?? 0), annualCost: r?.annualCost ?? Number(n.data.amount ?? 0) * 12, merchant, evidence: [n.file, ...(r ? [`${r.count} charges in statements`] : [])], actionHint: 'cancel' });
+      out.push({ kind: 'inactive', title: `${merchant} membership unused since ${n.data.lastUsed ? spokenDate(String(n.data.lastUsed)) : 'a while'}`, titleHi: `${merchant} की मेंबरशिप ${n.data.lastUsed ? `${spokenDate(String(n.data.lastUsed), 'hi')} से` : 'काफ़ी समय से'} इस्तेमाल नहीं हुई`, amount: r?.amount ?? Number(n.data.amount ?? 0), annualCost: r?.annualCost ?? Number(n.data.amount ?? 0) * 12, merchant, evidence: [n.file, ...(r ? [`${r.count} charges in statements`] : [])], actionHint: 'cancel' });
     }
     if (n.kind === 'price_change') {
       const oldP = Number(n.data.oldPrice), newP = Number(n.data.newPrice);
-      out.push({ kind: 'price_rise', title: `${merchant} price rises from ₹${oldP / 100} to ₹${newP / 100} on ${n.data.effective ? spokenDate(String(n.data.effective)) : 'the next bill'}`, amount: newP - oldP, annualCost: (newP - oldP) * 12, merchant, evidence: [n.file], actionHint: 'review_plan', deadline: String(n.data.effective) });
+      out.push({ kind: 'price_rise', title: `${merchant} price rises from ₹${oldP / 100} to ₹${newP / 100} on ${n.data.effective ? spokenDate(String(n.data.effective)) : 'the next bill'}`, titleHi: `${merchant} का दाम ${n.data.effective ? `${spokenDate(String(n.data.effective), 'hi')} से` : 'अगले बिल से'} ₹${oldP / 100} से ₹${newP / 100} हो रहा है`, amount: newP - oldP, annualCost: (newP - oldP) * 12, merchant, evidence: [n.file], actionHint: 'review_plan', deadline: String(n.data.effective) });
     }
   }
-  for (const d of duplicates(ds)) out.push({ kind: 'duplicate', title: `${d.merchant} charged ${d.count} times on ${spokenDate(d.date)}`, amount: d.extra, annualCost: d.extra, merchant: d.merchant, evidence: d.ids, actionHint: 'dispute' });
+  for (const d of duplicates(ds)) out.push({ kind: 'duplicate', title: `${d.merchant} charged ${d.count} times on ${spokenDate(d.date)}`, titleHi: `${d.merchant} ने ${spokenDate(d.date, 'hi')} को ${d.count} बार पैसे काटे`, amount: d.extra, annualCost: d.extra, merchant: d.merchant, evidence: d.ids, actionHint: 'dispute' });
   const fees = ds.txns.filter((t) => t.category === 'Fees & charges' && t.dir === 'debit');
   if (fees.length) {
     const total = sum(fees.map((t) => t.amount));
     const months = Math.max(1, coverage(ds).length);
     // Annualise each fee by its own cadence: an annual fee counts once, a quarterly charge four times.
     const annual = sum(fees.map((t) => (/annual|yearly/i.test(t.desc) ? t.amount : /qtr|quarter/i.test(t.desc) ? t.amount * 4 : Math.round((t.amount * 12) / months))));
-    out.push({ kind: 'fee', title: `Bank and card charges: ${fees.length} in ${months} months`, amount: total, annualCost: annual, merchant: 'Bank charges', evidence: fees.map((t) => `${t.date} ${t.desc}`), actionHint: 'ask_waiver' });
+    out.push({ kind: 'fee', title: `Bank and card charges: ${fees.length} in ${months} months`, titleHi: `बैंक और कार्ड चार्ज: ${months} महीनों में ${fees.length}`, amount: total, annualCost: annual, merchant: 'Bank charges', evidence: fees.map((t) => `${t.date} ${t.desc}`), actionHint: 'ask_waiver' });
   }
   // All active subscriptions, so "what am I subscribed to" has a complete answer.
   for (const r of rec) {
     if (out.some((l) => l.merchant.toLowerCase() === r.merchant.toLowerCase() && l.kind !== 'duplicate' && l.kind !== 'price_rise')) continue;
     if (r.cadence === 'once' && daysBetween(r.lastDate, asOf) > 60) continue;
-    out.push({ kind: 'subscription', title: `${r.merchant} (${r.cadence})`, amount: r.amount, annualCost: r.annualCost, merchant: r.merchant, evidence: r.ids.slice(-3), actionHint: 'review' });
+    out.push({ kind: 'subscription', title: `${r.merchant} (${r.cadence})`, titleHi: `${r.merchant} (${({ monthly: 'मासिक', yearly: 'सालाना', once: 'एक बार' } as Record<string, string>)[r.cadence] ?? r.cadence})`, amount: r.amount, annualCost: r.annualCost, merchant: r.merchant, evidence: r.ids.slice(-3), actionHint: 'review' });
   }
   // Most money first; anything with a deadline in the next 14 days counts double.
   const score = (l: Leak) => l.annualCost * (l.deadline && daysBetween(asOf, l.deadline) <= 14 && daysBetween(asOf, l.deadline) >= 0 ? 2 : 1);
@@ -163,7 +163,7 @@ export function leaks(ds: Dataset): Leak[] {
 }
 
 // ---------- unusual spending ----------
-export interface Unusual { kind: 'category_spike' | 'large_txn' | 'new_merchant'; title: string; amount: Paise; baseline?: Paise; changePct?: number; category: string; month?: string; date?: string; merchant?: string }
+export interface Unusual { kind: 'category_spike' | 'large_txn' | 'new_merchant'; title: string; titleHi: string; amount: Paise; baseline?: Paise; changePct?: number; category: string; month?: string; date?: string; merchant?: string }
 
 export function unusual(ds: Dataset): Unusual[] {
   const pics = monthPictures(ds).filter((p) => p.complete);
@@ -174,8 +174,8 @@ export function unusual(ds: Dataset): Unusual[] {
       if (groupOf(cat) !== 'spend') continue;
       const base = Math.round(sum(prev.map((p) => p.byCategory[cat] ?? 0)) / prev.length);
       const delta = v - base;
-      if (base > 0 && delta >= 200000 && v >= base * 1.4) out.push({ kind: 'category_spike', title: `${cat} up ${pct(delta, base)}% in ${monthLabel(cur.key)} vs the earlier average`, amount: v, baseline: base, changePct: pct(delta, base), category: cat, month: cur.key });
-      if (base === 0 && v >= 500000) out.push({ kind: 'category_spike', title: `New spending on ${cat} in ${monthLabel(cur.key)}`, amount: v, baseline: 0, category: cat, month: cur.key });
+      if (base > 0 && delta >= 200000 && v >= base * 1.4) out.push({ kind: 'category_spike', title: `${cat} up ${pct(delta, base)}% in ${monthLabel(cur.key)} vs the earlier average`, titleHi: `${monthName(cur.key, 'hi')} में ${categoryHi(cat)} पर खर्च पहले के औसत से ${pct(delta, base)}% ज़्यादा`, amount: v, baseline: base, changePct: pct(delta, base), category: cat, month: cur.key });
+      if (base === 0 && v >= 500000) out.push({ kind: 'category_spike', title: `New spending on ${cat} in ${monthLabel(cur.key)}`, titleHi: `${monthName(cur.key, 'hi')} में ${categoryHi(cat)} पर नया खर्च`, amount: v, baseline: 0, category: cat, month: cur.key });
     }
   }
   const asOf = asOfDate(ds);
@@ -184,37 +184,37 @@ export function unusual(ds: Dataset): Unusual[] {
   for (const t of ds.txns) {
     if (t.dir !== 'debit' || t.date < recentFrom || recIds.has(t.id)) continue;
     if (groupOf(t.category ?? 'Other') !== 'spend' || t.category === 'Rent') continue;
-    if (t.amount >= 500000) out.push({ kind: 'large_txn', title: `${t.merchant} ₹${groupIndian(Math.round(t.amount / 100))} on ${spokenDate(t.date)}`, amount: t.amount, category: t.category ?? 'Other', date: t.date, merchant: t.merchant });
+    if (t.amount >= 500000) out.push({ kind: 'large_txn', title: `${t.merchant} ₹${groupIndian(Math.round(t.amount / 100))} on ${spokenDate(t.date)}`, titleHi: `${spokenDate(t.date, 'hi')} को ${t.merchant} ₹${groupIndian(Math.round(t.amount / 100))}`, amount: t.amount, category: t.category ?? 'Other', date: t.date, merchant: t.merchant });
   }
   // A subscription-type merchant seen for the first time in the last 30 days.
   const first = new Map<string, string>();
   for (const t of [...ds.txns].sort((a, b) => a.date.localeCompare(b.date))) if (t.dir === 'debit' && !first.has(t.merchant ?? '')) first.set(t.merchant ?? '', t.date);
   for (const t of ds.txns) {
     if (t.dir === 'debit' && t.category === 'Subscriptions' && first.get(t.merchant ?? '') === t.date && daysBetween(t.date, asOf) <= 30 && !out.some((u) => u.merchant === t.merchant))
-      out.push({ kind: 'new_merchant', title: `New subscription charge: ${t.merchant}`, amount: t.amount, category: 'Subscriptions', date: t.date, merchant: t.merchant });
+      out.push({ kind: 'new_merchant', title: `New subscription charge: ${t.merchant}`, titleHi: `नया सब्सक्रिप्शन चार्ज: ${t.merchant}`, amount: t.amount, category: 'Subscriptions', date: t.date, merchant: t.merchant });
   }
   return out.sort((a, b) => b.amount - a.amount);
 }
 
 // ---------- upcoming dues ----------
-export interface Due { date: string; title: string; amount: Paise; kind: 'emi' | 'card' | 'premium' | 'subscription' | 'bill'; source: string; fromBank: boolean; note?: string }
+export interface Due { date: string; title: string; titleHi: string; amount: Paise; kind: 'emi' | 'card' | 'premium' | 'subscription' | 'bill'; source: string; fromBank: boolean; note?: string }
 
 export function upcoming(ds: Dataset, days = 21): Due[] {
   const asOf = asOfDate(ds); const until = addDays(asOf, days);
   const out: Due[] = [];
   for (const l of ds.loans) {
     const st = loanStatus(l, asOf);
-    if (st.nextEmiDate && st.nextEmiDate > asOf && st.nextEmiDate <= until) out.push({ date: st.nextEmiDate, title: `${l.lender} EMI`, amount: l.emi, kind: 'emi', source: l.file, fromBank: true });
+    if (st.nextEmiDate && st.nextEmiDate > asOf && st.nextEmiDate <= until) out.push({ date: st.nextEmiDate, title: `${l.lender} EMI`, titleHi: `${l.lender} की EMI`, amount: l.emi, kind: 'emi', source: l.file, fromBank: true });
     // EMI dates that fall within the window but were already debited (asOf on the EMI date) are skipped by the > asOf check.
   }
   for (const s of ds.cardStatements) {
     if (s.dueDate < asOf || s.dueDate > until) continue;
     const paid = ds.txns.some((t) => t.category === 'Card bill payment' && t.dir === 'debit' && t.date > s.periodEnd && t.date <= s.dueDate && t.amount >= s.minDue);
-    if (!paid) out.push({ date: s.dueDate, title: 'Credit card bill', amount: s.totalDue, kind: 'card', source: s.file, fromBank: true, note: `minimum due ₹${Math.round(s.minDue / 100)}` });
+    if (!paid) out.push({ date: s.dueDate, title: 'Credit card bill', titleHi: 'क्रेडिट कार्ड बिल', amount: s.totalDue, kind: 'card', source: s.file, fromBank: true, note: `minimum due ₹${Math.round(s.minDue / 100)}` });
   }
   for (const p of ds.policies) {
     const d = nextDueDate(p, asOf);
-    if (d && d > asOf && d <= until) out.push({ date: d, title: `${p.insurer} premium (${p.kind})`, amount: p.premium, kind: 'premium', source: p.file, fromBank: true });
+    if (d && d > asOf && d <= until) out.push({ date: d, title: `${p.insurer} premium (${p.kind})`, titleHi: `${p.insurer} प्रीमियम`, amount: p.premium, kind: 'premium', source: p.file, fromBank: true });
   }
   const loanMerchants = new Set(['Kestrel Auto Finance', 'Orbit Finserv']);
   for (const r of recurring(ds)) {
@@ -225,7 +225,8 @@ export function upcoming(ds: Dataset, days = 21): Due[] {
     const amount = price ? Number(price.data.newPrice) : r.amount;
     const kind: Due['kind'] = r.category === 'Subscriptions' || r.category === 'Fitness' ? 'subscription' : 'bill';
     const title = r.merchant === 'Person-to-person' ? r.category : kind === 'bill' && r.category !== r.merchant ? `${r.category}: ${r.merchant}` : r.merchant;
-    out.push({ date: r.nextExpected, title, amount, kind, source: 'recurring pattern in statements', fromBank: r.account.startsWith('bank:'), note: price ? `new price from ${price.data.effective}` : undefined });
+    const titleHi = r.merchant === 'Person-to-person' ? categoryHi(r.category) : kind === 'bill' && r.category !== r.merchant ? `${categoryHi(r.category)}: ${r.merchant}` : r.merchant;
+    out.push({ date: r.nextExpected, title, titleHi, amount, kind, source: 'recurring pattern in statements', fromBank: r.account.startsWith('bank:'), note: price ? `new price from ${price.data.effective}` : undefined });
   }
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }

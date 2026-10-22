@@ -18,11 +18,14 @@ class Component extends DCLogic {
     var PF = this.props.data.PF;
     var XR = this.props.data.XR;   // xray_v2_numbers.py (FIFO lots, sample CAS)
     var X3 = this.props.data.X3;   // xray_v3_numbers.py: overlap (synthetic sample holdings), FD at 7%, did-it-work preview
+    var MODE = this.props.data.MODE;   // advice mode from the server: demo/internal/advised may show the named-fund plan; guided gets facts and categories (D-043)
+    var DISC = this.props.data.DISC;   // the mode's disclaimer, from the server
     var END = new Date('2026-10-15'), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var rows = PF.funds.map(function (f) { var yrs = (END - new Date(f[6])) / (365.25 * 864e5), fund = Math.round((Math.pow(f[8] / f[7], 1 / yrs) - 1) * 1000) / 10; return { f: f, fund: fund, you: f[5], since: MON[+f[6].slice(5, 7) - 1] + ' ' + f[6].slice(0, 4) }; });
     var maxV = Math.max.apply(null, rows.map(function (r) { return Math.max(r.fund, r.you); }));
     var ahead = rows.filter(function (r) { return r.you - r.fund >= 0.5; }).length, behind = rows.filter(function (r) { return r.fund - r.you >= 0.5; }).length, even = rows.length - ahead - behind;
     var eq = sum(PF.funds.filter(function (f) { return f[3] === 'equity'; }).map(function (f) { return f[4]; })), dt = PF.value - eq;
+    var named = MODE !== 'guided' && MODE !== 'off';
     var H = XR.harvest, G = XR.regular, E = XR.elss, C = H.combo, M = XR.vsIndex['Monsoon Small Cap'], O = X3.overlap, FD = X3.fd, DID = X3.did;
     var FULL = { Kestrel: 'Kestrel Flexi Cap', Teak: 'Teak ELSS', Banyan: 'Banyan Nifty 50 Index', Monsoon: 'Monsoon Small Cap' };
     var stValue = sum(G.rows.map(function (r) { return r.stValue; }));
@@ -42,11 +45,11 @@ class Component extends DCLogic {
     var pairMax = 100, top = O.pairs[0];
     var cards = [
       card('harvest', '1 · Tax', H.daysLeft + ' days left', 'deadline', 'Book ' + R(H.left) + ' of gains tax-free by 31 Mar',
-        'About ' + R(H.taxSavedLater) + ' less tax when you finally sell. One move does it, together with card 2.',
-        { hasPlan: true, notes: ['You have ' + R(H.ltGainAll) + ' of long-term gains and haven’t used this year’s limit. Selling and buying back resets your cost; the limit lapses on 31 Mar.', 'The saving assumes your gains are above the yearly limit when you finally sell.'] }),
+        named ? 'About ' + R(H.taxSavedLater) + ' less tax when you finally sell. One move does it, together with card 2.' : 'About ' + R(H.taxSavedLater) + ' less tax when you finally sell, if gains are booked before the limit lapses.',
+        { hasPlan: named, notes: ['You have ' + R(H.ltGainAll) + ' of long-term gains and haven’t used this year’s limit. Selling and buying back resets your cost; the limit lapses on 31 Mar.', 'The saving assumes your gains are above the yearly limit when you finally sell.'] }),
       card('direct', '2 · Costs', 'Estimate', 'est', 'Regular plans cost you about ' + R(G.feeTotal) + ' a year',
-        'Start here: send your ' + R(G.sipReg) + '-a-month SIPs to direct plans. Costs ₹0.',
-        { opts: [
+        named ? 'Start here: send your ' + R(G.sipReg) + '-a-month SIPs to direct plans. Costs ₹0.' : 'The direct plan of the same fund costs less. Switching means selling, so exit load and tax apply.',
+        { opts: !named ? [] : [
           opt('New SIPs to direct', 'Stops commission from the next instalment. Nothing to sell.', 'START HERE', true),
           opt('Move ' + R(C.value) + ' within the tax-free limit', 'Long-term units of ' + C.funds.join(' and ') + ': no tax, about ' + R(C.feeSavedYr) + ' a year less. Same move as card 1.', 'NO TAX', true),
           opt('Move all long-term units (' + R(G.ltValueReg) + ')', 'Tax about ' + R(G.taxIfSwitchAllLT) + ' now; saves about ' + R(G.feeOnLT) + ' a year; pays back in about ' + G.paybackYears + ' years.', 'LATER', false) ],
@@ -89,7 +92,7 @@ class Component extends DCLogic {
         { n: '4', t: 'Repeat next April', d: 'A fresh ' + R(H.exempt) + ' limit every financial year.' } ],
       outcome: [{ v: '₹0', l: 'tax now' }, { v: R(C.futureTax), l: 'less tax later' }, { v: R(C.feeSavedYr), l: 'a year in fees' }]
     };
-    return { theme: this.props.theme ?? 'light', d: d, planOpen: planOpen, hasHistory: hist, noHistory: !hist, toast: !!s.toast,
+    return { theme: this.props.theme ?? 'light', disc: DISC, d: d, planOpen: planOpen, hasHistory: hist, noHistory: !hist, toast: !!s.toast,
       saveReport: function () { self.setState({ toast: true }); }, hideToast: function () { self.setState({ toast: false }); },
       openPlan: function () { self.setState({ plan: true }); }, closePlan: function () { self.setState({ plan: false }); } };
   }
@@ -127,7 +130,7 @@ export default function Xray(props) {
               <div style={{"display": "flex", "alignItems": "center", "gap": "10px", "minHeight": "48px", "borderTop": "1px solid var(--hair)"}}><span style={{"flex": "1", "minWidth": "0", "display": "grid"}}><span style={{"fontSize": "14.5px"}}>{f?.name}</span><span style={{"fontSize": "12.5px", "color": "var(--muted)"}}>{f?.cat} ·{' '}<span style={{"color": f?.planInk, "fontWeight": "600"}}>{f?.plan}</span></span></span><b style={{"fontSize": "14.5px", "fontWeight": "600"}}>{f?.value}</b></div>
             </Fragment>))}</div></details><section aria-label="Ask Munim" style={{"flex": "none", "position": "relative", "display": "grid", "gap": "8px", "padding": "4px 2px"}}><span style={{"fontSize": "12.5px", "fontWeight": "600", "letterSpacing": ".04em", "textTransform": "uppercase", "color": "var(--muted)"}}>Ask Munim</span><div style={{"display": "flex", "gap": "8px", "flexWrap": "wrap"}}>{(V.d?.asks || []).map((q, i8) => (<Fragment key={i8}>
               <a href={route("Voice.dc.html")} style={{"minHeight": "40px", "padding": "0 14px", "display": "inline-flex", "alignItems": "center", "borderRadius": "999px", "background": "var(--card)", "boxShadow": "inset 0 0 0 1px var(--hair2)", "color": "var(--ink)", "fontSize": "13.5px", "textDecoration": "none"}}>{q}</a>
-            </Fragment>))}</div></section><button type="button" style={{"flex": "none", "position": "relative", "minHeight": "44px", "border": "0", "background": "transparent", "fontSize": "14px", "fontWeight": "600", "color": "var(--link)", "cursor": "pointer"}}>Holdings look wrong? Add a newer statement ›</button><p style={{"flex": "none", "position": "relative", "margin": "0", "padding": "0 4px", "fontSize": "12px", "color": "var(--muted)"}}>General guidance, not SEBI-registered investment advice. Tax figures use today’s rules (12.5% on long-term equity gains above ₹1.25 lakh a year); check them for your situation.</p></div>{!!(V.toast) && (<>
+            </Fragment>))}</div></section><button type="button" style={{"flex": "none", "position": "relative", "minHeight": "44px", "border": "0", "background": "transparent", "fontSize": "14px", "fontWeight": "600", "color": "var(--link)", "cursor": "pointer"}}>Holdings look wrong? Add a newer statement ›</button><p style={{"flex": "none", "position": "relative", "margin": "0", "padding": "0 4px", "fontSize": "12px", "color": "var(--muted)"}}>{V.disc} Tax figures use today’s rules (12.5% on long-term equity gains above ₹1.25 lakh a year); check them for your situation.</p></div>{!!(V.toast) && (<>
         <div role="status" style={{"position": "absolute", "left": "16px", "right": "16px", "bottom": "92px", "zIndex": "6", "minHeight": "48px", "display": "flex", "alignItems": "center", "gap": "10px", "padding": "0 8px 0 16px", "borderRadius": "14px", "background": "var(--ink)", "color": "var(--bg)", "fontSize": "14px"}}><span style={{"flex": "1"}}>Report saved as a PDF. Amounts can be hidden before sharing.</span><button type="button" onClick={V.hideToast} style={{"minHeight": "40px", "padding": "0 12px", "border": "0", "background": "transparent", "color": "var(--bg)", "fontSize": "14px", "fontWeight": "600", "cursor": "pointer"}}>OK</button></div>
       </>)}{!!(V.planOpen) && (<>
         <div style={{"position": "absolute", "inset": "0", "zIndex": "10", "background": "var(--scrim)"}}><section className="sheet" role="dialog" aria-label="The plan" style={{"position": "absolute", "left": "0", "right": "0", "bottom": "0", "maxHeight": "92%", "overflowY": "auto", "background": "var(--card)", "borderRadius": "26px 26px 0 0", "padding": "10px 20px 24px", "boxSizing": "border-box", "display": "grid", "gridTemplateColumns": "minmax(0, 1fr)", "gap": "10px"}}><span aria-hidden="true" style={{"width": "40px", "height": "4px", "borderRadius": "2px", "background": "var(--hair2)", "justifySelf": "center"}}></span><div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center"}}><h2 className="serif" style={{"margin": "0", "fontSize": "23px"}}>One move, two wins</h2><button type="button" aria-label="Close" onClick={V.closePlan} style={{"width": "44px", "height": "44px", "marginRight": "-10px", "border": "0", "background": "transparent", "borderRadius": "50%", "display": "grid", "placeItems": "center", "cursor": "pointer", "color": "var(--ink2)"}}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div><span style={{"fontSize": "14px", "color": "var(--ink2)", "marginTop": "-4px"}}>Move regular-plan units to the direct plan of the same fund, only as many as fit this year’s tax-free limit.</span><ol style={{"margin": "0", "padding": "0", "listStyle": "none", "display": "grid", "gap": "2px"}}>{(V.d?.steps || []).map((p, i9) => (<Fragment key={i9}>

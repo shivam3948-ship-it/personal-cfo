@@ -16,21 +16,21 @@ class Component extends DCLogic {
     var hi = (this.props.variant ?? 'standard') === 'bharat';
     var irregular = (this.props.earner ?? 'salaried') === 'irregular';
     // ---- inputs: paise, from packages/core on the sample family (monthPictures, recurring, leaks, compareRefinance, daily cumulative), as of 15 Oct ----
-    var CAT = { 'Subscriptions': 526700, 'Cash withdrawal': 500000, 'Food delivery': 492300, 'Dining': 272900, 'Fuel': 220000, 'Fitness': 199900, 'Utilities': 198000, 'Quick commerce': 138200, 'Shopping': 127200, 'Cabs': 82800, 'Mobile & internet': 59900 };
-    var USUAL15 = { 'Subscriptions': 26800, 'Cash withdrawal': 500000, 'Food delivery': 385400, 'Dining': 447600, 'Fuel': 386900, 'Fitness': 199900, 'Utilities': 241000, 'Quick commerce': 152000, 'Shopping': 117700, 'Cabs': 145900, 'Mobile & internet': 59900 };
-    var PACE = [{ m: 'Jul', v: 1711900 }, { m: 'Aug', v: 3169100 }, { m: 'Sep', v: 4895700 }];
-    var USUALCUM = [107500,107500,166500,290000,332200,332200,332200,745400,1047700,1047700,1615800,2941400,2941400,3109200,3169100,3275000,3555000,3619900,3670400,3670400,3735700,3884200,3928400,4313600,4939800,4939800,5029700,6393100,6393100,6650970,6650970];
-    var OCTCUM = [132000,132000,282700,608900,699700,826900,901700,1101600,1666100,1666100,2166000,2393500,2680500,2758000,2817900];
-    var FIXED = 2600000 + 1260100 + 500000, FAMILY = 1000000, UNCAT = 0, NOTCOUNTED = 1000000 + 1000000;
-    var RECENT = [['15 Oct', 'Airtel', 'Mobile & internet', 59900], ['14 Oct', 'Zomato', 'Food delivery', 62600], ['14 Oct', 'YouTube Premium', 'Subscriptions', 14900], ['13 Oct', 'Zomato', 'Food delivery', 67000]];
+    var CAT = this.props.data.CAT;
+    var USUAL15 = this.props.data.USUAL15;
+    var PACE = this.props.data.PACE;
+    var USUALCUM = this.props.data.USUALCUM;
+    var OCTCUM = this.props.data.OCTCUM;
+    var FIXED = this.props.data.FIXED, FAMILY = this.props.data.FAMILY, UNCAT = this.props.data.UNCAT, NOTCOUNTED = this.props.data.NOTCOUNTED;
+    var RECENT = this.props.data.RECENT;
     var HI_CAT = { 'Subscriptions': 'सब्सक्रिप्शन', 'Cash withdrawal': 'कैश निकासी', 'Food delivery': 'फ़ूड डिलीवरी', 'Dining': 'बाहर खाना', 'Fuel': 'पेट्रोल', 'Fitness': 'जिम', 'Utilities': 'बिजली-पानी', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Cabs': 'कैब', 'Mobile & internet': 'मोबाइल-इंटरनेट' };
     var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
     var med = PACE.map(function (x) { return x.v; }).sort(function (a, b) { return a - b; })[1];
-    var orbitMatch = 673892, orbitSwitchNet = -996393;   // compareRefinance vs Neem Bank's real pre-approved 11.25% offer (email, 6 Oct), 1% fee + GST; switching allowed only from 20 Dec, offer expires 31 Oct
-    var INCOME = 14500000, MONTHS = [['Jul', 4274900, 7268200, 1000000, true], ['Aug', 8798800, 5378200, 1000000, true], ['Sep', 6650970, 5378200, 1000000, true], ['Oct', 2817900, 4360100, 1000000, false]];
-    var FOOD = { amt: 492300, usual15: 385400, orders: 9 };   // CategoryFood: 9 orders, 1–15 Oct
+    var orbitMatch = this.props.data.orbitMatch, orbitSwitchNet = this.props.data.orbitSwitchNet;   // compareRefinance vs Neem Bank's real pre-approved 11.25% offer (email, 6 Oct), 1% fee + GST; switching allowed only from 20 Dec, offer expires 31 Oct
+    var INCOME = this.props.data.INCOME, MONTHS = this.props.data.MONTHS;
+    var FOOD = this.props.data.FOOD;   // CategoryFood: 9 orders, 1–15 Oct
     var foodPct = Math.round((FOOD.amt - FOOD.usual15) / FOOD.usual15 * 100), foodSkip2 = 2 * Math.round(FOOD.amt / FOOD.orders);
-    var LEAK = { cult: 199900 * 12, dup: 64900, lingo: 499900, subsYear: 778800 + 358800 + 178800 + 142800 + 149900 + 499900 + 2398800 };
+    var LEAK = this.props.data.LEAK;
     var C = hi ? {
       title: 'खर्च', period: 'अक्टूबर · 1–15', heroLabel: 'रोज़ का खर्च, 1–15 अक्टूबर', show: 'हिसाब देखें', hide: 'हिसाब छिपाएँ',
       paceBelow: function (x) { return 'आम रफ़्तार से ' + x + ' कम'; }, paceAbove: function (x) { return 'आम रफ़्तार से ' + x + ' ज़्यादा'; },
@@ -64,7 +64,7 @@ class Component extends DCLogic {
       sortDoneNote: 'Spends has updated with your answers. You can change any of them in All transactions.', done: 'Done', startOver: 'Undo all'
     });
     // ---- past months: packages/core monthPictures() for the 3 complete months; ev = everyday categories, fx = fixed, fam = family, unc = uncategorised, cum = everyday spending by day ----
-    var PAST = {"07": {"inc": 14500000, "ev": {"Cabs": 188300, "Food delivery": 505100, "Quick commerce": 275300, "Fitness": 199900, "Subscriptions": 271500, "Utilities": 214000, "Dining": 643600, "Cash withdrawal": 500000, "Mobile & internet": 165800, "Shopping": 561900, "Fuel": 237700, "Groceries": 511800}, "fx": 7268200, "fam": 1000000, "unc": 0, "nc": 3439100, "cum": [0, 48700, 48700, 63200, 89300, 153600, 212000, 411900, 423800, 525600, 525600, 998900, 1548800, 1652000, 1711900, 2092000, 2160100, 2451300, 2451300, 2784600, 3102100, 3158700, 3158700, 3158700, 3353700, 3387100, 3456300, 3456300, 3456300, 3956100, 4274900], "top": [["2026-07-13", "ATM cash", "Cash withdrawal", 500000], ["2026-07-31", "DMart", "Groceries", 318800], ["2026-07-16", "Social, Cyberhub", "Dining", 274200], ["2026-07-12", "Social, Cyberhub", "Dining", 259300]]}, "08": {"inc": 14500000, "ev": {"Fees & charges": 70800, "Quick commerce": 277600, "Fuel": 617600, "Food delivery": 541900, "Cabs": 204600, "Fitness": 199900, "Dining": 600200, "Cash withdrawal": 500000, "Subscriptions": 121600, "Shopping": 753000, "Utilities": 286000, "Mobile & internet": 165800, "Groceries": 560800, "Electronics": 3899000}, "fx": 5378200, "fam": 1000000, "unc": 0, "nc": 3793900, "cum": [325500, 389700, 389700, 438000, 472200, 602000, 889500, 1380100, 2381400, 2511300, 2511300, 2941400, 2941400, 3109200, 3169100, 3145100, 3425100, 3490000, 3540500, 3540500, 3605800, 3754300, 3798500, 4183700, 4809900, 4809900, 4899800, 8798800, 8798800, 8798800, 8798800], "top": [["2026-08-28", "Croma", "Electronics", 3899000], ["2026-08-09", "ATM cash", "Cash withdrawal", 500000], ["2026-08-25", "Amazon", "Shopping", 315500], ["2026-08-12", "DHBVN Electricity", "Utilities", 286000]]}, "09": {"inc": 14500000, "ev": {"Food delivery": 1044100, "Cabs": 211500, "Quick commerce": 261100, "Fitness": 199900, "Shopping": 458400, "Subscriptions": 186500, "Fuel": 386900, "Cash withdrawal": 500000, "Utilities": 241000, "Dining": 447600, "Travel": 2100000, "Mobile & internet": 165800, "Groceries": 446400, "Fees & charges": 1770}, "fx": 5378200, "fam": 1000000, "unc": 0, "nc": 7690000, "cum": [107500, 107500, 166500, 290000, 332200, 332200, 332200, 745400, 1047700, 1047700, 1615800, 3986300, 4698400, 4835800, 4895700, 5001600, 5077300, 5371400, 5565600, 5565600, 5565600, 5565600, 5689100, 5894600, 5968800, 6018400, 6277200, 6393100, 6393100, 6650970], "top": [["2026-09-12", "MakeMyTrip", "Travel", 1420000], ["2026-09-13", "Goa Beach Resort", "Travel", 680000], ["2026-09-11", "ATM cash", "Cash withdrawal", 500000], ["2026-09-12", "Biryani Blues", "Dining", 254800]]}};
+    var PAST = this.props.data.PAST;
     var PKEYS = ['07', '08', '09'], PSHORT = { '07': 'Jul', '08': 'Aug', '09': 'Sep' };
     var past = s.month && PAST[s.month] ? s.month : null, P = past ? PAST[past] : null;
     var MN = hi ? { Jul: 'जुलाई', Aug: 'अगस्त', Sep: 'सितंबर', Oct: 'अक्टूबर' } : { Jul: 'July', Aug: 'August', Sep: 'September', Oct: 'October' };

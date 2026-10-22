@@ -9,6 +9,10 @@ import { essentialsByMonth, monthlyIncome } from '@core/finance/essentials';
 import { policyView } from '@core/finance/insurance';
 import { portfolioView, fundGrowth, investingHabits } from '@core/portfolio/engine';
 import { xrayInsights, overlap, fdComparison } from '@core/portfolio/insights';
+import { DISCLAIMER, namesFunds, type Session } from '../session';
+
+type Mode = Pick<Session, 'adviceMode'>;
+const SAMPLE: Mode = { adviceMode: 'demo' };
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const short = (s: string) => s.replace(/ Fund$/, '');
@@ -46,7 +50,7 @@ export function buildXrayBlocks(ds: Dataset) {
   };
 }
 
-export function buildInvest(ds: Dataset) {
+export function buildInvest(ds: Dataset, s: Mode = SAMPLE) {
   const term = ds.policies.find((q) => q.kind === 'term');
   const endow = ds.policies.find((q) => q.kind === 'endowment' || q.kind === 'ulip');
   const irr = endow ? policyView(endow, ds.portfolio?.asOf ?? '2026-10-15').projectedReturnPct?.map((r) => r.irr) ?? [] : [];
@@ -60,10 +64,13 @@ export function buildInvest(ds: Dataset) {
     ENDOW: irr.length ? { irrLo: Math.min(...irr), irrHi: Math.max(...irr) } : null,
     SAVED_WITH_MUNIM: 0, // the savings pot: nothing saved through Munim in the sample (no pot data yet)
     XRS: xr ? { count: xr.count, taxSave: xr.XR.harvest.taxSavedLater, feeYr: xr.XR.regular.feeTotal, fdExtra: xr.X3.fd.extra } : null,
+    DISC: DISCLAIMER[s.adviceMode].en,
   };
 }
 
-export function buildXray(ds: Dataset) {
+export function buildXray(ds: Dataset, s: Mode = SAMPLE) {
   const xr = buildXrayBlocks(ds);
-  return { PF: pfBlock(ds), XR: xr?.XR ?? null, X3: xr?.X3 ?? null };
+  // Outside demo/internal/advised the named-fund plan never leaves the server (docs/12 rung 3): no fund names in the combo.
+  const XR = xr && !namesFunds(s.adviceMode) ? { ...xr.XR, harvest: { ...xr.XR.harvest, combo: { ...xr.XR.harvest.combo, funds: [] } } } : xr?.XR ?? null;
+  return { PF: pfBlock(ds), XR, X3: xr?.X3 ?? null, MODE: s.adviceMode, DISC: DISCLAIMER[s.adviceMode].en };
 }
