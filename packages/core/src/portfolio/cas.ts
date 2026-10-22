@@ -4,7 +4,7 @@
 import type { Paise } from '../types';
 
 export type AssetClass = 'equity' | 'debt' | 'hybrid' | 'gold' | 'other';
-export interface Flow { date: string; amount: Paise } // invest = negative, redeem = positive (XIRR sign convention)
+export interface Flow { date: string; amount: Paise; nav?: number } // invest = negative, redeem = positive (XIRR sign convention); nav = the transaction's NAV when the CAS prints it
 export interface Holding {
   isin: string; scheme: string; amc: string; plan: 'Direct' | 'Regular';
   category: string; asset: AssetClass;
@@ -73,7 +73,7 @@ export function parseCas(text: string): CasResult {
       const desc = t[2]; const amount = num(t[3]); const units = num(t[4]);
       const out = units < 0 || /redemption|switch[- ]?out|withdrawal|swp|stp out/i.test(desc);
       cur.walk += units;
-      cur.flows.push({ date: casDate(t[1]), amount: paise(out ? Math.abs(amount) : -Math.abs(amount)) });
+      cur.flows.push({ date: casDate(t[1]), amount: paise(out ? Math.abs(amount) : -Math.abs(amount)), nav: num(t[5]) });
       continue;
     }
     if (/^\d{2}-[A-Za-z]{3}-\d{4}\s+\*+\s*(stamp duty|stt)/i.test(l)) continue; // statutory charges: no units

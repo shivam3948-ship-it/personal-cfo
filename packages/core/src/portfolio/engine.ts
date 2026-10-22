@@ -64,3 +64,37 @@ export function portfolioView(holdings: Holding[], asOf: string): PortfolioView 
     sipPerMonth: sipPerMonth(holdings, asOf),
   };
 }
+
+// ---------- your money vs your funds (docs/42) ----------
+export interface FundGrowth { firstDate: string; navThen: number; navNow: number; fundPct: number | null }
+
+/** The fund's own growth since your first purchase: point-to-point on the CAS's own NAVs, a yearly rate (what factsheets advertise). */
+export function fundGrowth(h: Holding, asOf: string): FundGrowth | null {
+  const first = [...h.flows].sort((a, b) => a.date.localeCompare(b.date)).find((f) => f.amount < 0 && f.nav);
+  if (!first?.nav || !h.nav) return null;
+  const yrs = (Date.parse(asOf) - Date.parse(first.date)) / (365.25 * 86400000);
+  return { firstDate: first.date, navThen: first.nav, navNow: h.nav, fundPct: yrs > 0.5 ? round1((Math.pow(h.nav / first.nav, 1 / yrs) - 1) * 100) : null };
+}
+
+/** Behaviour from the CAS: monthly SIP instalments that were skipped, and sells (redemptions/switch-outs). */
+export function investingHabits(holdings: Holding[]): { sipGaps: number; sells: number; since: string | null } {
+  let gaps = 0, sells = 0; let since: string | null = null;
+  for (const h of holdings) {
+    const buys = h.flows.filter((f) => f.amount < 0);
+    sells += h.flows.filter((f) => f.amount > 0).length;
+    const first = buys.map((f) => f.date).sort()[0];
+    if (first && (!since || first < since)) since = first;
+    // SIP = a purchase amount that repeats at least 3 times; lump sums don't count as gaps.
+    const counts = new Map<number, number>(); buys.forEach((f) => counts.set(f.amount, (counts.get(f.amount) ?? 0) + 1));
+    const sip = [...counts].filter(([, n]) => n >= 3).sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (sip === undefined) continue;
+    const months = [...new Set(buys.filter((f) => f.amount === sip).map((f) => f.date.slice(0, 7)))].sort();
+    if (months.length >= 3) {
+      const [y0, m0] = months[0].split('-').map(Number), [y1, m1] = months.at(-1)!.split('-').map(Number);
+      const span = (y1 - y0) * 12 + (m1 - m0) + 1;
+      if (span > months.length * 2) continue; // yearly or occasional lump sums of the same amount, not a monthly SIP
+      gaps += span - months.length;
+    }
+  }
+  return { sipGaps: gaps, sells, since };
+}
