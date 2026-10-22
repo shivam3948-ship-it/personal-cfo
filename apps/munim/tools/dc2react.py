@@ -40,7 +40,7 @@ ATTR = {'class': 'className', 'for': 'htmlFor', 'tabindex': 'tabIndex', 'maxleng
         'markerwidth': 'markerWidth', 'markerheight': 'markerHeight', 'refx': 'refX', 'refy': 'refY', 'stddeviation': 'stdDeviation',
         'xlink:href': 'xlinkHref', 'onclick': 'onClick', 'onchange': 'onChange', 'oninput': 'onInput', 'onkeydown': 'onKeyDown',
         'onsubmit': 'onSubmit', 'onfocus': 'onFocus', 'onblur': 'onBlur', 'autofocus': 'autoFocus', 'enterkeyhint': 'enterKeyHint',
-        'crossorigin': 'crossOrigin', 'onpointermove': 'onPointerMove', 'onpointerdown': 'onPointerDown', 'onpointerup': 'onPointerUp', 'onpointerleave': 'onPointerLeave', 'onpointerenter': 'onPointerEnter', 'onmouseenter': 'onMouseEnter', 'onmouseleave': 'onMouseLeave', 'onkeyup': 'onKeyUp', 'ontouchstart': 'onTouchStart', 'onscroll': 'onScroll', 'srcset': 'srcSet', 'datetime': 'dateTime', 'accesskey': 'accessKey', 'contenteditable': 'contentEditable'}
+        'crossorigin': 'crossOrigin', 'onpointermove': 'onPointerMove', 'onpointerdown': 'onPointerDown', 'onpointerup': 'onPointerUp', 'onpointerleave': 'onPointerLeave', 'onpointercancel': 'onPointerCancel', 'onpointerenter': 'onPointerEnter', 'onmouseenter': 'onMouseEnter', 'onmouseleave': 'onMouseLeave', 'onkeyup': 'onKeyUp', 'ontouchstart': 'onTouchStart', 'onscroll': 'onScroll', 'srcset': 'srcSet', 'datetime': 'dateTime', 'accesskey': 'accessKey', 'contenteditable': 'contentEditable'}
 BOOL = {'disabled', 'checked', 'open', 'hidden', 'required', 'readonly', 'selected', 'multiple', 'autofocus'}
 HOLE = re.compile(r'\{\{\s*([^}]*?)\s*\}\}')
 

@@ -19,6 +19,10 @@ button{font:inherit;color:inherit}
 @keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .pop{animation:pop .45s ease-out both}
 .rise{animation:rise .32s ease-out both}
+@keyframes inR0{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}@keyframes inR1{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}
+@keyframes inL0{from{transform:translateX(-28px);opacity:0}to{transform:none;opacity:1}}@keyframes inL1{from{transform:translateX(-28px);opacity:0}to{transform:none;opacity:1}}
+.next-0{animation:inR0 .26s ease-out both}.next-1{animation:inR1 .26s ease-out both}.prev-0{animation:inL0 .26s ease-out both}.prev-1{animation:inL1 .26s ease-out both}
+@media (prefers-reduced-motion: reduce){.next-0,.next-1,.prev-0,.prev-1{animation:none}}
 .sheet{animation:sheet .28s ease-out both}
 @media (prefers-reduced-motion: reduce){.pop,.rise,.sheet{animation:none}}
 .t-light{--bg:#F2F7F6;--band:#DDEEEA;--band2:#CBE5E0;--band3:#BFDFD9;--card:#FFFFFF;--ink:#10201E;--ink2:#34514D;--muted:#4E6863;--hair:#D6E6E2;--hair2:#C7DBD7;--tint:#E8F2F0;--tint2:#E1F0ED;--btn:#0F5E58;--on-btn:#FFFFFF;--link:#0F5E58;--warn:#9A5B00;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#FBF1DD;--mari-ink:#6E4600;--err-tint:#FCEBE8;--err-ink:#A3271C;--scrim:rgba(0,0,0,.45);--skel:#D3E3DF;--ai1:#8E7CF0;--ai2:#5B47D6;--ai3:#2E2A7A;--ai-ink:#4B3BC4;--ai-glow:rgba(91,71,214,.42);--orb1:#86E6D9;--orb2:#14897F;--orb3:#063D39;--orb-glow:rgba(15,94,88,.45);color-scheme:light}
@@ -119,7 +123,7 @@ button{font:inherit;color:inherit}
       </div>
 
       <sc-if value="{{showCard}}" hint-placeholder-val="{{ true }}">
-        <div class="rise" style="display: grid; gap: 8px; min-height: 172px; align-content: start">
+        <div class="{{slideClass}}" onPointerDown="{{swipeStart}}" onPointerUp="{{swipeEnd}}" onPointerCancel="{{swipeCancel}}" style="display: grid; gap: 8px; min-height: 172px; align-content: start; touch-action: pan-y">
           <span style="font-size: 13px; font-weight: 600; color: {{cur.kickerInk}}">{{cur.kicker}}</span>
           <b style="font-family: {{df}}; font-size: {{cur.titleSize}}; font-weight: 700; line-height: 1.15">{{cur.title}}</b>
           <span style="font-size: 14.5px; color: var(--ink2)">{{cur.sub}}</span>
@@ -676,8 +680,20 @@ class Component extends DCLogic {
       return { label: labels[k], done: isDone, active: active,
         w: active ? '20px' : '7px', bg: active ? 'var(--ink)' : (isDone ? 'var(--btn)' : 'var(--hair2)'),
         aria: 'Step ' + (order.indexOf(k) + 1) + ': ' + labels[k] + (isDone ? ', done' : ''),
-        go: function () { self.setState({ cur: k, editing: null }); } };
+        go: function () { self.setState({ cur: k, editing: null, slide: order.indexOf(k) > order.indexOf(curKey) ? 'next' : 'prev' }); } };
     });
+    // swipe between check-in cards (left = next, right = back), as well as tapping the dots; vertical scroll still works (touch-action: pan-y)
+    var swipeTo = function (dir) {
+      var i = order.indexOf(curKey), j = i + dir;
+      if (showSummary || i < 0 || j < 0 || j >= order.length) return;
+      self.setState({ cur: order[j], editing: null, slide: dir > 0 ? 'next' : 'prev' });
+    };
+    var swipeStart = function (e) { self._sw = { x: e.clientX, y: e.clientY }; };
+    var swipeEnd = function (e) {
+      var st = self._sw; self._sw = null; if (!st) return;
+      var dx = e.clientX - st.x, dy = e.clientY - st.y;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) swipeTo(dx < 0 ? 1 : -1);
+    };
     var on = 'var(--btn)', off = 'var(--hair)';
     var letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     var week = letters.map(function (l, i) {
@@ -816,7 +832,8 @@ class Component extends DCLogic {
       backToSummary: function () { self.setState({ cur: null, editing: null }); },
       reviewCards: function () { self.setState({ cur: order[0], editing: null }); },
       doDaily: function () { self.setState({ daily: true }); },
-      showCard: !showSummary, showSummary: showSummary, steps: steps, week: week, done: count,
+      showCard: !showSummary, showSummary: showSummary, steps: steps, swipeStart: swipeStart, swipeEnd: swipeEnd, swipeCancel: function () { self._sw = null; },
+      slideClass: s.slide ? s.slide + '-' + (order.indexOf(curKey) % 2) : 'rise', // two copies of each keyframe so every change replays the slide week: week, done: count,
       allDone: allDone, notAllDone: !allDone,
       seg1: count >= 1 ? on : off, seg2: count >= 2 ? on : off, seg3: count >= 3 ? on : off,
       streakBefore: String(base), streakAfter: String(base + 1), streakAfterText: (base + 1) + ((base + 1) === 1 ? ' day' : ' days'),

@@ -5,7 +5,7 @@
 import { Fragment } from 'react';
 import { DCLogic, useDC, route } from '@/ui/dc';
 
-const CSS = "a{color:inherit}\nbutton{font:inherit;color:inherit}\n@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}\n@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}\n@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}\n.pop{animation:pop .45s ease-out both}\n.rise{animation:rise .32s ease-out both}\n.sheet{animation:sheet .28s ease-out both}\n@media (prefers-reduced-motion: reduce){.pop,.rise,.sheet{animation:none}}";
+const CSS = "a{color:inherit}\nbutton{font:inherit;color:inherit}\n@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}\n@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}\n@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}\n.pop{animation:pop .45s ease-out both}\n.rise{animation:rise .32s ease-out both}\n@keyframes inR0{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}@keyframes inR1{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}\n@keyframes inL0{from{transform:translateX(-28px);opacity:0}to{transform:none;opacity:1}}@keyframes inL1{from{transform:translateX(-28px);opacity:0}to{transform:none;opacity:1}}\n.next-0{animation:inR0 .26s ease-out both}.next-1{animation:inR1 .26s ease-out both}.prev-0{animation:inL0 .26s ease-out both}.prev-1{animation:inL1 .26s ease-out both}\n@media (prefers-reduced-motion: reduce){.next-0,.next-1,.prev-0,.prev-1{animation:none}}\n.sheet{animation:sheet .28s ease-out both}\n@media (prefers-reduced-motion: reduce){.pop,.rise,.sheet{animation:none}}";
 const DEFAULTS = {"display": "serif", "scenario": "new", "bills": "pending", "theme": "light", "state": "ready", "moneyStep": "emergency", "variant": "standard", "offStep": "none"};
 
 class Component extends DCLogic {
@@ -130,8 +130,20 @@ class Component extends DCLogic {
       return { label: labels[k], done: isDone, active: active,
         w: active ? '20px' : '7px', bg: active ? 'var(--ink)' : (isDone ? 'var(--btn)' : 'var(--hair2)'),
         aria: 'Step ' + (order.indexOf(k) + 1) + ': ' + labels[k] + (isDone ? ', done' : ''),
-        go: function () { self.setState({ cur: k, editing: null }); } };
+        go: function () { self.setState({ cur: k, editing: null, slide: order.indexOf(k) > order.indexOf(curKey) ? 'next' : 'prev' }); } };
     });
+    // swipe between check-in cards (left = next, right = back), as well as tapping the dots; vertical scroll still works (touch-action: pan-y)
+    var swipeTo = function (dir) {
+      var i = order.indexOf(curKey), j = i + dir;
+      if (showSummary || i < 0 || j < 0 || j >= order.length) return;
+      self.setState({ cur: order[j], editing: null, slide: dir > 0 ? 'next' : 'prev' });
+    };
+    var swipeStart = function (e) { self._sw = { x: e.clientX, y: e.clientY }; };
+    var swipeEnd = function (e) {
+      var st = self._sw; self._sw = null; if (!st) return;
+      var dx = e.clientX - st.x, dy = e.clientY - st.y;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) swipeTo(dx < 0 ? 1 : -1);
+    };
     var on = 'var(--btn)', off = 'var(--hair)';
     var letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     var week = letters.map(function (l, i) {
@@ -270,7 +282,8 @@ class Component extends DCLogic {
       backToSummary: function () { self.setState({ cur: null, editing: null }); },
       reviewCards: function () { self.setState({ cur: order[0], editing: null }); },
       doDaily: function () { self.setState({ daily: true }); },
-      showCard: !showSummary, showSummary: showSummary, steps: steps, week: week, done: count,
+      showCard: !showSummary, showSummary: showSummary, steps: steps, swipeStart: swipeStart, swipeEnd: swipeEnd, swipeCancel: function () { self._sw = null; },
+      slideClass: s.slide ? s.slide + '-' + (order.indexOf(curKey) % 2) : 'rise', // two copies of each keyframe so every change replays the slide week: week, done: count,
       allDone: allDone, notAllDone: !allDone,
       seg1: count >= 1 ? on : off, seg2: count >= 2 ? on : off, seg3: count >= 3 ? on : off,
       streakBefore: String(base), streakAfter: String(base + 1), streakAfterText: (base + 1) + ((base + 1) === 1 ? ' day' : ' days'),
@@ -328,7 +341,7 @@ export default function Today(props) {
                 </>)}<div style={{"display": "flex", "alignItems": "center", "marginRight": "-8px"}}>{(V.steps || []).map((st, i1) => (<Fragment key={i1}>
                     <button type="button" aria-label={st?.aria} onClick={st?.go} style={{"width": "28px", "height": "32px", "padding": "0", "border": "0", "background": "transparent", "display": "grid", "placeItems": "center", "cursor": "pointer"}}><span style={{"width": st?.w, "height": "6px", "borderRadius": "3px", "background": st?.bg}}></span></button>
                   </Fragment>))}</div></div>{!!(V.showCard) && (<>
-                <div className="rise" style={{"display": "grid", "gap": "8px", "minHeight": "172px", "alignContent": "start"}}><span style={{"fontSize": "13px", "fontWeight": "600", "color": V.cur?.kickerInk}}>{V.cur?.kicker}</span><b style={{"fontFamily": V.df, "fontSize": V.cur?.titleSize, "fontWeight": "700", "lineHeight": "1.15"}}>{V.cur?.title}</b><span style={{"fontSize": "14.5px", "color": "var(--ink2)"}}>{V.cur?.sub}</span>{!!(V.cur?.hasWhy) && (<>
+                <div className={V.slideClass} onPointerDown={V.swipeStart} onPointerUp={V.swipeEnd} onPointerCancel={V.swipeCancel} style={{"display": "grid", "gap": "8px", "minHeight": "172px", "alignContent": "start", "touchAction": "pan-y"}}><span style={{"fontSize": "13px", "fontWeight": "600", "color": V.cur?.kickerInk}}>{V.cur?.kicker}</span><b style={{"fontFamily": V.df, "fontSize": V.cur?.titleSize, "fontWeight": "700", "lineHeight": "1.15"}}>{V.cur?.title}</b><span style={{"fontSize": "14.5px", "color": "var(--ink2)"}}>{V.cur?.sub}</span>{!!(V.cur?.hasWhy) && (<>
                     <button type="button" onClick={V.openWhy} style={{"justifySelf": "start", "minHeight": "36px", "marginTop": "-4px", "padding": "0", "border": "0", "background": "transparent", "display": "inline-flex", "alignItems": "center", "gap": "4px", "fontSize": "13.5px", "fontWeight": "600", "color": "var(--link)", "cursor": "pointer"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 2-2.3 3.5M12 17h.01" /></svg>Why this?</button>
                   </>)}{!!(V.cur?.hasTags) && (<>
                     <div style={{"display": "flex", "gap": "6px", "flexWrap": "wrap"}}><span style={{"fontSize": "13px", "background": "var(--tint)", "borderRadius": "8px", "padding": "3px 8px"}}>Zomato {V.m?.zomato}</span><span style={{"fontSize": "13px", "background": "var(--tint)", "borderRadius": "8px", "padding": "3px 8px"}}>YouTube Premium {V.m?.yt}</span></div>
