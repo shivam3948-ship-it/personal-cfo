@@ -8,6 +8,8 @@ export const EVENTS = {
   home_call_started: 'home_call_started',       // {}
   home_tile_tapped: 'home_tile_tapped',         // { tile }
   ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
+  voice_started: 'voice_started',               // { ctx, mode }
+  answer_listened: 'answer_listened',           // { ctx }
   ask_sent: 'ask_sent',                         // { ctx, turn } (never the question text)
 } as const;
 export type EventName = keyof typeof EVENTS;
