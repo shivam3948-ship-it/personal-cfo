@@ -98,3 +98,11 @@ Mock: the Munim v2 canvas, page **Invest** (Tweaks: `cas` added/none, theme, sta
 - **Engine:** `fundGrowth()` from the first and last CAS NAV per scheme, plus SIP-gap and sell detection from the CAS flows. Not in packages/core yet.
 
 **Not yet:** fund overlap (needs AMFI holdings, D-OPEN-3) and the benchmark comparison. Both are shown as "Soon".
+
+## v2.1 (22 Oct): design holes closed, ready to build
+- **Add CAS sheet:** 3 steps (ask CAMS/KFintech or MF Central for a detailed CAS → set a password → choose it here), "Choose the CAS PDF", "Try with the sample CAS"; on success a toast "5 funds added from your CAS". ⚠ Verify the request steps against each RTA's current flow before launch.
+- **Holdings look wrong?** under the investing card: "A fund is missing / A value looks off / A fund isn't mine", each with a one-line reason and "Add a newer CAS". ⚠ The demat line (demat-held units sit in the NSDL/CDSL statement) needs a check against a real CAS.
+- **Cover review actions:** term "To reach 10×: about ₹74,00,000 more cover (₹1,74,00,000 on ₹17,40,000 a year)", computed in the mock from income and sum assured; health "Before the co-pay starts: at renewal, compare a top-up or a plan without co-pay for parents"; "Review this on Sunday's money call" (✓ + Undo). Category level only.
+- **Saved with Munim ₹0** row restored in the spare-money card, linking to Today.
+- Tweak `open` (none/plan/path/cover/cas/holdings) opens any sheet directly for review. Snapshot of v2: InvestV2b (History page).
+- Hindi for Invest and the x-ray moves to after the v1 build.
