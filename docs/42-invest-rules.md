@@ -132,3 +132,14 @@ v1 described the portfolio; v2 leads with 4 insights, each with a rupee figure, 
   - "read on your phone" in the header.
 - **Data gap:** the overlap figures use **synthetic sample holdings**. The build needs AMFI monthly portfolio disclosures (D-OPEN-3).
 - Numbers come from `docs/research/xray_v3_numbers.py`. Snapshot: XrayV2 (History page).
+
+## Invest v2.2 (22 Oct)
+- **Investing card:**
+  - "14.2% a year · ₹2,39,089 more than an FD";
+  - one verdict line;
+  - one X-ray summary row ("5 things worth acting on · ₹15,625 less tax · ₹8,349 a year in fees ›");
+  - the CAS line.
+
+  Removed: the endowment row (it lives in the cover row) and the in-card Ask Munim (D-042).
+- **Spare money card:** the kicker and the "step 3 of 5" link are merged, and the pot row is one line.
+- **Ask Munim:** the floating button is now on every sub-screen (D-042).
