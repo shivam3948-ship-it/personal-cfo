@@ -77,6 +77,46 @@ Two research passes (traction signals; user and founder statements). Facts below
 
 **Extra sources (deeper scan):** [Entrackr: PowerUp Series A](https://entrackr.com/news/powerup-money-raises-12-mn-in-series-a-round-led-by-peak-xv-10930747) · [Inc42: PowerUp $12 Mn](https://inc42.com/buzz/powerup-money-bags-12-mn-to-expand-mutual-fund-advisory) · [Outlook Business: PowerUp seed](https://www.outlookbusiness.com/corporate/wealthtech-start-up-powerup-bags-71-mn-from-accel-blume-ventures-other-investors) · [The Week/PTI: PowerUp CEO interview](https://www.theweek.in/wire-updates/business/2025/07/24/dcm23-powerup-money-ceo-interview.html) · [Blume: why we invested](https://infullblume.substack.com/p/why-we-invested-in-powerup-money) · [PowerUp: in-form and out-of-form](https://www.powerup.money/blog/newsletter/in-form-and-out-of-form-what-does-this-mean) · [Random Dimes review](https://randomdimes.com/powerup-money-review/) · [DesiDime thread on PowerUp](https://www.desidime.com/discussions/anyone-using-powerup-money-app-for-rebalancing-mfs) · [Inc42: Stack Wealth](https://inc42.com/company/stack-wealth/) · [Stack pricing](https://stackwealth.in/pricing-plan) · [Corpus Labs site](https://corpuslabs.in/) · [Cruise Money site](https://www.cruise.money/) · [exchange4media: Cruise co-founder](https://www.exchange4media.com/people-movement-news/dream-sports-vikrant-mudaliar-joins-cruise-money-as-co-founder-157838.html) · [Inc42: Peak XV Surge 12](https://inc42.com/buzz/meet-the-startups-from-peak-xvs-surge-12/) · [Tribe Money site](https://www.tribemoney.ai/) · [Entrackr: Curie seed](https://entrackr.com/snippets/fintech-startup-curie-money-raises-12-mn-in-seed-round-8495734) · [Curie terms](https://www.curie.money/terms) · [Curie on Play](https://play.google.com/store/apps/details?id=com.yield.curie_money&hl=en_US)
 
+## App-review mining (22 Oct): Google Play, newest first
+Scripts: `docs/research/reviews/` (run on Shivam's Mac; reviewer names dropped; the raw file stays out of the repo). Counts come from keyword rules in `analyse.py`, so treat them as indicative, not exact.
+
+| App | Reviews pulled | Period | Avg ★ (pulled) | 1–2★ |
+|---|---|---|---|---|
+| PowerUp Money | 6,000 (cap) | Oct 2025 – Oct 2026 | 4.55 | 576 (9.6%) |
+| Curie Money | 1,591 | Nov 2024 – Oct 2026 | 3.67 | 471 (29.6%) |
+| Stack Wealth (new + old app) | 166 | Jun 2024 – Sep 2026 | 3.84 | 47 |
+| Tribe Money | 18 | Jul – Sep 2026 | 3.56 | 7 |
+
+**PowerUp:**
+- 84.2% of the pulled reviews are 5★ and 77.7% are under 40 characters. One widely upvoted 1★ review claims the ratings are inflated (unverified).
+- Among the 576 1–2★ reviews:
+  - worries about spam calls, data use or asking for PAN + phone: 91;
+  - upsell or price rise: 89;
+  - slowness or bugs: 81;
+  - stale prices or failed fetch: 67.
+- **Asks that matter for the x-ray:**
+  - many funds are unrated (thematic, sectoral, debt);
+  - "recommends a top fund from the same category; doesn't check whether I should be in that category at all";
+  - doesn't suggest merging similar funds;
+  - doesn't say whether I'm over- or under-diversified;
+  - can't save or print reports.
+- **Praise:** clean, uncluttered UI; learning about regular vs direct; capital-gains insight; "suggests what to fix".
+
+**Curie:**
+- Users love the concept (spend by UPI from a liquid fund).
+- 86 of the 471 1–2★ reviews are about money stuck on withdrawal or redemption. Support complaints follow.
+- A request from students: lower the minimum top-up.
+
+**Stack:** withdrawals not credited, no support, account deletion ignored (mostly 2024).
+
+**What changes for Munim:**
+1. **Trust is the top complaint, not insight quality.** Don't ask for PAN + phone before showing value. Say clearly that the CAS is read on the phone. No spam, no hard upsell.
+2. **Cover every fund.** A rating system leaves unrated dead ends. Munim's plan-type, tax and lock-in insights work for any fund, debt and thematic included.
+3. **Advice across categories is what users ask for.** The money path (safety net, then debt, cover and the equity/debt mix) already works across categories. Lean on it in the x-ray.
+4. **Merging similar funds** needs fund overlap (D-OPEN-3).
+5. **Add "Save or share this report" (PDF)**: it's cheap, and users ask for it.
+6. **Show data freshness** ("CAS of 15 Oct"). We already do; keep it.
+
 ## Sources
 - [PowerUp Money website](https://powerup.money/) · [PowerUp App Store listing](https://apps.apple.com/in/app/powerup-money-mutual-funds/id6470202376)
 - [Stack Wealth website](https://stackwealth.in/) · [Stack Wealth llms.txt](https://stackwealth.in/llms.txt)
