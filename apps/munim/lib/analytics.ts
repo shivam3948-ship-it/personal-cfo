@@ -7,6 +7,7 @@ export const EVENTS = {
   home_top_item_tapped: 'home_top_item_tapped', // { reason, position }
   home_call_started: 'home_call_started',       // {}
   home_tile_tapped: 'home_tile_tapped',         // { tile }
+  credit_notify_tapped: 'credit_notify_tapped', // {} fake door: interest in the Credit tab
   ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
   voice_started: 'voice_started',               // { ctx, mode }
   answer_listened: 'answer_listened',           // { ctx }

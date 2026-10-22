@@ -30,6 +30,9 @@ export interface Session {
 const envMode = process.env.MUNIM_ADVICE_MODE === 'guided' ? 'guided' : 'demo';
 const sample: Session = { id: 'sample', kind: 'sample', memberLabel: 'Me', displayName: 'Rohan', adviceMode: envMode, dataset: loadDemo };
 
-export async function getSession(_req: Request): Promise<Session> {
-  return sample;
+export async function getSession(req: Request): Promise<Session> {
+  // Testing switch on the live link: ?mode=guided sets this cookie (ui/TestSwitches). It can only make advice STRICTER
+  // (demo → guided), never looser, so a forged cookie gains nothing.
+  const preview = /(?:^|;\s*)munim_mode=guided(?:;|$)/.test(req.headers.get('cookie') ?? '');
+  return preview ? { ...sample, adviceMode: 'guided' } : sample;
 }

@@ -10,7 +10,9 @@ export function useTheme(): 'light' | 'dark' {
   const [t, setT] = useState<'light' | 'dark'>('light');
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const set = () => { const v = mq.matches ? 'dark' : 'light'; setT(v); document.body.className = 't-' + v; };
+    // ?theme=dark|light pins the theme for this browser tab (testing); ?theme=auto goes back to the phone's setting
+    const pinned = () => { try { return sessionStorage.getItem('munim_theme'); } catch { return null; } };
+    const set = () => { const p = pinned(); const v = p === 'dark' || p === 'light' ? p : mq.matches ? 'dark' : 'light'; setT(v); document.body.className = 't-' + v; };
     set(); mq.addEventListener('change', set); return () => mq.removeEventListener('change', set);
   }, []);
   return t;

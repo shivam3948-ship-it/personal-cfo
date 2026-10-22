@@ -7,12 +7,13 @@ import { track } from '@/lib/analytics';
 import { record, browserListen, browserSttAvailable, browserSpeak, playBase64, stopSpeaking, type RecorderHandle } from '@/ui/voice';
 
 type Msg = { role: 'user' | 'assistant'; content: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string } };
-type Ctx = 'xray' | 'invest' | 'spends' | 'today';
+type Ctx = 'xray' | 'invest' | 'spends' | 'credit' | 'today';
 
 const CHIPS: Record<Ctx, { label: string; q: string[] }> = {
   xray: { label: 'your funds', q: ['Should I switch to direct plans?', 'How much can I book tax-free this year?', 'Are my funds beating an FD?'] },
   invest: { label: 'your savings', q: ['How big is my safety net?', 'How are my funds doing?', 'Is my term cover enough?'] },
   spends: { label: 'your spending', q: ['Where is my money going?', 'Which subscriptions should I cut?', 'Anything unusual this month?'] },
+  credit: { label: 'your credit', q: ['What changed in my credit score?', 'Can I get a better rate on my loan?', 'Should I prepay my car loan?'] },
   today: { label: 'your money', q: ['What should I fix first?', 'मेरा पैसा कहाँ जा रहा है?', 'What bills are due before salary?'] },
 };
 const TOOL_LABEL: Record<string, string> = {
@@ -27,7 +28,7 @@ function ctxOf(): { ctx: Ctx; back: string } {
   const from = new URLSearchParams(location.search).get('from');
   let path = from ?? '';
   if (!path && document.referrer) { try { const u = new URL(document.referrer); if (u.origin === location.origin) path = u.pathname; } catch { /* ignore */ } }
-  const ctx: Ctx = path.startsWith('/invest/xray') ? 'xray' : path.startsWith('/invest') ? 'invest' : path.startsWith('/spends') ? 'spends' : 'today';
+  const ctx: Ctx = path.startsWith('/invest/xray') ? 'xray' : path.startsWith('/invest') ? 'invest' : path.startsWith('/spends') ? 'spends' : path.startsWith('/credit') ? 'credit' : 'today';
   return { ctx, back: path.startsWith('/') && !path.startsWith('//') ? path : '/' };
 }
 

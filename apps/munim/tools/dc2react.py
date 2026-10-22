@@ -29,6 +29,7 @@ SCREENS = {
     'Recaps': ('Recaps', []),
     'MonthClose': ('MonthClose', []),
     'Rules': ('Rules', []),
+    'Credit': ('Credit', []),
 }
 
 VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'}
