@@ -26,7 +26,7 @@ export function useDC(C, props) {
 
 // Board file names in the designs -> app routes.
 export const CATEGORY = { Food: 'Food delivery', Dining: 'Dining', Quick: 'Quick commerce', Shopping: 'Shopping', Cabs: 'Cabs', Fuel: 'Fuel', Utilities: 'Utilities', Mobile: 'Mobile & internet', Cash: 'Cash withdrawal', Fitness: 'Fitness' };
-const ROUTES = { Main: '/', Invest: '/invest', Xray: '/invest/xray', Spends: '/spends', Transactions: '/spends/transactions', Rules: '/spends/rules', Credit: '/credit', Upload: '/invest/add', Voice: '/ask', SundayCall: '/today/sunday', Recaps: '/today/recaps', MonthClose: '/today/month' };
+const ROUTES = { Main: '/', Welcome: '/welcome', Invest: '/invest', Xray: '/invest/xray', Spends: '/spends', Transactions: '/spends/transactions', Rules: '/spends/rules', Credit: '/credit', Upload: '/invest/add', Voice: '/ask', SundayCall: '/today/sunday', Recaps: '/today/recaps', MonthClose: '/today/month' };
 
 export function route(href) {
   if (typeof href !== 'string') return '#';

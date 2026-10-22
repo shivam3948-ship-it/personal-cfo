@@ -56,7 +56,7 @@ button{font:inherit;color:inherit}
           <sc-if value="{{allDone}}" hint-placeholder-val="{{ false }}"><span class="pop">{{streakAfter}}</span></sc-if>
           <sc-if value="{{notAllDone}}" hint-placeholder-val="{{ true }}"><span>{{streakBefore}}</span></sc-if>
         </button>
-        <a href="#" aria-label="You: family, files and privacy" style="width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--on-btn); display: grid; place-items: center; text-decoration: none; font-weight: 600">R</a>
+        <a href="Welcome.dc.html" aria-label="You: language, name and your data" style="width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--on-btn); display: grid; place-items: center; text-decoration: none; font-weight: 600">{{avatar}}</a>
       </div>
     </header>
 
@@ -91,7 +91,7 @@ button{font:inherit;color:inherit}
 
     <sc-if value="{{showMain}}" hint-placeholder-val="{{ true }}">
     <section aria-label="Today's verdict" style="flex: none; display: grid; gap: 2px; padding: 4px 2px 6px">
-      <h1 style="margin: 0; font-family: {{df}}; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em; color: var(--ink)">Rohan, your money's okay today</h1>
+      <h1 style="margin: 0; font-family: {{df}}; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em; color: var(--ink)">{{verdictTitle}}</h1>
       <span style="font-size: 14.5px; color: var(--muted)">{{verdictSub}}</span>
     </section>
 
@@ -218,25 +218,26 @@ button{font:inherit;color:inherit}
         <span style="font-family: {{df}}; font-size: 30px; font-weight: 700; line-height: 1.05">{{m.total}}</span>
         <button type="button" onClick="{{toggleMath}}" aria-expanded="{{mathOpen}}" style="min-height: 40px; border: 0; background: transparent; padding: 0; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{mathLabel}}</button>
       </div>
-      <span style="font-size: 13.5px; color: var(--link); padding-right: 8px">Investments {{m.gain}} above what you put in · 14.2% a year</span>
+      <span style="font-size: 13.5px; color: var(--link); padding-right: 8px">{{bp.gainLine}}</span>
       <sc-if value="{{mathOpen}}" hint-placeholder-val="{{ false }}">
         <div style="margin: 6px 8px 0 0; background: var(--tint); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; font-size: 14px; color: var(--ink2)">
           <span>Investments + Bank − Loans outstanding</span>
-          <div style="display: flex; justify-content: space-between"><span>Investments (CAS, 15 Oct)</span><span>{{m.inv}}</span></div>
-          <div style="display: flex; justify-content: space-between"><span>Bank (SMS alerts)</span><span>{{m.bank}}</span></div>
-          <div style="display: flex; justify-content: space-between"><span>Loans outstanding (2)</span><span>{{m.loans}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span>{{bp.invLbl}}</span><span>{{m.inv}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span>{{bp.bankLbl}}</span><span>{{m.bank}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span>{{bp.loanLbl}}</span><span>{{m.loans}}</span></div>
         </div>
       </sc-if>
     </section>
 
-    <sc-if value="{{billsPending}}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{billRow}}" hint-placeholder-val="{{ true }}">
       <a href="#" style="flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 48px; box-sizing: border-box; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); text-decoration: none; color: var(--ink)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
-        <span style="font-size: 15px; flex: 1"><b>Card bill {{m.card}}</b> · due 24 Oct</span>
-        <span style="font-size: 14px; font-weight: 600; color: var(--link)">Covered ✓</span>
+        <span style="font-size: 15px; flex: 1"><b>Card bill {{bp.card}}</b> · {{bp.due}}</span>
+        <span style="font-size: 14px; font-weight: 600; color: {{bp.okInk}}">{{bp.ok}}</span>
       </a>
     </sc-if>
 
+    <sc-if value="{{showRecaps}}" hint-placeholder-val="{{ true }}">
     <a href="Recaps.dc.html" style="flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 48px; box-sizing: border-box; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); text-decoration: none; color: var(--ink)">
       <span style="flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--btn); display: grid; place-items: center">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--on-btn)" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>
@@ -244,6 +245,7 @@ button{font:inherit;color:inherit}
       <span style="font-size: 15px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><b>Recaps</b> · Last Sunday's call · September ✓</span>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
     </a>
+    </sc-if>
 
     <sc-if value="{{billsPaid}}" hint-placeholder-val="{{ false }}">
       <div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 44px; box-sizing: border-box; border-radius: 16px; color: var(--muted)">
@@ -256,7 +258,7 @@ button{font:inherit;color:inherit}
 
     <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
       <section aria-label="Get started" style="flex: none; display: grid; gap: 2px; padding: 4px 2px 6px">
-        <h1 style="margin: 0; font-family: {{df}}; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em">Welcome, Rohan</h1>
+        <h1 style="margin: 0; font-family: {{df}}; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em">{{welcomeTitle}}</h1>
         <span style="font-size: 14.5px; color: var(--muted)">Add one statement and Munim does the rest.</span>
       </section>
       <section aria-labelledby="gs" style="flex: none; background: var(--card); border-radius: 24px; padding: 16px; display: grid; gap: 12px; box-shadow: 0 0 0 1px var(--hair)">
@@ -269,8 +271,8 @@ button{font:inherit;color:inherit}
           <li style="display: flex; gap: 10px; align-items: center; font-size: 14.5px; color: var(--muted)"><span style="flex: none; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--hair2); display: grid; place-items: center; font-size: 12.5px; font-weight: 700">3</span>Auto-sync with your bank · coming soon</li>
         </ol>
         <div style="display: grid; margin-top: 4px">
-          <button type="button" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Add bank statement</button>
-          <button type="button" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Try with sample data</button>
+          <a href="Upload.dc.html" style="display: grid; place-items: center; text-decoration: none; min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Add bank statement</a>
+          <button type="button" onClick="{{trySample}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Try with sample data</button>
         </div>
       </section>
       <div style="flex: none; border-radius: 20px; padding: 14px 16px; display: grid; gap: 2px; box-shadow: inset 0 0 0 1.5px var(--hair2)">
@@ -588,6 +590,9 @@ class Component extends DCLogic {
     var s = this.state, self = this;
     var h = s.hidden, mask = '₹ • • • •';
     var v = function (x) { return h ? mask : x; };
+    var NAME = 'Rohan';   // first name on this phone (onboarding); empty for "no name"
+    var TD = null;        // Today on your own statements (lib/views/todayMine.ts); null = the sample family's day
+    var go = function (href) { if (typeof window !== 'undefined') window.location.assign(href); };
     var M0 = { card: '₹36,343', total: '₹8,58,754', inv: '₹12,78,285', bank: '₹1,41,764', loans: '−₹5,61,294', gain: '₹4,31,285' };   // money figures (the app fills these from the engine)
     var m = { zomato: v('₹626'), yt: v('₹149'), card: v(M0.card), total: v(M0.total), inv: v(M0.inv), bank: v(M0.bank), loans: v(M0.loans), gain: v(M0.gain), under: v('₹422'), topup: '₹420' };
     var AM = [{ label: '₹20', year: '₹7,300' }, { label: '₹50', year: '₹18,250' }, { label: '₹100', year: '₹36,500' }];
@@ -630,12 +635,31 @@ class Component extends DCLogic {
         primaryLabel: 'Pay now', secondaryLabel: 'Remind me tomorrow', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
         primary: function () { self.setState({ sheet: 'pay', notified: false }); }, secondary: function () { self.complete('fix', 'Remind me tomorrow'); } };
     }
+    if (TD && TD.day.none) {
+      items.yday = { kicker: pos('yday') + 'Your days', kickerInk: plain, title: 'Add a bank statement', titleSize: '24px', sub: 'Munim shows each day’s spending once it has one. It’s read on this phone.',
+        hasTags: false, hasButtons: true, primaryLabel: 'Add statement', secondaryLabel: 'Not now', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { go('/invest/add'); }, secondary: function () { self.complete('yday', 'Not now'); } };
+    }
+    if (TD) {
+      var dd = TD.day, top = dd.top.map(function (x) { return x[0] + ' ' + v(fmtR(x[1])); }).join(', ');
+      if (!dd.none) items.yday = { kicker: pos('yday') + dd.label, kickerInk: plain, title: v(fmtR(dd.spent)) + ' spent', titleSize: '30px',
+        sub: (dd.usual !== null ? (dd.spent <= dd.usual ? 'Below' : 'Above') + ' your average day of ' + v(fmtR(dd.usual)) + '. ' : '') + (top ? top + '.' : 'Nothing everyday that day.') + (dd.unsorted ? ' ' + v(fmtR(dd.unsorted)) + ' more not sorted yet.' : ''),
+        hasTags: false, hasButtons: true, primaryLabel: 'Looks right', secondaryLabel: "Something's off?", primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: function () { self.complete('yday', 'Looks right'); }, secondary: function () { go('/spends/transactions'); } };
+      items.fix = TD.fix ? { kicker: pos('fix') + 'One fix', kickerInk: plain, title: TD.fix.title, titleSize: '24px', sub: TD.fix.sub, hasButtons: true,
+          primaryLabel: 'Show me', secondaryLabel: 'Not now', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+          primary: function () { self.complete('fix', 'Opened it'); go(TD.fix.href); }, secondary: function () { self.complete('fix', 'Not now'); } }
+        : { kicker: pos('fix') + 'One fix', kickerInk: plain, title: 'Nothing to fix today', titleSize: '24px', sub: 'Munim checks every statement you add for leaks, duplicates and spikes.', hasButtons: true,
+          primaryLabel: 'Okay', secondaryLabel: 'See my spends', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+          primary: function () { self.complete('fix', 'Okay'); }, secondary: function () { go('/spends'); } };
+    }
     var openAuto = function () { self.setState({ sheet: 'autopay', notified: false }); };
     // ---- money path (D-036, D-037): the step decides the Save card; never shown on Today itself ----
     var STEPS = ['buffer', 'debt', 'emergency', 'insurance', 'invest'];
     var mstep = this.props.moneyStep ?? 'emergency';
     var ESS = 83414;                       // essentials per month (D-040): Jul–Sep average of fixed costs + family + groceries, utilities, fuel, mobile (packages/core monthPictures)
     var BUF = { saved: 12400, target: ESS }, EMG = { saved: 141764 + 128962, target: 6 * ESS };   // emergency fund = bank balance + debt fund (counted, shown separately in Invest)
+    if (TD) mstep = EMG.saved >= EMG.target ? 'insurance' : 'emergency'; // your data: emergency fund full → the insurance check (debt/buffer steps need loan and card data)
     var DEBT = { bal: 48200, rate: 0.035 }; DEBT.interest = Math.round(DEBT.bal * DEBT.rate);
     var openWhy = function () { self.setState({ why: true }); };
     if ((sc === 'new' || sc === 'day4') && mstep === 'debt') {
@@ -674,7 +698,7 @@ class Component extends DCLogic {
     if (done[ck] && s.choice[ck]) { curView.kicker = '✓ Done · ' + curView.kicker; curView.kickerInk = 'var(--link)'; }
     var choice = s.choice[ck] || { label: '', lock: '' };
     curKey = ck;
-    var labels = { save: ({ debt: 'Card', insurance: 'Insurance', invest: 'Invest' })[mstep] && (sc === 'new' || sc === 'day4') ? ({ debt: 'Card', insurance: 'Insurance', invest: 'Invest' })[mstep] : 'Save', yday: 'Yesterday', fix: billsMode === 'dueSoon' ? 'Bill' : 'One fix' };
+    var labels = { save: ({ debt: 'Card', insurance: 'Insurance', invest: 'Invest' })[mstep] && (sc === 'new' || sc === 'day4') ? ({ debt: 'Card', insurance: 'Insurance', invest: 'Invest' })[mstep] : 'Save', yday: TD ? 'Last day' : 'Yesterday', fix: billsMode === 'dueSoon' ? 'Bill' : 'One fix' };
     var steps = order.map(function (k) {
       var active = !showSummary && curKey === k, isDone = done[k];
       return { label: labels[k], done: isDone, active: active,
@@ -823,8 +847,19 @@ class Component extends DCLogic {
       df: (this.props.display ?? 'serif') === 'sans' ? "'IBM Plex Sans', 'IBM Plex Sans Devanagari', sans-serif" : "'Noto Serif', 'Noto Serif Devanagari', serif",
       isRecapDay: recapDay, notRecapDay: !recapDay, rd: RD[sc0] || RD.sunday,
       billsPending: billsMode === 'pending' && !(mstep === 'debt' && (sc === 'new' || sc === 'day4')), billsPaid: billsMode === 'paid',
-      verdictSub: mstep === 'debt' && (sc === 'new' || sc === 'day4') ? 'Card balance carried over · plan to clear it' : billsMode === 'paid' ? 'All bills paid · spent below a usual day' : (billsMode === 'dueSoon' ? 'Card bill due in 2 days, and you can cover it' : 'Bills covered · spent below a usual day'),
-      dateLabel: sc0 === 'sunday' ? 'Sunday, 18 Oct' : (sc0 === 'salaryDay' ? 'Salary day' : (billsMode === 'dueSoon' ? 'Tuesday, 22 Oct' : 'Thursday, 15 Oct')),
+      verdictTitle: TD ? (NAME ? NAME + ', here’s your money today' : 'Here’s your money today') : (NAME ? NAME + ', your money’s okay today' : 'Your money’s okay today'),
+      welcomeTitle: NAME ? 'Welcome, ' + NAME : 'Welcome',
+      trySample: function () { if (self.props.onTrySample) self.props.onTrySample(); },
+      verdictSub: TD ? TD.verdictSub : mstep === 'debt' && (sc === 'new' || sc === 'day4') ? 'Card balance carried over · plan to clear it' : billsMode === 'paid' ? 'All bills paid · spent below a usual day' : (billsMode === 'dueSoon' ? 'Card bill due in 2 days, and you can cover it' : 'Bills covered · spent below a usual day'),
+      avatar: (NAME || '·').charAt(0).toUpperCase(),
+      bp: TD ? { gainLine: TD.inv ? 'Investments ' + m.gain + ' above what you put in' : 'Add your CAS to include your mutual funds',
+          invLbl: TD.inv ? 'Investments (your CAS)' : 'Investments (none added)', bankLbl: 'Bank (latest statement balance)', loanLbl: 'Loans (none added)',
+          card: TD.bill ? v(fmtR(TD.bill.amount)) : '', due: TD.bill ? 'due ' + TD.bill.due : '', ok: TD.bill ? (TD.bill.covered === null ? 'Add a bank statement to check' : TD.bill.covered ? 'Covered ✓' : 'Bank falls short') : '',
+          okInk: TD.bill && TD.bill.covered === false ? 'var(--warn)' : 'var(--link)' }
+        : { card: m.card, gainLine: 'Investments ' + m.gain + ' above what you put in · 14.2% a year', invLbl: 'Investments (CAS, 15 Oct)', bankLbl: 'Bank (SMS alerts)', loanLbl: 'Loans outstanding (2)', due: 'due 24 Oct', ok: 'Covered ✓', okInk: 'var(--link)' },
+      billRow: TD ? !!TD.bill : billsMode === 'pending' && !(mstep === 'debt' && (sc === 'new' || sc === 'day4')),
+      showRecaps: !TD,
+      dateLabel: TD ? TD.dateLine : st === 'empty' ? (function () { var d = new Date(); return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()] + ', ' + d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; })() : sc0 === 'sunday' ? 'Sunday, 18 Oct' : (sc0 === 'salaryDay' ? 'Salary day' : (billsMode === 'dueSoon' ? 'Tuesday, 22 Oct' : 'Thursday, 15 Oct')),
       m: m, amt: amt, amounts: amounts, cur: curView,
       reviewing: reviewing, notReviewing: !reviewing, showButtons: !!curView.hasButtons && !reviewing, canChange: reviewing && !choice.lock, locked: reviewing && !!choice.lock, choice: choice,
       showBackToSummary: allDone && !!s.cur, notBackToSummary: !(allDone && !!s.cur),

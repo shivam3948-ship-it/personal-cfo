@@ -223,7 +223,7 @@ const CSS = `.serif{font-family:'Noto Serif','Noto Serif Devanagari',serif;font-
 @media (prefers-reduced-motion: reduce){.dot{animation:none}}`;
 
 const S: Record<string, React.CSSProperties> = {
-  page: { width: '100%', maxWidth: 480, height: '100dvh', margin: '0 auto', position: 'relative', background: 'var(--scrim)', color: 'var(--ink)', fontSize: 15, lineHeight: 1.45, fontVariantNumeric: 'tabular-nums' },
+  page: { width: '100%', maxWidth: 480, height: 'var(--screen-h, 100dvh)', margin: '0 auto', position: 'relative', background: 'var(--scrim)', color: 'var(--ink)', fontSize: 15, lineHeight: 1.45, fontVariantNumeric: 'tabular-nums' },
   sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, top: 48, background: 'var(--card)', borderRadius: '26px 26px 0 0', padding: '10px 20px 14px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 },
   grab: { width: 40, height: 4, borderRadius: 2, background: 'var(--hair2)', alignSelf: 'center' },
   head: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 },

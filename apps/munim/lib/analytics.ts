@@ -16,6 +16,14 @@ export const EVENTS = {
   ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
   voice_started: 'voice_started',               // { ctx, mode }
   answer_listened: 'answer_listened',           // { ctx, how: tap | auto }
+  onboarding_opened: 'onboarding_opened',       // { again } (D-049)
+  onboarding_lang: 'onboarding_lang',           // { lang }
+  onboarding_start: 'onboarding_start',         // { start: mine | sample }
+  onboarding_name: 'onboarding_name',           // { given } (never the name)
+  onboarding_add: 'onboarding_add',             // { kind: statement | cas }
+  onboarding_later: 'onboarding_later',         // {}
+  switched_to_sample: 'switched_to_sample',     // {}
+  sample_bar_add_tapped: 'sample_bar_add_tapped', // {}
   ask_sent: 'ask_sent',                         // { ctx, turn } (never the question text)
 } as const;
 export type EventName = keyof typeof EVENTS;

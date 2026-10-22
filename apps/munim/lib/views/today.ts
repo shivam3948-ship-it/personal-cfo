@@ -6,10 +6,11 @@ import { inr } from '@core/money';
 import { safetyNet } from '@core/finance/essentials';
 import { portfolioView } from '@core/portfolio/engine';
 import { buildHome } from './home';
+import type { TodayMine } from './todayMine';
 
 const rupees = (p: number) => Math.round(p / 100);
 
-export function buildToday(ds: Dataset, s: Session) {
+export function buildToday(ds: Dataset, s: Pick<Session, 'kind' | 'memberLabel' | 'displayName'>) {
   const home = buildHome(ds, s);
   const nw = home.netWorth;
   const pv = ds.portfolio?.holdings.length ? portfolioView(ds.portfolio.holdings, ds.portfolio.asOf) : null;
@@ -22,5 +23,7 @@ export function buildToday(ds: Dataset, s: Session) {
     },
     ESS: rupees(sn.essentialsPerMonth),                       // the design works in whole rupees
     EMG: { saved: rupees(sn.have), target: rupees(sn.target) },
+    NAME: s.displayName ?? '',
+    TD: null as TodayMine | null,                             // the sample family's day; your own comes from lib/local/patch.ts
   };
 }

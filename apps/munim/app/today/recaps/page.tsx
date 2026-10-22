@@ -2,4 +2,4 @@
 import Recaps from '@/screens/Recaps';
 import { Screen } from '@/ui/Screen';
 
-export default function Page() { return <Screen C={Recaps} />; }
+export default function Page() { return <Screen C={Recaps} sample />; }

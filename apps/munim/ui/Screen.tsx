@@ -3,6 +3,7 @@
 // and maps fetch status to the design's own loading / error states.
 import { useEffect, useState, type ComponentType } from 'react';
 import { track } from '@/lib/analytics';
+import { getProfile, variantOf, type Profile } from '@/lib/local/profile';
 
 type Props = Record<string, unknown>;
 
@@ -20,8 +21,12 @@ export function useTheme(): 'light' | 'dark' {
 
 /** `check` lets a page reject data it can't show (e.g. an unknown category in the URL) with a message instead of a crash. */
 /** `patch` lets a page fold in data that lives only on this phone (your CAS) before the screen renders; it never goes to the server. */
-export function Screen({ C, view, props = {}, check, patch }: { C: ComponentType<Props>; view?: string; props?: Props; check?: (data: unknown) => string | null; patch?: (data: Record<string, unknown>) => Promise<Record<string, unknown>> }) {
+/** A patched view marks `_mine: true` when it now shows your data, and may set `_state` (e.g. 'empty'). Anything else is the
+ *  sample family, so a "Sample data" bar sits above it (D-049); `sample` marks static screens that are sample-only. */
+export function Screen({ C, view, props = {}, check, patch, sample = false }: { C: ComponentType<Props>; view?: string; props?: Props; check?: (data: unknown) => string | null; patch?: (data: Record<string, unknown>) => Promise<Record<string, unknown>>; sample?: boolean }) {
   const theme = useTheme();
+  const [prof, setProf] = useState<Profile | null | undefined>(undefined);
+  useEffect(() => { setProf(getProfile()); }, []);
   const [data, setData] = useState<unknown>(view ? undefined : {});
   const [err, setErr] = useState<string | null>(null);
   const [n, setN] = useState(0);
@@ -35,10 +40,26 @@ export function Screen({ C, view, props = {}, check, patch }: { C: ComponentType
     }).catch((e) => { if (live) { setErr((e as Error).message); track('view_load_failed', { screen: view }); } });
     return () => { live = false; };
   }, [view, n]);
-  if (data === undefined) return err ? <Failed message={err} onRetry={() => setN(n + 1)} /> : <Loading />;
+  if (data === undefined || prof === undefined) return err ? <Failed message={err} onRetry={() => setN(n + 1)} /> : <Loading />;
   const bad = check?.(data);
   if (bad) return <Failed message={bad} onRetry={() => { location.href = '/spends'; }} retryLabel="Back" />;
-  return <C {...props} theme={theme} state="ready" data={data} />;
+  const d = data as Record<string, unknown>;
+  const showsSample = sample || (!!view && !d._mine);
+  const screen = <C {...props} variant={props.variant ?? variantOf(prof)} theme={theme} state={(d._state as string) ?? 'ready'} data={data} />;
+  if (!showsSample) return screen;
+  return <div style={{ ['--screen-h' as string]: `calc(100dvh - ${BAR}px)` }}><SampleBar hi={prof?.lang === 'hi'} />{screen}</div>;
+}
+
+export const BAR = 44;
+/** One line, on every screen that shows the sample family, so it never passes for your money. */
+export function SampleBar({ hi }: { hi: boolean }) {
+  return (
+    <div role="note" style={{ height: BAR, boxSizing: 'border-box', maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', background: 'var(--mari-tint)', color: 'var(--mari-ink)', fontSize: 13.5 }}>
+      <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mari)', flex: 'none' }} />
+      <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><b style={{ fontWeight: 600 }}>{hi ? 'नमूना डेटा' : 'Sample data'}</b>{hi ? ' · रोहन, एक काल्पनिक परिवार' : ' · Rohan, a made-up family'}</span>
+      <a href="/invest/add" onClick={() => track('sample_bar_add_tapped')} style={{ flex: 'none', fontWeight: 600, color: 'var(--link)', textDecoration: 'none', minHeight: 40, display: 'inline-flex', alignItems: 'center' }}>{hi ? 'अपना जोड़ें ›' : 'Add yours ›'}</a>
+    </div>
+  );
 }
 
 function Loading() {
