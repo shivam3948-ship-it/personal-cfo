@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Invest v2.1</title>
+<title>Invest v2.2</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -87,11 +87,11 @@ button{font:inherit;color:inherit}
 
       <sc-if value="{{x.isNext}}" hint-placeholder-val="{{ true }}">
         <section aria-labelledby="next" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 16px; display: grid; gap: 8px; box-shadow: 0 0 0 1px var(--hair)">
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 13px; font-weight: 600; color: var(--link)">{{d.nextKicker}}</span><button type="button" onClick="{{openPath}}" aria-haspopup="dialog" style="flex: none; min-height: 32px; padding: 0; border: 0; background: transparent; font-size: 13px; font-weight: 600; color: var(--link); cursor: pointer">Step 3 of 5 ›</button></div>
+          <button type="button" onClick="{{openPath}}" aria-haspopup="dialog" style="justify-self: start; min-height: 28px; padding: 0; border: 0; background: transparent; font-size: 13px; font-weight: 600; color: var(--link); cursor: pointer; text-align: left">{{d.nextKicker}} · step 3 of 5 ›</button>
           <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
             <sc-for list="{{d.steps}}" as="s" hint-placeholder-count="5"><span style="height: 4px; border-radius: 2px; background: {{s.seg}}; box-shadow: {{s.segRing}}"></span></sc-for>
           </div>
-          <h2 id="next" class="serif" style="margin: 0; font-size: 23px; line-height: 1.15">Grow your safety net to 6 months</h2>
+          <h2 id="next" class="serif" style="margin: 0; font-size: 21px; line-height: 1.15">Grow your safety net to 6 months</h2>
           <div role="img" aria-label="{{d.efLabel}}" style="display: flex; gap: 2px; height: 10px; border-radius: 5px; overflow: hidden; background: var(--tint); margin-top: 2px">
             <span style="width: {{d.bankW}}; background: var(--btn)"></span>
             <span style="width: {{d.fundW}}; background: var(--link); opacity: .45"></span>
@@ -106,32 +106,20 @@ button{font:inherit;color:inherit}
               <button type="button" onClick="{{openPlan}}" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">Change</button>
             </div>
           </sc-if>
-          <a href="Main.dc.html" style="display: flex; align-items: center; gap: 8px; min-height: 44px; border-top: 1px solid var(--hair); margin-top: 2px; font-size: 13.5px; text-decoration: none; color: var(--ink)">
-            <span style="flex: 1"><span style="color: var(--muted)">Saved with Munim</span> <b style="font-weight: 600">{{d.pot}}</b> <span style="color: var(--muted)">· your daily saves from Today land here</span></span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
-          </a>
+          <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; border-top: 1px solid var(--hair); font-size: 13px; text-decoration: none; color: var(--ink)"><span><span style="color: var(--muted)">Saved with Munim</span> <b style="font-weight: 600">{{d.pot}}</b></span><span style="color: var(--link); font-weight: 600">Today ›</span></a>
         </section>
       </sc-if>
 
       <sc-if value="{{x.isInvest}}" hint-placeholder-val="{{ true }}">
-        <section aria-labelledby="work" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 16px 16px 8px; display: grid; gap: 6px; box-shadow: 0 0 0 1px var(--hair)">
+        <section aria-labelledby="work" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 14px 16px 6px; display: grid; gap: 4px; box-shadow: 0 0 0 1px var(--hair)">
           <span id="work" style="font-size: 13px; font-weight: 600; color: var(--link)">Is your investing working?</span>
-          <div style="display: flex; align-items: baseline; gap: 8px"><b class="serif" style="font-size: 32px; line-height: 1.05">{{d.xirr}}</b><span style="font-size: 14px; color: var(--ink2)">a year</span></div>
-          <span style="font-size: 13.5px; color: var(--ink2); margin-top: -2px">{{d.earnedLine}}</span>
-          <div style="display: grid; gap: 4px; margin-top: 4px">
-            <sc-for list="{{d.verdicts}}" as="v" hint-placeholder-count="2">
-              <span style="display: flex; gap: 8px; align-items: flex-start; font-size: 14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>{{v}}</span>
-            </sc-for>
-          </div>
-          <span style="font-size: 12.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-top: 8px">Worth a look</span>
-          <div>
-            <a href="Xray.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 48px; border-bottom: 1px solid var(--hair); text-decoration: none; color: var(--ink)"><span style="flex: 1; font-size: 14.5px">Regular-plan fees on 3 funds</span><b style="font-size: 14.5px; font-weight: 600; color: var(--warn)">{{d.regExtra}}/yr</b></a>
-            <button type="button" onClick="{{openCover}}" style="width: 100%; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; border: 0; background: transparent; text-align: left; cursor: pointer; color: var(--ink)"><span style="flex: 1; font-size: 14.5px">Endowment policy's projected return</span><b style="font-size: 14.5px; font-weight: 600; color: var(--warn)">{{d.endowRange}}</b></button>
-          </div>
-          <div style="display: flex; gap: 8px; padding: 6px 0 4px; border-top: 1px solid var(--hair)">
-            <a href="Xray.dc.html" style="flex: 1; min-height: 44px; display: grid; place-items: center; border-radius: 999px; background: var(--tint); color: var(--link); font-size: 14.5px; font-weight: 600; text-decoration: none">Portfolio x-ray ›</a>
-            <a href="Voice.dc.html" style="flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--hair2); color: var(--ink); font-size: 14.5px; font-weight: 600; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Ask Munim</a>
-          </div>
+          <div style="display: flex; align-items: baseline; gap: 8px"><b class="serif" style="font-size: 30px; line-height: 1.05">{{d.xirr}}</b><span style="font-size: 14px; color: var(--ink2)">a year · {{d.fdLine}}</span></div>
+          <span style="font-size: 13px; color: var(--ink2)">{{d.earnedLine}}</span>
+          <span style="display: flex; gap: 6px; align-items: flex-start; font-size: 13.5px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>{{d.verdict}}</span>
+          <a href="Xray.dc.html" style="margin-top: 6px; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 14px; background: var(--tint); text-decoration: none; color: var(--ink)">
+            <span style="flex: 1; display: grid"><b style="font-size: 14.5px; font-weight: 600">{{d.xrayCount}} things worth acting on</b><span style="font-size: 12.5px; color: var(--ink2)">{{d.xrayLine}}</span></span>
+            <span style="font-size: 13.5px; font-weight: 600; color: var(--link)">X-ray ›</span>
+          </a>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted)">
             <span>{{d.casLine}}</span>
             <button type="button" onClick="{{openHold}}" aria-haspopup="dialog" style="min-height: 40px; padding: 0; border: 0; background: transparent; font-size: 12.5px; font-weight: 600; color: var(--link); cursor: pointer">Holdings look wrong?</button>
@@ -326,7 +314,8 @@ class Component extends DCLogic {
     var INCOME_M = 14500000, TERM_COVER = 1000000000;   // monthly income and term sum assured (paise), as before
     var ENDOW = { irrLo: 0.48, irrHi: 4.6 }, TERM_X = Math.round(TERM_COVER / (INCOME_M * 12) * 10) / 10;
     var termNeed = 10 * INCOME_M * 12, termGap = Math.max(0, termNeed - TERM_COVER);
-    var SAVED_WITH_MUNIM = 0;   // the savings pot: nothing saved through Munim yet in this scenario
+    var SAVED_WITH_MUNIM = 0;
+    var XRS = { count: 5, taxSave: 1562500, feeYr: 834902, fdExtra: 23908946 };   // from the x-ray (xray_v2/v3_numbers.py): things to act on, tax saved later, regular-plan fees/yr, extra vs a 7% FD   // the savings pot: nothing saved through Munim yet in this scenario
     // ---- safety net (D-040) ----
     var months = Object.keys(ESSM), cats = Object.keys(ESSM[months[0]]);
     var essAvg = Math.round(sum(months.map(function (m) { return sum(cats.map(function (k) { return ESSM[m][k]; })); })) / months.length), target = 6 * essAvg;
@@ -365,14 +354,15 @@ class Component extends DCLogic {
       notmine: 'Funds held jointly appear in every holder’s statement. Add a newer CAS, or ask Munim to leave a fund out of your totals.' };
     var wrongOpts = [['missing', 'A fund is missing'], ['value', 'A value looks off'], ['notmine', 'A fund isn’t mine']].map(function (o) { var on = s.wrong === o[0], cs = chip(on); return { t: o[1], on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ wrong: o[0] }); } }; });
     var d = {
-      nextKicker: casOn ? 'Spare money · your money path' : 'Your next move · your money path',
+      nextKicker: casOn ? 'Spare money' : 'Your next move',
       bankW: pct(BANK), fundW: pct(debtFund), efLabel: 'Safety net ' + R(have) + ' of ' + R(target), efHave: R(have) + ' of ' + R(target), efMonths: mCov + ' of 6 months',
       gapLine: R(gap) + ' to go (' + R(BANK) + ' in the bank' + (debtFund ? ' + ' + R(debtFund) + ' debt fund' : '') + ').',
       pills: pills, cta: s.pick ? 'Plan ' + R(s.pick) + ' a month' : 'Pick an amount', ctaBg: s.pick ? 'var(--btn)' : 'var(--hair2)', ctaInk: s.pick ? 'var(--on-btn)' : 'var(--muted)',
       plannedLine: s.pick ? '✓ ' + R(s.pick) + ' every 1st · ready by ' + landing(Math.ceil(gap / s.pick)) : '',
       essLink: 'Essentials ' + R(essAvg) + ' a month · what counts',
       essRows: cats.map(function (k) { return { l: k === 'Fixed costs' ? 'Fixed costs (rent, EMIs, insurance)' : k, v: R(Math.round(sum(months.map(function (m) { return ESSM[m][k]; })) / months.length)) }; }),
-      xirr: PF.xirr + '%', earnedLine: 'What your money earned · ' + R(PF.cost) + ' put in → ' + R(PF.value),
+      xirr: PF.xirr + '%', earnedLine: R(PF.cost) + ' put in → ' + R(PF.value) + ' today', fdLine: R(XRS.fdExtra) + ' more than an FD',
+      verdict: 'Ahead of your funds on ' + ahead + ' of ' + cmp.length + ' · no SIP paused since ' + PF.since, xrayCount: XRS.count, xrayLine: R(XRS.taxSave) + ' less tax · ' + R(XRS.feeYr) + ' a year in fees',
       verdicts: ['Ahead of your funds\u2019 own growth on ' + ahead + ' of ' + cmp.length + (behind ? '; ' + behind + ' behind' : '') + '.', 'No SIP pauses or sells since ' + PF.since + '.'],
       regExtra: R(regExtra), pot: R(SAVED_WITH_MUNIM), casLine: 'CAS of 15 Oct · ' + PF.funds.length + ' funds',
       casSteps: [{ n: '1', t: 'Ask for it', d: 'On the CAMS or KFintech website, or MF Central, request a detailed statement (CAS) for all fund houses, using the email linked to your funds.' },

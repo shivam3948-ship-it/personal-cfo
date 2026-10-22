@@ -97,6 +97,6 @@ export default function MonthClose(props) {
             </>)}{!!(V.isDone) && (<>
               <a href={route("Main.dc.html")} style={{"minHeight": "52px", "display": "inline-flex", "alignItems": "center", "padding": "0 26px", "borderRadius": "999px", "background": "var(--tint)", "color": "var(--ink)", "fontSize": "16px", "fontWeight": "600", "textDecoration": "none"}}>Back to Today</a>
             </>)}</div>
-        </>)}</div></div>
+        </>)}</div><a href={route("Voice.dc.html")} aria-label="Ask Munim" className="orb-teal" style={{"position": "absolute", "right": "16px", "bottom": "96px", "zIndex": "5", "width": "58px", "height": "58px", "borderRadius": "50%", "border": "3px solid var(--card)", "boxSizing": "border-box", "display": "grid", "placeItems": "center", "textDecoration": "none"}}><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg></a></div>
   </>);
 }

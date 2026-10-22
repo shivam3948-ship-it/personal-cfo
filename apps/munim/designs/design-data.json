@@ -635,7 +635,13 @@
    "irrLo": 0.48,
    "irrHi": 4.6
   },
-  "SAVED_WITH_MUNIM": 0
+  "SAVED_WITH_MUNIM": 0,
+  "XRS": {
+   "count": 5,
+   "taxSave": 1562500,
+   "feeYr": 834902,
+   "fdExtra": 23908946
+  }
  },
  "Xray": {
   "PF": {
@@ -644,6 +650,7 @@
    "xirr": 14.2,
    "sipGaps": 0,
    "sells": 0,
+   "since": "Jan 2021",
    "funds": [
     [
      "Kestrel Flexi Cap",
@@ -706,6 +713,162 @@
      83196
     ]
    ]
+  },
+  "XR": {
+   "regular": {
+    "rows": [
+     {
+      "fund": "Kestrel Flexi Cap",
+      "stValue": 6105438
+     },
+     {
+      "fund": "Monsoon Small Cap",
+      "stValue": 2509421
+     },
+     {
+      "fund": "Teak ELSS Tax Saver",
+      "stValue": 0
+     }
+    ],
+    "feeTotal": 834902,
+    "ltGainReg": 34351980,
+    "taxIfSwitchAllLT": 2731498,
+    "ltValueReg": 84151980,
+    "feeOnLT": 757368,
+    "paybackMonths": 43.3,
+    "sipReg": 700000,
+    "sipFeeFirstYr": 37800,
+    "paybackYears": 3.6
+   },
+   "harvest": {
+    "exempt": 12500000,
+    "used": 0,
+    "left": 12500000,
+    "ltGainAll": 39230207,
+    "harvest": 12500000,
+    "taxSavedLater": 1562500,
+    "deadline": "2027-03-31",
+    "daysLeft": 167,
+    "combo": {
+     "gain": 12481723,
+     "value": 24281723,
+     "lots": 26,
+     "feeSavedYr": 218536,
+     "funds": [
+      "Kestrel Flexi Cap",
+      "Monsoon Small Cap"
+     ],
+     "futureTax": 1560215
+    }
+   },
+   "elss": {
+    "fund": "Teak ELSS Tax Saver",
+    "plan": "Regular",
+    "freeValue": 27897843,
+    "freeGain": 12897843,
+    "lockedValue": 0
+   },
+   "vsIndex": {
+    "Monsoon Small Cap": {
+     "covered": 41,
+     "of": 41,
+     "invested": 8200000,
+     "fundValue": 9244020,
+     "indexValue": 11037278,
+     "diff": -1793258
+    }
+   }
+  },
+  "X3": {
+   "overlap": {
+    "pairs": [
+     [
+      "Banyan",
+      "Teak",
+      45
+     ],
+     [
+      "Banyan",
+      "Kestrel",
+      40
+     ],
+     [
+      "Kestrel",
+      "Teak",
+      33
+     ],
+     [
+      "Banyan",
+      "Monsoon",
+      0
+     ],
+     [
+      "Kestrel",
+      "Monsoon",
+      0
+     ],
+     [
+      "Teak",
+      "Monsoon",
+      0
+     ]
+    ],
+    "top5": [
+     [
+      "HDFC Bank",
+      10119578,
+      3
+     ],
+     [
+      "ICICI Bank",
+      8397733,
+      3
+     ],
+     [
+      "Reliance Industries",
+      6339179,
+      3
+     ],
+     [
+      "Infosys",
+      4728161,
+      3
+     ],
+     [
+      "Bharti Airtel",
+      4059377,
+      3
+     ]
+    ],
+    "top5Paise": 33644028,
+    "top5PctOfEquity": 29.3,
+    "in3plus": [
+     "Axis Bank",
+     "Bharti Airtel",
+     "HDFC Bank",
+     "ICICI Bank",
+     "Infosys",
+     "Larsen & Toubro",
+     "Reliance Industries"
+    ],
+    "dupPaise": 9974432,
+    "equityPaise": 114932250,
+    "asOf": "Sep 2026 factsheets (synthetic sample)"
+   },
+   "fd": {
+    "rate": 7,
+    "invested": 84700000,
+    "fdValue": 103919504,
+    "actual": 127828450,
+    "extra": 23908946
+   },
+   "did": {
+    "months": 3,
+    "movedPaise": 24281723,
+    "feeSavedSoFar": 54634,
+    "futureTax": 1560215,
+    "sipDirect": 2100000
+   }
   }
  }
 }
