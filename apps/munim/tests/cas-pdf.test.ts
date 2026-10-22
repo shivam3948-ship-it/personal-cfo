@@ -67,3 +67,21 @@ describe('readCas on the device (privacy and checks)', () => {
     expect(d).toMatch(/failed/);
   });
 });
+
+describe('MF Central detailed report layout', () => {
+  const head = ['Consolidated Account Statement', 'Example Mutual Fund', 'Folio No: 999 PAN: OK KYC: OK'];
+  const scheme = (open: string) => `X01-Example Flexi Cap Fund - Direct Plan - Growth (Advisor: DIRECT) ISIN: INF000X01AB1 Opening Unit Balance: ${open}`;
+  const close = 'Closing Unit Balance: 100.000 Nav as on 15-Oct-2026: INR 30.0000 Valuation on 15-Oct-2026 : INR 3,000.00';
+  it('a statement that starts mid-way is "partial", not guessed', () => {
+    const r = parseCas([...head, scheme('100.000'), close].join('\n'));
+    expect(r.kind).toBe('partial'); expect(r.holdings).toHaveLength(0);
+    expect(r.checks[0]).toMatchObject({ ok: false, id: 'start:INF000X01AB1' });
+  });
+  it('from the first investment it reads, with cost from the transactions', () => {
+    const rows = ['05-Jan-2025 Purchase 2,000.00 100.000 20.0000 100.000'];
+    const r = parseCas([...head, scheme('0.000'), ...rows, close].join('\n'));
+    expect(r.kind).toBe('detailed');
+    expect(r.holdings[0]).toMatchObject({ units: 100, nav: 30, value: 300000, cost: 200000, plan: 'Direct' });
+    expect(r.checks.every((c) => c.ok)).toBe(true);
+  });
+});

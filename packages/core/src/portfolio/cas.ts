@@ -12,7 +12,7 @@ export interface Holding {
   cost: Paise; value: Paise; flows: Flow[];
 }
 export interface CasCheck { id: string; label: string; ok: boolean; detail: string }
-export interface CasResult { asOf: string; holdings: Holding[]; checks: CasCheck[]; printedTotal: Paise | null; kind: 'detailed' | 'summary' | 'unknown' }
+export interface CasResult { asOf: string; holdings: Holding[]; checks: CasCheck[]; printedTotal: Paise | null; kind: 'detailed' | 'summary' | 'partial' | 'unknown' }
 
 const MON: Record<string, string> = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
 export const casDate = (s: string): string => { const m = /^(\d{2})-([A-Za-z]{3})-(\d{4})$/.exec(s.trim()); return m ? `${m[3]}-${MON[m[2].toLowerCase()]}-${m[1]}` : ''; };
@@ -42,12 +42,15 @@ export function classify(scheme: string): { category: string; asset: AssetClass 
 }
 
 const TXN = /^(\d{2}-[A-Za-z]{3}-\d{4})\s+(.+?)\s+(\(?-?[\d,]+\.\d{2}\)?)\s+(\(?-?[\d,]+\.\d{3,4}\)?)\s+([\d,]+\.\d{2,4})\s+(\(?-?[\d,]+\.\d{3,4}\)?)\s*$/;
+// MF Central's detailed report prints "Nav as on <date>: INR x Valuation on <date> : INR y" and no cost value.
+const CLOSE2 = /Closing Unit Balance:\s*([\d,]+\.\d+).*?Nav as on (\d{2}-[A-Za-z]{3}-\d{4}):\s*INR\s*([\d,]+\.\d+).*?\w+ on (\d{2}-[A-Za-z]{3}-\d{4})\s*:\s*INR\s*([\d,]+\.\d{2})/i;
 const CLOSE = /Closing Unit Balance:\s*([\d,]+\.\d+).*?NAV on (\d{2}-[A-Za-z]{3}-\d{4}):\s*INR\s*([\d,]+\.\d+).*?(?:Total )?Cost Value:\s*([\d,]+\.\d{2}).*?Market Value on (\d{2}-[A-Za-z]{3}-\d{4}):\s*INR\s*([\d,]+\.\d{2})/i;
 
 export function parseCas(text: string): CasResult {
   const lines = text.split(/\r?\n/).map((l) => l.replace(/\s+/g, ' ').trim());
   const holdings: Holding[] = []; const checks: CasCheck[] = [];
   let printedTotal: Paise | null = null; let asOf = '';
+  let partial = 0;
   let amc = ''; let cur: (Omit<Holding, 'units' | 'nav' | 'navDate' | 'cost' | 'value'> & { walk: number; opening: number }) | null = null;
   const isSummary = /summary/i.test(lines.slice(0, 12).join(' ')) && !lines.some((l) => /Closing Unit Balance/i.test(l));
 
@@ -63,10 +66,12 @@ export function parseCas(text: string): CasResult {
       const scheme = raw.replace(/^[A-Z0-9]{2,12}-(?=\S)/, '').trim(); // drop the RTA scheme code prefix
       const plan: Holding['plan'] = /\bdirect\b/i.test(scheme) || /\(Advisor:\s*DIRECT/i.test(l) ? 'Direct' : 'Regular';
       cur = { isin: isinM[1], scheme, amc, plan, ...classify(scheme), flows: [], walk: 0, opening: 0 };
+      const ob0 = /Opening Unit Balance:\s*([\d,]+\.\d+)/i.exec(l); // MF Central puts it on the scheme line
+      if (ob0) { cur.opening = num(ob0[1]); cur.walk = cur.opening; }
       continue;
     }
     if (!cur) continue;
-    const ob = /^Opening Unit Balance:\s*([\d,]+\.\d+)/i.exec(l);
+    const ob = /Opening Unit Balance:\s*([\d,]+\.\d+)/i.exec(l);
     if (ob) { cur.opening = num(ob[1]); cur.walk = cur.opening; continue; }
     const t = TXN.exec(l);
     if (t) {
@@ -77,7 +82,18 @@ export function parseCas(text: string): CasResult {
       continue;
     }
     if (/^\d{2}-[A-Za-z]{3}-\d{4}\s+\*+\s*(stamp duty|stt)/i.test(l)) continue; // statutory charges: no units
-    const c = CLOSE.exec(l);
+    let c = CLOSE.exec(l);
+    const c2 = c ? null : CLOSE2.exec(l);
+    if (c2) {
+      // no cost on this layout: only usable when the statement starts from the first investment (opening 0)
+      if (cur.opening > 0.0005) {
+        partial++;
+        checks.push({ id: `start:${cur.isin}`, label: `${cur.scheme}: statement starts mid-way`, ok: false, detail: 'opening balance is not zero, so returns and tax can’t be worked out; needs a CAS from the first investment' });
+        cur = null; continue;
+      }
+      const cost = -cur.flows.reduce((a, f) => a + f.amount, 0);
+      c = [c2[0], c2[1], c2[2], c2[3], (cost / 100).toFixed(2), c2[4], c2[5]] as unknown as RegExpExecArray;
+    }
     if (c) {
       const units = num(c[1]); const nav = num(c[3]); const value = paise(num(c[6]));
       asOf = casDate(c[5]) > asOf ? casDate(c[5]) : asOf;
@@ -95,5 +111,5 @@ export function parseCas(text: string): CasResult {
     const ok = Math.abs(sumV - printedTotal) <= 100 * Math.max(1, holdings.length);
     checks.push({ id: 'total', label: 'Fund values add up to the statement total', ok, detail: `₹${(sumV / 100).toFixed(2)} vs printed ₹${(printedTotal / 100).toFixed(2)}` });
   }
-  return { asOf, holdings, checks, printedTotal, kind: holdings.length ? 'detailed' : isSummary ? 'summary' : 'unknown' };
+  return { asOf, holdings, checks, printedTotal, kind: holdings.length ? 'detailed' : partial ? 'partial' : isSummary ? 'summary' : 'unknown' };
 }

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
 import { readCas, saveCas, loadCas, deleteCas, PdfPasswordError, type LocalCas, type ReadResult } from '@/lib/local/cas';
 
-type Step = 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'mismatch' | 'unknown';
+type Step = 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'partial' | 'mismatch' | 'unknown';
 const R = (p: number) => '₹' + Math.round(p / 100).toLocaleString('en-IN');
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = (iso: string) => (iso ? `${+iso.slice(8, 10)} ${MON[+iso.slice(5, 7) - 1]} ${iso.slice(0, 4)}` : '');
@@ -37,7 +37,7 @@ export default function AddCas() {
       setRes(r);
       if (r.cas) { await saveCas(r.cas); setSaved(r.cas); }
       setPw(''); // used once, never kept
-      const next: Step = r.kind === 'summary' ? 'summary' : !r.cas ? 'unknown' : r.cas.skipped.length ? 'mismatch' : 'done';
+      const next: Step = r.kind === 'summary' ? 'summary' : r.kind === 'partial' ? 'partial' : !r.cas ? 'unknown' : r.cas.skipped.length ? 'mismatch' : 'done';
       track('cas_read', { result: next, funds: r.cas?.holdings.length ?? 0 });
       setStep(next);
     } catch (e) {
@@ -133,18 +133,20 @@ export default function AddCas() {
           </section>
         </>}
 
-        {(step === 'summary' || step === 'mismatch' || step === 'unknown') && <section role="alert" style={S.card}>
-          <span style={S.warnTag}>{step === 'summary' ? 'Summary statement' : step === 'mismatch' ? `${res?.cas?.skipped.length ?? 0} fund${(res?.cas?.skipped.length ?? 0) === 1 ? '' : 's'} didn’t add up` : 'Couldn’t find funds'}</span>
-          <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{step === 'summary' ? 'This CAS has no transactions' : step === 'mismatch' ? `${fund(res?.cas?.skipped[0] ?? '')} needs a look` : 'This doesn’t look like a detailed CAS'}</b>
+        {(step === 'summary' || step === 'partial' || step === 'mismatch' || step === 'unknown') && <section role="alert" style={S.card}>
+          <span style={S.warnTag}>{step === 'summary' ? 'Summary statement' : step === 'partial' ? 'Starts mid-way' : step === 'mismatch' ? `${res?.cas?.skipped.length ?? 0} fund${(res?.cas?.skipped.length ?? 0) === 1 ? '' : 's'} didn’t add up` : 'Couldn’t find funds'}</span>
+          <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{step === 'summary' ? 'This CAS has no transactions' : step === 'partial' ? 'This CAS starts after your first investment' : step === 'mismatch' ? `${fund(res?.cas?.skipped[0] ?? '')} needs a look` : 'This doesn’t look like a detailed CAS'}</b>
           <span style={S.sub}>{step === 'summary'
             ? 'It’s the summary version, so Munim can’t work out your returns, tax or fees. Ask CAMS for the Detailed one; it’s free and takes a few minutes.'
+            : step === 'partial'
+              ? 'It covers only part of your history (for example this financial year), so Munim can’t work out what you paid, your returns or your tax. Ask for a Detailed CAS from your first investment to today.'
             : step === 'mismatch'
               ? `Its transactions don’t add up to the units the statement shows. Munim shows your other ${funds} fund${funds === 1 ? '' : 's'} and leaves ${(res?.cas?.skipped.length ?? 0) === 1 ? 'this one' : 'these'} out until it’s fixed, rather than guessing.`
               : 'Munim couldn’t find any funds in it. If it is a CAMS or KFintech detailed CAS, copy the diagnostics below and send them to us: they have no amounts, names or account numbers.'}</span>
           {step === 'mismatch' ? <button type="button" onClick={() => setStep('done')} style={S.primary}>Continue with {funds} fund{funds === 1 ? '' : 's'}</button>
-            : <button type="button" onClick={() => { setStep('intro'); setHow(true); }} style={S.primary}>{step === 'summary' ? 'How to get the detailed CAS' : 'Try another file'}</button>}
-          {step !== 'summary' && res && <button type="button" onClick={copyDiag} style={S.link}>{copied ? '✓ Copied (no amounts or names)' : 'Copy diagnostics'}</button>}
-          {step === 'summary' && <button type="button" onClick={choose} style={S.link}>Choose another file</button>}
+            : <button type="button" onClick={() => { setStep('intro'); setHow(true); }} style={S.primary}>{step === 'summary' || step === 'partial' ? 'How to get the right CAS' : 'Try another file'}</button>}
+          {(step === 'mismatch' || step === 'unknown') && res && <button type="button" onClick={copyDiag} style={S.link}>{copied ? '✓ Copied (no amounts or names)' : 'Copy diagnostics'}</button>}
+          {(step === 'summary' || step === 'partial') && <button type="button" onClick={choose} style={S.link}>Choose another file</button>}
         </section>}
       </div>
     </div>
