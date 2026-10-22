@@ -106,3 +106,12 @@ Mock: the Munim v2 canvas, page **Invest** (Tweaks: `cas` added/none, theme, sta
 - **Saved with Munim ₹0** row restored in the spare-money card, linking to Today.
 - Tweak `open` (none/plan/path/cover/cas/holdings) opens any sheet directly for review. Snapshot of v2: InvestV2b (History page).
 - Hindi for Invest and the x-ray moves to after the v1 build.
+
+## X-ray v2 (22 Oct, mocked, awaiting review)
+v1 described the portfolio; v2 leads with 4 insights, each with a rupee figure, a next step and, where one exists, a deadline:
+1. Tax-free gains before 31 Mar;
+2. Regular → direct, net of the cost of switching (new SIPs first, at ₹0);
+3. ELSS out of lock-in;
+4. Fund vs a plain index fund on your SIP dates.
+
+"Your money vs your funds" and "What you own" are now collapsible below the insights. Competitor scan and numbers: docs/research/portfolio-insights-competitors.md, docs/research/xray_v2_numbers.py. Snapshot: XrayV1 (History page).
