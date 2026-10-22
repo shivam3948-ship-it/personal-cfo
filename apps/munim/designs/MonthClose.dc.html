@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Close your month</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;700&amp;family=Noto+Serif+Devanagari:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+@keyframes rise{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.rise{animation:rise .3s ease-out both}
+@media (prefers-reduced-motion: reduce){.rise{animation:none}}
+.serif{font-family:'Noto Serif','Noto Serif Devanagari',serif;font-weight:700;letter-spacing:-0.01em}
+.t-light{--bg:#F2F7F6;--band:#DDEEEA;--band2:#CBE5E0;--band3:#BFDFD9;--card:#FFFFFF;--ink:#10201E;--ink2:#34514D;--muted:#4E6863;--hair:#D6E6E2;--hair2:#C7DBD7;--tint:#E8F2F0;--tint2:#E1F0ED;--btn:#0F5E58;--on-btn:#FFFFFF;--link:#0F5E58;--warn:#9A5B00;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#FBF1DD;--mari-ink:#6E4600;--err-tint:#FCEBE8;--err-ink:#A3271C;--scrim:rgba(0,0,0,.45);--skel:#D3E3DF;--ai1:#8E7CF0;--ai2:#5B47D6;--ai3:#2E2A7A;--ai-ink:#4B3BC4;--ai-glow:rgba(91,71,214,.42);--orb1:#86E6D9;--orb2:#14897F;--orb3:#063D39;--orb-glow:rgba(15,94,88,.45);color-scheme:light}
+.t-dark{--bg:#0B1413;--band:#10211E;--band2:#163029;--band3:#1B3A34;--card:#14201E;--ink:#E6F0EE;--ink2:#C2D4D0;--muted:#93ABA6;--hair:#263835;--hair2:#334844;--tint:#1C2D2A;--tint2:#1E3330;--btn:#5CC2B4;--on-btn:#06201C;--link:#7ED3C7;--warn:#F2B860;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#33270F;--mari-ink:#F6C978;--err-tint:#3A1A17;--err-ink:#FF9E92;--scrim:rgba(0,0,0,.62);--skel:#1D2E2B;--ai1:#9C8CFF;--ai2:#6A55E6;--ai3:#352F8C;--ai-ink:#B9AEFF;--ai-glow:rgba(142,124,240,.38);--orb1:#A6F2E7;--orb2:#2BA295;--orb3:#0A4C46;--orb-glow:rgba(92,194,180,.40);color-scheme:dark}
+@keyframes shimmer{0%{opacity:.55}50%{opacity:1}100%{opacity:.55}}
+.skel{background:var(--skel);border-radius:8px;animation:shimmer 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+@keyframes breathe{0%,100%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 0 var(--ai-glow)}50%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 7px rgba(0,0,0,0)}}
+.ai-orb{background:radial-gradient(circle at 30% 25%,var(--ai1) 0%,var(--ai2) 52%,var(--ai3) 100%);animation:breathe 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.ai-orb{animation:none;box-shadow:0 8px 22px var(--ai-glow)}}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+.orb-teal{background:radial-gradient(circle at 30% 25%,var(--orb1) 0%,var(--orb2) 48%,var(--orb3) 100%);box-shadow:0 10px 24px var(--orb-glow)}
+.orb-teal::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,0,0,0) 0deg,var(--orb1) 80deg,var(--orb2) 120deg,rgba(0,0,0,0) 170deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:orbspin 3.6s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
+</style>
+</helmet>
+<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 190px; background: var(--band); overflow: hidden">
+    <span style="position: absolute; right: -70px; top: -100px; width: 240px; height: 240px; border-radius: 50%; background: var(--band2)"></span>
+  </div>
+
+  <div style="position: absolute; inset: 0; padding: 12px 16px 20px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+    <header style="flex: none; display: flex; justify-content: space-between; align-items: flex-start; position: relative">
+      <div style="display: grid; gap: 2px">
+        <span style="font-size: 14px; color: var(--muted)">Close your month · 1–30 Sep</span>
+        <h1 class="serif" style="margin: 0; font-size: 28px; line-height: 1.12">{{st.heading}}</h1>
+      </div>
+      <a href="Main.dc.html" aria-label="Close" style="width: 44px; height: 44px; margin-right: -8px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; color: var(--ink)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </a>
+    </header>
+
+    <div role="progressbar" aria-label="{{progressLabel}}" aria-valuemin="1" aria-valuemax="6" aria-valuenow="{{stepNo}}" style="flex: none; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; position: relative">
+      <sc-for list="{{segs}}" as="g" hint-placeholder-count="6">
+        <span style="height: 4px; border-radius: 2px; background: {{g.bg}}"></span>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <section aria-busy="true" aria-label="Preparing your month" style="flex: 1; min-height: 0; position: relative; background: var(--card); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 0 0 1px var(--hair)">
+        <span class="skel" style="height: 14px; width: 42%"></span>
+        <span class="skel" style="height: 34px; width: 70%"></span>
+        <span class="skel" style="height: 14px; width: 88%"></span>
+        <span class="skel" style="height: 44px; margin-top: 8px"></span>
+        <span class="skel" style="height: 44px"></span>
+        <span class="skel" style="height: 44px"></span>
+        <span style="margin-top: 8px; font-size: 14px; color: var(--muted)">Adding up September · about 5 seconds</span>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <section role="alert" style="flex: 1; min-height: 0; position: relative; background: var(--card); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+        <span style="align-self: flex-start; font-size: 13px; font-weight: 600; background: var(--err-tint); color: var(--err-ink); border-radius: 999px; padding: 4px 10px">Couldn't connect</span>
+        <b class="serif" style="font-size: 26px; line-height: 1.15">Your month didn't load</b>
+        <span style="font-size: 15px; color: var(--ink2)">Nothing is lost. Steps you finished are saved, and you can pick up where you left off.</span>
+        <div style="display: grid; margin-top: auto">
+          <button type="button" onClick="{{retry}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Try again</button>
+          <a href="Main.dc.html" style="min-height: 44px; display: grid; place-items: center; font-size: 14.5px; color: var(--muted); text-decoration: none">Later today</a>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <section style="flex: 1; min-height: 0; position: relative; background: var(--card); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+        <span style="font-size: 13px; font-weight: 600; color: var(--muted)">Not enough data yet</span>
+        <b class="serif" style="font-size: 26px; line-height: 1.15">Your first month close needs a full month</b>
+        <span style="font-size: 15px; color: var(--ink2)">Munim has 18 days of September. Add your bank statement for 1–12 Sep to close this month, or wait for October.</span>
+        <div style="display: grid; margin-top: auto">
+          <button type="button" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Add September statement</button>
+          <a href="Main.dc.html" style="min-height: 44px; display: grid; place-items: center; font-size: 14.5px; color: var(--muted); text-decoration: none">Wait for October</a>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{isReady}}" hint-placeholder-val="{{ true }}">
+    <section class="rise" style="flex: 1; min-height: 0; overflow-y: auto; position: relative; background: var(--card); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+      <span style="flex: none; font-size: 13px; font-weight: 600; color: var(--muted)">{{st.kicker}}</span>
+
+      <sc-if value="{{is.report}}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; gap: 10px">
+          <b class="serif" style="font-size: 34px; line-height: 1.05">₹4,708 left over</b>
+          <span style="font-size: 15px; color: var(--ink2)">3.2% of what came in. Plus ₹10,000 you invested through your SIP.</span>
+          <div style="display: grid; margin-top: 2px">
+            <div style="display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--hair)"><span>Money in</span><b style="font-weight: 600">₹1,45,000</b></div>
+            <div style="display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--hair)"><span>Everyday spending</span><b style="font-weight: 600">₹92,510</b></div>
+            <div style="display: flex; justify-content: space-between; padding: 11px 0"><span>Fixed costs (rent, EMIs, SIP…)</span><b style="font-weight: 600">₹47,782</b></div>
+          </div>
+          <span style="font-size: 14px; color: var(--ink2)">Biggest: rent ₹26,000 · loan EMIs ₹22,782 · travel ₹21,000.</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{is.worth}}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; gap: 10px">
+          <b class="serif" style="font-size: 34px; line-height: 1.05">₹8,58,754</b>
+          <span style="font-size: 15px; color: var(--ink2)">Your net worth on your latest documents (15 Oct).</span>
+          <div style="background: var(--tint); border-radius: 14px; padding: 12px; font-size: 14.5px; color: var(--ink2)">The month-on-month change appears once we have two months of statements. Add next month's CAS to unlock it.</div>
+          <span style="font-size: 14px; font-weight: 600; color: var(--link)">Show the math</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{is.subs}}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; gap: 4px">
+          <b class="serif" style="font-size: 26px; line-height: 1.12">7 subscriptions · ₹45,078 a year</b>
+          <span style="font-size: 14.5px; color: var(--ink2); margin-bottom: 4px">Keep or cancel each one. {{savedLine}}</span>
+          <sc-for list="{{subs}}" as="sub" hint-placeholder-count="7">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--hair)">
+              <span style="display: grid; flex: 1; min-width: 0"><b style="font-size: 15px; font-weight: 600; text-decoration: {{sub.strike}}; color: {{sub.ink}}">{{sub.name}}</b><span style="font-size: 12.5px; color: var(--muted)">{{sub.price}} · {{sub.year}} a year{{sub.note}}</span></span>
+              <button type="button" onClick="{{sub.toggle}}" aria-pressed="{{sub.cancel}}" style="min-height: 40px; min-width: 76px; border-radius: 999px; border: 0; background: {{sub.btnBg}}; color: {{sub.btnInk}}; box-shadow: {{sub.btnRing}}; font-size: 13.5px; font-weight: 600; cursor: pointer">{{sub.btn}}</button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{is.card}}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; gap: 10px">
+          <b class="serif" style="font-size: 30px; line-height: 1.1">Card bill ₹36,343</b>
+          <span style="font-size: 15px; color: var(--ink2)">Due 24 Oct (minimum ₹1,817). Your bank covers it, so pay the full amount to avoid interest.</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair)">
+            <span style="display: grid"><b style="font-weight: 600">Credit score 768</b><span style="font-size: 13.5px; color: var(--warn)">Down 23 points</span></span>
+            <span style="font-size: 14px; font-weight: 600; color: var(--link)">See why</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{is.goals}}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; gap: 10px">
+          <b class="serif" style="font-size: 30px; line-height: 1.1">No goal yet</b>
+          <span style="font-size: 15px; color: var(--ink2)">A goal turns saving into something you can see growing: an emergency fund, a trip, a house.</span>
+          <span style="justify-self: start; min-height: 46px; display: inline-flex; align-items: center; padding: 0 18px; border-radius: 999px; background: var(--tint); color: var(--link); font-size: 15px; font-weight: 600">Set a goal · 30 seconds</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{is.plan}}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; gap: 10px">
+          <b class="serif" style="font-size: 30px; line-height: 1.1">Raise autopay to ₹60 a day?</b>
+          <span style="font-size: 15px; color: var(--ink2)">Salary just came in, so this is the easiest moment. ₹10 more a day is ₹3,650 more a year.</span>
+          <div style="padding: 12px 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); display: grid; gap: 2px">
+            <span style="font-size: 13.5px; color: var(--muted)">₹60 × 365 days, before any returns</span>
+            <b class="serif" style="font-size: 28px; color: var(--link)">₹21,900 a year</b>
+          </div>
+          <sc-if value="{{notRaised}}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid">
+              <button type="button" onClick="{{raise}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Raise to ₹60</button>
+              <button type="button" onClick="{{keep}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Keep ₹50</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{raised}}" hint-placeholder-val="{{ false }}">
+            <span aria-live="polite" style="min-height: 52px; display: grid; place-items: center; border-radius: 999px; background: var(--tint2); color: var(--link); font-size: 15px; font-weight: 600">{{raisedText}}</span>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{is.done}}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; gap: 12px; justify-items: center; text-align: center">
+          <div style="width: 100%; box-sizing: border-box; background: #0F5E58; color: #FFFFFF; border-radius: 22px; padding: 22px 18px; display: grid; gap: 6px; position: relative; overflow: hidden">
+            <span aria-hidden="true" style="position: absolute; right: -40px; top: -50px; width: 140px; height: 140px; border-radius: 50%; background: #F2A93B"></span>
+            <span style="position: relative; font-size: 13px; color: #CFE8E3">Munim · September</span>
+            <b class="serif" style="position: relative; font-size: 30px; line-height: 1.1">Month closed ✓</b>
+            <span style="position: relative; font-size: 15px">14-day streak · {{cutCount}} · autopay every day</span>
+          </div>
+          <span style="font-size: 13.5px; color: var(--muted)">The card shows no rupee amounts, so it's safe to share.</span>
+          <span style="min-height: 48px; display: inline-flex; align-items: center; padding: 0 20px; border-radius: 999px; background: var(--btn); color: var(--on-btn); font-size: 15px; font-weight: 600">Share on WhatsApp</span>
+        </div>
+      </sc-if>
+    </section>
+
+    <div style="flex: none; display: flex; justify-content: space-between; align-items: center; position: relative">
+      <button type="button" onClick="{{back}}" style="min-height: 48px; padding: 0 12px; margin-left: -12px; border: 0; background: transparent; font-size: 15px; font-weight: 600; color: {{backInk}}; cursor: pointer">Back</button>
+      <sc-if value="{{notDone}}" hint-placeholder-val="{{ true }}">
+        <button type="button" onClick="{{next}}" style="min-height: 52px; padding: 0 26px; border-radius: 999px; border: 0; background: var(--tint); color: var(--ink); font-size: 16px; font-weight: 600; cursor: pointer">{{nextLabel}}</button>
+      </sc-if>
+      <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+        <a href="Main.dc.html" style="min-height: 52px; display: inline-flex; align-items: center; padding: 0 26px; border-radius: 999px; background: var(--tint); color: var(--ink); font-size: 16px; font-weight: 600; text-decoration: none">Back to Today</a>
+      </sc-if>
+    </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 0, cancel: {}, raised: null, retried: false }; }
+  renderVals() {
+    var s = this.state, self = this;
+    var stt = s.retried ? 'ready' : (this.props.state ?? 'ready');
+    var keys = ['report', 'worth', 'subs', 'card', 'goals', 'plan', 'done'];
+    var heads = ['September report card', 'Your net worth', 'Subscriptions', 'Card and credit', 'Goals', 'Next month', 'All done'];
+    var kick = ['1 of 6 · How the month went', '2 of 6 · Big picture', '3 of 6 · Keep or cancel', '4 of 6 · What you owe', '5 of 6 · Progress', '6 of 6 · One change for October', 'Shareable · no amounts'];
+    var key = keys[s.step];
+    var is = {}; keys.forEach(function (k) { is[k] = k === key; });
+    var SUBS = [
+      { name: 'cult.fit', price: '₹1,999/mo', year: '₹23,988', y: 23988, note: ' · unused since 12 July' },
+      { name: 'Netflix', price: '₹649/mo', year: '₹7,788', y: 7788, note: ' · price rises to ₹799' },
+      { name: 'LingoPro', price: '₹4,999/yr', year: '₹4,999', y: 4999, note: '' },
+      { name: 'JioHotstar', price: '₹299/mo', year: '₹3,588', y: 3588, note: '' },
+      { name: 'YouTube Premium', price: '₹149/mo', year: '₹1,788', y: 1788, note: '' },
+      { name: 'Amazon Prime', price: '₹1,499/yr', year: '₹1,499', y: 1499, note: '' },
+      { name: 'Spotify', price: '₹119/mo', year: '₹1,428', y: 1428, note: '' }
+    ];
+    var saved = 0, n = 0;
+    var subs = SUBS.map(function (x) {
+      var c = !!s.cancel[x.name]; if (c) { saved += x.y; n++; }
+      return { name: x.name, price: x.price, year: x.year, note: x.note, cancel: c,
+        strike: c ? 'line-through' : 'none', ink: c ? 'var(--muted)' : 'var(--ink)',
+        btn: c ? 'Undo' : 'Cancel', btnBg: c ? 'transparent' : 'var(--tint)', btnInk: c ? 'var(--link)' : 'var(--ink)', btnRing: c ? 'inset 0 0 0 1px var(--hair2)' : 'none',
+        toggle: function () { var m = Object.assign({}, s.cancel); m[x.name] = !c; self.setState({ cancel: m }); } };
+    });
+    var fmt = function (v) { return '₹' + v.toLocaleString('en-IN'); };
+    var last = s.step === keys.length - 1;
+    var ready = stt === 'ready';
+    return {
+      theme: this.props.theme ?? 'light',
+      isReady: ready, isLoading: stt === 'loading', isError: stt === 'error', isEmpty: stt === 'empty',
+      retry: function () { self.setState({ retried: true }); },
+      st: { heading: ready ? heads[s.step] : 'September report card', kicker: kick[s.step] }, is: is, subs: subs,
+      savedLine: n ? 'Cancelling ' + n + ' saves ' + fmt(saved) + ' a year.' : '',
+      cutCount: n ? n + (n === 1 ? ' subscription cut' : ' subscriptions cut') : 'subscriptions reviewed',
+      segs: [0, 1, 2, 3, 4, 5].map(function (i) { return { bg: ready && i <= Math.min(s.step, 5) ? 'var(--link)' : 'var(--hair2)' }; }),
+      progressLabel: 'Step ' + Math.min(s.step + 1, 6) + ' of 6', stepNo: Math.min(s.step + 1, 6),
+      raised: s.raised !== null, notRaised: s.raised === null,
+      raisedText: s.raised === 'up' ? '✓ Noted. Autopay raises are coming soon.' : '✓ Keeping ₹50 a day.',
+      raise: function () { self.setState({ raised: 'up' }); }, keep: function () { self.setState({ raised: 'keep' }); },
+      isDone: last, notDone: !last, nextLabel: s.step === keys.length - 2 ? 'Finish' : 'Next',
+      backInk: s.step === 0 ? 'var(--hair2)' : 'var(--link)',
+      next: function () { if (!last) self.setState({ step: s.step + 1 }); },
+      back: function () { if (s.step > 0) self.setState({ step: s.step - 1 }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

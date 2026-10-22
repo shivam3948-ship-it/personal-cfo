@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Food delivery</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;700&amp;family=Noto+Serif+Devanagari:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.serif{font-family:'Noto Serif','Noto Serif Devanagari',serif;font-weight:700;letter-spacing:-0.01em}
+.t-light{--bg:#F2F7F6;--band:#DDEEEA;--band2:#CBE5E0;--band3:#BFDFD9;--card:#FFFFFF;--ink:#10201E;--ink2:#34514D;--muted:#4E6863;--hair:#D6E6E2;--hair2:#C7DBD7;--tint:#E8F2F0;--tint2:#E1F0ED;--btn:#0F5E58;--on-btn:#FFFFFF;--link:#0F5E58;--warn:#9A5B00;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#FBF1DD;--mari-ink:#6E4600;--err-tint:#FCEBE8;--err-ink:#A3271C;--scrim:rgba(0,0,0,.45);--skel:#D3E3DF;--ai1:#8E7CF0;--ai2:#5B47D6;--ai3:#2E2A7A;--ai-ink:#4B3BC4;--ai-glow:rgba(91,71,214,.42);--orb1:#86E6D9;--orb2:#14897F;--orb3:#063D39;--orb-glow:rgba(15,94,88,.45);color-scheme:light}
+.t-dark{--bg:#0B1413;--band:#10211E;--band2:#163029;--band3:#1B3A34;--card:#14201E;--ink:#E6F0EE;--ink2:#C2D4D0;--muted:#93ABA6;--hair:#263835;--hair2:#334844;--tint:#1C2D2A;--tint2:#1E3330;--btn:#5CC2B4;--on-btn:#06201C;--link:#7ED3C7;--warn:#F2B860;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#33270F;--mari-ink:#F6C978;--err-tint:#3A1A17;--err-ink:#FF9E92;--scrim:rgba(0,0,0,.62);--skel:#1D2E2B;--ai1:#9C8CFF;--ai2:#6A55E6;--ai3:#352F8C;--ai-ink:#B9AEFF;--ai-glow:rgba(142,124,240,.38);--orb1:#A6F2E7;--orb2:#2BA295;--orb3:#0A4C46;--orb-glow:rgba(92,194,180,.40);color-scheme:dark}
+@keyframes shimmer{0%{opacity:.55}50%{opacity:1}100%{opacity:.55}}
+.skel{background:var(--skel);border-radius:8px;animation:shimmer 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+@keyframes breathe{0%,100%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 0 var(--ai-glow)}50%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 7px rgba(0,0,0,0)}}
+.ai-orb{background:radial-gradient(circle at 30% 25%,var(--ai1) 0%,var(--ai2) 52%,var(--ai3) 100%);animation:breathe 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.ai-orb{animation:none;box-shadow:0 8px 22px var(--ai-glow)}}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+.orb-teal{background:radial-gradient(circle at 30% 25%,var(--orb1) 0%,var(--orb2) 48%,var(--orb3) 100%);box-shadow:0 10px 24px var(--orb-glow)}
+.orb-teal::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,0,0,0) 0deg,var(--orb1) 80deg,var(--orb2) 120deg,rgba(0,0,0,0) 170deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:orbspin 3.6s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
+</style>
+</helmet>
+<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 170px; background: var(--band); overflow: hidden">
+    <span style="position: absolute; right: -60px; top: -100px; width: 220px; height: 220px; border-radius: 50%; background: var(--band2)"></span>
+  </div>
+  <div style="position: absolute; inset: 0; overflow-y: auto; padding: 12px 16px 28px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+    <header style="flex: none; display: flex; align-items: center; gap: 4px; position: relative">
+      <a href="Spends.dc.html" aria-label="{{c.back}}" style="width: 44px; height: 44px; margin-left: -10px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; color: var(--ink)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg>
+      </a>
+      <h1 class="serif" style="margin: 0; font-size: 28px">{{d.title}}</h1>
+    </header>
+
+    <section style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 16px; display: grid; gap: 4px; box-shadow: 0 0 0 1px var(--hair)">
+      <span style="font-size: 14px; color: var(--muted)">{{c.heroLabel}}</span>
+      <b class="serif" style="font-size: 34px; line-height: 1.05">{{d.total}}</b>
+      <span style="font-size: 14px; font-weight: 600; color: {{d.vsInk}}">{{d.vsUsual}}</span>
+      <span style="font-size: 13.5px; color: var(--ink2)">{{d.orders}}</span>
+      <figure style="margin: 12px 0 0" aria-label="{{d.chartLabel}}">
+        <figcaption style="font-size: 12.5px; color: var(--muted); margin-bottom: 4px">{{d.chartCap}}</figcaption>
+        <div role="img" aria-label="{{d.chartLabel}}" style="position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: end; height: 120px; border-bottom: 1px solid var(--hair)">
+          <span aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: {{d.usualH}}; border-top: 2px dashed var(--muted); opacity: .7; pointer-events: none"></span>
+          <sc-for list="{{d.bars}}" as="b" hint-placeholder-count="4">
+            <div style="display: grid; justify-items: center; gap: 4px; align-content: end; height: 100%">
+              <span style="position: relative; font-size: 12px; color: var(--ink2); background: var(--card); padding: 0 3px; border-radius: 4px">{{b.v}}</span>
+              <span style="position: relative; width: 100%; max-width: 44px; height: {{b.h}}; border-radius: 4px 4px 0 0; background: {{b.fill}}"></span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 6px">
+          <sc-for list="{{d.bars}}" as="b" hint-placeholder-count="4"><span style="text-align: center; font-size: 12px; color: var(--muted)">{{b.l}}</span></sc-for>
+        </div>
+      </figure>
+    </section>
+
+    <sc-if value="{{d.hasMerchants}}" hint-placeholder-val="{{ true }}">
+      <section style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 600">{{c.whereHead}}</h2>
+        <sc-for list="{{d.merchants}}" as="m" hint-placeholder-count="2">
+          <div style="display: grid; gap: 5px">
+            <span style="display: flex; justify-content: space-between; font-size: 14.5px"><span>{{m.name}} <span style="color: var(--muted); font-size: 13px">· {{m.n}}</span></span><b style="font-weight: 600">{{m.v}}</b></span>
+            <span style="height: 6px; border-radius: 3px; background: var(--tint)"><span style="display: block; height: 6px; width: {{m.w}}; border-radius: 3px; background: var(--btn)"></span></span>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{a.isSkip}}" hint-placeholder-val="{{ false }}">
+      <section aria-labelledby="skip" style="flex: none; position: relative; background: var(--tint); border-radius: 18px; padding: 14px; display: grid; gap: 8px">
+        <span style="font-size: 12.5px; font-weight: 600; color: var(--link)">{{c.yourCall}}</span>
+        <b id="skip" style="font-size: 15.5px; font-weight: 600; line-height: 1.35">{{a.skipTitle}}</b>
+        <sc-if value="{{notSaved}}" hint-placeholder-val="{{ true }}">
+          <div role="radiogroup" aria-labelledby="skip" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{a.skips}}" as="k" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{k.on}}" onClick="{{k.pick}}" style="min-height: 56px; border-radius: 12px; border: 0; background: {{k.bg}}; color: {{k.ink}}; box-shadow: {{k.ring}}; cursor: pointer; display: grid; place-content: center; gap: 1px"><b style="font-size: 16px; font-weight: 700">{{k.amt}}</b><span style="font-size: 12px; opacity: .85">{{k.label}}</span></button>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button type="button" onClick="{{save}}" aria-disabled="{{noPick}}" style="min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: {{a.ctaBg}}; color: {{a.ctaInk}}; font-size: 15px; font-weight: 600; cursor: pointer">{{a.cta}}</button>
+            <button type="button" style="min-height: 44px; padding: 0 10px; border: 0; background: transparent; font-size: 14px; color: var(--muted); cursor: pointer">{{c.notNow}}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{saved}}" hint-placeholder-val="{{ false }}">
+          <div aria-live="polite" style="display: flex; align-items: center; gap: 10px; min-height: 44px">
+            <span style="font-size: 14.5px; font-weight: 600; color: var(--link); flex: 1">{{a.savedLine}}</span>
+            <button type="button" onClick="{{undo}}" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{c.undo}}</button>
+          </div>
+        </sc-if>
+        <span style="font-size: 12.5px; color: var(--muted)">{{a.skipNote}}</span>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{a.isCash}}" hint-placeholder-val="{{ false }}">
+      <section aria-labelledby="cash" style="flex: none; position: relative; background: var(--tint); border-radius: 18px; padding: 14px; display: grid; gap: 8px">
+        <span style="font-size: 12.5px; font-weight: 600; color: var(--link)">{{c.blindSpot}}</span>
+        <b id="cash" style="font-size: 15.5px; font-weight: 600; line-height: 1.35">{{a.cashTitle}}</b>
+        <sc-if value="{{cashOpen}}" hint-placeholder-val="{{ true }}">
+          <div role="radiogroup" aria-labelledby="cash" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{a.uses}}" as="u" hint-placeholder-count="4">
+              <button type="button" role="radio" aria-checked="{{u.on}}" onClick="{{u.pick}}" style="min-height: 48px; border-radius: 12px; border: 0; background: {{u.bg}}; color: {{u.ink}}; box-shadow: {{u.ring}}; font-size: 14.5px; font-weight: 600; cursor: pointer">{{u.label}}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{a.hasUse}}" hint-placeholder-val="{{ false }}">
+            <span style="font-size: 13.5px; color: var(--ink2)">{{a.scopeQ}}</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button type="button" onClick="{{cashAlways}}" style="min-height: 44px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 14.5px; font-weight: 600; cursor: pointer">{{c.everyMonth}}</button>
+              <button type="button" onClick="{{cashOnce}}" style="min-height: 44px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair2); font-size: 14.5px; font-weight: 600; cursor: pointer">{{c.justThis}}</button>
+            </div>
+          </sc-if>
+        </sc-if>
+        <sc-if value="{{cashDone}}" hint-placeholder-val="{{ false }}">
+          <div aria-live="polite" style="display: flex; align-items: center; gap: 10px; min-height: 44px">
+            <span style="font-size: 14.5px; font-weight: 600; color: var(--link); flex: 1">{{a.cashDoneLine}}</span>
+            <button type="button" onClick="{{cashUndo}}" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{c.undo}}</button>
+          </div>
+        </sc-if>
+        <span style="font-size: 12.5px; color: var(--muted)">{{c.cashNote}}</span>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{a.isLink}}" hint-placeholder-val="{{ false }}">
+      <a href="{{a.href}}" style="flex: none; position: relative; background: var(--mari-tint); border-radius: 18px; padding: 14px; display: flex; gap: 12px; align-items: center; text-decoration: none; color: var(--ink)">
+        <span style="flex: 1; display: grid; gap: 2px"><b style="font-size: 15.5px; font-weight: 600; line-height: 1.35">{{a.linkTitle}}</b><span style="font-size: 13px; color: var(--ink2)">{{a.linkSub}}</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--mari-ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+      </a>
+    </sc-if>
+
+    <sc-if value="{{a.isNote}}" hint-placeholder-val="{{ false }}">
+      <section style="flex: none; position: relative; background: var(--card); border-radius: 18px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; box-shadow: 0 0 0 1px var(--hair)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>
+        <span style="display: grid; gap: 2px"><b style="font-size: 15px; font-weight: 600">{{a.noteTitle}}</b><span style="font-size: 13px; color: var(--ink2)">{{a.noteSub}}</span></span>
+      </section>
+    </sc-if>
+
+    <section style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 6px 16px; box-shadow: 0 0 0 1px var(--hair)">
+      <h2 style="margin: 8px 0 2px; font-size: 16px; font-weight: 600">{{d.txHead}}</h2>
+      <sc-for list="{{d.tx}}" as="t" hint-placeholder-count="5">
+        <a href="Transactions.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 50px; border-bottom: {{t.rule}}; text-decoration: none; color: var(--ink)">
+          <span style="flex: 1; display: grid"><span style="font-size: 15px; font-weight: 500">{{t.name}}</span><span style="font-size: 12.5px; color: var(--muted)">{{t.when}}</span></span>
+          <b style="font-size: 15px; font-weight: 600">{{t.amt}}</b>
+        </a>
+      </sc-for>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"cat": {"editor": "enum", "options": ["Food delivery", "Dining", "Quick commerce", "Shopping", "Cabs", "Fuel", "Utilities", "Mobile & internet", "Cash withdrawal", "Fitness"], "default": "Food delivery"}, "theme": {"editor": "enum", "options": ["light", "dark"], "default": "light"}, "variant": {"editor": "enum", "options": ["standard", "bharat"], "default": "standard"}, "$preview": {"width": 390, "height": 844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { pick: null, saved: false, use: null, cashScope: null }; }
+  renderVals() {
+    var s = this.state, self = this;
+    var hi = (this.props.variant ?? 'standard') === 'bharat';
+    var cat = this.props.cat ?? 'Food delivery';
+    var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
+    // ---- inputs: paise, from packages/core on the sample family. m = monthPictures().byCategory for Jul, Aug, Sep, Oct 1–15; u15 = the same category's spend on days 1–15 of Jul, Aug, Sep; tx = October debits ----
+    var DATA = {"Food delivery": {"m": [505100, 541900, 1044100, 492300], "u15": [134800, 385400, 526200], "tx": [["2026-10-14", "Zomato", 62600, "bank:4521"], ["2026-10-13", "Zomato", 67000, "bank:4521"], ["2026-10-09", "Swiggy", 52600, "bank:4521"], ["2026-10-05", "Swiggy", 49300, "bank:4521"], ["2026-10-05", "Zomato", 41500, "bank:4521"], ["2026-10-03", "Swiggy", 47800, "bank:4521"], ["2026-10-03", "Swiggy", 39500, "bank:4521"], ["2026-10-01", "Swiggy", 61900, "bank:4521"], ["2026-10-01", "Zomato", 70100, "bank:4521"]]}, "Quick commerce": {"m": [275300, 277600, 261100, 138200], "u15": [152600, 152000, 143800], "tx": [["2026-10-07", "Blinkit", 74800, "bank:4521"], ["2026-10-03", "Blinkit", 63400, "bank:4521"]]}, "Dining": {"m": [643600, 600200, 447600, 272900], "u15": [259300, 479500, 447600], "tx": [["2026-10-04", "Chaayos", 272900, "card:9012"]]}, "Shopping": {"m": [561900, 753000, 458400, 127200], "u15": [0, 282800, 117700], "tx": [["2026-10-06", "Amazon", 127200, "card:9012"]]}, "Cabs": {"m": [188300, 204600, 211500, 82800], "u15": [164600, 108400, 145900], "tx": [["2026-10-12", "Uber", 29500, "bank:4521"], ["2026-10-04", "Rapido", 26100, "bank:4521"], ["2026-10-04", "Uber", 27200, "bank:4521"]]}, "Fuel": {"m": [237700, 617600, 386900, 220000], "u15": [0, 617600, 386900], "tx": [["2026-10-13", "HPCL", 220000, "card:9012"]]}, "Utilities": {"m": [214000, 286000, 241000, 198000], "u15": [214000, 286000, 241000], "tx": [["2026-10-12", "DHBVN Electricity", 198000, "bank:4521"]]}, "Mobile & internet": {"m": [165800, 165800, 165800, 59900], "u15": [59900, 59900, 59900], "tx": [["2026-10-15", "Airtel", 59900, "bank:4521"]]}, "Cash withdrawal": {"m": [500000, 500000, 500000, 500000], "u15": [500000, 500000, 500000], "tx": [["2026-10-09", "ATM cash", 500000, "bank:4521"]]}, "Fitness": {"m": [199900, 199900, 199900, 199900], "u15": [199900, 199900, 199900], "tx": [["2026-10-08", "cult.fit", 199900, "bank:4521"]]}};
+    // ---- what Munim offers depends on the kind of category (docs/41) ----
+    var KIND = { 'Food delivery': 'choice', 'Quick commerce': 'choice', 'Dining': 'choice', 'Shopping': 'choice', 'Cabs': 'choice', 'Fuel': 'need', 'Utilities': 'need', 'Mobile & internet': 'need', 'Cash withdrawal': 'cash', 'Fitness': 'member' };
+    var HI_CAT = { 'Food delivery': 'फ़ूड डिलीवरी', 'Dining': 'बाहर खाना', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Cabs': 'कैब', 'Fuel': 'पेट्रोल', 'Utilities': 'बिजली-पानी', 'Mobile & internet': 'मोबाइल-इंटरनेट', 'Cash withdrawal': 'कैश निकासी', 'Fitness': 'जिम' };
+    var UNIT = { 'Food delivery': ['order', 'orders', 'ऑर्डर'], 'Quick commerce': ['order', 'orders', 'ऑर्डर'], 'Dining': ['visit', 'visits', 'बार'], 'Shopping': ['order', 'orders', 'ऑर्डर'], 'Cabs': ['ride', 'rides', 'राइड'] };
+    var D = DATA[cat], kind = KIND[cat];
+    var total = D.tx.reduce(function (t, x) { return t + x[2]; }, 0);
+    var usual = D.u15.slice().sort(function (a, b) { return a - b; })[1];
+    var pct = usual ? Math.round((total - usual) / usual * 100) : null;
+    var n = D.tx.length, avg = n ? Math.round(total / n) : 0;
+    var unit = UNIT[cat] || ['payment', 'payments', 'भुगतान'];
+    var MN = hi ? ['जुलाई', 'अगस्त', 'सितंबर', 'अक्टू.'] : ['Jul', 'Aug', 'Sep', 'Oct'];
+    // ---- bars compare the same window in every month (days 1–15), so October isn't a half month next to full ones; the dashed line is the usual (their middle) ----
+    var B15 = D.u15.concat([total]), maxM = Math.max.apply(null, B15) || 1;
+    var bars = B15.map(function (v, i) { return { l: MN[i], v: R(v), h: Math.round(v / maxM * 88) + 'px', fill: i < 3 ? 'var(--hair2)' : 'var(--btn)' }; });
+    var byM = {}; D.tx.forEach(function (x) { var b = byM[x[1]] = byM[x[1]] || { v: 0, n: 0 }; b.v += x[2]; b.n++; });
+    var mk = Object.keys(byM).sort(function (a, b) { return byM[b].v - byM[a].v; });
+    var merchants = mk.map(function (k) { return { name: k, n: byM[k].n + ' ' + (hi ? unit[2] : (byM[k].n === 1 ? unit[0] : unit[1])), v: R(byM[k].v), w: Math.round(byM[k].v / byM[mk[0]].v * 100) + '%' }; });
+    var big = pct !== null && Math.abs(pct) >= 20;
+    var vsUsual = pct === null ? (hi ? 'पिछले महीनों से तुलना अभी नहीं' : 'Not enough history to compare yet')
+      : !big ? (hi ? 'आम तौर जैसा (15 तारीख़ तक आम ' + R(usual) + ')' : 'About your usual by the 15th (usual ' + R(usual) + ')')
+      : hi ? '15 तारीख़ तक आम तौर से ' + Math.abs(pct) + '% ' + (pct > 0 ? 'ज़्यादा' : 'कम') + ' (आम ' + R(usual) + ')'
+      : Math.abs(pct) + '% ' + (pct > 0 ? 'above' : 'below') + ' your usual by the 15th (usual ' + R(usual) + ')';
+    var vsInk = big && pct > 0 && kind !== 'need' && kind !== 'member' ? 'var(--warn)' : big && pct < 0 ? 'var(--link)' : 'var(--ink2)';
+    var dm = function (iso) { return Number(iso.slice(8)) + (hi ? ' अक्टूबर' : ' Oct'); };
+    // ---- the one card under the chart ----
+    var a = { isSkip: false, isCash: false, isLink: false, isNote: false, href: '#', linkTitle: '', linkSub: '', noteTitle: '', noteSub: '', skips: [], uses: [], hasUse: false };
+    var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
+    if (kind === 'choice' && pct !== null && pct >= 20 && n >= 2) {
+      a.isSkip = true;
+      a.skipTitle = hi ? 'बाक़ी महीने में कुछ ' + unit[2] + ' कम करें, वह रक़म अभी बचत में डालें' : 'Spend a little less here for the rest of the month and save the difference now';
+      a.skips = [1, 2, 3].slice(0, Math.min(3, n)).map(function (k) { var on = s.pick === k, cs = chip(on);
+        return { amt: R(k * avg), label: hi ? k + ' ' + unit[2] + ' कम' : k + ' ' + (k === 1 ? unit[0] : unit[1]) + ' fewer', on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ pick: k }); } }; });
+      a.cta = s.pick ? (hi ? R(s.pick * avg) + ' बचाएँ' : 'Save ' + R(s.pick * avg)) : (hi ? 'रक़म चुनें' : 'Pick an amount');
+      a.ctaBg = s.pick ? 'var(--btn)' : 'var(--hair2)'; a.ctaInk = s.pick ? 'var(--on-btn)' : 'var(--muted)';
+      a.savedLine = s.pick ? (hi ? '✓ ' + R(s.pick * avg) + ' बचत में डाल दिए' : '✓ ' + R(s.pick * avg) + ' moved to savings') : '';
+      a.skipNote = hi ? 'इस महीने औसत ' + R(avg) + ' प्रति ' + unit[2] + '। Munim कुछ नहीं रोकता।' : 'Your average this month is ' + R(avg) + (/^[aeiou]/.test(unit[0]) ? ' an ' : ' a ') + unit[0] + '. Munim never blocks a payment.';
+    } else if (kind === 'cash') {
+      a.isCash = true;
+      var same = D.m.slice(0, 3).every(function (v) { return v === D.m[3]; });
+      a.cashTitle = hi ? (same ? 'हर महीने ' + R(total) + ' कैश निकलता है। यह किस पर खर्च होता है?' : R(total) + ' कैश किस पर खर्च हुआ?') : (same ? 'You take out ' + R(total) + ' in cash every month. What is it for?' : 'What did the ' + R(total) + ' in cash go on?');
+      var USES = hi ? [['help', 'घरेलू मदद', 'तय खर्च'], ['groc', 'किराना', 'रोज़ का'], ['family', 'परिवार', 'अन्य'], ['other', 'कुछ और', 'अन्य']] : [['help', 'Household help', 'Fixed costs'], ['groc', 'Groceries', 'Everyday'], ['family', 'Family', 'Others'], ['other', 'Something else', 'Others']];
+      a.uses = USES.map(function (u) { var on = s.use === u[0], cs = chip(on); return { label: u[1], on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ use: u[0] }); } }; });
+      var picked = USES.filter(function (u) { return u[0] === s.use; })[0];
+      a.hasUse = !!picked;
+      a.scopeQ = picked ? (hi ? 'हर महीने की ' + R(total) + ' निकासी को "' + picked[1] + '" मानें?' : 'Treat the monthly ' + R(total) + ' withdrawal as ' + picked[1] + ' from now on?') : '';
+      a.cashDoneLine = picked ? (hi ? '✓ ' + picked[1] + ' · गिनती: ' + picked[2] + (s.cashScope === 'always' ? ' · नियम बना' : '') : '✓ ' + picked[1] + ' · counts as ' + picked[2] + (s.cashScope === 'always' ? ' · rule saved' : '')) : '';
+    } else if (kind === 'member') {
+      a.isLink = true; a.href = 'Subscriptions.dc.html';
+      a.linkTitle = hi ? 'cult.fit जुलाई से बंद पड़ा' : 'cult.fit unused since July';
+      a.linkSub = hi ? R(total) + ' हर महीने · ' + R(total * 12) + ' साल में · रद्द करने का तरीका देखें' : R(total) + ' a month · ' + R(total * 12) + ' a year · see how to cancel';
+    } else {
+      a.isNote = true;
+      if (pct !== null && pct <= -20 && kind === 'choice') {
+        a.noteTitle = hi ? 'आम तौर से ' + R(usual - total) + ' कम' : R(usual - total) + ' below your usual here';
+        a.noteSub = hi ? 'यह बचत खर्च टैब की "सबसे पहले बचत" रक़म में पहले से जुड़ी है।' : 'It’s already part of the "Savings first" amount on Spends.';
+      } else if (kind === 'need') {
+        a.noteTitle = hi ? 'ज़रूरी खर्च' : 'An essential cost';
+        a.noteSub = hi ? 'यहाँ बचत का सुझाव नहीं; Munim सिर्फ़ असामान्य बढ़त पर बताएगा।' : 'Munim won’t push savings here; it flags only an unusual jump.';
+      } else {
+        a.noteTitle = hi ? 'आम तौर जैसा' : 'In line with your usual';
+        a.noteSub = hi ? 'यहाँ बदलने को कुछ नहीं।' : 'Nothing to change here.';
+      }
+    }
+    var C = hi ? { back: 'खर्च पर वापस', heroLabel: 'अक्टूबर 1–15', whereHead: 'कहाँ से', yourCall: 'आपकी मर्ज़ी', blindSpot: 'छिपा खर्च', notNow: 'अभी नहीं', undo: 'वापस लें', everyMonth: 'हाँ, हर महीने', justThis: 'सिर्फ़ इस बार', cashNote: 'Munim नियम बनाने से पहले पूछता है। आप इसे "आपके नियम" में कभी भी बदल सकते हैं।' }
+      : { back: 'Back to Spends', heroLabel: 'October 1–15', whereHead: 'Where from', yourCall: 'Your call', blindSpot: 'Blind spot', notNow: 'Not now', undo: 'Undo', everyMonth: 'Yes, every month', justThis: 'Just this time', cashNote: 'Munim asks before making a rule. You can change it any time in Your rules.' };
+    var d = {
+      title: hi ? HI_CAT[cat] : cat, total: R(total), vsUsual: vsUsual, vsInk: vsInk,
+      orders: hi ? n + ' ' + unit[2] + (n > 1 ? ' · औसत ' + R(avg) : '') : n + ' ' + (n === 1 ? unit[0] : unit[1]) + (n > 1 ? ' · ' + R(avg) + ' on average' : ''),
+      chartLabel: (hi ? HI_CAT[cat] + ', हर महीने 15 तारीख़ तक: ' : cat + ', spent by the 15th each month: ') + bars.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
+      bars: bars, merchants: merchants, hasMerchants: mk.length >= 2, usualH: Math.round(usual / maxM * 88) + 'px',
+      chartCap: hi ? 'हर महीने 15 तारीख़ तक का खर्च · डैश लाइन = आपका आम (' + R(usual) + ')' : 'Spent by the 15th, each month · dashed line = your usual (' + R(usual) + ')',
+      txHead: hi ? 'इस महीने के भुगतान' : 'This month’s payments',
+      tx: D.tx.map(function (x, i) { return { name: x[1], when: dm(x[0]) + ' · ' + (x[3].indexOf('card') === 0 ? (hi ? 'कार्ड ••' : 'Card ••') : (hi ? 'बैंक ••' : 'Bank ••')) + x[3].split(':')[1], amt: '−' + R(x[2]), rule: i < D.tx.length - 1 ? '1px solid var(--hair)' : '0' }; })
+    };
+    return { theme: this.props.theme ?? 'light', c: C, d: d, a: a,
+      saved: s.saved, notSaved: !s.saved, noPick: !s.pick,
+      save: function () { if (s.pick) self.setState({ saved: true }); }, undo: function () { self.setState({ saved: false }); },
+      cashOpen: !s.cashScope, cashDone: !!s.cashScope,
+      cashAlways: function () { self.setState({ cashScope: 'always' }); }, cashOnce: function () { self.setState({ cashScope: 'once' }); }, cashUndo: function () { self.setState({ cashScope: null, use: null }); } };
+  }
+}
+</script>
+</body>
+</html>

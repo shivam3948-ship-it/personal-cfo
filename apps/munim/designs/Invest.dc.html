@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Invest v2.1</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;700&amp;family=Noto+Serif+Devanagari:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.serif{font-family:'Noto Serif','Noto Serif Devanagari',serif;font-weight:700;letter-spacing:-0.01em}
+@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet{animation:sheet .28s ease-out both}
+@media (prefers-reduced-motion: reduce){.sheet{animation:none}}
+.t-light{--bg:#F2F7F6;--band:#DDEEEA;--band2:#CBE5E0;--band3:#BFDFD9;--card:#FFFFFF;--ink:#10201E;--ink2:#34514D;--muted:#4E6863;--hair:#D6E6E2;--hair2:#C7DBD7;--tint:#E8F2F0;--tint2:#E1F0ED;--btn:#0F5E58;--on-btn:#FFFFFF;--link:#0F5E58;--warn:#9A5B00;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#FBF1DD;--mari-ink:#6E4600;--err-tint:#FCEBE8;--err-ink:#A3271C;--scrim:rgba(0,0,0,.45);--skel:#D3E3DF;--ai1:#8E7CF0;--ai2:#5B47D6;--ai3:#2E2A7A;--ai-ink:#4B3BC4;--ai-glow:rgba(91,71,214,.42);--orb1:#86E6D9;--orb2:#14897F;--orb3:#063D39;--orb-glow:rgba(15,94,88,.45);color-scheme:light}
+.t-dark{--bg:#0B1413;--band:#10211E;--band2:#163029;--band3:#1B3A34;--card:#14201E;--ink:#E6F0EE;--ink2:#C2D4D0;--muted:#93ABA6;--hair:#263835;--hair2:#334844;--tint:#1C2D2A;--tint2:#1E3330;--btn:#5CC2B4;--on-btn:#06201C;--link:#7ED3C7;--warn:#F2B860;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#33270F;--mari-ink:#F6C978;--err-tint:#3A1A17;--err-ink:#FF9E92;--scrim:rgba(0,0,0,.62);--skel:#1D2E2B;--ai1:#9C8CFF;--ai2:#6A55E6;--ai3:#352F8C;--ai-ink:#B9AEFF;--ai-glow:rgba(142,124,240,.38);--orb1:#A6F2E7;--orb2:#2BA295;--orb3:#0A4C46;--orb-glow:rgba(92,194,180,.40);color-scheme:dark}
+@keyframes shimmer{0%{opacity:.55}50%{opacity:1}100%{opacity:.55}}
+.skel{background:var(--skel);border-radius:8px;animation:shimmer 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+@keyframes breathe{0%,100%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 0 var(--ai-glow)}50%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 7px rgba(0,0,0,0)}}
+.ai-orb{background:radial-gradient(circle at 30% 25%,var(--ai1) 0%,var(--ai2) 52%,var(--ai3) 100%);animation:breathe 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.ai-orb{animation:none;box-shadow:0 8px 22px var(--ai-glow)}}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+.orb-teal{background:radial-gradient(circle at 30% 25%,var(--orb1) 0%,var(--orb2) 48%,var(--orb3) 100%);box-shadow:0 10px 24px var(--orb-glow)}
+.orb-teal::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,0,0,0) 0deg,var(--orb1) 80deg,var(--orb2) 120deg,rgba(0,0,0,0) 170deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:orbspin 3.6s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
+</style>
+</helmet>
+<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 200px; background: var(--band); overflow: hidden">
+    <span style="position: absolute; right: -70px; top: -100px; width: 240px; height: 240px; border-radius: 50%; background: var(--band2)"></span>
+  </div>
+
+  <div style="position: absolute; inset: 0 0 80px 0; overflow-y: auto; padding: 12px 16px 32px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+    <header style="flex: none; display: flex; justify-content: space-between; align-items: center; position: relative; min-height: 44px">
+      <h1 class="serif" style="margin: 0; font-size: 30px">Invest</h1>
+      <span style="font-size: 13px; color: var(--ink2)">As of 15 Oct</span>
+    </header>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="flex: none; position: relative; display: flex; align-items: center; gap: 10px; background: var(--err-tint); color: var(--err-ink); border-radius: 16px; padding: 6px 6px 6px 14px">
+        <span style="flex: 1; font-size: 14px">Couldn’t refresh. Showing numbers as of 15 Oct.</span>
+        <button type="button" onClick="{{retry}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--card); color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">Retry</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" style="flex: none; position: relative; display: grid; gap: 12px">
+        <div style="background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+          <span class="skel" style="height: 14px; width: 45%"></span><span class="skel" style="height: 30px; width: 80%"></span><span class="skel" style="height: 12px; width: 100%"></span><span class="skel" style="height: 14px; width: 60%"></span>
+        </div>
+        <span class="skel" style="height: 230px; border-radius: 20px"></span>
+        <span class="skel" style="height: 180px; border-radius: 20px"></span>
+        <span style="font-size: 13.5px; color: var(--muted); text-align: center">Adding up your money…</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <section style="flex: none; position: relative; background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+        <b class="serif" style="font-size: 25px; line-height: 1.15">Start with one statement</b>
+        <span style="font-size: 15px; color: var(--ink2)">From your bank statement, Munim works out your safety net and your next move. From your CAS, how your investing is really doing.</span>
+        <button type="button" style="margin-top: 4px; min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Add bank statement</button>
+        <button type="button" onClick="{{retry}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Try with sample data</button>
+        <span style="font-size: 12.5px; color: var(--muted)">Everything is read on your phone.</span>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{showData}}" hint-placeholder-val="{{ true }}">
+    <sc-for list="{{sections}}" as="x" hint-placeholder-count="4">
+      <sc-if value="{{x.isPath}}" hint-placeholder-val="{{ false }}">
+        <section aria-label="Money path" style="flex: none; position: relative; background: var(--card); border-radius: 18px; padding: 12px 14px; display: grid; gap: 8px; box-shadow: 0 0 0 1px var(--hair)">
+          <div style="display: flex; justify-content: space-between; align-items: center"><b style="font-size: 14px; font-weight: 600">Money path · step 3 of 5</b><button type="button" onClick="{{openPath}}" aria-haspopup="dialog" style="min-height: 36px; padding: 0; border: 0; background: transparent; font-size: 13.5px; font-weight: 600; color: var(--link); cursor: pointer">See all ›</button></div>
+          <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
+            <sc-for list="{{d.steps}}" as="s" hint-placeholder-count="5"><span style="height: 6px; border-radius: 3px; background: {{s.seg}}; box-shadow: {{s.segRing}}"></span></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
+            <sc-for list="{{d.steps}}" as="s" hint-placeholder-count="5"><span style="font-size: 11px; line-height: 1.25; color: {{s.labInk}}; font-weight: {{s.labW}}">{{s.short}}</span></sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{x.isNext}}" hint-placeholder-val="{{ true }}">
+        <section aria-labelledby="next" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 16px; display: grid; gap: 8px; box-shadow: 0 0 0 1px var(--hair)">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 13px; font-weight: 600; color: var(--link)">{{d.nextKicker}}</span><button type="button" onClick="{{openPath}}" aria-haspopup="dialog" style="flex: none; min-height: 32px; padding: 0; border: 0; background: transparent; font-size: 13px; font-weight: 600; color: var(--link); cursor: pointer">Step 3 of 5 ›</button></div>
+          <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
+            <sc-for list="{{d.steps}}" as="s" hint-placeholder-count="5"><span style="height: 4px; border-radius: 2px; background: {{s.seg}}; box-shadow: {{s.segRing}}"></span></sc-for>
+          </div>
+          <h2 id="next" class="serif" style="margin: 0; font-size: 23px; line-height: 1.15">Grow your safety net to 6 months</h2>
+          <div role="img" aria-label="{{d.efLabel}}" style="display: flex; gap: 2px; height: 10px; border-radius: 5px; overflow: hidden; background: var(--tint); margin-top: 2px">
+            <span style="width: {{d.bankW}}; background: var(--btn)"></span>
+            <span style="width: {{d.fundW}}; background: var(--link); opacity: .45"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px"><b style="font-weight: 600">{{d.efHave}}</b><span style="color: var(--ink2)">{{d.efMonths}}</span></div>
+          <sc-if value="{{notPlanned}}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{openPlan}}" aria-haspopup="dialog" style="justify-self: start; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 15px; font-weight: 600; cursor: pointer">Plan a monthly amount</button>
+          </sc-if>
+          <sc-if value="{{planned}}" hint-placeholder-val="{{ false }}">
+            <div aria-live="polite" style="display: flex; align-items: center; gap: 10px; min-height: 44px">
+              <span style="flex: 1; font-size: 14px; font-weight: 600; color: var(--link)">{{d.plannedLine}}</span>
+              <button type="button" onClick="{{openPlan}}" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">Change</button>
+            </div>
+          </sc-if>
+          <a href="Main.dc.html" style="display: flex; align-items: center; gap: 8px; min-height: 44px; border-top: 1px solid var(--hair); margin-top: 2px; font-size: 13.5px; text-decoration: none; color: var(--ink)">
+            <span style="flex: 1"><span style="color: var(--muted)">Saved with Munim</span> <b style="font-weight: 600">{{d.pot}}</b> <span style="color: var(--muted)">· your daily saves from Today land here</span></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+          </a>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{x.isInvest}}" hint-placeholder-val="{{ true }}">
+        <section aria-labelledby="work" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 16px 16px 8px; display: grid; gap: 6px; box-shadow: 0 0 0 1px var(--hair)">
+          <span id="work" style="font-size: 13px; font-weight: 600; color: var(--link)">Is your investing working?</span>
+          <div style="display: flex; align-items: baseline; gap: 8px"><b class="serif" style="font-size: 32px; line-height: 1.05">{{d.xirr}}</b><span style="font-size: 14px; color: var(--ink2)">a year</span></div>
+          <span style="font-size: 13.5px; color: var(--ink2); margin-top: -2px">{{d.earnedLine}}</span>
+          <div style="display: grid; gap: 4px; margin-top: 4px">
+            <sc-for list="{{d.verdicts}}" as="v" hint-placeholder-count="2">
+              <span style="display: flex; gap: 8px; align-items: flex-start; font-size: 14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="m5 12.5 4.5 4.5L19 7.5"></path></svg>{{v}}</span>
+            </sc-for>
+          </div>
+          <span style="font-size: 12.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-top: 8px">Worth a look</span>
+          <div>
+            <a href="Xray.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 48px; border-bottom: 1px solid var(--hair); text-decoration: none; color: var(--ink)"><span style="flex: 1; font-size: 14.5px">Regular-plan fees on 3 funds</span><b style="font-size: 14.5px; font-weight: 600; color: var(--warn)">{{d.regExtra}}/yr</b></a>
+            <button type="button" onClick="{{openCover}}" style="width: 100%; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; border: 0; background: transparent; text-align: left; cursor: pointer; color: var(--ink)"><span style="flex: 1; font-size: 14.5px">Endowment policy's projected return</span><b style="font-size: 14.5px; font-weight: 600; color: var(--warn)">{{d.endowRange}}</b></button>
+          </div>
+          <div style="display: flex; gap: 8px; padding: 6px 0 4px; border-top: 1px solid var(--hair)">
+            <a href="Xray.dc.html" style="flex: 1; min-height: 44px; display: grid; place-items: center; border-radius: 999px; background: var(--tint); color: var(--link); font-size: 14.5px; font-weight: 600; text-decoration: none">Portfolio x-ray ›</a>
+            <a href="Voice.dc.html" style="flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--hair2); color: var(--ink); font-size: 14.5px; font-weight: 600; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Ask Munim</a>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted)">
+            <span>{{d.casLine}}</span>
+            <button type="button" onClick="{{openHold}}" aria-haspopup="dialog" style="min-height: 40px; padding: 0; border: 0; background: transparent; font-size: 12.5px; font-weight: 600; color: var(--link); cursor: pointer">Holdings look wrong?</button>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{x.isAddCas}}" hint-placeholder-val="{{ false }}">
+        <section style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 16px; display: grid; gap: 8px; box-shadow: 0 0 0 1px var(--hair)">
+          <span style="font-size: 13px; font-weight: 600; color: var(--link)">Is your investing working?</span>
+          <b style="font-size: 16px; font-weight: 600; line-height: 1.35">Add your mutual fund statement (CAS) to see your real return, how it compares with your funds', and what fees cost you.</b>
+          <button type="button" onClick="{{openCas}}" aria-haspopup="dialog" style="justify-self: start; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 15px; font-weight: 600; cursor: pointer">Add CAS</button>
+          <span style="font-size: 12.5px; color: var(--muted)">Read on your phone; the password is never stored.</span>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{x.isCover}}" hint-placeholder-val="{{ true }}">
+        <button type="button" onClick="{{openCover}}" aria-haspopup="dialog" style="flex: none; position: relative; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 0; border-radius: 22px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); text-align: left; cursor: pointer; color: var(--ink)">
+          <span style="flex: 1; display: grid; gap: 2px"><span style="font-size: 13px; font-weight: 600; color: var(--link)">Covered if something goes wrong?</span><b style="font-size: 15.5px; font-weight: 600">Term ₹1 crore · health ₹10 lakh</b><span style="font-size: 13px; color: var(--mari-ink)">2 things to review</span></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"></path></svg>
+        </button>
+      </sc-if>
+    </sc-for>
+    <p style="flex: none; position: relative; margin: 0; padding: 0 4px; font-size: 12px; color: var(--muted)">General guidance, not SEBI-registered investment advice.</p>
+    </sc-if>
+  </div>
+
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: var(--card); border-top: 1px solid var(--hair)">
+    <div style="height: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center">
+      <a href="Main.dc.html" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>{{nav.today}}</a>
+      <a href="Invest.dc.html" aria-current="page" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--link); font-weight: 700">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"></path><path d="M4 19h16"></path><path d="m7 14 4-4 3 3 5-6"></path></svg>{{nav.invest}}</a>
+      <a href="Voice.dc.html" aria-label="{{nav.ask}}" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; padding-bottom: 10px; box-sizing: border-box; font-size: 12.5px; text-decoration: none; color: var(--link); font-weight: 700">
+        <span class="orb-teal" style="position: relative; width: 60px; height: 60px; margin-top: -32px; border-radius: 50%; border: 4px solid var(--card); display: grid; place-items: center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+        </span>{{nav.ask}}</a>
+      <a href="Spends.dc.html" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>{{nav.spends}}</a>
+      <a href="#" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"></rect><path d="M2.5 10h19M6.5 15h4"></path></svg>{{nav.credit}}</a>
+    </div>
+  </nav>
+
+
+  <sc-if value="{{planOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="Plan your safety net" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">Plan your safety net</h2>
+          <button type="button" aria-label="Close" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <span style="font-size: 14px; color: var(--ink2); margin-top: -4px">{{d.gapLine}} Your Orbit loan can't be prepaid until 20 Dec, so spare money goes here first.</span>
+        <b id="amt" style="font-size: 15px; font-weight: 600">Add on salary day each month</b>
+        <div role="radiogroup" aria-labelledby="amt" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{d.pills}}" as="p" hint-placeholder-count="3">
+            <button type="button" role="radio" aria-checked="{{p.on}}" onClick="{{p.pick}}" style="min-height: 56px; border-radius: 12px; border: 0; background: {{p.bg}}; color: {{p.ink}}; box-shadow: {{p.ring}}; cursor: pointer; display: grid; place-content: center; gap: 1px"><b style="font-size: 15.5px; font-weight: 700">{{p.amt}}</b><span style="font-size: 11.5px; opacity: .85">{{p.when}}</span></button>
+          </sc-for>
+        </div>
+        <button type="button" onClick="{{plan}}" aria-disabled="{{noPick}}" style="min-height: 50px; border-radius: 999px; border: 0; background: {{d.ctaBg}}; color: {{d.ctaInk}}; font-size: 15.5px; font-weight: 600; cursor: pointer">{{d.cta}}</button>
+        <details style="border-top: 1px solid var(--hair); padding-top: 8px">
+          <summary style="min-height: 40px; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{d.essLink}}</summary>
+          <sc-for list="{{d.essRows}}" as="r" hint-placeholder-count="6">
+            <div style="display: flex; justify-content: space-between; min-height: 34px; align-items: center; font-size: 14px; border-bottom: 1px solid var(--hair)"><span>{{r.l}}</span><span>{{r.v}}</span></div>
+          </sc-for>
+          <span style="display: block; padding-top: 6px; font-size: 12.5px; color: var(--muted)">Not counted: food delivery, dining, shopping, subscriptions, travel. The debt fund counts because it can be withdrawn in a few days.</span>
+        </details>
+        <span style="font-size: 12px; color: var(--muted)">No money moves in the demo. Munim reminds you on salary day.</span>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{pathOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="Your money path" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">Your money path</h2>
+          <button type="button" aria-label="Close" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <span style="font-size: 13.5px; color: var(--ink2); margin-top: -4px">Guidance, never a gate. You can do anything at any step.</span>
+        <ol style="margin: 0; padding: 0; list-style: none; display: grid">
+          <sc-for list="{{d.steps}}" as="s" hint-placeholder-count="5">
+            <li style="display: flex; gap: 12px; padding: 10px 0; border-bottom: {{s.rule}}">
+              <span style="flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: {{s.dotBg}}; color: {{s.dotInk}}; box-shadow: {{s.dotRing}}">{{s.mark}}</span>
+              <span style="flex: 1; display: grid; gap: 2px"><span style="display: flex; justify-content: space-between; gap: 8px"><b style="font-size: 15px; font-weight: 600">{{s.t}}</b><span style="font-size: 12.5px; font-weight: 600; color: {{s.stInk}}">{{s.st}}</span></span><span style="font-size: 13px; color: var(--ink2)">{{s.d}}</span></span>
+            </li>
+          </sc-for>
+        </ol>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{coverOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="Your cover" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">Your cover</h2>
+          <button type="button" aria-label="Close" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <sc-for list="{{d.policies}}" as="p" hint-placeholder-count="3">
+          <div style="display: grid; gap: 3px; padding: 10px 0; border-bottom: {{p.rule}}">
+            <div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline"><b style="font-size: 15px; font-weight: 600">{{p.name}}</b><span style="flex: none; font-size: 12px; font-weight: 600; color: {{p.tagInk}}; background: {{p.tagBg}}; border-radius: 999px; padding: 2px 8px">{{p.tag}}</span></div>
+            <span style="font-size: 13px; color: var(--muted)">{{p.sub}}</span>
+            <span style="font-size: 13.5px; color: var(--ink2)">{{p.fact}}</span>
+            <sc-if value="{{p.hasAct}}" hint-placeholder-val="{{ true }}">
+              <span style="font-size: 13.5px; background: var(--tint); border-radius: 12px; padding: 8px 10px; margin-top: 4px"><b style="font-weight: 600">{{p.actHead}}</b> {{p.act}}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{notReminded}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{remind}}" style="margin-top: 8px; min-height: 50px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 15.5px; font-weight: 600; cursor: pointer">Review this on Sunday’s money call</button>
+        </sc-if>
+        <sc-if value="{{reminded}}" hint-placeholder-val="{{ false }}">
+          <div aria-live="polite" style="margin-top: 8px; min-height: 50px; display: flex; align-items: center; gap: 10px">
+            <span style="flex: 1; font-size: 14.5px; font-weight: 600; color: var(--link)">✓ On Sunday’s call: term and health cover</span>
+            <button type="button" onClick="{{unremind}}" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">Undo</button>
+          </div>
+        </sc-if>
+        <span style="font-size: 12.5px; color: var(--muted); padding-top: 6px">Facts from your policy documents. Category-level guidance only: Munim doesn’t pick policies or advise on surrendering one; a licensed adviser can.</span>
+        <a href="Voice.dc.html" style="margin-top: 6px; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--hair2); color: var(--ink); font-size: 15px; font-weight: 600; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>Ask Munim about my cover</a>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{casSheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="Add your CAS" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">Add your CAS</h2>
+          <button type="button" aria-label="Close" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <span style="font-size: 14px; color: var(--ink2); margin-top: -4px">One PDF lists every mutual fund you hold, across all fund houses. It’s free and takes about 5 minutes.</span>
+        <ol style="margin: 0; padding: 0; list-style: none; display: grid; gap: 2px">
+          <sc-for list="{{d.casSteps}}" as="c" hint-placeholder-count="3">
+            <li style="display: flex; gap: 12px; padding: 8px 0">
+              <span style="flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--tint); color: var(--link)">{{c.n}}</span>
+              <span style="flex: 1; display: grid; gap: 2px"><b style="font-size: 14.5px; font-weight: 600">{{c.t}}</b><span style="font-size: 13px; color: var(--ink2)">{{c.d}}</span></span>
+            </li>
+          </sc-for>
+        </ol>
+        <button type="button" onClick="{{addCas}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Choose the CAS PDF</button>
+        <button type="button" onClick="{{addCas}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; font-weight: 600; color: var(--link); cursor: pointer">Try with the sample CAS</button>
+        <span style="font-size: 12.5px; color: var(--muted)">Read on your phone. The PDF and its password never leave it; Munim keeps only anonymous fund totals.</span>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{holdSheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="Holdings look wrong?" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px">
+        <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">What looks off?</h2>
+          <button type="button" aria-label="Close" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <span style="font-size: 14px; color: var(--ink2); margin-top: -4px">{{d.casLine}}.</span>
+        <div role="radiogroup" aria-label="What looks off" style="display: grid; gap: 8px">
+          <sc-for list="{{d.wrongOpts}}" as="o" hint-placeholder-count="3">
+            <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="min-height: 48px; padding: 0 14px; border-radius: 12px; border: 0; background: {{o.bg}}; color: {{o.ink}}; box-shadow: {{o.ring}}; text-align: left; font-size: 15px; font-weight: 600; cursor: pointer">{{o.t}}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{d.hasWrong}}" hint-placeholder-val="{{ false }}">
+          <div aria-live="polite" style="display: grid; gap: 8px; background: var(--tint); border-radius: 14px; padding: 12px">
+            <span style="font-size: 14px">{{d.wrongHelp}}</span>
+            <button type="button" onClick="{{openCas}}" style="justify-self: start; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 14.5px; font-weight: 600; cursor: pointer">Add a newer CAS</button>
+          </div>
+        </sc-if>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 16px; right: 16px; bottom: 92px; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 16px; border-radius: 14px; background: var(--ink); color: var(--bg); font-size: 14.5px">
+      <span style="flex: 1">{{toastText}}</span>
+      <button type="button" onClick="{{hideToast}}" style="min-height: 40px; padding: 0 12px; border: 0; background: transparent; color: var(--bg); font-size: 14px; font-weight: 600; cursor: pointer">OK</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"cas":{"editor":"enum","options":["added","none"],"default":"added"},"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"open":{"editor":"enum","options":["none","plan","path","cover","cas","holdings"],"default":"none"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sheet: undefined, pick: null, planned: false, retried: false, casAdded: false, wrong: null, reminded: false, toast: null }; }
+  renderVals() {
+    var s = this.state, self = this;
+    var casOn = (this.props.cas ?? 'added') === 'added' || s.casAdded;
+    var sheet = s.sheet !== undefined ? s.sheet : ((this.props.open ?? 'none') === 'none' ? null : this.props.open);
+    var st = s.retried ? 'ready' : (this.props.state ?? 'ready');
+    var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
+    var sum = function (a) { return a.reduce(function (t, x) { return t + x; }, 0); };
+    // ---- inputs: paise, packages/core on the sample family as of 15 Oct (same as Invest v1) ----
+    var ESSM = {"Jul": {"Fixed costs": 7268200, "Family support": 1000000, "Groceries": 511800, "Utilities": 214000, "Mobile & internet": 165800, "Fuel": 237700}, "Aug": {"Fixed costs": 5378200, "Family support": 1000000, "Groceries": 560800, "Utilities": 286000, "Mobile & internet": 165800, "Fuel": 617600}, "Sep": {"Fixed costs": 5378200, "Family support": 1000000, "Groceries": 446400, "Utilities": 241000, "Mobile & internet": 165800, "Fuel": 386900}};
+    var BANK = 14176365;
+    var PF = { value: 127828450, cost: 84700000, xirr: 14.2,
+      // [name, plan, category, asset, value, your XIRR % (portfolioView), first purchase date, NAV then, NAV on 15 Oct (both from the CAS), extra fee/yr]
+      funds: [['Kestrel Flexi Cap', 'Regular', 'Flexi cap', 'equity', 55624980, 16, '2021-01-05', 10, 21.0189, 500625], ['Teak ELSS Tax Saver', 'Regular', 'ELSS', 'equity', 27897843, 14.3, '2021-03-10', 10, 21.0805, 251081],
+        ['Banyan Nifty 50 Index', 'Direct', 'Index', 'equity', 22165405, 13.2, '2022-04-05', 10, 14.265, 0], ['Lotus Short Duration', 'Direct', 'Debt', 'debt', 12896200, 10, '2024-02-12', 10, 12.8962, 0], ['Monsoon Small Cap', 'Regular', 'Small cap', 'equity', 9244022, 7.2, '2023-06-05', 10, 11.6857, 83196]],
+      sipGaps: 0, sells: 0, since: 'Jan 2021' };   // from the CAS: every SIP instalment present, no redemptions
+    var INCOME_M = 14500000, TERM_COVER = 1000000000;   // monthly income and term sum assured (paise), as before
+    var ENDOW = { irrLo: 0.48, irrHi: 4.6 }, TERM_X = Math.round(TERM_COVER / (INCOME_M * 12) * 10) / 10;
+    var termNeed = 10 * INCOME_M * 12, termGap = Math.max(0, termNeed - TERM_COVER);
+    var SAVED_WITH_MUNIM = 0;   // the savings pot: nothing saved through Munim yet in this scenario
+    // ---- safety net (D-040) ----
+    var months = Object.keys(ESSM), cats = Object.keys(ESSM[months[0]]);
+    var essAvg = Math.round(sum(months.map(function (m) { return sum(cats.map(function (k) { return ESSM[m][k]; })); })) / months.length), target = 6 * essAvg;
+    var debtFund = casOn ? sum(PF.funds.filter(function (f) { return f[3] === 'debt'; }).map(function (f) { return f[4]; })) : 0;
+    var have = BANK + debtFund, gap = Math.max(0, target - have), mCov = Math.round(have / essAvg * 10) / 10;
+    var pct = function (v) { return Math.min(100, Math.round(v / target * 1000) / 10) + '%'; };
+    var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var landing = function (n) { var i = 9 + n; return MON[i % 12] + ' ' + (2026 + Math.floor(i / 12)); };
+    var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
+    var pills = [500000, 1000000, 2000000].map(function (a) { var on = s.pick === a, cs = chip(on); return { amt: R(a), when: 'ready in ' + Math.ceil(gap / a) + ' mo', on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ pick: a }); } }; });
+    // ---- your money vs your funds: fund = point-to-point growth since your first purchase (CAS NAVs); you = XIRR on your dates ----
+    var END = new Date('2026-10-15');
+    var cmp = PF.funds.map(function (f) { var yrs = (END - new Date(f[6])) / (365.25 * 864e5); return { fund: Math.round((Math.pow(f[8] / f[7], 1 / yrs) - 1) * 1000) / 10, you: f[5] }; });
+    var ahead = cmp.filter(function (c) { return c.you - c.fund >= 0.5; }).length, behind = cmp.filter(function (c) { return c.fund - c.you >= 0.5; }).length;
+    var regExtra = sum(PF.funds.map(function (f) { return f[9]; }));
+    // ---- money path ----
+    var ST = { done: ['var(--btn)', 'none', 'var(--ink2)', '400', '✓', 'var(--btn)', 'var(--on-btn)', 'none', 'var(--link)'], wait: ['var(--mari)', 'none', 'var(--ink2)', '400', '2', 'var(--mari-tint)', 'var(--mari-ink)', 'none', 'var(--mari-ink)'],
+      now: ['var(--card)', 'inset 0 0 0 2px var(--btn)', 'var(--link)', '700', '3', 'var(--card)', 'var(--link)', 'inset 0 0 0 2px var(--btn)', 'var(--link)'], later: ['var(--tint)', 'none', 'var(--muted)', '400', '', 'var(--tint)', 'var(--muted)', 'none', 'var(--muted)'] };
+    var steps = [['Buffer ✓', 'Starter buffer', 'done', 'Done', '1 month of essentials (' + R(essAvg) + ') is in your account.'],
+      ['Debt · 20 Dec', 'Costly debt', 'wait', 'Waiting until 20 Dec', 'Card paid in full every month ✓. Orbit loan at 13.5%: for now, ask Orbit to match 11.25% (see Spends).'],
+      ['Safety net', 'Emergency fund', 'now', 'You’re here', mCov + ' of 6 months · ' + R(have) + ' of ' + R(target)],
+      ['Insurance', 'Insurance check', 'later', 'Next', 'Term cover is ' + TERM_X + '× income; a health co-pay is coming.'],
+      ['Invest more', 'Invest more', 'later', 'Later', 'You already invest ₹10,000 a month. Add more once steps 1–4 are done.']].map(function (x, i, arr) { var t = ST[x[2]];
+        return { short: x[0], t: x[1], st: x[3], d: x[4], seg: t[0], segRing: t[1], labInk: t[2], labW: t[3], mark: t[4] || String(i + 1), dotBg: t[5], dotInk: t[6], dotRing: t[7], stInk: t[8], rule: i < arr.length - 1 ? '1px solid var(--hair)' : '0' }; });
+    // ---- section order (D-041): investing first for anyone with investments (P0), then spare money (P1), then cover (P2); no CAS yet = next move first.
+    //      Guard from option A: the spare-money card always shows the money-path position, so an open safety step stays visible under the investing card ----
+    var order = casOn ? ['invest', 'next', 'cover'] : ['next', 'addcas', 'cover'];
+    var sections = order.map(function (k) { return { isPath: k === 'path', isNext: k === 'next', isInvest: k === 'invest', isAddCas: k === 'addcas', isCover: k === 'cover' }; });
+    var policies = [
+      { name: 'Term life · Tarang · ₹1 crore', sub: 'Next premium 2 Nov', fact: TERM_X + '× your yearly income. A common rule of thumb is 10×.', hasAct: true, actHead: 'To reach 10×:', act: 'about ' + R(termGap) + ' more cover (' + R(termNeed) + ' in all on ' + R(INCOME_M * 12) + ' a year). Pure term plans are the category to compare.', tag: 'Below rule of thumb', tagInk: 'var(--mari-ink)', tagBg: 'var(--mari-tint)' },
+      { name: 'Health · Suraksha · ₹10 lakh', sub: 'Family floater for 3', fact: 'Your father turns 60 within 2 years; after that he pays 20% of each claim.', hasAct: true, actHead: 'Before the co-pay starts:', act: 'at renewal, compare a top-up or a plan without co-pay for parents.', tag: 'Review', tagInk: 'var(--mari-ink)', tagBg: 'var(--mari-tint)' },
+      { name: 'Endowment · Bharosa Jeevan Nidhi', sub: '₹5,000 a month · next 10 Nov', fact: 'Projected return ' + ENDOW.irrLo.toFixed(1) + '–' + ENDOW.irrHi.toFixed(1) + '% a year, from the insurer’s own illustration (not guaranteed).', hasAct: false, tag: 'Know your return', tagInk: 'var(--link)', tagBg: 'var(--tint2)' } ];
+    policies.forEach(function (p, i) { p.rule = i < policies.length - 1 ? '1px solid var(--hair)' : '0'; });
+    var WRONG = { missing: 'Bought after 15 Oct? Add a newer CAS. Funds held in a demat account show in your depository statement (NSDL or CDSL), not in this one.',
+      value: 'Values use prices from 15 Oct, the date of your CAS. Add a newer CAS to bring them up to date.',
+      notmine: 'Funds held jointly appear in every holder’s statement. Add a newer CAS, or ask Munim to leave a fund out of your totals.' };
+    var wrongOpts = [['missing', 'A fund is missing'], ['value', 'A value looks off'], ['notmine', 'A fund isn’t mine']].map(function (o) { var on = s.wrong === o[0], cs = chip(on); return { t: o[1], on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ wrong: o[0] }); } }; });
+    var d = {
+      nextKicker: casOn ? 'Spare money · your money path' : 'Your next move · your money path',
+      bankW: pct(BANK), fundW: pct(debtFund), efLabel: 'Safety net ' + R(have) + ' of ' + R(target), efHave: R(have) + ' of ' + R(target), efMonths: mCov + ' of 6 months',
+      gapLine: R(gap) + ' to go (' + R(BANK) + ' in the bank' + (debtFund ? ' + ' + R(debtFund) + ' debt fund' : '') + ').',
+      pills: pills, cta: s.pick ? 'Plan ' + R(s.pick) + ' a month' : 'Pick an amount', ctaBg: s.pick ? 'var(--btn)' : 'var(--hair2)', ctaInk: s.pick ? 'var(--on-btn)' : 'var(--muted)',
+      plannedLine: s.pick ? '✓ ' + R(s.pick) + ' every 1st · ready by ' + landing(Math.ceil(gap / s.pick)) : '',
+      essLink: 'Essentials ' + R(essAvg) + ' a month · what counts',
+      essRows: cats.map(function (k) { return { l: k === 'Fixed costs' ? 'Fixed costs (rent, EMIs, insurance)' : k, v: R(Math.round(sum(months.map(function (m) { return ESSM[m][k]; })) / months.length)) }; }),
+      xirr: PF.xirr + '%', earnedLine: 'What your money earned · ' + R(PF.cost) + ' put in → ' + R(PF.value),
+      verdicts: ['Ahead of your funds\u2019 own growth on ' + ahead + ' of ' + cmp.length + (behind ? '; ' + behind + ' behind' : '') + '.', 'No SIP pauses or sells since ' + PF.since + '.'],
+      regExtra: R(regExtra), pot: R(SAVED_WITH_MUNIM), casLine: 'CAS of 15 Oct · ' + PF.funds.length + ' funds',
+      casSteps: [{ n: '1', t: 'Ask for it', d: 'On the CAMS or KFintech website, or MF Central, request a detailed statement (CAS) for all fund houses, using the email linked to your funds.' },
+        { n: '2', t: 'Set a password', d: 'You choose it while asking. The PDF reaches your email within minutes.' },
+        { n: '3', t: 'Choose it here', d: 'Munim reads it on your phone and shows your real return.' }],
+      wrongOpts: wrongOpts, hasWrong: !!s.wrong, wrongHelp: s.wrong ? WRONG[s.wrong] : '',
+      endowRange: ENDOW.irrLo.toFixed(1) + '–' + ENDOW.irrHi.toFixed(1) + '%/yr', steps: steps, policies: policies
+    };
+    return { theme: this.props.theme ?? 'light', d: d, sections: sections,
+      isLoading: st === 'loading', isError: st === 'error', isEmpty: st === 'empty', showData: st === 'ready' || st === 'error', retry: function () { self.setState({ retried: true }); },
+      nav: { today: 'Today', invest: 'Invest', spends: 'Spends', credit: 'Credit', ask: 'Ask Munim' },
+      planned: s.planned, notPlanned: !s.planned, noPick: !s.pick,
+      planOpen: sheet === 'plan', pathOpen: sheet === 'path', coverOpen: sheet === 'cover', casSheet: sheet === 'cas', holdSheet: sheet === 'holdings',
+      openCas: function () { self.setState({ sheet: 'cas' }); }, openHold: function () { self.setState({ sheet: 'holdings', wrong: null }); },
+      addCas: function () { self.setState({ casAdded: true, sheet: null, toast: PF.funds.length + ' funds added from your CAS · read on your phone' }); },
+      reminded: s.reminded, notReminded: !s.reminded, remind: function () { self.setState({ reminded: true }); }, unremind: function () { self.setState({ reminded: false }); },
+      toast: !!s.toast, toastText: s.toast || '', hideToast: function () { self.setState({ toast: null }); },
+      openPlan: function () { self.setState({ sheet: 'plan' }); }, openPath: function () { self.setState({ sheet: 'path' }); }, openCover: function () { self.setState({ sheet: 'cover' }); },
+      plan: function () { if (s.pick) self.setState({ planned: true, sheet: null }); },
+      closeSheets: function () { self.setState({ sheet: null }); } };
+  }
+}
+</script>
+</body>
+</html>

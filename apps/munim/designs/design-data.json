@@ -1,0 +1,711 @@
+{
+ "Category": {
+  "DATA": {
+   "Food delivery": {
+    "m": [
+     505100,
+     541900,
+     1044100,
+     492300
+    ],
+    "u15": [
+     134800,
+     385400,
+     526200
+    ],
+    "tx": [
+     [
+      "2026-10-14",
+      "Zomato",
+      62600,
+      "bank:4521"
+     ],
+     [
+      "2026-10-13",
+      "Zomato",
+      67000,
+      "bank:4521"
+     ],
+     [
+      "2026-10-09",
+      "Swiggy",
+      52600,
+      "bank:4521"
+     ],
+     [
+      "2026-10-05",
+      "Swiggy",
+      49300,
+      "bank:4521"
+     ],
+     [
+      "2026-10-05",
+      "Zomato",
+      41500,
+      "bank:4521"
+     ],
+     [
+      "2026-10-03",
+      "Swiggy",
+      47800,
+      "bank:4521"
+     ],
+     [
+      "2026-10-03",
+      "Swiggy",
+      39500,
+      "bank:4521"
+     ],
+     [
+      "2026-10-01",
+      "Swiggy",
+      61900,
+      "bank:4521"
+     ],
+     [
+      "2026-10-01",
+      "Zomato",
+      70100,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Quick commerce": {
+    "m": [
+     275300,
+     277600,
+     261100,
+     138200
+    ],
+    "u15": [
+     152600,
+     152000,
+     143800
+    ],
+    "tx": [
+     [
+      "2026-10-07",
+      "Blinkit",
+      74800,
+      "bank:4521"
+     ],
+     [
+      "2026-10-03",
+      "Blinkit",
+      63400,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Dining": {
+    "m": [
+     643600,
+     600200,
+     447600,
+     272900
+    ],
+    "u15": [
+     259300,
+     479500,
+     447600
+    ],
+    "tx": [
+     [
+      "2026-10-04",
+      "Chaayos",
+      272900,
+      "card:9012"
+     ]
+    ]
+   },
+   "Shopping": {
+    "m": [
+     561900,
+     753000,
+     458400,
+     127200
+    ],
+    "u15": [
+     0,
+     282800,
+     117700
+    ],
+    "tx": [
+     [
+      "2026-10-06",
+      "Amazon",
+      127200,
+      "card:9012"
+     ]
+    ]
+   },
+   "Cabs": {
+    "m": [
+     188300,
+     204600,
+     211500,
+     82800
+    ],
+    "u15": [
+     164600,
+     108400,
+     145900
+    ],
+    "tx": [
+     [
+      "2026-10-12",
+      "Uber",
+      29500,
+      "bank:4521"
+     ],
+     [
+      "2026-10-04",
+      "Rapido",
+      26100,
+      "bank:4521"
+     ],
+     [
+      "2026-10-04",
+      "Uber",
+      27200,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Fuel": {
+    "m": [
+     237700,
+     617600,
+     386900,
+     220000
+    ],
+    "u15": [
+     0,
+     617600,
+     386900
+    ],
+    "tx": [
+     [
+      "2026-10-13",
+      "HPCL",
+      220000,
+      "card:9012"
+     ]
+    ]
+   },
+   "Utilities": {
+    "m": [
+     214000,
+     286000,
+     241000,
+     198000
+    ],
+    "u15": [
+     214000,
+     286000,
+     241000
+    ],
+    "tx": [
+     [
+      "2026-10-12",
+      "DHBVN Electricity",
+      198000,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Mobile & internet": {
+    "m": [
+     165800,
+     165800,
+     165800,
+     59900
+    ],
+    "u15": [
+     59900,
+     59900,
+     59900
+    ],
+    "tx": [
+     [
+      "2026-10-15",
+      "Airtel",
+      59900,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Cash withdrawal": {
+    "m": [
+     500000,
+     500000,
+     500000,
+     500000
+    ],
+    "u15": [
+     500000,
+     500000,
+     500000
+    ],
+    "tx": [
+     [
+      "2026-10-09",
+      "ATM cash",
+      500000,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Fitness": {
+    "m": [
+     199900,
+     199900,
+     199900,
+     199900
+    ],
+    "u15": [
+     199900,
+     199900,
+     199900
+    ],
+    "tx": [
+     [
+      "2026-10-08",
+      "cult.fit",
+      199900,
+      "bank:4521"
+     ]
+    ]
+   }
+  }
+ },
+ "Transactions": {
+  "TX": [
+   [
+    "2026-10-15",
+    "debit",
+    59900,
+    "Airtel",
+    "Mobile & internet",
+    "bank:4521"
+   ],
+   [
+    "2026-10-14",
+    "debit",
+    62600,
+    "Zomato",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-14",
+    "debit",
+    14900,
+    "YouTube Premium",
+    "Subscriptions",
+    "card:9012"
+   ],
+   [
+    "2026-10-13",
+    "debit",
+    67000,
+    "Zomato",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-13",
+    "debit",
+    220000,
+    "HPCL",
+    "Fuel",
+    "card:9012"
+   ],
+   [
+    "2026-10-12",
+    "debit",
+    198000,
+    "DHBVN Electricity",
+    "Utilities",
+    "bank:4521"
+   ],
+   [
+    "2026-10-12",
+    "debit",
+    29500,
+    "Uber",
+    "Cabs",
+    "bank:4521"
+   ],
+   [
+    "2026-10-11",
+    "debit",
+    499900,
+    "LingoPro",
+    "Subscriptions",
+    "card:9012"
+   ],
+   [
+    "2026-10-10",
+    "debit",
+    500000,
+    "Bharosa Life",
+    "Insurance",
+    "bank:4521"
+   ],
+   [
+    "2026-10-09",
+    "debit",
+    500000,
+    "ATM cash",
+    "Cash withdrawal",
+    "bank:4521"
+   ],
+   [
+    "2026-10-09",
+    "debit",
+    52600,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-09",
+    "debit",
+    11900,
+    "Spotify",
+    "Subscriptions",
+    "card:9012"
+   ],
+   [
+    "2026-10-08",
+    "debit",
+    199900,
+    "cult.fit",
+    "Fitness",
+    "bank:4521"
+   ],
+   [
+    "2026-10-07",
+    "debit",
+    1000000,
+    "Person-to-person",
+    "Family support",
+    "bank:4521"
+   ],
+   [
+    "2026-10-07",
+    "debit",
+    74800,
+    "Blinkit",
+    "Quick commerce",
+    "bank:4521"
+   ],
+   [
+    "2026-10-06",
+    "debit",
+    127200,
+    "Amazon",
+    "Shopping",
+    "card:9012"
+   ],
+   [
+    "2026-10-05",
+    "debit",
+    1260100,
+    "Kestrel Auto Finance",
+    "Loan EMI",
+    "bank:4521"
+   ],
+   [
+    "2026-10-05",
+    "debit",
+    1000000,
+    "Mutual fund SIP",
+    "Investments",
+    "bank:4521"
+   ],
+   [
+    "2026-10-05",
+    "debit",
+    49300,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-05",
+    "debit",
+    41500,
+    "Zomato",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-04",
+    "debit",
+    272900,
+    "POS CHAAYOS SECTOR 29",
+    "Dining",
+    "card:9012"
+   ],
+   [
+    "2026-10-04",
+    "debit",
+    26100,
+    "Rapido",
+    "Cabs",
+    "bank:4521"
+   ],
+   [
+    "2026-10-04",
+    "debit",
+    27200,
+    "Uber",
+    "Cabs",
+    "bank:4521"
+   ],
+   [
+    "2026-10-03",
+    "debit",
+    1000000,
+    "OWN A",
+    "Self transfer",
+    "bank:4521"
+   ],
+   [
+    "2026-10-03",
+    "debit",
+    47800,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-03",
+    "debit",
+    39500,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-03",
+    "debit",
+    63400,
+    "Blinkit",
+    "Quick commerce",
+    "bank:4521"
+   ],
+   [
+    "2026-10-02",
+    "debit",
+    2600000,
+    "Person-to-person",
+    "Rent",
+    "bank:4521"
+   ],
+   [
+    "2026-10-01",
+    "credit",
+    14500000,
+    "ACME TECHNOLOGIES PVT LTD SALARY",
+    "Salary",
+    "bank:4521"
+   ],
+   [
+    "2026-10-01",
+    "debit",
+    61900,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-01",
+    "debit",
+    70100,
+    "Zomato",
+    "Food delivery",
+    "bank:4521"
+   ]
+  ]
+ },
+ "Invest": {
+  "ESSM": {
+   "Jul": {
+    "Fixed costs": 7268200,
+    "Family support": 1000000,
+    "Groceries": 511800,
+    "Utilities": 214000,
+    "Mobile & internet": 165800,
+    "Fuel": 237700
+   },
+   "Aug": {
+    "Fixed costs": 5378200,
+    "Family support": 1000000,
+    "Groceries": 560800,
+    "Utilities": 286000,
+    "Mobile & internet": 165800,
+    "Fuel": 617600
+   },
+   "Sep": {
+    "Fixed costs": 5378200,
+    "Family support": 1000000,
+    "Groceries": 446400,
+    "Utilities": 241000,
+    "Mobile & internet": 165800,
+    "Fuel": 386900
+   }
+  },
+  "BANK": 14176365,
+  "PF": {
+   "value": 127828450,
+   "cost": 84700000,
+   "xirr": 14.2,
+   "funds": [
+    [
+     "Kestrel Flexi Cap",
+     "Regular",
+     "Flexi cap",
+     "equity",
+     55624980,
+     16,
+     "2021-01-05",
+     10,
+     21.0189,
+     500625
+    ],
+    [
+     "Teak ELSS Tax Saver",
+     "Regular",
+     "ELSS",
+     "equity",
+     27897843,
+     14.3,
+     "2021-03-10",
+     10,
+     21.0805,
+     251081
+    ],
+    [
+     "Banyan Nifty 50 Index",
+     "Direct",
+     "Index",
+     "equity",
+     22165405,
+     13.2,
+     "2022-04-05",
+     10,
+     14.265,
+     0
+    ],
+    [
+     "Lotus Short Duration",
+     "Direct",
+     "Debt",
+     "debt",
+     12896200,
+     10,
+     "2024-02-12",
+     10,
+     12.8962,
+     0
+    ],
+    [
+     "Monsoon Small Cap",
+     "Regular",
+     "Small cap",
+     "equity",
+     9244022,
+     7.2,
+     "2023-06-05",
+     10,
+     11.6857,
+     83196
+    ]
+   ],
+   "sipGaps": 0,
+   "sells": 0,
+   "since": "Jan 2021"
+  },
+  "INCOME_M": 14500000,
+  "TERM_COVER": 1000000000,
+  "ENDOW": {
+   "irrLo": 0.48,
+   "irrHi": 4.6
+  },
+  "SAVED_WITH_MUNIM": 0
+ },
+ "Xray": {
+  "PF": {
+   "value": 127828450,
+   "cost": 84700000,
+   "xirr": 14.2,
+   "sipGaps": 0,
+   "sells": 0,
+   "funds": [
+    [
+     "Kestrel Flexi Cap",
+     "Regular",
+     "Flexi cap",
+     "equity",
+     55624980,
+     16,
+     "2021-01-05",
+     10,
+     21.0189,
+     500625
+    ],
+    [
+     "Teak ELSS Tax Saver",
+     "Regular",
+     "ELSS",
+     "equity",
+     27897843,
+     14.3,
+     "2021-03-10",
+     10,
+     21.0805,
+     251081
+    ],
+    [
+     "Banyan Nifty 50 Index",
+     "Direct",
+     "Index",
+     "equity",
+     22165405,
+     13.2,
+     "2022-04-05",
+     10,
+     14.265,
+     0
+    ],
+    [
+     "Lotus Short Duration",
+     "Direct",
+     "Debt",
+     "debt",
+     12896200,
+     10,
+     "2024-02-12",
+     10,
+     12.8962,
+     0
+    ],
+    [
+     "Monsoon Small Cap",
+     "Regular",
+     "Small cap",
+     "equity",
+     9244022,
+     7.2,
+     "2023-06-05",
+     10,
+     11.6857,
+     83196
+    ]
+   ]
+  }
+ }
+}

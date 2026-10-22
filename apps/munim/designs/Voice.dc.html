@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ask Munim</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;700&amp;family=Noto+Serif+Devanagari:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+@keyframes ring{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+.ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--link);animation:ring 1.8s ease-out infinite}
+.ring2{animation-delay:.9s}
+@keyframes dot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--link);animation:dot 1.2s infinite}
+.dot2{animation-delay:.2s}.dot3{animation-delay:.4s}
+@media (prefers-reduced-motion: reduce){.ring,.dot{animation:none}.ring{opacity:.3}}
+.serif{font-family:'Noto Serif','Noto Serif Devanagari',serif;font-weight:700}
+.orb{position:relative;width:76px;height:76px;border-radius:50%;border:4px solid var(--card);display:grid;place-items:center;cursor:pointer;padding:0}
+.chip{min-height:44px;padding:0 14px;border-radius:999px;border:0;box-shadow:inset 0 0 0 1px var(--hair2);background:transparent;color:var(--ink);font-size:14px;cursor:pointer;text-align:left}
+.t-light{--bg:#F2F7F6;--band:#DDEEEA;--band2:#CBE5E0;--band3:#BFDFD9;--card:#FFFFFF;--ink:#10201E;--ink2:#34514D;--muted:#4E6863;--hair:#D6E6E2;--hair2:#C7DBD7;--tint:#E8F2F0;--tint2:#E1F0ED;--btn:#0F5E58;--on-btn:#FFFFFF;--link:#0F5E58;--warn:#9A5B00;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#FBF1DD;--mari-ink:#6E4600;--err-tint:#FCEBE8;--err-ink:#A3271C;--scrim:rgba(0,0,0,.45);--skel:#D3E3DF;--ai1:#8E7CF0;--ai2:#5B47D6;--ai3:#2E2A7A;--ai-ink:#4B3BC4;--ai-glow:rgba(91,71,214,.42);--orb1:#86E6D9;--orb2:#14897F;--orb3:#063D39;--orb-glow:rgba(15,94,88,.45);color-scheme:light}
+.t-dark{--bg:#0B1413;--band:#10211E;--band2:#163029;--band3:#1B3A34;--card:#14201E;--ink:#E6F0EE;--ink2:#C2D4D0;--muted:#93ABA6;--hair:#263835;--hair2:#334844;--tint:#1C2D2A;--tint2:#1E3330;--btn:#5CC2B4;--on-btn:#06201C;--link:#7ED3C7;--warn:#F2B860;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#33270F;--mari-ink:#F6C978;--err-tint:#3A1A17;--err-ink:#FF9E92;--scrim:rgba(0,0,0,.62);--skel:#1D2E2B;--ai1:#9C8CFF;--ai2:#6A55E6;--ai3:#352F8C;--ai-ink:#B9AEFF;--ai-glow:rgba(142,124,240,.38);--orb1:#A6F2E7;--orb2:#2BA295;--orb3:#0A4C46;--orb-glow:rgba(92,194,180,.40);color-scheme:dark}
+@keyframes shimmer{0%{opacity:.55}50%{opacity:1}100%{opacity:.55}}
+.skel{background:var(--skel);border-radius:8px;animation:shimmer 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+@keyframes breathe{0%,100%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 0 var(--ai-glow)}50%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 7px rgba(0,0,0,0)}}
+.ai-orb{background:radial-gradient(circle at 30% 25%,var(--ai1) 0%,var(--ai2) 52%,var(--ai3) 100%);animation:breathe 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.ai-orb{animation:none;box-shadow:0 8px 22px var(--ai-glow)}}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+.orb-teal{background:radial-gradient(circle at 30% 25%,var(--orb1) 0%,var(--orb2) 48%,var(--orb3) 100%);box-shadow:0 10px 24px var(--orb-glow)}
+.orb-teal::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,0,0,0) 0deg,var(--orb1) 80deg,var(--orb2) 120deg,rgba(0,0,0,0) 170deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:orbspin 3.6s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
+</style>
+</helmet>
+<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums">
+
+  <div aria-hidden="true" style="position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+    <div style="height: 120px; margin: -20px -16px 0; background: var(--band)"></div>
+    <div style="height: 200px; border-radius: 24px; background: var(--card); box-shadow: 0 0 0 1px var(--hair)"></div>
+    <div style="height: 80px; border-radius: 20px; background: var(--card); box-shadow: 0 0 0 1px var(--hair)"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
+
+  <section role="dialog" aria-label="Ask Munim" style="position: absolute; left: 0; right: 0; bottom: 0; min-height: 580px; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 26px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+    <div aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); align-self: center"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+      <span style="font-size: 13px; color: var(--muted)">Asking about <b style="color: var(--ink2); font-weight: 600">your money · Rohan</b></span>
+      <a href="Main.dc.html" aria-label="Close" style="width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; color: var(--ink2)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </a>
+    </div>
+
+    <sc-if value="{{isIdle}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 16px; flex: 1">
+        <div style="display: grid; gap: 6px">
+          <b class="serif" style="font-size: 26px; line-height: 1.15">Ask anything about your money</b>
+          <span style="font-size: 15px; color: var(--ink2)">Speak in Hindi or English. Every answer shows its math.</span>
+        </div>
+        <div style="display: grid; gap: 8px">
+          <button type="button" class="chip" onClick="{{ask}}">Is my card bill covered?</button>
+          <button type="button" class="chip" onClick="{{ask}}">What is cult.fit costing me?</button>
+          <button type="button" class="chip" onClick="{{ask}}">मेरा पैसा कहाँ जा रहा है?</button>
+        </div>
+        <div style="margin-top: auto; display: grid; justify-items: center; gap: 0">
+          <button type="button" class="orb orb-teal" aria-label="Tap to talk" onClick="{{listen}}">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+          </button>
+          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">Tap to talk · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">Type instead</button></span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isListening}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 18px; flex: 1">
+        <div style="display: grid; gap: 6px">
+          <span style="font-size: 13px; font-weight: 600; color: var(--link)">Listening · Hindi or English</span>
+          <p class="serif" style="margin: 0; font-size: 24px; line-height: 1.25">Is the card bill covered?</p>
+        </div>
+        <div aria-hidden="true" style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 56px">
+          <sc-for list="{{bars}}" as="bar" hint-placeholder-count="15">
+            <span style="width: 5px; border-radius: 3px; background: var(--link); height: {{bar.h}}px"></span>
+          </sc-for>
+        </div>
+        <div style="margin-top: auto; display: grid; justify-items: center; gap: 8px">
+          <button type="button" class="orb orb-teal" aria-label="Stop and get the answer" onClick="{{think}}">
+            <span class="ring"></span><span class="ring ring2"></span>
+            <span style="width: 22px; height: 22px; border-radius: 5px; background: #FFFFFF"></span>
+          </button>
+          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">Tap to stop · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">Type instead</button></span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isThinking}}" hint-placeholder-val="{{ false }}">
+      <div aria-busy="true" style="display: flex; flex-direction: column; gap: 14px; flex: 1">
+        <p style="margin: 0; align-self: flex-end; max-width: 80%; background: var(--tint); border-radius: 16px 16px 4px 16px; padding: 10px 14px; font-size: 14.5px">Is the card bill covered?</p>
+        <div style="display: grid; gap: 10px; border-left: 3px solid var(--link); padding: 4px 0 4px 14px">
+          <span role="status" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted)"><span class="dot"></span><span class="dot dot2"></span><span class="dot dot3"></span>Checking your bank and bills…</span>
+          <span class="skel" style="height: 14px; width: 92%"></span>
+          <span class="skel" style="height: 14px; width: 80%"></span>
+          <span class="skel" style="height: 14px; width: 55%"></span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isAnswer}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 14px; flex: 1">
+        <p style="margin: 0; align-self: flex-end; max-width: 80%; background: var(--tint); border-radius: 16px 16px 4px 16px; padding: 10px 14px; font-size: 14.5px">Is the card bill covered?</p>
+        <div style="display: grid; gap: 8px; border-left: 3px solid var(--link); padding: 2px 0 2px 14px">
+          <p style="margin: 0; font-size: 16.5px; line-height: 1.5"><b>Yes.</b> The <b>₹36,343</b> card bill is due 24 Oct. Your bank has <b>₹1,41,764</b>. After every payment due before salary, <b>₹93,083</b> is left.</p>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+            <button type="button" onClick="{{toggleMath}}" aria-expanded="{{mathOpen}}" style="min-height: 44px; border: 0; background: transparent; padding: 0; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{mathLabel}}</button>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16.5 8.5a5 5 0 0 1 0 7"></path></svg>Speaking
+            </span>
+          </div>
+          <sc-if value="{{mathOpen}}" hint-placeholder-val="{{ false }}">
+            <div style="background: var(--tint); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; font-size: 13.5px; color: var(--ink2)">
+              <span>Bank balance − payments due before salary</span>
+              <div style="display: flex; justify-content: space-between"><span>Bank (SMS alerts, 15 Oct)</span><span>₹1,41,764</span></div>
+              <div style="display: flex; justify-content: space-between"><span>Left after all dues</span><span>₹93,083</span></div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <button type="button" class="chip">Remind me on 22 Oct</button>
+          <button type="button" class="chip">See all bills</button>
+        </div>
+        <div style="margin-top: auto; display: grid; justify-items: center; gap: 8px">
+          <button type="button" class="orb orb-teal" aria-label="Ask another question" onClick="{{listen}}">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+          </button>
+          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">Ask another · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">Type instead</button></span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="display: flex; flex-direction: column; gap: 12px; flex: 1">
+        <span style="align-self: flex-start; font-size: 13px; font-weight: 600; background: var(--err-tint); color: var(--err-ink); border-radius: 999px; padding: 4px 10px">Didn't catch that</span>
+        <b class="serif" style="font-size: 26px; line-height: 1.15">Munim couldn't hear you</b>
+        <span style="font-size: 15px; color: var(--ink2)">The connection dropped while you were speaking. Try again, or type your question instead.</span>
+        <div style="margin-top: auto; display: grid">
+          <button type="button" onClick="{{listen}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Try again</button>
+          <button type="button" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Type instead</button>
+        </div>
+      </div>
+    </sc-if>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: null, mathOpen: false }; }
+  renderVals() {
+    var self = this;
+    var START = { ready: 'listening', loading: 'thinking', error: 'error', empty: 'idle' };
+    var step = this.state.step || START[this.props.state ?? 'ready'];
+    var heights = [10, 18, 30, 44, 26, 38, 52, 34, 22, 40, 28, 16, 24, 12, 8];
+    return {
+      theme: this.props.theme ?? 'light',
+      bars: heights.map(function (h) { return { h: h }; }),
+      isIdle: step === 'idle', isListening: step === 'listening', isThinking: step === 'thinking', isAnswer: step === 'answer', isError: step === 'error',
+      mathOpen: this.state.mathOpen,
+      mathLabel: this.state.mathOpen ? 'Hide the math' : 'Show the math',
+      ask: function () { self.setState({ step: 'thinking' }); setTimeout(function () { self.setState({ step: 'answer' }); }, 1200); },
+      think: function () { self.setState({ step: 'thinking' }); setTimeout(function () { self.setState({ step: 'answer' }); }, 1200); },
+      listen: function () { self.setState({ step: 'listening', mathOpen: false }); },
+      toggleMath: function () { self.setState({ mathOpen: !self.state.mathOpen }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

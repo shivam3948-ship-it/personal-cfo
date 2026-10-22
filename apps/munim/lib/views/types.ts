@@ -16,5 +16,8 @@ export interface HomeView {
   tiles: Tile[];              // loans, insurance, credit, subscriptions
 }
 
-export interface ViewMap { home: HomeView }
+// Data blocks for screens compiled from the design canvas: same names and shapes as the designs' sample data
+// (designs/design-data.json), computed here from @munim/core.
+export type DesignData = Record<string, unknown>;
+export interface ViewMap { home: HomeView; invest: DesignData; xray: DesignData; transactions: DesignData; category: DesignData }
 export type ScreenKey = keyof ViewMap;
