@@ -10,7 +10,7 @@ import { annualPremium, claimPlan, policyView } from '@core/finance/insurance';
 import { groupOf } from '@core/finance/categorize';
 import { foundationPlan } from '@core/finance/advice';
 import { safetyNet } from '@core/finance/essentials';
-import { namesFunds, type AdviceMode } from '@/lib/session';
+import { DISCLAIMER, namesFunds, type AdviceMode } from '@/lib/session';
 import { portfolioView } from '@core/portfolio/engine';
 import { xrayInsights, fdComparison } from '@core/portfolio/insights';
 import { addAction, gcalLink, type Action } from '@/lib/actions';
@@ -226,7 +226,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       return { result: {
         first_thing_to_fix: plan.firstGap ? { step: plan.firstGap.id, recommendation: plan.firstGap.recommendation } : null,
         steps: plan.steps.map((st) => ({ order: st.order, step: st.id, status: st.status, finding: st.finding, recommendation: st.recommendation, basis: st.basis, numbers: fmt(st.numbers) })),
-        disclaimer: plan.disclaimer[ctx.lang],
+        disclaimer: namesFunds(ctx.adviceMode) ? DISCLAIMER[ctx.adviceMode][ctx.lang] : plan.disclaimer[ctx.lang], // test builds: one short test-only line
         how_to_say_it: 'Lead with the first thing to fix and the next one. Say the disclaimer once in this conversation, in one short sentence. Recommend categories and actions only; never name a fund, stock or insurance product.',
       } };
     }

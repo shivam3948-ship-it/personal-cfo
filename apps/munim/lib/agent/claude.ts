@@ -1,6 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { MODEL, getClient, type LlmClient } from '@core/llm';
 import { systemPrompt } from './prompt';
+import { DISCLAIMER, namesFunds } from '@/lib/session';
 import { TOOLS, runTool, type ToolCtx } from './tools';
 import { checkNumbers, type NumberCheck } from '@core/agent/guard';
 import type { Action } from '@/lib/actions';
@@ -14,7 +15,7 @@ export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceSte
 export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient | null = getClient()): Promise<AgentReply> {
   if (!client) throw new Error('No ANTHROPIC_API_KEY');
   const t0 = Date.now();
-  const system = systemPrompt({ asOf: asOfDate(ctx.ds), lang: ctx.lang, dataLabel: ctx.ds.label, sources: ctx.ds.log.filter((l) => l.file !== '(all documents)').map((l) => `${l.file} (${l.kind})`) });
+  const system = systemPrompt({ asOf: asOfDate(ctx.ds), lang: ctx.lang, dataLabel: ctx.ds.label, sources: ctx.ds.log.filter((l) => l.file !== '(all documents)').map((l) => `${l.file} (${l.kind})`), testMode: namesFunds(ctx.adviceMode), disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang] });
   // The user's own words can carry PII too ("my PAN is…"): scrub them like document text before they reach the model.
   const names = holderNames(ctx.ds.docs.map((d) => d.text));
   const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: t.role === 'user' ? redact(t.content, { names }) : t.content }));

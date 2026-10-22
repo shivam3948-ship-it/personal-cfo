@@ -2,7 +2,7 @@
 // and every number in the answer is checked against the tool results (checkNumbers) before it is shown.
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
-import { getSession } from '@/lib/session';
+import { getSession, DISCLAIMER } from '@/lib/session';
 import { respond, type Turn } from '@/lib/agent';
 import { clearPending } from '@/lib/agent/offline';
 
@@ -10,6 +10,12 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const json = (b: unknown, status = 200) => NextResponse.json(b, { status, headers: { 'Cache-Control': 'no-store' } });
+
+/** The disclaimer for this session's advice mode, so the screen shows the right one before the first answer. */
+export async function GET(req: Request) {
+  const session = await getSession(req);
+  return json({ disclaimer: DISCLAIMER[session.adviceMode], testMode: session.adviceMode === 'demo' || session.adviceMode === 'internal' });
+}
 
 export async function POST(req: Request) {
   const session = await getSession(req);
@@ -27,7 +33,7 @@ export async function POST(req: Request) {
   try {
     const r = await respond(messages, sid, await session.dataset(), body.lang ?? 'auto', !!body.offline, session.adviceMode);
     // the client gets the answer, which engine answered, the number check and any drafted actions; tool names only, no raw results
-    const res = json({ answer: r.answer, lang: r.lang, engine: r.engine, ms: r.ms, check: r.check, actions: r.actions, tools: r.trace.map((t) => t.tool), fallback: !!r.fallbackReason });
+    const res = json({ answer: r.answer, lang: r.lang, engine: r.engine, ms: r.ms, check: r.check, actions: r.actions, tools: r.trace.map((t) => t.tool), fallback: !!r.fallbackReason, disclaimer: DISCLAIMER[session.adviceMode][r.lang] });
     if (!cookie) res.cookies.set('munim_chat', chat, { httpOnly: true, sameSite: 'lax', path: '/api/ask', maxAge: 60 * 60 * 6 });
     return res;
   } catch (e) {

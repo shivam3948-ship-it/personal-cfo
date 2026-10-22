@@ -28,6 +28,7 @@ const INTENTS: [string, RegExp][] = [
   ['upcoming', /upcoming|due|aane wale|kab (hai|tak)|bill(s)?\b|payment|देय|आने वाले|बिल|भुगतान/i],
   ['credit', /credit score|cibil|\bscore\b|स्कोर|सिबिल/i],
   ['insurance', /insurance|policy|bima|बीमा|पॉलिसी|term plan|cover/i],
+  ['invest', /where (should|do|can) i (invest|put)|invest(ing)? (₹|rs\.?\s?)?\d|spare money|extra money|surplus|kahan invest|kaha invest|कहाँ (निवेश|लगा)|कहां (निवेश|लगा)|बची रकम/i],
   ['emergency', /emergency|safety.?net|buffer|kitne mahine|कितने महीने|इमरजेंसी/i],
   ['portfolio', /\bfunds?\b|return|tax.?free|फ़ंड|फंड|रिटर्न/i],
   ['loans', /loan|emi|लोन|ईएमआई/i],
@@ -205,6 +206,10 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
             `Regular plans cost you about ${g.extra_fees_per_year_estimate} a year in extra fees. Moving ${pl.move_to_direct_value} of units older than a year to the direct plan of the same funds (${funds}) books ${pl.gains_booked} of gains inside the tax-free limit, so no tax now, and saves about ${pl.fees_saved_per_year} a year. Units under a year old would be taxed at 20% and may carry an exit load, so leave those for now.`)
           : say(`रेगुलर प्लान पर करीब ${g.extra_fees_per_year_estimate} सालाना ज़्यादा फ़ीस जा रही है। उसी फ़ंड का डायरेक्ट प्लान सस्ता होता है। बदलने का मतलब है बेचना और फिर खरीदना: एक साल से नए यूनिट पर 20% टैक्स और एग्ज़िट लोड लग सकता है, और इस साल ${t.limit_left_this_year} तक का लंबी अवधि का फ़ायदा टैक्स-फ़्री है। फ़ैसला इन बातों को देखकर या किसी SEBI-रजिस्टर्ड सलाहकार के साथ लें।`,
             `Regular plans cost you about ${g.extra_fees_per_year_estimate} a year in extra fees; the direct plan of the same fund costs less. Switching means selling and buying again: units under a year old would be taxed at 20% and may carry an exit load, and up to ${t.limit_left_this_year} of long-term gains is tax-free this year. Weigh these facts, or decide with a SEBI-registered adviser.`);
+      } else if (pl && /should|what (do|to)|kya kar|क्या कर|सलाह|advice|suggest/i.test(text)) {
+        // test mode (named plan allowed): one decisive plan, numbers straight from the tool
+        answer = say(`दो काम कीजिए। पहला, 31 मार्च से पहले ${funds} के एक साल से पुराने ${pl.move_to_direct_value} के यूनिट उसी फ़ंड के डायरेक्ट प्लान में ले जाइए: ${pl.gains_booked} का फ़ायदा टैक्स-फ़्री बुक होगा और हर साल करीब ${pl.fees_saved_per_year} फ़ीस बचेगी। दूसरा, हर महीने रेगुलर प्लान में जा रही ${g.sip_into_regular_per_month} की SIP उसी फ़ंड के डायरेक्ट प्लान में भेजिए।`,
+          `Do two things. First, before 31 March, move ${pl.move_to_direct_value} of units older than a year in ${funds} to the direct plan of the same funds: that books ${pl.gains_booked} of gains tax-free and saves about ${pl.fees_saved_per_year} a year in fees. Second, send the ${g.sip_into_regular_per_month} a month that goes into regular plans to the direct plan of the same funds instead.`);
       } else if (/\bfd\b|fixed deposit|beat|better than|एफडी|एफ़डी/i.test(text)) {
         answer = say(`आपके पैसे ने साल का ${r.your_return_per_year_pct}% कमाया। उन्हीं तारीख़ों पर 7% की FD में डालते तो आज ${r.more_than_7pct_fd_before_tax} कम होते (टैक्स से पहले)।`,
           `Your money earned ${r.your_return_per_year_pct}% a year. The same amounts in a 7% FD on the same dates would be worth ${r.more_than_7pct_fd_before_tax} less today, before tax.`);
@@ -218,6 +223,16 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
         answer = say(`आपके ${r.value} ने साल का ${r.your_return_per_year_pct}% कमाया, 7% FD से ${r.more_than_7pct_fd_before_tax} ज़्यादा। 31 मार्च से पहले ${t.limit_left_this_year} तक का फ़ायदा टैक्स-फ़्री बुक कर सकते हैं। रेगुलर प्लान की फ़ीस करीब ${g.extra_fees_per_year_estimate} सालाना है।`,
           `Your ${r.value} earned ${r.your_return_per_year_pct}% a year, ${r.more_than_7pct_fd_before_tax} more than a 7% FD. You can book up to ${t.limit_left_this_year} of gains tax-free before 31 March. Regular-plan fees cost about ${g.extra_fees_per_year_estimate} a year.`);
       }
+      break;
+    }
+    case 'invest': {
+      const r = await call('emergency_fund');
+      const full = Number(r.months_covered) >= Number(r.target_months);
+      answer = full
+        ? say('सेफ़्टी नेट पूरा है। अब लक्ष्य के हिसाब से लगाइए: 3 साल से कम के लिए FD या लिक्विड फ़ंड, 3 से 7 साल के लिए हाइब्रिड या डेट फ़ंड, 7 साल से ज़्यादा के लिए SIP से इक्विटी फ़ंड।',
+            'Your safety net is full. Now invest by goal: under 3 years, an FD or liquid fund; 3 to 7 years, hybrid or debt funds; 7 years or more, an equity SIP.')
+        : say(`पहले सेफ़्टी नेट पूरा कीजिए: अभी ${r.months_covered} महीने का है, लक्ष्य ${r.target_months} महीने, ${r.gap} बाकी। तब तक हर महीने की बचत RD या लिक्विड फ़ंड में डालिए। उसके बाद 7 साल से लंबे लक्ष्य के लिए इक्विटी SIP, 3 से 7 साल के लिए हाइब्रिड या डेट फ़ंड।`,
+            `Fill your safety net first: it covers ${r.months_covered} months against a ${r.target_months}-month target, ${r.gap} to go. Until then, put the monthly amount in a recurring deposit or liquid fund. After that, an equity SIP for goals 7+ years away, hybrid or debt funds for 3 to 7 years.`);
       break;
     }
     case 'emergency': {

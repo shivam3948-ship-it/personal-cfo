@@ -56,3 +56,26 @@ describe('Ask Munim advice boundary', async () => {
     for (const f of fundNames) expect(r.answer).not.toContain(f);
   });
 });
+
+// Test mode (D-044): demo answers are decisive and carry the short test-only disclaimer; guided keeps the SEBI line.
+describe('Ask Munim test mode', async () => {
+  const ds = await loadDemo();
+  const ask = (q: string, mode: 'guided' | 'demo') => respond([{ role: 'user', content: q }], `tm-${mode}-${q.length}`, ds, 'auto', true, mode);
+  it('demo advice ends with the test-only disclaimer', async () => {
+    const r = await ask('What should I fix first?', 'demo');
+    expect(r.answer).toContain('For testing only, not investment advice.');
+    expect(r.answer).not.toContain('RIA licence');
+  });
+  it('guided advice keeps the SEBI disclaimer', async () => {
+    expect((await ask('What should I fix first?', 'guided')).answer).toMatch(/SEBI-registered/);
+  });
+  it('demo gives a decisive fund plan; guided does not', async () => {
+    expect((await ask('What should I do with my mutual funds?', 'demo')).answer).toMatch(/^Do two things/);
+    expect((await ask('What should I do with my mutual funds?', 'guided')).answer).not.toMatch(/Do two things/);
+  });
+  it('"where should I invest" goes to the money path, not spending', async () => {
+    const r = await ask('Where should I invest 10000 a month?', 'demo');
+    expect(r.trace.map((t) => t.tool)).toEqual(['emergency_fund']);
+    expect(r.check.unverified).toEqual([]);
+  });
+});

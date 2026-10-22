@@ -36,10 +36,14 @@ export default function AskLive() {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // disclaimer comes from the server (it depends on the session's advice mode); the safe wording shows until it arrives
+  const [disc, setDisc] = useState<{ en: string; hi: string; test: boolean }>({ en: 'General guidance, not SEBI-registered investment advice.', hi: 'सामान्य जानकारी, SEBI-रजिस्टर्ड निवेश सलाह नहीं।', test: false });
   const end = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => { const c = ctxOf(); setCtx(c); track('ask_opened', { ctx: c.ctx }); }, []);
+  useEffect(() => { fetch('/api/ask', { cache: 'no-store' }).then((r) => r.json()).then((j) => j.disclaimer && setDisc({ ...j.disclaimer, test: !!j.testMode })).catch(() => {}); }, []);
+  const hiLast = [...msgs].reverse().find((m) => m.role === 'assistant' && /[\u0900-\u097F]/.test(m.content));
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [msgs, busy]);
 
   async function ask(q: string) {
@@ -63,7 +67,8 @@ export default function AskLive() {
       <section role="dialog" aria-label="Ask Munim" style={S.sheet}>
         <div aria-hidden="true" style={S.grab} />
         <header style={S.head}>
-          <span style={{ fontSize: 13, color: 'var(--muted)' }}>Asking about <b style={{ color: 'var(--ink2)', fontWeight: 600 }}>{CHIPS[ctx].label}</b></span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--muted)' }}>Asking about <b style={{ color: 'var(--ink2)', fontWeight: 600 }}>{CHIPS[ctx].label}</b>
+            {disc.test && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--mari-ink)', background: 'var(--mari-tint)', borderRadius: 999, padding: '2px 8px' }}>Test mode</span>}</span>
           <a href={back} aria-label="Close" style={S.close}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></a>
         </header>
 
@@ -118,7 +123,7 @@ export default function AskLive() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </button>
         </form>
-        <span style={{ fontSize: 11.5, color: 'var(--muted)', textAlign: 'center' }}>General guidance, not SEBI-registered investment advice.</span>
+        <span style={{ fontSize: 11.5, color: 'var(--muted)', textAlign: 'center' }}>{hiLast ? disc.hi : disc.en}</span>
       </section>
     </div>
   );

@@ -1,8 +1,12 @@
+import path from 'node:path';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   experimental: { externalDir: true }, // @core/* lives in ../../packages/core
   serverExternalPackages: ['unpdf'],
+  // packages/core has no node_modules of its own: resolve its imports (@anthropic-ai/sdk, unpdf) from this app's
+  webpack(config) { config.resolve.modules = [path.resolve('node_modules'), ...(config.resolve.modules ?? ['node_modules'])]; return config; },
   outputFileTracingIncludes: { '/api/**': ['../../packages/core/data/**/*'] },
   async headers() {
     return [{ source: '/(.*)', headers: [
