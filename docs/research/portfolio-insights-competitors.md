@@ -37,6 +37,46 @@ Every insight leads with a rupee figure, gives a next step and, where one exists
 - exit loads per scheme (not in the CAS);
 - the regular-vs-direct fee gap (still an estimate, D-OPEN-3).
 
+## Deeper scan (22 Oct, same day): traction, users, founders
+Two research passes (traction signals; user and founder statements). Facts below are as reported, with dates; unverified items are marked. Reddit, X and YouTube turned up nothing usable for any of the six. Archive snapshots of Corpus and Tribe couldn't be fetched.
+
+| | Funding | Play installs | Ratings (Play / iOS) | Regulatory | Pricing | Stated scale |
+|---|---|---|---|---|---|---|
+| **PowerUp Money** | $7.1M seed (Jun 2025) + $12M Series A, Peak XV (Dec 2025) | 1M+ | 4.7 (10.6K) / 4.4 (442) | RIA INA000019798 | Free tracking; Elite ₹999/yr | 5L+ users, ₹65,000 Cr tracked, 25K+ paid (Dec 2025); ~₹2.5 Cr ARR (= 25K × ₹999) |
+| **Stack Wealth** | $4.5M seed (Dec 2021); nothing newer found | 50K+ (new app) / 5K+ (old) | 4.3 (110) and 3.3 (101) / 3.7 (65) | RIA INA000021313 + an ARN (numbers conflict across listings) | ₹2,471.66–3,177.91 a month, billed yearly | FY25 revenue ₹51.7L, down 43% (Inc42); AUM claims conflict |
+| **Corpus Labs** | $4.2M pre-seed (site); Stellaris talks unconfirmed | no app | n/a | "In process of getting SEBI registration" | not found | not found |
+| **Cruise Money** | not found | no app (beta waitlist, "Diwali 2026") | n/a | site shows RIA INA000018294 (not checked on SEBI's register) | "commission-free"; no prices | under 10 staff |
+| **Tribe (tr/be)** | Peak XV Surge 12; $1M only on an auto-generated site (unverified) | 1K+ | 4.1 (30) | none shown | not found | not found |
+| **Curie Money** | $1.2M seed (Dec 2024) | 500K+ | 4.4 (4.83K) / 4.1 (198) | AMFI distributor (ARN), NPCI third-party UPI app | Free; 0.05–0.20% commission from fund houses | FY25 revenue ₹31.8L (Inc42) |
+
+**What users and founders say:**
+- **PowerUp:**
+  - *Bet:* the advice gap. People start SIPs, then neglect their portfolios for years.
+  - *Pitch:* trust through a flat fee and human-reviewed calls.
+  - *Praise:* the clean four-tier fund verdict.
+  - *Complaints:* rebalancing stays within the same category; one user found the analysis "not very useful"; an offer wasn't honoured; deactivating needs an email.
+  - *Claims:* users beat category averages by 3–7% (company claim, unverified).
+- **Stack:** most complaints are about money movement (slow withdrawals, double-debited SIPs). The relationship manager and monthly reports are liked. Most reviews are from 2024.
+- **Corpus:** its search title read "See What Your Mutual Funds Are Costing You", so cost was the hook. It's now in maintenance mode, seeking SEBI registration, and mentions Gmail read-only statement discovery. **A read-only analyser seems to hit a ceiling unless it can say what to do** (inference).
+- **Cruise:** the co-founder frames the problem as "whether any of it is actually working": the same job as our P0. Its positioning (AI, an RIA reviewing recommendations, Q&A on your own data, no selling) is **the closest to Munim's**. It hasn't launched.
+- **Tribe:** money movement (remittance, transfers) generated its worst reviews. It's now being rebuilt.
+- **Curie:** users are confused about whether the balance can fall, and about the ~₹50K instant-withdrawal cap.
+
+**What changes for Munim:**
+1. **Users pay for a verdict plus an action, not for diagnostics.** PowerUp is the only one with paid traction, and it sells a call on each fund (in-form or out-of-form, then start, pause or exit). Before a licence, Munim's call has to come from plan type, tax and timing, which is what X-ray v2 does. A per-fund verdict needs the RIA path or a licensed partner.
+2. **Close the loop: "did it work?"** No one shows whether past advice paid off. Add a follow-up line after an action, e.g. "since you moved to direct: ₹X fees saved so far". That makes the "measured savings" business goal (D-038) visible to the user.
+3. **Don't move money yet.** The worst reviews at Tribe and Stack are about transfers. Our "no real money movement" rule (D-036) avoids that failure for now.
+4. **Watch Cruise.** It has the same job and the same AI pitch, and it's launching around Diwali 2026. It's the most direct competitor for the interview story.
+5. **Curie's 500K+ installs suggest "spend from a liquid fund" works as a hook.** Use it as a reference when designing the savings pot.
+
+**Still open:**
+- App-store review mining (the stores block both our sandbox and your Mac's Linux environment; the script runs from your Mac's own terminal).
+- SEBI complaint tables (these pages need JavaScript).
+- Cruise's funding.
+- Checking the RIA numbers on SEBI's register.
+
+**Extra sources (deeper scan):** [Entrackr: PowerUp Series A](https://entrackr.com/news/powerup-money-raises-12-mn-in-series-a-round-led-by-peak-xv-10930747) · [Inc42: PowerUp $12 Mn](https://inc42.com/buzz/powerup-money-bags-12-mn-to-expand-mutual-fund-advisory) · [Outlook Business: PowerUp seed](https://www.outlookbusiness.com/corporate/wealthtech-start-up-powerup-bags-71-mn-from-accel-blume-ventures-other-investors) · [The Week/PTI: PowerUp CEO interview](https://www.theweek.in/wire-updates/business/2025/07/24/dcm23-powerup-money-ceo-interview.html) · [Blume: why we invested](https://infullblume.substack.com/p/why-we-invested-in-powerup-money) · [PowerUp: in-form and out-of-form](https://www.powerup.money/blog/newsletter/in-form-and-out-of-form-what-does-this-mean) · [Random Dimes review](https://randomdimes.com/powerup-money-review/) · [DesiDime thread on PowerUp](https://www.desidime.com/discussions/anyone-using-powerup-money-app-for-rebalancing-mfs) · [Inc42: Stack Wealth](https://inc42.com/company/stack-wealth/) · [Stack pricing](https://stackwealth.in/pricing-plan) · [Corpus Labs site](https://corpuslabs.in/) · [Cruise Money site](https://www.cruise.money/) · [exchange4media: Cruise co-founder](https://www.exchange4media.com/people-movement-news/dream-sports-vikrant-mudaliar-joins-cruise-money-as-co-founder-157838.html) · [Inc42: Peak XV Surge 12](https://inc42.com/buzz/meet-the-startups-from-peak-xvs-surge-12/) · [Tribe Money site](https://www.tribemoney.ai/) · [Entrackr: Curie seed](https://entrackr.com/snippets/fintech-startup-curie-money-raises-12-mn-in-seed-round-8495734) · [Curie terms](https://www.curie.money/terms) · [Curie on Play](https://play.google.com/store/apps/details?id=com.yield.curie_money&hl=en_US)
+
 ## Sources
 - [PowerUp Money website](https://powerup.money/) · [PowerUp App Store listing](https://apps.apple.com/in/app/powerup-money-mutual-funds/id6470202376)
 - [Stack Wealth website](https://stackwealth.in/) · [Stack Wealth llms.txt](https://stackwealth.in/llms.txt)
