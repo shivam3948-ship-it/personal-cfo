@@ -55,7 +55,7 @@ export default function AddCas() {
       setStep(next);
     } catch (e) {
       if (e instanceof PdfPasswordError) { setWrong(e.reason === 'wrong'); setStep('password'); track('cas_read', { result: e.reason === 'wrong' ? 'wrong_password' : 'needs_password' }); }
-      else { setErr('Couldn’t read this file. Is it a CAS, or an HDFC or SBI statement PDF?'); setStep('intro'); track('cas_read', { result: 'unreadable' }); }
+      else { setErr('Couldn’t read this file. Is it a CAS, or a statement from HDFC, SBI, Canara or Axis?'); setStep('intro'); track('cas_read', { result: 'unreadable' }); }
     } finally { clearInterval(tick); }
   }
   const onPick = (f?: File) => { if (!f) return; setFile(f); setPw(''); setWrong(false); read(f); }; // try without a password first
@@ -97,7 +97,7 @@ export default function AddCas() {
           <section style={S.card}>
             <span style={S.kicker}>Bank and card statements</span>
             <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>See where your own money went</b>
-            <span style={S.sub}>HDFC and SBI savings accounts, HDFC credit cards. Each statement is checked against its own totals to the paisa before Munim uses it.</span>
+            <span style={S.sub}>HDFC, SBI and Canara savings accounts; HDFC and Axis credit cards. Each statement is checked against its own totals to the paisa before Munim uses it.</span>
             <button type="button" onClick={choose} style={S.primary}>Choose statement PDF</button>
             <span style={{ fontSize: 13, color: 'var(--muted)' }}>ICICI and other banks: coming next.</span>
           </section>
@@ -164,7 +164,7 @@ export default function AddCas() {
           </section>
           <section style={{ ...S.card, gap: 8, padding: '14px 16px' }}>
             <b style={{ fontSize: 15, fontWeight: 600 }}>Bank and card statements</b>
-            <span style={{ fontSize: 13, color: 'var(--muted)' }}>HDFC and SBI savings, HDFC credit cards</span>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>HDFC, SBI and Canara savings; HDFC and Axis credit cards</span>
             <button type="button" onClick={choose} style={{ ...S.inlineLink, padding: 0, justifySelf: 'start' }}>Add a statement</button>
           </section>
           <StatementList list={stmts} onDelete={delStmt} />

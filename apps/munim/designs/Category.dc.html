@@ -49,7 +49,7 @@ button{font:inherit;color:inherit}
       <figure style="margin: 12px 0 0" aria-label="{{d.chartLabel}}">
         <figcaption style="font-size: 12.5px; color: var(--muted); margin-bottom: 4px">{{d.chartCap}}</figcaption>
         <div role="img" aria-label="{{d.chartLabel}}" style="position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-items: end; height: 120px; border-bottom: 1px solid var(--hair)">
-          <span aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: {{d.usualH}}; border-top: 2px dashed var(--muted); opacity: .7; pointer-events: none"></span>
+          <span aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: {{d.usualH}}; border-top: 2px dashed var(--muted); opacity: {{d.usualOp}}; pointer-events: none"></span>
           <sc-for list="{{d.bars}}" as="b" hint-placeholder-count="4">
             <div style="display: grid; justify-items: center; gap: 4px; align-content: end; height: 100%">
               <span style="position: relative; font-size: 12px; color: var(--ink2); background: var(--card); padding: 0 3px; border-radius: 4px">{{b.v}}</span>
@@ -194,7 +194,10 @@ class Component extends DCLogic {
     var mk = Object.keys(byM).sort(function (a, b) { return byM[b].v - byM[a].v; });
     var merchants = mk.map(function (k) { return { name: k, n: byM[k].n + ' ' + (hi ? unit[2] : (byM[k].n === 1 ? unit[0] : unit[1])), v: R(byM[k].v), w: Math.round(byM[k].v / byM[mk[0]].v * 100) + '%' }; });
     var big = pct !== null && Math.abs(pct) >= 20;
-    var vsUsual = pct === null ? (hi ? 'पिछले महीनों से तुलना अभी नहीं' : 'Not enough history to compare yet')
+    var hasHist = D.u15.length > 0;
+    var vsUsual = pct === null ? (!hasHist ? (hi ? 'पिछले महीनों से तुलना अभी नहीं' : 'Not enough history to compare yet')
+        : total > 0 ? (hi ? 'नया खर्च: पिछले महीनों में ' + byDay + ' यहाँ कुछ नहीं' : 'New this month: nothing here ' + byDay + ' in earlier months')
+        : (hi ? 'इस महीने और पहले, यहाँ कोई खर्च नहीं' : 'Nothing spent here, this month or before'))
       : !big ? (hi ? 'आम तौर जैसा (' + byDay + ' आम ' + R(usual) + ')' : 'About your usual ' + byDay + ' (usual ' + R(usual) + ')')
       : hi ? byDay + ' आम तौर से ' + Math.abs(pct) + '% ' + (pct > 0 ? 'ज़्यादा' : 'कम') + ' (आम ' + R(usual) + ')'
       : Math.abs(pct) + '% ' + (pct > 0 ? 'above' : 'below') + ' your usual ' + byDay + ' (usual ' + R(usual) + ')';
@@ -234,6 +237,9 @@ class Component extends DCLogic {
       } else if (kind === 'need') {
         a.noteTitle = hi ? 'ज़रूरी खर्च' : 'An essential cost';
         a.noteSub = hi ? 'यहाँ बचत का सुझाव नहीं; Munim सिर्फ़ असामान्य बढ़त पर बताएगा।' : 'Munim won’t push savings here; it flags only an unusual jump.';
+      } else if (!hasHist) {
+        a.noteTitle = hi ? 'तुलना के लिए अभी एक ही महीना' : 'Only one month so far';
+        a.noteSub = hi ? 'पिछले महीनों के स्टेटमेंट जोड़ें, Munim आपका आम खर्च बताएगा।' : 'Add earlier statements and Munim will show your usual here.';
       } else {
         a.noteTitle = hi ? 'आम तौर जैसा' : 'In line with your usual';
         a.noteSub = hi ? 'यहाँ बदलने को कुछ नहीं।' : 'Nothing to change here.';
@@ -245,8 +251,8 @@ class Component extends DCLogic {
       title: hi ? (HI_CAT[cat] || cat) : cat, total: R(total), vsUsual: vsUsual, vsInk: vsInk,
       orders: hi ? n + ' ' + unit[2] + (n > 1 ? ' · औसत ' + R(avg) : '') : n + ' ' + (n === 1 ? unit[0] : unit[1]) + (n > 1 ? ' · ' + R(avg) + ' on average' : ''),
       chartLabel: (hi ? HI_CAT[cat] + ', हर महीने ' + byDay + ': ' : cat + ', spent ' + byDay + ' each month: ') + bars.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
-      bars: bars, merchants: merchants, hasMerchants: mk.length >= 2, usualH: Math.round(usual / maxM * 88) + 'px',
-      chartCap: hi ? 'हर महीने ' + byDay + ' का खर्च · डैश लाइन = आपका आम (' + R(usual) + ')' : 'Spent ' + byDay + ', each month · dashed line = your usual (' + R(usual) + ')',
+      bars: bars, merchants: merchants, hasMerchants: mk.length >= 2, usualH: Math.round(usual / maxM * 88) + 'px', usualOp: usual > 0 ? '.7' : '0',
+      chartCap: hasHist && usual === 0 ? (hi ? 'हर महीने ' + byDay + ' का खर्च' : 'Spent ' + byDay + ', each month') : !hasHist ? (hi ? 'इस महीने ' + byDay + ' का खर्च · और महीने जोड़ने पर तुलना दिखेगी' : 'Spent ' + byDay + ' this month · add more months to compare') : hi ? 'हर महीने ' + byDay + ' का खर्च · डैश लाइन = आपका आम (' + R(usual) + ')' : 'Spent ' + byDay + ', each month · dashed line = your usual (' + R(usual) + ')',
       hasTx: D.tx.length > 0,
       txHead: hi ? 'इस महीने के भुगतान' : 'This month’s payments',
       tx: D.tx.map(function (x, i) { return { name: x[1], when: dm(x[0]) + ' · ' + (x[3].indexOf('card') === 0 ? (hi ? 'कार्ड ••' : 'Card ••') : (hi ? 'बैंक ••' : 'Bank ••')) + x[3].split(':')[1], amt: '−' + R(x[2]), rule: i < D.tx.length - 1 ? '1px solid var(--hair)' : '0' }; })

@@ -31,5 +31,5 @@ export async function withMyStatementsSpends(v: View): Promise<View> {
     check: s.account.kind === 'bank' ? '✓ Balance matches on every line · opening + credits − debits = closing' : '✓ The bill’s total due matches' }));
   return { ...v, ...built, META: { ...built.META, files } };
 }
-export async function withMyStatementsTx(v: View): Promise<View> { const ds = await myDataset(); return ds ? { ...v, ...buildTransactions(ds) } : v; }
+export async function withMyStatementsTx(v: View): Promise<View> { const ds = await myDataset(); return ds ? { ...v, ...buildTransactions(ds), RULES0: 0 } : v; }
 export async function withMyStatementsCat(v: View): Promise<View> { const ds = await myDataset(); return ds ? { ...v, ...buildCategory(ds) } : v; }

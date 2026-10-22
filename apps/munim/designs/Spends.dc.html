@@ -89,7 +89,7 @@ button{font:inherit;color:inherit}
             <line x1="0" y1="88" x2="326" y2="88" stroke="var(--hair)" stroke-width="1"></line>
             <polyline points="{{d.usualPts}}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="4 4" stroke-linejoin="round" opacity="0.75"></polyline>
             <polyline points="{{d.youPts}}" fill="none" stroke="var(--link)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
-            <circle cx="{{d.youX}}" cy="{{d.usualY}}" r="3.5" fill="var(--card)" stroke="var(--muted)" stroke-width="1.6"></circle>
+            <circle cx="{{d.youX}}" cy="{{d.usualY}}" r="{{d.usualR}}" fill="var(--card)" stroke="var(--muted)" stroke-width="1.6"></circle>
             <circle cx="{{d.youX}}" cy="{{d.youY}}" r="5" fill="var(--link)" stroke="var(--card)" stroke-width="2"></circle>
             <sc-if value="{{hov.on}}" hint-placeholder-val="{{ false }}">
               <line x1="{{hov.x}}" y1="0" x2="{{hov.x}}" y2="88" stroke="var(--ink2)" stroke-width="1"></line>
@@ -141,6 +141,7 @@ button{font:inherit;color:inherit}
           <span style="flex: 1; display: grid; gap: 1px"><b style="font-size: 16px; font-weight: 600">{{c.changeHead}}</b><span style="font-size: 13px; color: var(--muted)">{{d.changeSummary}}</span></span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate({{chev}}); transition: transform .2s"><path d="m6 9 6 6 6-6"></path></svg>
         </button>
+        <sc-if value="{{d.canSave}}" hint-placeholder-val="{{ true }}">
         <div style="background: var(--tint); border-radius: 16px; padding: 12px; display: grid; gap: 8px">
           <span style="font-size: 12.5px; font-weight: 600; color: var(--link)">{{c.saveKicker}}</span>
           <b style="font-size: 16px; font-weight: 600; line-height: 1.3">{{d.saveTitle}}</b>
@@ -149,6 +150,7 @@ button{font:inherit;color:inherit}
             <button type="button" style="min-height: 44px; padding: 0 10px; border: 0; background: transparent; font-size: 14px; color: var(--muted); cursor: pointer">{{c.otherAmount}}</button>
           </div>
         </div>
+        </sc-if>
         <sc-if value="{{changeOpen}}" hint-placeholder-val="{{ false }}">
           <div role="list">
             <sc-for list="{{d.fixes}}" as="f" hint-placeholder-count="5">
@@ -479,6 +481,7 @@ class Component extends DCLogic {
     // ---- the month on screen ----
     var catMap = past ? P.ev : cat2, cumV = past ? P.cum : cum2;
     var everyday = sumv(catMap), fixedV = past ? P.fx : FIXED + fixedAdd, famV = past ? P.fam : FAMILY + famAdd, uncV = past ? P.unc : uncatV;
+    var noHist = !PACE.length; // first month in Munim: no usual pace yet, so no "above/below usual" and nothing to save against
     var below = med - everyday, saveAmt = Math.floor(below / 10000) * 10000;
     var paceLine, paceInk;
     if (past) {
@@ -488,7 +491,9 @@ class Component extends DCLogic {
       else { paceLine = hi ? 'आपके स्टेटमेंट का पहला महीना' : 'The first month in your statements'; paceInk = 'var(--ink2)'; }
       var full = MN[PSHORT[past]];
       C.period = full; C.heroLabel = hi ? 'रोज़ का खर्च, ' + full : 'Everyday spending, ' + full; C.outLabel = hi ? full + ' में कुल खर्च' : 'Total spent in ' + full;
-    } else { paceLine = below >= 0 ? C.paceBelow(R(below)) : C.paceAbove(R(-below)); paceInk = below >= 0 ? 'var(--link)' : 'var(--warn)'; }
+    } else if (noHist) { paceLine = hi ? 'तुलना के लिए पिछले महीने अभी नहीं' : 'No earlier months to compare yet'; paceInk = 'var(--ink2)'; C.legendUsual = ''; }
+    else { paceLine = below >= 0 ? C.paceBelow(R(below)) : C.paceAbove(R(-below)); paceInk = below >= 0 ? 'var(--link)' : 'var(--warn)'; }
+    var canSave = !past && !noHist && saveAmt > 0; // offer to save only money actually not spent against a real usual
     // ---- pace chart on the hero card: 326 x 88 plot, day 1..31 on x, ₹0..max on y; lines labelled directly, no legend box ----
     var W = 326, H = 88, maxY = Math.max(USUALCUM[30], Math.max.apply(null, cumV));
     var X = function (i) { return Math.round(i / 30 * W * 10) / 10; }, Y = function (v) { return Math.round((H - 2 - v / maxY * (H - 12)) * 10) / 10; };
@@ -532,7 +537,7 @@ class Component extends DCLogic {
       var u = past ? (prevEv ? prevEv[k] : null) : USUAL15[k], dl = (u && !yearly) ? Math.round((catMap[k] - u) / u * 100) : null, big = dl !== null && Math.abs(dl) >= 20;
       var note = yearly ? (hi ? 'LingoPro का सालाना ₹4,999 इसी महीने कटा' : META.subNote) : '';
       var name = hi ? (HI_CAT[k] || k) : k;
-      var delta = yearly ? (hi ? 'सालाना चार्ज' : 'yearly charge') : (past && prevEv && !u) ? (hi ? 'नया' : 'new') : (past && !prevEv) ? '' : dl === null || dl === 0 ? (hi ? 'जैसा' : 'usual') : (dl > 0 ? '↑ ' + dl + '%' : '↓ ' + (-dl) + '%');
+      var delta = yearly ? (hi ? 'सालाना चार्ज' : 'yearly charge') : (past && prevEv && !u) ? (hi ? 'नया' : 'new') : (past && !prevEv) || (!past && noHist) ? '' : dl === null || dl === 0 ? (hi ? 'जैसा' : 'usual') : (dl > 0 ? '↑ ' + dl + '%' : '↓ ' + (-dl) + '%');
       return { name: name, amt: R(catMap[k]), w: Math.round(catMap[k] / maxC * 100) + '%', href: yearly ? 'Subscriptions.dc.html' : (CATPAGE[k] || 'Transactions.dc.html'), aria: name + ', ' + R(catMap[k]) + (hi ? ', खोलें' : ', open'),
         delta: delta, deltaInk: big && dl > 0 ? 'var(--warn)' : 'var(--muted)', bar: big && dl > 0 ? 'var(--warn)' : 'var(--btn)', hasNote: !!note, note: note, link: !past, plain: !!past };
     });
@@ -619,17 +624,19 @@ class Component extends DCLogic {
       everyday: R(everyday), paceLine: paceLine, paceInk: paceInk,
       chartLabel: past ? (hi ? 'रोज़ का खर्च दिन-ब-दिन, ' : 'Everyday spending by day, ') + MN[PSHORT[past]] + ' ' + R(everyday) : (hi ? 'रोज़ का खर्च, दिन-ब-दिन: इस महीने ' : 'Everyday spending by day: this month ') + R(everyday) + (hi ? ', आम महीना ' : ' by the ' + th(DAY) + ', usual month ') + R(med),
       months: months, files: files,
-      usualPts: pts(USUALCUM), youPts: pts(cumV), youX: youX, youY: youY, usualY: Y(USUALCUM[li]),
+      usualPts: noHist && !past ? '' : pts(USUALCUM), usualR: noHist && !past ? 0 : 3.5, youPts: pts(cumV), youX: youX, youY: youY, usualY: Y(USUALCUM[li]),
       youLabel: past ? MN[PSHORT[past]] : C.legendYou, youLabelX: lab.yx, youLabelY: lab.yy, youLabelT: lab.yt, usualLabelX: lab.ux, usualLabelY: lab.uy, usualLabelT: lab.ut,
       todayLbl: past ? '' : C.today, lastDay: String(past ? cumV.length : 31),
       paceRows: PACE.map(function (x) { return { l: (hi ? MN[x.m] : x.m) + ' 1–' + DAY + (x.v === med ? (hi ? ' · आम तौर' : ' · usual') : ''), v: R(x.v) }; }).concat([{ l: (hi ? curFull : cur3) + ' 1–' + DAY, v: R(everyday) }]),
       notCounted: R(NOTCOUNTED), outTotal: R(outTotal), split: split,
       splitLabel: split.map(function (b) { return b.l + ' ' + b.v; }).join(', '),
-      changeSummary: hi ? R(saveAmt) + ' बचत · ' + fixes.length + ' और सुधार' : 'Save ' + R(saveAmt) + ' · ' + fixes.length + (fixes.length === 1 ? ' more fix' : ' more fixes'),
+      changeSummary: canSave ? (hi ? R(saveAmt) + ' बचत · ' + fixes.length + ' और सुधार' : 'Save ' + R(saveAmt) + ' · ' + fixes.length + (fixes.length === 1 ? ' more fix' : ' more fixes'))
+        : fixes.length ? (hi ? fixes.length + ' सुधार' : fixes.length + (fixes.length === 1 ? ' fix' : ' fixes')) : (hi ? 'अभी बदलने को कुछ नहीं' : 'Nothing to change yet'),
+      canSave: canSave,
       saveTitle: hi ? 'जो ' + R(saveAmt) + ' कम खर्च हुए, उन्हें बचत में डालें' : 'Save the ' + R(saveAmt) + ' you didn’t spend', saveCta: hi ? R(saveAmt) + ' बचाएँ' : 'Save ' + R(saveAmt),
       fixes: fixes, cats: cats,
       allCats: catsSorted.length <= 6 ? '' : s.allCats ? (hi ? 'सिर्फ़ ऊपर की 6 दिखाएँ' : 'Show the top 6') : (hi ? 'सभी ' + catsSorted.length + ' कैटेगरी देखें' : 'See all ' + catsSorted.length + ' categories'),
-      vsHead: past ? (prevEv ? (hi ? MN[PSHORT[PKEYS[PKEYS.indexOf(past) - 1]]] + ' से तुलना' : 'vs ' + MN[PSHORT[PKEYS[PKEYS.indexOf(past) - 1]]]) : '') : C.vsUsual,
+      vsHead: past ? (prevEv ? (hi ? MN[PSHORT[PKEYS[PKEYS.indexOf(past) - 1]]] + ' से तुलना' : 'vs ' + MN[PSHORT[PKEYS[PKEYS.indexOf(past) - 1]]]) : '') : noHist ? '' : C.vsUsual,
       recentHead: past ? (hi ? 'सबसे बड़े भुगतान' : 'Biggest payments') : C.recentHead,
       recent: past ? P.top.map(function (t) { return { name: t[1], sub: Number(t[0].slice(8)) + ' ' + MN[PSHORT[past]].slice(0, hi ? 99 : 3) + ' · ' + (hi ? (HI_CAT[t[2]] || t[2]) : t[2]), amt: '−' + R(t[3]), ink: 'var(--ink)' }; })
         : RECENT.map(function (t) { return { name: t[1], sub: t[0] + ' · ' + (hi ? HI_CAT[t[2]] : t[2]), amt: '−' + R(t[3]), ink: 'var(--ink)' }; }),

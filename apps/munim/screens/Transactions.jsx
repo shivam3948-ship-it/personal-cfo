@@ -16,6 +16,7 @@ class Component extends DCLogic {
     var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
     // ---- inputs: the sample family's October transactions from packages/core (date, dir, paise, merchant, category, account) ----
     var TX = this.props.data.TX;
+    var RULES0 = this.props.data.RULES0; // rules the user already has (the sample family has one: ATM cash counts as household help)
     // ---- buckets (docs/41): which category counts where ----
     var GROUPS = [
       ['everyday', ['Food delivery', 'Dining', 'Groceries', 'Quick commerce', 'Shopping', 'Cabs', 'Fuel', 'Subscriptions', 'Fitness', 'Utilities', 'Mobile & internet', 'Cash withdrawal']],
@@ -50,11 +51,11 @@ class Component extends DCLogic {
     var mineOf = function (r) { return r.flag && r.flag.kind === 'shared' ? r.flag.mine : r.amt; };
     var TAG = hi ? { shared: 'शेयर किया', copy: 'दोबारा कटा · गिना नहीं', fraud: 'मेरा नहीं · गिना नहीं' } : { shared: 'Shared', copy: 'Charged twice · left out', fraud: 'Not mine · left out' };
     var shown = rows.filter(function (r) { return s.filter === 'all' || r.bucket === s.filter; });
-    var MON = hi ? 'अक्टूबर' : 'Oct', WD = hi ? ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var MONS = hi ? ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], mo = function (d) { return MONS[Number(d.slice(5, 7)) - 1]; }, WD = hi ? ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     var days = [];
     shown.forEach(function (r) {
       var g = days.length && days[days.length - 1].date === r.date ? days[days.length - 1] : null;
-      if (!g) { var dt = new Date(r.date + 'T00:00:00Z'); g = { date: r.date, day: WD[dt.getUTCDay()] + ', ' + Number(r.date.slice(8)) + ' ' + MON, out: 0, rows: [] }; days.push(g); }
+      if (!g) { var dt = new Date(r.date + 'T00:00:00Z'); g = { date: r.date, day: WD[dt.getUTCDay()] + ', ' + Number(r.date.slice(8)) + ' ' + mo(r.date), out: 0, rows: [] }; days.push(g); }
       if (r.dir === 'debit' && (r.bucket === 'everyday' || r.bucket === 'fixed' || r.bucket === 'others')) g.out += mineOf(r);
       var tag = r.flag ? TAG[r.flag.kind] : (r.bucket === 'not' ? BL.not : (r.bucket === 'others' ? BL.others : ''));
       g.rows.push({ name: r.name, sub: catName(r.cat) + ' · ' + acctOf(r.acct), amt: (r.dir === 'credit' ? '+' : '−') + R(mineOf(r)), ink: r.dir === 'credit' ? 'var(--link)' : (r.bucket === 'not' ? 'var(--muted)' : 'var(--ink)'), hasTag: !!tag, tag: tag,
@@ -70,7 +71,7 @@ class Component extends DCLogic {
         onlyThis: 'Only this payment', makesRule: 'Makes a rule; change it any time in Your rules', sharedQ: 'How much of it was yours?', sharedNote: 'Only your share counts as your spending. When the rest comes back, Munim matches it to this payment.',
         leaveCopyOut: 'Leave the second charge out', backToPayment: 'Back to the payment', notePh: 'e.g. Rahul’s birthday', saveNote: 'Save note', notePrivacy: 'Notes stay on your phone and are never sent to the AI.',
         fraud1: 'Block the card or UPI in your bank’s app, or call the number on the back of your card.', fraud2: 'Report it to the national cyber fraud helpline, 1930, or at cybercrime.gov.in.', fraud3: 'Raise a written dispute with your bank. Acting fast improves the chance of getting money back.', call1930: 'Call 1930', markNotMine: 'Not mine · leave it out of my spending' };
-    C.rules = (hi ? 'आपके नियम · ' : 'Your rules · ') + (1 + s.rules.length);
+    C.rules = (hi ? 'आपके नियम · ' : 'Your rules · ') + (RULES0 + s.rules.length);
 
     var x = { name: '', when: '', amt: '', amtPlain: '', ink: 'var(--ink)', acct: '', cat: '', bucket: '', hasDone: false, done: '', hasShare: false, share: '', hasNote: false, note: '' };
     var v = { title: '', isDetail: true, isPick: false, isScope: false, isShared: false, isTwice: false, isNote: false, isFraud: false, scopeQ: '', canRule: false, ruleLabel: '', twiceHead: '', twiceBody: '', twiceFound: false };
@@ -78,7 +79,7 @@ class Component extends DCLogic {
     var setV = function (view, extra) { return function () { self.setState(Object.assign({ view: view }, extra || {})); }; };
     if (s.open !== null) {
       r = rows[s.open];
-      x = { name: r.name, when: Number(r.date.slice(8)) + ' ' + MON + ' 2026', amt: (r.dir === 'credit' ? '+' : '') + R(r.amt), amtPlain: R(r.amt), ink: r.dir === 'credit' ? 'var(--link)' : 'var(--ink)', acct: acctOf(r.acct), cat: catName(r.cat), bucket: BL[r.bucket],
+      x = { name: r.name, when: Number(r.date.slice(8)) + ' ' + mo(r.date) + ' ' + r.date.slice(0, 4), amt: (r.dir === 'credit' ? '+' : '') + R(r.amt), amtPlain: R(r.amt), ink: r.dir === 'credit' ? 'var(--link)' : 'var(--ink)', acct: acctOf(r.acct), cat: catName(r.cat), bucket: BL[r.bucket],
         hasDone: !!s.last, done: s.last ? s.last.text : '', hasShare: !!(r.flag && r.flag.kind === 'shared'), share: r.flag && r.flag.kind === 'shared' ? R(r.flag.mine) + (hi ? ' · ' + R(r.amt - r.flag.mine) + ' वापस आना है' : ' · ' + R(r.amt - r.flag.mine) + ' to come back') : '',
         hasNote: !!s.notes[r.i], note: s.notes[r.i] || '' };
       ['Detail', 'Pick', 'Scope', 'Shared', 'Twice', 'Note', 'Fraud'].forEach(function (k) { v['is' + k] = s.view === k.toLowerCase(); });
@@ -103,7 +104,7 @@ class Component extends DCLogic {
       ];
       twin = rows.filter(function (q) { return q.i !== r.i && q.merchant === r.merchant && q.amt === r.amt && q.dir === r.dir && Math.abs(new Date(q.date) - new Date(r.date)) <= 2 * 864e5; })[0] || null;
       v.twiceFound = !!twin;
-      v.twiceHead = twin ? (hi ? 'मिल गया: ' + Number(twin.date.slice(8)) + ' ' + MON + ' को भी ' + R(twin.amt) : 'Found it: another ' + R(twin.amt) + ' on ' + Number(twin.date.slice(8)) + ' ' + MON) : (hi ? 'आपके स्टेटमेंट में दूसरा चार्ज नहीं मिला' : 'We couldn’t find a second charge in your statements');
+      v.twiceHead = twin ? (hi ? 'मिल गया: ' + Number(twin.date.slice(8)) + ' ' + mo(twin.date) + ' को भी ' + R(twin.amt) : 'Found it: another ' + R(twin.amt) + ' on ' + Number(twin.date.slice(8)) + ' ' + mo(twin.date)) : (hi ? 'आपके स्टेटमेंट में दूसरा चार्ज नहीं मिला' : 'We couldn’t find a second charge in your statements');
       v.twiceBody = twin ? (hi ? 'Munim दूसरा चार्ज खर्च में नहीं गिनेगा। रिफ़ंड के लिए पहले ' + r.name + ' से बात करें; 7 दिन में न मिले तो बैंक से विवाद दर्ज करें।' : 'Munim will leave the second one out of your spending. Ask ' + r.name + ' for a refund first; if it doesn’t come within 7 days, raise a dispute with your bank.')
         : (hi ? 'अगर बैंक ऐप में दो चार्ज दिख रहे हैं, तो वह अगले स्टेटमेंट में आएगा। तब तक ' + r.name + ' से रिफ़ंड माँगें।' : 'If your bank app shows two, the second may not be in your statements yet. Meanwhile, ask ' + r.name + ' for a refund.');
       actions = [

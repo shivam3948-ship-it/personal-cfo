@@ -1,10 +1,10 @@
-// Statement readers for the banks Munim supports first (D-036): HDFC and SBI savings accounts, HDFC credit cards.
+// Statement readers for the banks Munim supports first (D-036, D-048): HDFC, SBI and Canara savings accounts; HDFC and Axis credit cards.
 // Input: text lines rebuilt by position (pdfLines). Output: transactions plus checks against the statement's OWN totals;
 // a reader only "passes" when every check reconciles to the paisa. Pure TS: runs on the phone, the PDF never leaves it.
 // Only the last 4 digits of an account or card number are kept.
 import type { Account, CardStatement, Check, Paise, Txn } from '../types';
 
-export type BankFormat = 'hdfc_savings' | 'sbi_savings' | 'hdfc_card';
+export type BankFormat = 'hdfc_savings' | 'sbi_savings' | 'canara_savings' | 'hdfc_card' | 'axis_card';
 export interface BankRead { format: BankFormat; account: Account; txns: Txn[]; checks: Check[]; stmt?: CardStatement; period?: { from: string; to: string } }
 
 const AMT = /[\d,]+\.\d{2}/;
@@ -20,13 +20,16 @@ export function detectFormat(lines: string[]): BankFormat | null {
   const t = lines.slice(0, 120).join('\n');
   if (/Credit Card Statement/i.test(t) && /TOTAL AMOUNT DUE/i.test(t) && /\d{2}\/\d{2}\/\d{4}\|\s*\d{2}:\d{2}/.test(lines.join('\n'))) return 'hdfc_card';
   if (/Withdrawal Amt\.?\s+Deposit Amt\.?\s+Closing Balance/i.test(t)) return 'hdfc_savings';
+  if (/^Date\s+Particulars\s+Deposits\s+Withdrawals\s+Balance$/im.test(t) && /^Opening Balance\s+-?[\d,]+\.\d{2}$/im.test(t) && /^Chq:/m.test(t)) return 'canara_savings';
+  if (/^Axis Bank\b.*Card.*Statement/im.test(t) && /Transaction Summary/i.test(t) && /Debit\/Credit/i.test(t)) return 'axis_card';
   if (/STATEMENT OF ACCOUNT/i.test(t) && /\d{2}\/\d{2}\/\d{4}\s+\d{2}\/\d{2}\/\d{4}\s/.test(lines.join('\n')) && /Statement Summary/i.test(lines.join('\n'))) return 'sbi_savings';
   return null;
 }
 
 export function readBank(lines: string[], file: string): BankRead | null {
   const f = detectFormat(lines);
-  return f === 'hdfc_savings' ? hdfcSavings(lines, file) : f === 'sbi_savings' ? sbiSavings(lines, file) : f === 'hdfc_card' ? hdfcCard(lines, file) : null;
+  return f === 'hdfc_savings' ? hdfcSavings(lines, file) : f === 'sbi_savings' ? sbiSavings(lines, file) : f === 'canara_savings' ? canaraSavings(lines, file)
+    : f === 'hdfc_card' ? hdfcCard(lines, file) : f === 'axis_card' ? axisCard(lines, file) : null;
 }
 
 /** Balance walk decides debit vs credit when a row prints one amount without saying which column (HDFC savings). */
@@ -138,6 +141,88 @@ export function hdfcCard(lines: string[], file: string): BankRead {
   ] : [check('summary', 'Statement summary found', false, 'no total-due line')];
   const stmt: CardStatement = { account: id, file, periodStart: bp ? longDate(bp[1]) : '', periodEnd: bp ? longDate(bp[2]) : stmtDate, dueDate, prevBalance: prev ?? 0, payments: pay ?? 0, purchases: purch ?? 0, credits: pay ?? 0, charges: fin ?? 0, totalDue: total ?? 0, minDue };
   return { format: 'hdfc_card', txns, checks, stmt, period: { from: stmt.periodStart, to: stmt.periodEnd }, account: { id, kind: 'card', label: `HDFC credit card ••${card}`, last4: card } };
+}
+
+// ---------- Canara savings (e-passbook) ----------
+// Each row spans several lines: narration lines, then "dd-mm-yyyy [narration tail] AMOUNT BALANCE", then more narration,
+// a time "hh:mm:ss", and "Chq: <ref>" closing the row. One amount per row (the column is lost in text), so the balance
+// change decides debit vs credit. No count or total lines: the checks are the walk and opening → closing.
+export function canaraSavings(lines: string[], file: string): BankRead {
+  const ROW = /^(\d{2}-\d{2}-\d{4})\s+(.*?)\s*([\d,]+\.\d{2})\s+(-?[\d,]+\.\d{2})$/;
+  const head = lines.slice(0, 10).join('\n');
+  const acct = last4(/A\/c\s+(\S+)/i.exec(head)?.[1]);
+  const id = `bank:${acct || 'canara'}`;
+  const pm = /(\d{2}-[A-Za-z]{3}-\d{4})\s+and\s+(\d{2}-[A-Za-z]{3}-\d{4})/i.exec(head);
+  const dmy = (x: string) => { const [d, m, y] = x.split('-'); return `${y}-${MON[m.toLowerCase()]}-${d}`; };
+  let opening: Paise | null = null, closing: Paise | null = null;
+  const raw: { date: string; desc: string[]; amount: Paise; balance: Paise }[] = [];
+  let buf: string[] = [], open = false;
+  for (const l0 of lines) {
+    const l = l0.trim();
+    if (opening === null) { const m = /^Opening Balance\s+(-?[\d,]+\.\d{2})$/i.exec(l); if (m) opening = paise(m[1]); continue; }
+    const cm = /^Closing Balance\s+(-?[\d,]+\.\d{2})$/i.exec(l); if (cm) { closing = paise(cm[1]); break; }
+    if (!l || /^page \d+$/i.test(l) || /^Date\s+Particulars\s+Deposits/i.test(l)) continue;
+    if (/^Chq:/i.test(l)) { open = false; buf = []; continue; }
+    const m = ROW.exec(l);
+    if (m) { raw.push({ date: yy(m[1]), desc: [...buf, m[2]], amount: paise(m[3]), balance: paise(m[4]) }); buf = []; open = true; continue; }
+    const text = l.replace(/\s*\d{2}:\d{2}:\d{2}$/, '').trim();
+    if (!text) continue;
+    if (open) raw.at(-1)!.desc.push(text); else buf.push(text);
+  }
+  const op = opening ?? 0; let prev = op;
+  const txns: Txn[] = raw.map((r, i) => {
+    const dir: Txn['dir'] = prev + r.amount === r.balance ? 'credit' : 'debit'; prev = r.balance;
+    return { id: `${file}#${i + 1}`, date: r.date, desc: r.desc.filter(Boolean).join(' ').replace(/\s*\/\s*/g, '/').replace(/\s+/g, ' ').trim(), amount: r.amount, dir, balance: r.balance, account: id, source: 'bank_statement', sourceFile: file };
+  });
+  const checks: Check[] = opening === null || closing === null ? [check('summary', 'Opening and closing balance found', false, `opening ${opening === null ? 'missing' : 'found'}, closing ${closing === null ? 'missing' : 'found'}`)]
+    : walkChecks(txns, op, closing, 0, 0, 0, 0).filter((c) => c.id === 'walk' || c.id === 'closing');
+  return { format: 'canara_savings', txns, checks, period: pm ? { from: dmy(pm[1]), to: dmy(pm[2]) } : undefined, account: { id, kind: 'bank', label: `Canara Bank ••${acct}`, last4: acct, opening: op, closing: closing ?? 0, closingDate: txns.at(-1)?.date } };
+}
+
+// ---------- Axis credit card (one-page statement) ----------
+// Row: "dd Mon 'yy MERCHANT,CITY ₹ AMOUNT Debit|Credit". A payment row prints its description on the line above
+// and its reference on the line below. Summary: Total Payment Due, Minimum Payment Due, Payment Due Date; Statement
+// Month, Credit Limit, Opening Balance. Check: opening + debits − credits = total due.
+export function axisCard(lines: string[], file: string): BankRead {
+  const ROW = /^(\d{1,2})\s+([A-Za-z]{3})\s+'(\d{2})\s*(.*?)\s*₹\s*([\d,]+\.\d{2})\s+(Debit|Credit)$/i;
+  const D = (d: string, m: string, y: string) => `20${y}-${MON[m.toLowerCase()]}-${d.padStart(2, '0')}`;
+  const all = lines.join('\n');
+  const card = last4(/Card Number\s*:?\s*([0-9X*x]{8,})/i.exec(all)?.[1]);
+  const id = `card:${card || 'axis'}`;
+  const start = lines.findIndex((l) => /^Date\s+Transaction Details/i.test(l));
+  const raw: { date: string; desc: string; amount: Paise; dir: Txn['dir']; pre: string[]; post: string[] }[] = [];
+  let orphans: string[] = [];
+  for (const l0 of lines.slice(start + 1)) {
+    const l = l0.trim();
+    if (!l) continue;
+    if (/^End of Transaction/i.test(l) || /^Page \d+ of \d+$/i.test(l)) break;
+    const m = ROW.exec(l);
+    if (m) {
+      const last = raw.at(-1);
+      if (!m[4] && orphans.length) raw.push({ date: D(m[1], m[2], m[3]), desc: '', amount: paise(m[5]), dir: /credit/i.test(m[6]) ? 'credit' : 'debit', pre: orphans, post: [] });
+      else { if (last && orphans.length) last.post.push(...orphans); raw.push({ date: D(m[1], m[2], m[3]), desc: m[4], amount: paise(m[5]), dir: /credit/i.test(m[6]) ? 'credit' : 'debit', pre: [], post: [] }); }
+      orphans = []; continue;
+    }
+    orphans.push(l);
+  }
+  if (orphans.length && raw.length) raw.at(-1)!.post.push(...orphans);
+  const txns: Txn[] = raw.map((r, i) => {
+    const text = r.desc || r.pre.join(' ').replace(/\s*-$/, '');
+    const desc = text.includes(',') ? text.slice(0, text.lastIndexOf(',')).trim() : text; // drop the merchant's city after the last comma
+    return { id: `${file}#${i + 1}`, date: r.date, desc: desc || text, amount: r.amount, dir: r.dir, account: id, source: 'card_statement', sourceFile: file };
+  });
+  const after = (re: RegExp) => { const i = lines.findIndex((l) => re.test(l)); return i >= 0 ? lines[i + 1] ?? '' : ''; };
+  const due = after(/Total Payment Due\s+Minimum Payment Due\s+Payment Due Date/i);
+  const dm = /₹\s*([\d,]+\.\d{2})\s+₹\s*([\d,]+\.\d{2})\s+(\d{1,2})\s+([A-Za-z]{3})\s+'(\d{2})/.exec(due);
+  const sm = /([A-Za-z]{3})[a-z]*\s+(\d{4})\s+₹\s*([\d,]+\.\d{2})\s+₹\s*(-?[\d,]+\.\d{2})/.exec(after(/Statement Month\s+Credit Limit\s+Opening Balance/i));
+  const sum = (d: Txn['dir']) => txns.filter((t) => t.dir === d).reduce((a, t) => a + t.amount, 0);
+  const total = dm ? paise(dm[1]) : undefined, minDue = dm ? paise(dm[2]) : 0, opening = sm ? paise(sm[4]) : undefined;
+  const checks: Check[] = total !== undefined && opening !== undefined
+    ? [check('equation', 'Opening balance + purchases − payments = total due', opening + sum('debit') - sum('credit') === total, `${rupees(opening + sum('debit') - sum('credit'))} vs printed ${rupees(total)}`)]
+    : [check('summary', 'Statement summary found', false, `${total === undefined ? 'no total due' : ''} ${opening === undefined ? 'no opening balance' : ''}`.trim())];
+  const dates = txns.map((t) => t.date).sort();
+  const stmt: CardStatement = { account: id, file, periodStart: dates[0] ?? '', periodEnd: dates.at(-1) ?? '', dueDate: dm ? D(dm[3], dm[4], dm[5]) : '', prevBalance: opening ?? 0, payments: sum('credit'), purchases: sum('debit'), credits: sum('credit'), charges: 0, totalDue: total ?? 0, minDue };
+  return { format: 'axis_card', txns, checks, stmt, period: dates.length ? { from: dates[0], to: dates.at(-1)! } : undefined, account: { id, kind: 'card', label: `Axis credit card ••${card}`, last4: card } };
 }
 
 function periodFrom(lines: string[]) {

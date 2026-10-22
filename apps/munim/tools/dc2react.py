@@ -21,7 +21,7 @@ SCREENS = {
     'Main': ('Today', ['M0', 'ESS', 'EMG']),
     'Spends': ('Spends', ['CAT', 'USUAL15', 'PACE', 'USUALCUM', 'OCTCUM', 'FIXED', 'FAMILY', 'UNCAT', 'NOTCOUNTED', 'RECENT', 'orbitMatch', 'orbitSwitchNet', 'INCOME', 'MONTHS', 'FOOD', 'LEAK', 'PAST', 'META', 'FIXES', 'INSAL']),
     'Category': ('Category', ['DATA', 'META']),
-    'Transactions': ('Transactions', ['TX']),
+    'Transactions': ('Transactions', ['TX', 'RULES0']),
     'Invest': ('Invest', ['ESSM', 'BANK', 'PF', 'INCOME_M', 'TERM_COVER', 'ENDOW', 'SAVED_WITH_MUNIM', 'XRS', 'DISC', 'CAS_SRC']),
     'Xray': ('Xray', ['PF', 'XR', 'X3', 'MODE', 'DISC', 'CAS_SRC']),
     'Voice': ('Ask', []),

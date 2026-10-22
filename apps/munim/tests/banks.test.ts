@@ -33,10 +33,34 @@ const CARD = [
   '25/08/2026| 13:30 AMAZON PAY INDIA C 1,800.00 l',
   '01/09/2026| 09:00 10% SWIGGY CashBack + C 50.00 l',
 ];
+const CANARA = [
+  'Statement for A/c XXXXXXXX4321 between 01-Jul-2026 and 31-Jul-2026', 'Customer Id 123 Branch Code 0001', 'Name EXAMPLE PERSON Branch Name EXAMPLE',
+  'Date Particulars Deposits Withdrawals Balance', 'Opening Balance 10,000.00',
+  'UPI/DR/600000000001/SWIGGY', 'LIMITED/YESB/**swiggy@ybl/UPI//', 'ref0001',
+  '02-07-2026 note0001/02/07/2026 450.00 9,550.00', '10:15:00', 'Chq: 600000000001',
+  'UPI/CR/600000000002/EXAMPLE', 'EMPLOYER/HDFC/**pay@hdfc', '/SALARY',
+  '05-07-2026 40,000.00 49,550.00', 'ref0002/05/07/2026', '09:00:00', 'Chq: 600000000002',
+  'page 1', '', 'Date Particulars Deposits Withdrawals Balance',
+  'UPI/DR/600000000003/EXAMPLE CAB/AXIS/**cab@axis/UPI//', 'ref0003',
+  '09-07-2026 ref0003/09/07/2026 350.00 49,200.00', '/2026 18:20:00', 'Chq: 600000000003',
+  'Closing Balance 49,200.00', 'TERMS AND CONDITIONS APPLY', 'page 2',
+];
+const AXIS = [
+  'Axis Bank Example Credit Card Statement', 'EXAMPLE PERSON', '123 EXAMPLE ROAD, EXAMPLE CITY',
+  'Card No 123456 Credit Card Number: 4321XXXXXXXX9876', 'Payment Summary', 'Total Payment Due Minimum Payment Due Payment Due Date',
+  "₹ 2,150.00 ₹ 200.00 08 Aug '26", 'Your Statement Month Credit Limit Opening Balance', 'Jul 2026 ₹ 1,00,000.00 ₹ 5,000.00',
+  'Transaction Summary', 'Date Transaction Details Amount (INR) Debit/Credit',
+  'BBPS Payment Received -', "02 Jul '26 ₹ 5,000.00 Credit", 'ref123456789',
+  "05 Jul '26 SWIGGY LIMITED,BANGALORE ₹ 650.00 Debit",
+  "10 Jul '26 AMAZON PAY INDIA,BENGALURU ₹ 1,600.00 Debit",
+  "15 Jul '26 REFUND AMAZON,Bengaluru ₹ 100.00 Credit",
+  'End of Transaction Details', 'Page 1 of 1',
+];
 
 describe('bank and card statement readers', () => {
   it('detects each layout', () => {
     expect(detectFormat(HDFC)).toBe('hdfc_savings'); expect(detectFormat(SBI)).toBe('sbi_savings'); expect(detectFormat(CARD)).toBe('hdfc_card');
+    expect(detectFormat(CANARA)).toBe('canara_savings'); expect(detectFormat(AXIS)).toBe('axis_card');
     expect(detectFormat(['Consolidated Account Statement'])).toBeNull();
   });
   it('HDFC savings: debit vs credit from the balance walk, every check passes, wrapped narration joined', () => {
@@ -62,7 +86,28 @@ describe('bank and card statement readers', () => {
     expect(r.account.last4).toBe('8747');
     expect(r.txns[1].desc).not.toMatch(/Ref#/);
   });
+  it('Canara savings: multi-line rows end at "Chq:", direction from the balance walk, page furniture skipped', () => {
+    const r = readBank(CANARA, 'k.pdf')!;
+    expect(r.txns.map((t) => [t.date, t.dir, t.amount])).toEqual([['2026-07-02', 'debit', 45000], ['2026-07-05', 'credit', 4000000], ['2026-07-09', 'debit', 35000]]);
+    expect(r.checks.map((c) => [c.id, c.ok])).toEqual([['walk', true], ['closing', true]]);
+    expect(r.txns[0].desc).toContain('swiggy@ybl');
+    expect(r.txns[1].desc).toMatch(/EMPLOYER/);
+    expect(r.txns.map((t) => t.desc).join(' ')).not.toMatch(/Chq:|page \d|\d{2}:\d{2}:\d{2}|Particulars/);
+    expect(r.period).toEqual({ from: '2026-07-01', to: '2026-07-31' });
+    expect(r.account).toMatchObject({ last4: '4321', kind: 'bank', opening: 1000000, closing: 4920000 });
+  });
+  it('Axis card: payment row split over three lines, city dropped, opening + debits − credits = total due', () => {
+    const r = readBank(AXIS, 'a.pdf')!;
+    expect(r.txns.map((t) => [t.date, t.dir, t.amount, t.desc])).toEqual([
+      ['2026-07-02', 'credit', 500000, 'BBPS Payment Received'], ['2026-07-05', 'debit', 65000, 'SWIGGY LIMITED'],
+      ['2026-07-10', 'debit', 160000, 'AMAZON PAY INDIA'], ['2026-07-15', 'credit', 10000, 'REFUND AMAZON']]);
+    expect(r.checks.every((c) => c.ok)).toBe(true);
+    expect(r.stmt).toMatchObject({ totalDue: 215000, minDue: 20000, dueDate: '2026-08-08', prevBalance: 500000 });
+    expect(r.account.last4).toBe('9876');
+  });
   it('a broken statement fails its checks instead of passing quietly', () => {
+    expect(readBank(CANARA.filter((l) => !l.startsWith('05-07-2026')), 'k.pdf')!.checks.some((c) => !c.ok)).toBe(true);
+    expect(readBank(AXIS.filter((l) => !l.startsWith("10 Jul")), 'a.pdf')!.checks[0].ok).toBe(false);
     const r = readBank(HDFC.filter((l) => !l.startsWith('05/09/26')), 'h.pdf')!;
     expect(r.checks.find((c) => c.id === 'counts')!.ok).toBe(false);
     expect(r.checks.find((c) => c.id === 'walk')!.ok).toBe(false);

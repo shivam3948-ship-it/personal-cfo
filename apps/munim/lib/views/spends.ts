@@ -18,7 +18,7 @@ export function buildTransactions(ds: Dataset) {
   const TX = ds.txns.filter((t) => t.date.startsWith(month) && t.date <= asOf)
     .sort((a, b) => b.date.localeCompare(a.date))
     .map((t) => [t.date, t.dir, t.amount, t.merchant ?? t.desc, t.category ?? 'Other', t.account]);
-  return { TX };
+  return { TX, RULES0: 1 }; // the sample family's one saved rule; your statements start with none (lib/local/patch.ts)
 }
 
 /** Per category: m = monthly totals (complete months + this month so far), u15 = spend by day 15 of each complete month, tx = this month's debits. */
