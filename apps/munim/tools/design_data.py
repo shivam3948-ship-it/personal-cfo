@@ -25,7 +25,8 @@ for f, (comp, names) in SCREENS.items():
     if not names: continue
     src = open(os.path.join(DESIGNS, f + '.dc.html')).read()
     code = src.split('class Component', 1)[1]
-    js = '({' + ','.join(f'{json.dumps(n)}: ({literal(code, n)})' for n in names) + '})'
+    # evaluated in order as vars, so a later literal can use an earlier one (EMG.target = 6 * ESS)
+    js = '(function(){' + ''.join(f'var {n} = ({literal(code, n)});' for n in names) + 'return {' + ','.join(f'{json.dumps(n)}: {n}' for n in names) + '};})()'
     out[comp] = json.loads(subprocess.check_output(['node', '-e', f'process.stdout.write(JSON.stringify({js}))']))
 json.dump(out, open(os.path.join(DESIGNS, 'design-data.json'), 'w'), ensure_ascii=False, indent=1)
 print({k: list(v) for k, v in out.items()})

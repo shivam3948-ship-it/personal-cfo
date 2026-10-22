@@ -3,6 +3,9 @@ import { loadDemo } from '@core/demo';
 import design from '../designs/design-data.json';
 import { buildInvest, buildXray } from '@/lib/views/invest';
 import { buildTransactions, buildCategory } from '@/lib/views/spends';
+import { buildToday } from '@/lib/views/today';
+import { safetyNet } from '@core/finance/essentials';
+import { getSession } from '@/lib/session';
 
 // The app must show the numbers the reviewed designs show (designs/design-data.json), except where a decision changed them.
 const rupees = (p: number) => Math.round(p / 100);
@@ -42,5 +45,16 @@ describe('view models reproduce the designs from the engine', () => {
     expect(buildTransactions(ds).TX).toEqual((design.Transactions as any).TX);
     const c = buildCategory(ds).DATA, dc = (design.Category as any).DATA;
     for (const k of Object.keys(dc)) { expect(c[k].m, k).toEqual(dc[k].m); expect(c[k].u15, k).toEqual(dc[k].u15); expect(c[k].tx, k).toEqual(dc[k].tx); }
+  });
+
+  it('Today: money figures match the design; safety net matches Invest (premiums spread over 12 months, so ESS differs from the design by design)', async () => {
+    const ds = await loadDemo();
+    const t = buildToday(ds, await getSession(new Request('http://local/')));
+    expect(t.M0).toEqual(design.Today.M0);
+    expect(t.EMG.saved).toBe(design.Today.EMG.saved);
+    const sn = safetyNet(ds, 6);
+    expect(t.EMG.target).toBe(Math.round(sn.target / 100));
+    expect(t.ESS).toBe(Math.round(sn.essentialsPerMonth / 100));
+    expect(t.ESS).not.toBe(design.Today.ESS); // design's 83,414 predates spreading premiums (Invest shows the same engine number)
   });
 });

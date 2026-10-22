@@ -7,6 +7,8 @@ export const EVENTS = {
   home_top_item_tapped: 'home_top_item_tapped', // { reason, position }
   home_call_started: 'home_call_started',       // {}
   home_tile_tapped: 'home_tile_tapped',         // { tile }
+  ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
+  ask_sent: 'ask_sent',                         // { ctx, turn } (never the question text)
 } as const;
 export type EventName = keyof typeof EVENTS;
 type Props = Record<string, string | number | boolean>;

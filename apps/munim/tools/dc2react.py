@@ -18,7 +18,7 @@ DESIGNS, OUT = os.path.join(ROOT, 'designs'), os.path.join(ROOT, 'screens')
 
 # screen file -> (component name, data vars the server supplies instead of the design's sample literals)
 SCREENS = {
-    'Main': ('Today', []),
+    'Main': ('Today', ['M0', 'ESS', 'EMG']),
     'Spends': ('Spends', []),
     'Category': ('Category', ['DATA']),
     'Transactions': ('Transactions', ['TX']),

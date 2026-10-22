@@ -6,7 +6,7 @@ import { track } from '@/lib/analytics';
 
 type Props = Record<string, unknown>;
 
-function useTheme(): 'light' | 'dark' {
+export function useTheme(): 'light' | 'dark' {
   const [t, setT] = useState<'light' | 'dark'>('light');
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -16,7 +16,8 @@ function useTheme(): 'light' | 'dark' {
   return t;
 }
 
-export function Screen({ C, view, props = {} }: { C: ComponentType<Props>; view?: string; props?: Props }) {
+/** `check` lets a page reject data it can't show (e.g. an unknown category in the URL) with a message instead of a crash. */
+export function Screen({ C, view, props = {}, check }: { C: ComponentType<Props>; view?: string; props?: Props; check?: (data: unknown) => string | null }) {
   const theme = useTheme();
   const [data, setData] = useState<unknown>(view ? undefined : {});
   const [err, setErr] = useState<string | null>(null);
@@ -31,6 +32,8 @@ export function Screen({ C, view, props = {} }: { C: ComponentType<Props>; view?
     return () => { live = false; };
   }, [view, n]);
   if (data === undefined) return err ? <Failed message={err} onRetry={() => setN(n + 1)} /> : <Loading />;
+  const bad = check?.(data);
+  if (bad) return <Failed message={bad} onRetry={() => { location.href = '/spends'; }} retryLabel="Back" />;
   return <C {...props} theme={theme} state="ready" data={data} />;
 }
 
@@ -45,12 +48,12 @@ function Loading() {
   );
 }
 
-function Failed({ message, onRetry }: { message: string; onRetry: () => void }) {
+function Failed({ message, onRetry, retryLabel = 'Retry' }: { message: string; onRetry: () => void; retryLabel?: string }) {
   return (
     <div role="alert" style={{ maxWidth: 480, margin: '0 auto', padding: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--err-tint)', color: 'var(--err-ink)', borderRadius: 16, padding: '6px 6px 6px 14px' }}>
         <span style={{ flex: 1, fontSize: 14 }}>{message}</span>
-        <button type="button" onClick={onRetry} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 0, background: 'var(--card)', color: 'var(--ink)', fontSize: 14, fontWeight: 600 }}>Retry</button>
+        <button type="button" onClick={onRetry} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 0, background: 'var(--card)', color: 'var(--ink)', fontSize: 14, fontWeight: 600 }}>{retryLabel}</button>
       </div>
     </div>
   );

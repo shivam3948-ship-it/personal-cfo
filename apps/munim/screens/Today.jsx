@@ -38,7 +38,8 @@ class Component extends DCLogic {
     var s = this.state, self = this;
     var h = s.hidden, mask = '₹ • • • •';
     var v = function (x) { return h ? mask : x; };
-    var m = { zomato: v('₹626'), yt: v('₹149'), card: v('₹36,343'), total: v('₹8,58,754'), inv: v('₹12,78,285'), bank: v('₹1,41,764'), loans: v('−₹5,61,294'), gain: v('₹4,31,285'), under: v('₹422'), topup: '₹420' };
+    var M0 = this.props.data.M0;   // money figures (the app fills these from the engine)
+    var m = { zomato: v('₹626'), yt: v('₹149'), card: v(M0.card), total: v(M0.total), inv: v(M0.inv), bank: v(M0.bank), loans: v(M0.loans), gain: v(M0.gain), under: v('₹422'), topup: '₹420' };
     var AM = [{ label: '₹20', year: '₹7,300' }, { label: '₹50', year: '₹18,250' }, { label: '₹100', year: '₹36,500' }];
     var fmtR = function (n) { return '₹' + n.toLocaleString('en-IN'); };
     var toNum = function (x) { var n = parseInt(String(x).replace(/[^0-9]/g, ''), 10); return isNaN(n) ? 0 : n; };
@@ -83,8 +84,8 @@ class Component extends DCLogic {
     // ---- money path (D-036, D-037): the step decides the Save card; never shown on Today itself ----
     var STEPS = ['buffer', 'debt', 'emergency', 'insurance', 'invest'];
     var mstep = this.props.moneyStep ?? 'emergency';
-    var ESS = 83414;                       // essentials per month (D-040): Jul–Sep average of fixed costs + family + groceries, utilities, fuel, mobile (packages/core monthPictures)
-    var BUF = { saved: 12400, target: ESS }, EMG = { saved: 141764 + 128962, target: 6 * ESS };   // emergency fund = bank balance + debt fund (counted, shown separately in Invest)
+    var ESS = this.props.data.ESS;                       // essentials per month (D-040): Jul–Sep average of fixed costs + family + groceries, utilities, fuel, mobile (packages/core monthPictures)
+    var BUF = { saved: 12400, target: ESS }, EMG = this.props.data.EMG;   // emergency fund = bank balance + debt fund (counted, shown separately in Invest)
     var DEBT = { bal: 48200, rate: 0.035 }; DEBT.interest = Math.round(DEBT.bal * DEBT.rate);
     var openWhy = function () { self.setState({ why: true }); };
     if ((sc === 'new' || sc === 'day4') && mstep === 'debt') {

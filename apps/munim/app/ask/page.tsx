@@ -1,5 +1,5 @@
 'use client';
-import Ask from '@/screens/Ask';
-import { Screen } from '@/ui/Screen';
+import AskLive from '@/ui/AskLive';
+import { useTheme } from '@/ui/Screen';
 
-export default function Page() { return <Screen C={Ask} />; }
+export default function Page() { useTheme(); return <AskLive />; }
