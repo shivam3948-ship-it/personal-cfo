@@ -8,6 +8,9 @@ export const EVENTS = {
   home_call_started: 'home_call_started',       // {}
   home_tile_tapped: 'home_tile_tapped',         // { tile }
   credit_notify_tapped: 'credit_notify_tapped', // {} fake door: interest in the Credit tab
+  cas_add_opened: 'cas_add_opened',             // {}
+  cas_read: 'cas_read',                         // { result, funds } (never amounts or names)
+  cas_deleted: 'cas_deleted',                   // {}
   ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
   voice_started: 'voice_started',               // { ctx, mode }
   answer_listened: 'answer_listened',           // { ctx, how: tap | auto }

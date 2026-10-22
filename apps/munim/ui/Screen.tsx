@@ -19,7 +19,8 @@ export function useTheme(): 'light' | 'dark' {
 }
 
 /** `check` lets a page reject data it can't show (e.g. an unknown category in the URL) with a message instead of a crash. */
-export function Screen({ C, view, props = {}, check }: { C: ComponentType<Props>; view?: string; props?: Props; check?: (data: unknown) => string | null }) {
+/** `patch` lets a page fold in data that lives only on this phone (your CAS) before the screen renders; it never goes to the server. */
+export function Screen({ C, view, props = {}, check, patch }: { C: ComponentType<Props>; view?: string; props?: Props; check?: (data: unknown) => string | null; patch?: (data: Record<string, unknown>) => Promise<Record<string, unknown>> }) {
   const theme = useTheme();
   const [data, setData] = useState<unknown>(view ? undefined : {});
   const [err, setErr] = useState<string | null>(null);
@@ -29,7 +30,8 @@ export function Screen({ C, view, props = {}, check }: { C: ComponentType<Props>
     let live = true;
     fetch(`/api/view/${view}`, { cache: 'no-store' }).then(async (r) => {
       const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'Could not load this screen.');
-      if (live) { setData(j.view); setErr(null); track('screen_viewed', { screen: view }); }
+      const v = patch ? await patch(j.view).catch(() => j.view) : j.view;
+      if (live) { setData(v); setErr(null); track('screen_viewed', { screen: view }); }
     }).catch((e) => { if (live) { setErr((e as Error).message); track('view_load_failed', { screen: view }); } });
     return () => { live = false; };
   }, [view, n]);

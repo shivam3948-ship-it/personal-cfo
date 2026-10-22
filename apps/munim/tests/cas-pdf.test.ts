@@ -43,3 +43,27 @@ describe('CAS PDF read on the device', () => {
     expect(new PdfPasswordError('wrong').message).toMatch(/didn’t open/);
   });
 });
+
+describe('readCas on the device (privacy and checks)', () => {
+  const text = fs.readFileSync(path.join(DATA_DIR, 'demo-cas', 'sample_cas_rohan.txt'), 'utf8');
+  const asFile = (t: string, name = 'cas.txt') => new File([t], name, { type: 'text/plain' });
+  it('keeps no name, email, address, folio or advisor code', async () => {
+    const { readCas } = await import('@/lib/local/cas');
+    const r = await readCas(asFile(text));
+    const saved = JSON.stringify(r.cas);
+    for (const bad of ['Rohan', 'Saffron', 'Example Road', '@example.com', 'Folio', '1023456', 'ARN-', 'Advisor']) expect(saved).not.toContain(bad);
+    expect(r.cas!.holdings).toHaveLength(5);
+  });
+  it('a fund whose units don’t add up is left out, not guessed', async () => {
+    const { readCas } = await import('@/lib/local/cas');
+    const r = await readCas(asFile(text.replace('Closing Unit Balance: 26,464.268', 'Closing Unit Balance: 26,484.268')));
+    expect(r.cas!.holdings.map((h) => h.scheme)).not.toContain('Kestrel Flexi Cap Fund - Regular Plan - Growth');
+    expect(r.cas!.skipped).toEqual(['Kestrel Flexi Cap Fund - Regular Plan - Growth']);
+  });
+  it('diagnostics carry line shapes and check ids only: no amounts, names or folio numbers', async () => {
+    const { readCas } = await import('@/lib/local/cas');
+    const d = (await readCas(asFile(text.replace('Closing Unit Balance: 26,464.268', 'Closing Unit Balance: 26,484.268')))).diagnostics;
+    for (const bad of ['Rohan', '1023456', '5,000.00', '26,484', 'Kestrel', '@']) expect(d).not.toContain(bad);
+    expect(d).toMatch(/failed/);
+  });
+});

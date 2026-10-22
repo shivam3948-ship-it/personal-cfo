@@ -986,6 +986,7 @@
   },
   "BANK": 14176365,
   "PF": {
+   "asOf": "2026-10-15",
    "value": 127828450,
    "cost": 84700000,
    "xirr": 14.2,
@@ -1068,10 +1069,12 @@
    "feeYr": 834902,
    "fdExtra": 23908946
   },
-  "DISC": "Test build on sample data. For testing only, not investment advice."
+  "DISC": "Test build on sample data. For testing only, not investment advice.",
+  "CAS_SRC": "sample"
  },
  "Xray": {
   "PF": {
+   "asOf": "2026-10-15",
    "value": 127828450,
    "cost": 84700000,
    "xirr": 14.2,
@@ -1298,6 +1301,7 @@
    }
   },
   "MODE": "demo",
-  "DISC": "Test build on sample data. For testing only, not investment advice."
+  "DISC": "Test build on sample data. For testing only, not investment advice.",
+  "CAS_SRC": "sample"
  }
 }
