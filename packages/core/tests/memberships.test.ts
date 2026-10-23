@@ -23,7 +23,7 @@ describe('memberships, renewals and answers', () => {
   it('Swiggy One with no Swiggy order in 60 days is flagged; Uber One with rides is not', () => {
     const l = leaks(fixture());
     const sw = l.find((x) => x.kind === 'membership_unused' && x.merchant === 'Swiggy One')!;
-    expect(sw.title).toBe('Swiggy One, but no Swiggy orders since 20 July');
+    expect(sw.title).toBe('Swiggy One, but no Swiggy orders in your statements since 20 July');
     expect(sw.annualCost).toBe(299 * 12 * 100);
     expect(l.some((x) => x.kind === 'membership_unused' && x.merchant === 'Uber One')).toBe(false);
     expect(l.some((x) => x.merchant === 'Netflix' && x.kind === 'membership_unused')).toBe(false); // usage invisible: never claimed
@@ -34,7 +34,7 @@ describe('memberships, renewals and answers', () => {
   });
   it('a yearly charge renewing within 30 days is flagged with its date', () => {
     const r = leaks(fixture()).find((x) => x.kind === 'renewal')!;
-    expect(r.title).toMatch(/renews for ₹9,999 on 30 October/);
+    expect(r.title).toBe('LinkedIn Premium is due to renew around 30 October, for about ₹9,999');
     expect(leaks(fixture({ 'LinkedIn Premium': { answer: 'later', at: '2026-10-14T00:00:00Z' } })).some((x) => x.kind === 'renewal')).toBe(false); // later = a week of quiet
   });
   it('"Yes, I use it" silences it for 90 days; "No" then a new charge is flagged', () => {
@@ -53,5 +53,17 @@ describe('memberships, renewals and answers', () => {
     expect(f[0].what).toMatch(/LinkedIn|Swiggy One/);
     expect(f.some((x) => x.kind === 'membership_unused' && x.fix === 'cancel it')).toBe(true);
     expect(f.find((x) => x.kind === 'renewal')!.fix).toMatch(/before it renews/);
+  });
+  it('no proof without the data: one month of statements and a single charge only get the question (review, 23 Oct)', () => {
+    const one: Dataset = { ...emptyDataset('one'), txns: categorizeAll([row('a', '2026-09-20', 'SWIGGY ONE MEMBERSHIP', 299), row('b', '2026-10-15', 'DMART', 500)]) };
+    expect(leaks(one).some((x) => x.kind === 'membership_unused')).toBe(false);
+    const month: Dataset = { ...emptyDataset('m'), txns: categorizeAll([row('a', '2026-09-20', 'SWIGGY ONE MEMBERSHIP', 299), row('c', '2026-10-05', 'SWIGGY ONE MEMBERSHIP', 299), row('b', '2026-10-15', 'DMART', 500)]) };
+    expect(leaks(month).some((x) => x.kind === 'membership_unused')).toBe(false); // monthly, but statements reach back 25 days, not 60
+  });
+  it('quiet windows count from today on the phone, and "yes" is asked again after 90 days', () => {
+    const f = { ...fixture({ Netflix: { answer: 'yes', at: '2026-06-01T00:00:00Z' } }), today: '2026-10-20' };
+    expect(subscriptionsToConfirm(f).some((r) => r.merchant === 'Netflix')).toBe(true);
+    const later = { ...fixture({ 'LinkedIn Premium': { answer: 'later', at: '2026-10-14T00:00:00Z' } }), today: '2026-10-22' };
+    expect(leaks(later).some((x) => x.kind === 'renewal')).toBe(true); // 8 days after "later", by today's date
   });
 });

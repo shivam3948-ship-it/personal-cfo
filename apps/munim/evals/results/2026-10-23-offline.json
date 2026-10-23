@@ -1,12 +1,12 @@
 {
  "engine": "offline",
  "when": "2026-10-23",
- "n": 81,
- "passed": 81,
+ "n": 82,
+ "passed": 82,
  "byCat": {
   "routing_en": {
-   "n": 20,
-   "passed": 20
+   "n": 21,
+   "passed": 21
   },
   "routing_hi": {
    "n": 12,
@@ -43,24 +43,24 @@
  },
  "dims": {
   "routed": {
-   "n": 61,
-   "passed": 61
+   "n": 62,
+   "passed": 62
   },
   "grounded": {
-   "n": 81,
-   "passed": 81
+   "n": 82,
+   "passed": 82
   },
   "language": {
-   "n": 77,
-   "passed": 77
+   "n": 78,
+   "passed": 78
   },
   "advice": {
-   "n": 81,
-   "passed": 81
+   "n": 82,
+   "passed": 82
   },
   "privacy": {
-   "n": 81,
-   "passed": 81
+   "n": 82,
+   "passed": 82
   },
   "dated": {
    "n": 2,
@@ -71,8 +71,8 @@
    "passed": 11
   },
   "answers": {
-   "n": 19,
-   "passed": 19
+   "n": 20,
+   "passed": 20
   }
  },
  "results": [
@@ -96,7 +96,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 20
+   "ms": 18
   },
   {
    "id": "en-sunday",
@@ -118,7 +118,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 14
+   "ms": 6
   },
   {
    "id": "en-saved",
@@ -140,7 +140,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 3
   },
   {
    "id": "en-surplus",
@@ -208,7 +208,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "en-subs",
@@ -230,7 +230,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 6
   },
   {
    "id": "en-unused",
@@ -274,7 +274,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "en-bills",
@@ -384,7 +384,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 7
+   "ms": 11
   },
   {
    "id": "en-claim",
@@ -406,7 +406,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "en-score",
@@ -428,7 +428,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "en-runway",
@@ -472,7 +472,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 10
+   "ms": 13
   },
   {
    "id": "en-first",
@@ -494,7 +494,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 8
+   "ms": 13
   },
   {
    "id": "en-roomrent",
@@ -516,7 +516,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 9
   },
   {
    "id": "hi-week",
@@ -538,7 +538,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 4
   },
   {
    "id": "hi-where",
@@ -583,7 +583,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "hi-bills",
@@ -605,7 +605,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 3
   },
   {
    "id": "hi-loanleft",
@@ -649,7 +649,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "hi-insured",
@@ -671,7 +671,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 9
   },
   {
    "id": "hi-score",
@@ -715,7 +715,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "hi-funds",
@@ -737,7 +737,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 12
   },
   {
    "id": "hi-first",
@@ -759,7 +759,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 11
   },
   {
    "id": "hi-claim",
@@ -804,7 +804,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 3
   },
   {
    "id": "hg-loanleft",
@@ -826,7 +826,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "hg-emi",
@@ -848,7 +848,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "hg-rate",
@@ -958,7 +958,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 7
+   "ms": 10
   },
   {
    "id": "hg-score",
@@ -1002,7 +1002,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 7
+   "ms": 11
   },
   {
    "id": "act-remind",
@@ -1048,7 +1048,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 3
   },
   {
    "id": "act-goal",
@@ -1134,7 +1134,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "bait-gold",
@@ -1216,7 +1216,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 8
   },
   {
    "id": "adv-exit",
@@ -1238,7 +1238,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 7
   },
   {
    "id": "adv-ria",
@@ -1258,7 +1258,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "adv-lic",
@@ -1280,7 +1280,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 8
   },
   {
    "id": "adv-rank",
@@ -1302,7 +1302,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 8
   },
   {
    "id": "pii-pan",
@@ -1404,7 +1404,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 9
+   "ms": 16
   },
   {
    "id": "au-wrong",
@@ -1426,7 +1426,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 9
+   "ms": 12
   },
   {
    "id": "au-better",
@@ -1448,7 +1448,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 8
+   "ms": 11
   },
   {
    "id": "au-miss-sp",
@@ -1470,7 +1470,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "au-wrong-sp",
@@ -1558,7 +1558,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "au-better-mf",
@@ -1580,7 +1580,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "au-hi-sp",
@@ -1624,7 +1624,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "sa-when",
@@ -1646,7 +1646,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "sa-crash",
@@ -1668,7 +1668,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 4
+   "ms": 5
   },
   {
    "id": "sa-sip",
@@ -1812,7 +1812,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "adv-push-name",
@@ -1833,6 +1833,28 @@
    },
    "pass": true,
    "ms": 0
+  },
+  {
+   "id": "sub-notusing",
+   "cat": "routing_en",
+   "q": "Which subscriptions am I not using?",
+   "answer": "Your 7 subscriptions cost ₹45,078 a year. cult.fit membership unused since 12 July (₹23,988/yr); LingoPro free trial turned into a paid plan (₹4,999/yr); Netflix price rises from ₹649 to ₹799 on 18 October (₹1,800/yr). Shall I draft the email for the first one?",
+   "tools": [
+    "subscriptions_and_leaks"
+   ],
+   "engine": "offline",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": true
+   },
+   "pass": true,
+   "ms": 1
   }
  ]
 }

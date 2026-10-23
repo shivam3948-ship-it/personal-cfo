@@ -44,7 +44,7 @@ export async function runEval(ds: Dataset, opts: { offline: boolean; cases?: Eva
       privacy: !PII.test(a),
       honest: k.honest ? HONEST.test(a) : null,
       dated: k.dated ? k.dated.test(a) : null,
-      answers: k.must ? k.must.every((re) => re.test(a)) : null,
+      answers: k.must || k.mustNot ? (k.must ?? []).every((re) => re.test(a)) && !(k.mustNot ?? []).some((re) => re.test(a)) : null,
     };
     const pass = Object.values(checks).every((v) => v !== false);
     results.push({ id: k.id, cat: k.cat, q: k.turns.join(' → '), answer: a, tools: [...new Set(tools)], engine, checks, pass, ms: Date.now() - t0 });

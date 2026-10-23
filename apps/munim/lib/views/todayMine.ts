@@ -30,8 +30,8 @@ export function subCard(ds: Dataset): TodayMine['sub'] {
   const pick = (k: string) => lk.find((l) => l.kind === k);
   const still = pick('still_charged'), unused = pick('membership_unused'), renew = pick('renewal');
   if (still) return { merchant: still.merchant, kind: 'still_charged', title: still.title, sub: `${inr(still.amount)} went out. Check the cancellation went through, and ask for it back.` };
-  if (unused) return { merchant: unused.merchant, kind: 'unused', title: unused.title, sub: `It costs ${inr(unused.annualCost)} a year.` };
-  if (renew) return { merchant: renew.merchant, kind: 'renewal', title: renew.title, sub: 'Decide now: once it renews, the money is usually gone.' };
+  if (unused) return { merchant: unused.merchant, kind: 'unused', title: unused.title, sub: `It costs ${inr(unused.amount)} a month, ${inr(unused.annualCost)} a year. Orders paid from an account you haven’t added won’t show here.` };
+  if (renew) return { merchant: renew.merchant, kind: 'renewal', title: renew.title, sub: 'Refunds after a renewal are often hard to get, so decide before.' };
   const r = subscriptionsToConfirm(ds)[0];
   if (!r) return null;
   const per = r.cadence === 'yearly' ? 'a year' : 'a month';

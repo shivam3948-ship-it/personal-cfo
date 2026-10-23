@@ -181,6 +181,8 @@ const USE_WINDOW_DAYS = 60;
 function membershipChecks(ds: Dataset, rec: Recurring[], asOf: string): Leak[] {
   const out: Leak[] = [];
   const said = ds.subAnswers ?? {};
+  const now = ds.today ?? asOf; // quiet windows count from today on the phone, not from the last statement day
+  const earliest = ds.txns.map((t) => t.date).sort()[0] ?? asOf;
   for (const r of rec) {
     const ans = said[r.merchant];
     // 3. still charged after "No"
@@ -190,37 +192,38 @@ function membershipChecks(ds: Dataset, rec: Recurring[], asOf: string): Leak[] {
         amount: r.amount, annualCost: r.annualCost, merchant: r.merchant, evidence: r.ids.slice(-1), actionHint: 'cancel' });
       continue;
     }
-    if (ans?.answer === 'yes' && daysBetween(ans.at.slice(0, 10), asOf) < 90) continue; // you said you use it: don't nag for 90 days
-    if (ans?.answer === 'later' && daysBetween(ans.at.slice(0, 10), asOf) < 7) continue; // "ask me later": a week of quiet
+    if (ans?.answer === 'yes' && daysBetween(ans.at.slice(0, 10), now) < 90) continue; // you said you use it: don't nag for 90 days
+    if (ans?.answer === 'later' && daysBetween(ans.at.slice(0, 10), now) < 7) continue; // "ask me later": a week of quiet
     // 1. membership with no matching orders
     const m = MEMBERSHIP_USE[r.merchant];
-    const active = r.cadence === 'yearly' ? daysBetween(r.lastDate, asOf) <= 366 : daysBetween(r.lastDate, asOf) <= 45;
-    if (m && active) {
-      const from = addDays(asOf, -USE_WINDOW_DAYS);
+    const active = r.cadence === 'yearly' ? daysBetween(r.lastDate, asOf) <= 366 : r.cadence === 'monthly' && daysBetween(r.lastDate, asOf) <= 45;
+    const from = addDays(asOf, -USE_WINDOW_DAYS);
+    // proof needs the data: a real plan (not a one-off charge) AND statements reaching back the whole window; else just ask
+    if (m && active && earliest <= from) {
       const uses = ds.txns.filter((t) => t.dir === 'debit' && t.merchant === m.uses);
       const recent = uses.filter((t) => t.date >= from && t.date <= asOf);
       if (!recent.length) {
         const lastUse = uses.map((t) => t.date).sort().at(-1);
-        out.push({ kind: 'membership_unused', since: lastUse, title: `${r.merchant}, but no ${m.what} ${lastUse ? `since ${spokenDate(lastUse)}` : `in ${USE_WINDOW_DAYS} days`}`,
-          titleHi: `${r.merchant} चालू है, पर ${lastUse ? `${spokenDate(lastUse, 'hi')} से` : `${USE_WINDOW_DAYS} दिन से`} कोई ${m.whatHi} नहीं`,
+        out.push({ kind: 'membership_unused', since: lastUse, title: `${r.merchant}, but no ${m.what} in your statements ${lastUse ? `since ${spokenDate(lastUse)}` : `in ${USE_WINDOW_DAYS} days`}`,
+          titleHi: `${r.merchant} चालू है, पर आपके स्टेटमेंट में ${lastUse ? `${spokenDate(lastUse, 'hi')} से` : `${USE_WINDOW_DAYS} दिन से`} कोई ${m.whatHi} नहीं`,
           amount: r.amount, annualCost: r.annualCost, merchant: r.merchant, evidence: r.ids.slice(-1), actionHint: 'cancel' });
         continue;
       }
     }
     // 2. a yearly renewal within 30 days
     if (r.cadence === 'yearly' && r.nextExpected && daysBetween(asOf, r.nextExpected) >= 0 && daysBetween(asOf, r.nextExpected) <= 30) {
-      out.push({ kind: 'renewal', deadline: r.nextExpected, title: `${r.merchant} renews for ${inr(r.amount)} on ${spokenDate(r.nextExpected)}`, titleHi: `${r.merchant} ${spokenDate(r.nextExpected, 'hi')} को ${inr(r.amount)} में रिन्यू होगा`,
+      out.push({ kind: 'renewal', deadline: r.nextExpected, title: `${r.merchant} is due to renew around ${spokenDate(r.nextExpected)}, for about ${inr(r.amount)}`, titleHi: `${r.merchant} लगभग ${spokenDate(r.nextExpected, 'hi')} को करीब ${inr(r.amount)} में रिन्यू होगा`,
         amount: r.amount, annualCost: r.annualCost, merchant: r.merchant, evidence: r.ids.slice(-1), actionHint: 'decide' });
     }
   }
   return out;
 }
 
-/** Recurring charges to ask "Still using it?" about, most expensive first: not answered, or answered "later" over 7 days ago. */
+/** Recurring charges to ask "Still using it?" about, most expensive first: not answered, "later" over 7 days ago, or "yes" over 90. */
 export function subscriptionsToConfirm(ds: Dataset): Recurring[] {
-  const said = ds.subAnswers ?? {}; const asOf = asOfDate(ds);
+  const said = ds.subAnswers ?? {}; const asOf = ds.today ?? asOfDate(ds);
   return recurring(ds).filter((r) => (r.category === 'Subscriptions' || r.category === 'Fitness') && r.cadence !== 'once')
-    .filter((r) => { const a = said[r.merchant]; return !a || (a.answer === 'later' && daysBetween(a.at.slice(0, 10), asOf) >= 7); });
+    .filter((r) => { const a = said[r.merchant]; return !a || (a.answer === 'later' && daysBetween(a.at.slice(0, 10), asOf) >= 7) || (a.answer === 'yes' && daysBetween(a.at.slice(0, 10), asOf) >= 90); });
 }
 
 // ---------- unusual spending ----------

@@ -59,6 +59,7 @@ export async function myDataset(): Promise<Dataset | null> {
   ds.txns = categorizeAll(ds.txns.map((t) => ({ ...t, category: undefined, merchant: undefined })));
   ds.txns.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id, undefined, { numeric: true }));
   ds.subAnswers = await loadSubAnswers(); // "Still using it?" answers (D-052)
+  { const n = new Date(); ds.today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; }
   return ds;
 }
 
