@@ -85,6 +85,9 @@ const MERCHANTS: [RegExp, string][] = [
   [/\bsuraksha\b/i, 'Suraksha Health'], [/\btarang\b/i, 'Tarang Life'], [/\bhpcl\b/i, 'HPCL'], [/\biocl\b/i, 'IOCL'],
 ];
 
+/** Brand names Munim recognises. Anything else in a merchant field may be a person (a UPI payee, an NEFT sender). */
+export const KNOWN_MERCHANTS = new Set(MERCHANTS.map(([, n]) => n));
+
 export function merchantOf(desc: string): string {
   for (const [re, name] of MERCHANTS) if (re.test(desc)) return name;
   // Fallback: the most informative token of a UPI/POS narration, never a person's handle.

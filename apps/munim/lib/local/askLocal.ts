@@ -11,6 +11,8 @@ import type { LlmClient } from '@core/llm';
 import { detectLang } from '@core/agent/lang';
 import { asOfDate } from '@core/finance/picture';
 import { forLlm } from '@core/privacy/forLlm';
+import { counterpartyNames } from '@core/privacy/counterparties';
+import { redact } from '@core/privacy/redact';
 import { emptyDataset, type Dataset } from '@core/types';
 import { runClaude, type AgentReply, type Turn } from '@/lib/agent/claude';
 import { runOffline } from '@/lib/agent/offline';
@@ -56,20 +58,22 @@ function relayClient(lang: 'hi' | 'en', asOf: string): LlmClient {
 class NoKey extends Error { constructor() { super('no_key'); } }
 let noKey = false; // after one 503, this visit stays on the phone's engine (no pointless calls)
 
-export interface LocalReply { answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay' }
+export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay' }
 
-/** `testMode` comes from the server session (GET /api/ask); on your own data the test build runs as 'internal', never 'demo'. */
-export async function askLocal(history: Turn[], testMode: boolean): Promise<LocalReply> {
+/** On your own data the advice mode is 'guided' (no fund picks, the SEBI line), whatever the public test switch says:
+ *  'demo' never reads real data, and 'internal' needs a server-side allow-list we don't have yet (compliance review, D-050). */
+export async function askLocal(history: Turn[]): Promise<LocalReply> {
   const ds = await myData(); if (!ds) throw new Error('Add a statement first.');
   await loadActions();
   const p = getProfile();
   const last = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
   const lang = detectLang(last, 'auto');
-  const adviceMode: AdviceMode = testMode ? 'internal' : 'guided';
-  const names = p?.name ? [p.name] : [];
+  const adviceMode: AdviceMode = 'guided';
+  const names = [...(p?.name ? [p.name] : []), ...counterpartyNames(ds.txns)]; // your name and every payee/sender your statements name
   const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay';
   try { if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds))); }
   catch { r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
-  return { answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where };
+  const spoken = redact(r.answer, { names }).replace(/\b(UPI|NEFT|IMPS)[-/][^\s,.।]+/gi, 'a payment'); // what may go to the voice service
+  return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where };
 }
