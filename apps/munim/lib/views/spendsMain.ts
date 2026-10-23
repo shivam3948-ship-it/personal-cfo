@@ -53,7 +53,9 @@ export interface SpendsOpts { reportFrom?: string | null }
 export function buildSpendsMain(ds: Dataset, opts: SpendsOpts = { reportFrom: 'September' }) {
   const asOf = asOfDate(ds), d = day(asOf);
   const cov = coverage(ds);
-  const done = cov.filter((c) => c.complete), cur = cov.find((c) => !c.complete) ?? cov.at(-1)!;
+  // this month is the LATEST month in the statements (a partial first month, e.g. a statement starting 30 Oct last year, is
+  // not "now"); past months are the complete ones before it, at most 11, so two Octobers never share a key (keys are MM)
+  const cur = cov.at(-1)!, done = cov.filter((c) => c.complete && c.key !== cur.key).slice(-11);
   const P = Object.fromEntries(done.map((c) => [c.key.slice(5), period(ds, c.from, c.to)]));
   const now = period(ds, cur.from, asOf);
   const keys = Object.keys(P);
@@ -80,6 +82,10 @@ export function buildSpendsMain(ds: Dataset, opts: SpendsOpts = { reportFrom: 'S
     FIXES.push({ kind: 'pace', icon: '↑', title: `${over} up ${Math.round(((now.ev[over] - usual15[over]) / usual15[over]) * 100)}% this month`,
       sub: over === 'Food delivery' ? `Skip 2 orders, save ${inr(skip2)}` : `Spend a little less here, save ${inr(skip2)}`, gain: inr(skip2), href: catHref(over) });
   }
+  // D-052: memberships with no matching orders, charges after you chose to cancel, yearly renewals within 30 days
+  for (const l of lk.filter((x) => x.kind === 'still_charged')) FIXES.push({ icon: '!', title: `${l.merchant} charged after you cancelled`, sub: 'Check it was cancelled; ask for it back', gain: inr(l.amount) });
+  for (const l of lk.filter((x) => x.kind === 'membership_unused')) FIXES.push({ icon: '!', title: l.title, sub: `${inr(l.amount)} each time · cancel it`, gain: `${inr(l.annualCost)}/yr` });
+  for (const l of lk.filter((x) => x.kind === 'renewal')) FIXES.push({ icon: '↻', title: l.title, sub: 'Keep it, or turn off auto-renew first', gain: inr(l.amount) });
   for (const kind of ['inactive', 'duplicate', 'trial_charge'] as const) for (const l of lk.filter((x) => x.kind === kind)) {
     if (kind === 'inactive') FIXES.push({ icon: '!', title: `${l.merchant} unused since ${l.since ? FULL[+l.since.slice(5, 7) - 1] : 'a while'}`, sub: `${inr(l.amount)} a month`, gain: `${inr(l.annualCost)}/yr` });
     if (kind === 'duplicate') FIXES.push({ icon: '2×', title: `${l.merchant} charged twice`, sub: `${l.date ? dm(l.date) + ' · ' : ''}ask for a refund`, gain: inr(l.amount) });

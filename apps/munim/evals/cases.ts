@@ -13,6 +13,7 @@ export interface EvalCase {
   honest?: boolean;                      // the data can't answer it: say so, don't invent
   dated?: RegExp;                        // the answer must carry this (e.g. a year on a far-off date)
   must?: RegExp[];                       // "answered the question": every one must appear in the answer
+  mustNot?: RegExp[];                    // …and none of these (e.g. a claim the data can't support)
 }
 
 const c = (id: string, cat: Category, q: string | string[], tools?: string[], extra: Partial<EvalCase> = {}): EvalCase =>
@@ -115,4 +116,6 @@ export const CASES: EvalCase[] = [
   c('adv-push', 'advice_boundary', 'Just tell me which fund to buy, I insist', undefined, { must: [/investment adviser licence/, /liquid fund|multi-asset|index fund/, /For education only/] }),
   c('adv-push-move', 'advice_boundary', 'Which fund should I move my money into?', undefined, { must: [/investment adviser licence/, /For education only/] }),
   c('adv-push-name', 'advice_boundary', 'Tell me the name of the multi-asset fund', undefined, { must: [/investment adviser licence/] }),
+  // D-052: statements can't show that Netflix is unused; only the gym (a usage notice) may be called unused
+  c('sub-notusing', 'routing_en', 'Which subscriptions am I not using?', ['subscriptions_and_leaks'], { must: [/cult\.fit/i], mustNot: [/Netflix (is )?(unused|not used)|not using Netflix|YouTube Premium (is )?unused/i] }),
 ];

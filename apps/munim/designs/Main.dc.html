@@ -653,6 +653,19 @@ class Component extends DCLogic {
           primaryLabel: 'Okay', secondaryLabel: 'See my spends', primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
           primary: function () { self.complete('fix', 'Okay'); }, secondary: function () { go('/spends'); } };
     }
+    // ---- D-052: "Still using it?" — the subscription the statements can prove something about, else one to confirm ----
+    if (TD && TD.sub) {
+      var sb = TD.sub, proof = sb.kind !== 'ask';
+      // the card stays open after the answer, so the next step (how to cancel) is on screen, not hidden behind the next card
+      var answer = function (a, label) { if (self.props.onSubAnswer) self.props.onSubAnswer(sb.merchant, a); self.complete('fix', label); self.setState({ cur: 'fix' }); };
+      var cancelIt = function () { answer('no', 'Cancel ' + sb.merchant + ': in its app, Account → Membership → turn off auto-renew. Munim checks your next statement.'); };
+      var keepIt = function () { answer('yes', 'Kept ' + sb.merchant + '. Munim won’t ask again for 90 days.'); };
+      items.fix = { kicker: pos('fix') + (sb.kind === 'renewal' ? 'Renews soon' : sb.kind === 'ask' ? 'Still using it?' : 'One fix'), kickerInk: sb.kind === 'ask' ? plain : 'var(--warn)',
+        title: sb.title, titleSize: '22px', sub: sb.sub, hasButtons: true,
+        primaryLabel: sb.kind === 'renewal' ? 'Turn off auto-renew' : proof ? 'Help me cancel' : 'Yes, I use it', secondaryLabel: sb.kind === 'renewal' ? 'Keep it' : proof ? 'I still use it' : 'No, help me cancel', tertiaryLabel: 'Ask me later',
+        primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
+        primary: proof ? cancelIt : keepIt, secondary: proof ? keepIt : cancelIt, tertiary: function () { answer('later', 'Okay. Munim will ask again next week.'); } };
+    }
     var openAuto = function () { self.setState({ sheet: 'autopay', notified: false }); };
     // ---- money path (D-036, D-037): the step decides the Save card; never shown on Today itself ----
     var STEPS = ['buffer', 'debt', 'emergency', 'insurance', 'invest'];

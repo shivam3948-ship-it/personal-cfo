@@ -72,7 +72,9 @@ class Component extends DCLogic {
     });
     // ---- past months: packages/core monthPictures() for the 3 complete months; ev = everyday categories, fx = fixed, fam = family, unc = uncategorised, cum = everyday spending by day ----
     var PAST = this.props.data.PAST;
-    var PKEYS = Object.keys(PAST).sort(), PSHORT = {}; PKEYS.forEach(function (k) { PSHORT[k] = M3[+k - 1]; });
+    // months oldest first relative to this month (keys are MM, so "11","12" of last year come before "01")
+    var mo = function (k) { return ((+k - (META.cur + 1)) % 12 + 12) % 12; };
+    var PKEYS = Object.keys(PAST).sort(function (a, b) { return mo(a) - mo(b); }), PSHORT = {}; PKEYS.forEach(function (k) { PSHORT[k] = M3[+k - 1]; });
     var past = s.month && PAST[s.month] ? s.month : null, P = past ? PAST[past] : null;
     var MN = {}; M3.forEach(function (m, i) { MN[m] = MFULL[i]; });
     var sumv = function (o) { return Object.keys(o).reduce(function (t, k) { return t + o[k]; }, 0); };

@@ -8,6 +8,7 @@ import { categorizeAll } from '@core/finance/categorize';
 import { emptyDataset, type Dataset, type Txn } from '@core/types';
 import { readCasLines, type ReadResult } from './cas';
 import { idbGet, idbPut, idbDel } from './idb';
+import { loadSubAnswers } from './subAnswers';
 
 export { PdfPasswordError };
 export interface SavedStatement { key: string; format: BankRead['format']; account: BankRead['account']; period?: { from: string; to: string }; txns: Txn[]; stmt?: BankRead['stmt']; checks: BankRead['checks']; addedAt: string }
@@ -57,6 +58,8 @@ export async function myDataset(): Promise<Dataset | null> {
   }
   ds.txns = categorizeAll(ds.txns.map((t) => ({ ...t, category: undefined, merchant: undefined })));
   ds.txns.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id, undefined, { numeric: true }));
+  ds.subAnswers = await loadSubAnswers(); // "Still using it?" answers (D-052)
+  { const n = new Date(); ds.today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; }
   return ds;
 }
 

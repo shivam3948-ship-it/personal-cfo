@@ -49,7 +49,7 @@ const RULES: Rule[] = [
   { cat: 'Refund', re: /\brefund\b|\breversal\b/i, dir: 'credit' },
   { cat: 'Interest', re: /\b(sb )?interest (credit|paid)\b|\bint\.? ?pd\b/i, dir: 'credit' },
   { cat: 'Salary', re: /\bsalary\b|\bsal cr\b/i, dir: 'credit' },
-  { cat: 'Subscriptions', re: /\bnetflix\b|\bspotify\b|\bhotstar\b|\bjiohotstar\b|\byoutube ?premium\b|\byoutubepremium\b|\bprime\b|\bsonyliv\b|\bzee5\b|\blingopro\b|\baudible\b|\bicloud\b|\bgoogle one\b|\bchatgpt\b|\bopenai\b/i },
+  { cat: 'Subscriptions', re: /\blinkedin ?premium\b|\bswiggy ?one\b|\bzomato ?gold\b|\buber ?one\b|\bzepto ?pass\b|\bflipkart ?(vip|plus)\b|\bnetflix\b|\bspotify\b|\bhotstar\b|\bjiohotstar\b|\byoutube ?premium\b|\byoutubepremium\b|\bprime\b|\bsonyliv\b|\bzee5\b|\blingopro\b|\baudible\b|\bicloud\b|\bgoogle one\b|\bchatgpt\b|\bopenai\b/i },
   { cat: 'Fitness', re: /\bcult(fit|\.fit)?\b|\bgym\b|\bfitness\b|\bhealthifyme\b/i },
   { cat: 'Self transfer', re: /\bself\b|\bown a\/c\b/i },
   { cat: 'Loan EMI', re: /\bemi\b|\bauto finance\b|\bfinserv\b|\bloan\b|\bln xx\d+/i, dir: 'debit' },
@@ -74,6 +74,7 @@ const RULES: Rule[] = [
 ];
 
 const MERCHANTS: [RegExp, string][] = [
+  [/\blinkedin ?premium\b/i, 'LinkedIn Premium'], [/\bswiggy ?one\b/i, 'Swiggy One'], [/\bzomato ?gold\b/i, 'Zomato Gold'], [/\buber ?one\b/i, 'Uber One'], [/\bzepto ?pass\b/i, 'Zepto Pass'], [/\bflipkart ?(vip|plus)\b/i, 'Flipkart VIP'],
   [/\bswiggy\b/i, 'Swiggy'], [/\bzomato\b/i, 'Zomato'], [/\bblinkit\b/i, 'Blinkit'], [/\bzepto\b/i, 'Zepto'],
   [/\bdmart\b/i, 'DMart'], [/\buber\b/i, 'Uber'], [/\bola(cabs)?\b/i, 'Ola'], [/\brapido\b/i, 'Rapido'],
   [/\bnetflix\b/i, 'Netflix'], [/\bspotify\b/i, 'Spotify'], [/\b(jio)?hotstar\b/i, 'JioHotstar'], [/\byoutube ?premium\b|youtubepremium/i, 'YouTube Premium'],
