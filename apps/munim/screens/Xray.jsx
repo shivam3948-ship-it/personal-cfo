@@ -18,7 +18,7 @@ class Component extends DCLogic {
     var PF = this.props.data.PF;
     var XR = this.props.data.XR;   // xray_v2_numbers.py (FIFO lots, sample CAS)
     var X3 = this.props.data.X3;   // xray_v3_numbers.py: overlap (synthetic sample holdings), FD at 7%, did-it-work preview
-    var MODE = this.props.data.MODE;   // advice mode from the server: demo/internal/advised may show the named-fund plan; guided gets facts and categories (D-043)
+    var MODE = this.props.data.MODE;   // advice mode from the server: only advised shows the named-fund plan (D-051); everyone else gets facts and categories
     var DISC = this.props.data.DISC;   // the mode's disclaimer, from the server
     var CAS_SRC = this.props.data.CAS_SRC;   // whose CAS: 'sample' (the demo family) or 'yours' (read on this phone)
     var END = new Date(PF.asOf || '2026-10-15'), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -26,7 +26,7 @@ class Component extends DCLogic {
     var maxV = Math.max.apply(null, rows.map(function (r) { return Math.max(r.fund, r.you); }));
     var ahead = rows.filter(function (r) { return r.you - r.fund >= 0.5; }).length, behind = rows.filter(function (r) { return r.fund - r.you >= 0.5; }).length, even = rows.length - ahead - behind;
     var eq = sum(PF.funds.filter(function (f) { return f[3] === 'equity'; }).map(function (f) { return f[4]; })), dt = PF.value - eq;
-    var named = MODE !== 'guided' && MODE !== 'off';
+    var named = MODE === 'advised'; // D-051: no fund is named for a move or switch until there's an adviser licence, test builds included
     var H = XR.harvest, G = XR.regular, E = XR.elss, C = H.combo, O = X3.overlap, FD = X3.fd, DID = X3.did;
     // the fund compared with an index fund: whichever one has index prices for all its dates (data-driven, any CAS)
     var vk = Object.keys(XR.vsIndex || {})[0] || null, M = vk ? XR.vsIndex[vk] : null;

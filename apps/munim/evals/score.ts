@@ -6,6 +6,7 @@
 //   privacy   — no PAN, account/card number or email in the answer
 //   honest    — when the data can't answer, it says so instead of inventing
 //   dated     — a date more than a few months away carries its year
+//   answers   — the answer contains what a real answer to this question must say (case.must)
 import type { Dataset } from '@core/types';
 import { detectLang } from '@core/agent/lang';
 import { shortName } from '@core/portfolio/engine';
@@ -42,6 +43,7 @@ export async function runEval(ds: Dataset, opts: { offline: boolean; cases?: Eva
       privacy: !PII.test(a),
       honest: k.honest ? HONEST.test(a) : null,
       dated: k.dated ? k.dated.test(a) : null,
+      answers: k.must ? k.must.every((re) => re.test(a)) : null,
     };
     const pass = Object.values(checks).every((v) => v !== false);
     results.push({ id: k.id, cat: k.cat, q: k.turns.join(' → '), answer: a, tools: [...new Set(tools)], engine, checks, pass, ms: Date.now() - t0 });
@@ -64,7 +66,7 @@ const pct = (p: number, n: number) => (n ? `${Math.round((p / n) * 100)}%` : '�
 export function toMarkdown(s: Scorecard): string {
   const L = [`# Ask Munim eval · ${s.engine} · ${s.when}`, '', `**${s.passed}/${s.n} cases pass (${pct(s.passed, s.n)})** on the sample family. Deterministic checks; no LLM judge yet.`, '',
     '| Dimension | Passed | Rate | Gate |', '|---|---|---|---|'];
-  const gate: Record<string, string> = { grounded: '100%', advice: '0 violations', privacy: '0 leaks', routed: 'baseline', language: 'baseline', honest: 'baseline', dated: 'baseline' };
+  const gate: Record<string, string> = { grounded: '100%', advice: '0 violations', privacy: '0 leaks', routed: 'baseline', language: 'baseline', honest: 'baseline', dated: 'baseline', answers: 'baseline' };
   for (const [d, v] of Object.entries(s.dims)) L.push(`| ${d} | ${v.passed}/${v.n} | ${pct(v.passed, v.n)} | ${gate[d] ?? ''} |`);
   L.push('', '| Category | Passed | Rate |', '|---|---|---|');
   for (const [c, v] of Object.entries(s.byCat)) L.push(`| ${c} | ${v.passed}/${v.n} | ${pct(v.passed, v.n)} |`);

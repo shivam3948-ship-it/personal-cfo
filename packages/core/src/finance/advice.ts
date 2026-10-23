@@ -17,8 +17,8 @@ export const RULES = {
 } as const;
 
 export const DISCLAIMER = {
-  en: 'Guidance from your own documents and common rules of thumb. Not SEBI-registered investment advice; registered advice comes only after an RIA licence. Insurance points are general, not a policy recommendation.',
-  hi: 'यह आपके दस्तावेज़ों और आम नियमों पर आधारित सलाह है, SEBI-रजिस्टर्ड निवेश सलाह नहीं। बीमा के बारे में बातें सामान्य हैं, किसी पॉलिसी की सिफ़ारिश नहीं।',
+  en: 'Guidance from your own documents and common rules of thumb. For education only, not investment advice; Munim doesn’t have an investment adviser licence yet. Insurance points are general, not a policy recommendation.',
+  hi: 'यह आपके दस्तावेज़ों और आम नियमों पर आधारित है। सिर्फ़ जानकारी के लिए, निवेश सलाह नहीं; मुनीम के पास अभी निवेश सलाहकार का लाइसेंस नहीं है। बीमा के बारे में बातें सामान्य हैं, किसी पॉलिसी की सिफ़ारिश नहीं।',
 };
 
 export type StepId = 'cash_flow' | 'card_debt' | 'high_interest_loans' | 'emergency_fund' | 'health_cover' | 'life_cover' | 'savings_policies' | 'invest_surplus';

@@ -5,6 +5,7 @@ import { parseAmountRupees } from '@core/agent/lang';
 import type { AgentReply, TraceStep, Turn } from './claude';
 import type { Action } from '@/lib/actionsCore';
 import { addMonths, spokenDate } from '@core/dates';
+import { DISCLAIMER, NO_LICENCE } from '@/lib/advice';
 
 type Pending = { tool: string; input: Record<string, unknown> } | null;
 const pendingBySid = new Map<string, Pending>();
@@ -15,6 +16,16 @@ const INTENTS: [string, RegExp][] = [
   ['confirm', /^(?:\s*(?:haan|han|ha|haa|yes|yeah|yep|ok|okay|sure|please|kar do|karo|kardo|kar dijiye|theek hai|thik hai|ji|bilkul|हाँ|हां|हा|जी|ठीक है|कर दो|करो|कर दीजिए|बिल्कुल|प्लीज़)(?=[\s.!,।]|$)[\s.!,।]*)+$/i],
   // asking for an identifier: never read one out (eval pii-*)
   ['private', /\b(pan|aadhaa?r|password|otp|cvv|upi pin)\b|account (no|number)|card (no\.?|number)|email (address|id)|my e-?mail|पैन|आधार|पासवर्ड|खाता नंबर|कार्ड नंबर/i],
+  // open "audit" questions (eval au-*): what am I missing / where am I wrong / what can I do better
+  ['audit', /what am i missing|what.?s missing|where am i (going )?wrong|what am i doing wrong|what can i (do )?better|do better|anything wrong|mistakes? (am i|i.?m) making|galti|galat (kar|ho)|(kya|kahan|kahaan) galat|क्या गलत|क्या ग़लत|kya miss|kya chhoot|kya chhut|behtar kya|kya behtar|better kar sak|क्या छूट|कहाँ गलत|कहां गलत|गलती|क्या बेहतर|\baudit\b/i],
+  // "how much will ₹500 a day become in 10 years" (eval sa-sip): a calculator, never a guess
+  ['calc', /(?=.*\d)(?=.*\b\d+\s*(saal|sal|years?|yrs?)\b|.*\d+\s*(साल|वर्ष)).*(roz|daily|a day|per day|har din|every day|रोज़|रोज|monthly|a month|per month|har mahine|हर महीने|mahina|mahine|\bsip\b|lump ?sum|ek baar|एक बार|once|kitna (hoga|ho jayega|banega|ban jayega)|how much will|become|grow)/i],
+  // a market fall: the portfolio and the time horizon, not the spending summary (eval sa-crash)
+  ['market', /market\w*\s*(gir|fall|crash|down|neeche|niche|गिर)|\bcrash|बाज़ार गिर|बाजार गिर|मार्केट गिर|(paisa|money|investment\w*) (safe|surakshit)|पैसा सुरक्षित/i],
+  // "top funds", "which fund should I buy": Munim never picks a fund to buy, in any mode (AGENTS.md)
+  ['picks', /top funds?|best funds?|kaun ?sa fund|which funds? (to|should i|do i|can i) ?(buy|invest|pick)|tell me (a|the|which) fund|name (a|the|one) fund|fund (ka )?naam|naam bata|फंड का नाम|achh?a fund|अच्छा फंड|बेस्ट फंड|टॉप फंड/i],
+  // general money questions (debt vs equity, is ELSS right): honest that this answers from the user's data (eval sa-debt, sa-elss)
+  ['learn', /(better hai ya|ya .{0,20}better|\bvs\.?\b|versus|difference between|kya hota hai|what is an? |explain|samjha|confus).{0,40}(fund|elss|equity|debt|sip|nps|ppf|\bfd\b|index)|(fund|elss|equity|debt|sip|nps|ppf|\bfd\b|index).{0,40}(better hai ya|\bvs\.?\b|versus|confus|kya hota hai)|\belss\b.{0,40}(sahi|lo\b|lena|should|chahiye)/i],
   ['claim', /claim|hospital|admit|surgery|operation|cataract|अस्पताल|क्लेम|ऑपरेशन|मोतियाबिंद|भर्ती|सर्जरी/i],
   // specific fund words first, so "switch to direct plans" isn't read as a loan switch
   ['portfolio', /mutual fund|direct plan|regular plan|\bdirect\b|portfolio|xirr|\belss\b|tax.?free gain|ltcg|harvest|पोर्टफोलियो|म्यूचुअल|डायरेक्ट|रेगुलर प्लान/i],
@@ -34,7 +45,7 @@ const INTENTS: [string, RegExp][] = [
   ['credit', /credit score|cibil|\bscore\b|स्कोर|सिबिल/i],
   ['upcoming', /upcoming|due|aane wale|kab (hai|tak)|bill(s)?\b|payment|देय|आने वाले|बिल|भुगतान/i],
   ['insurance', /insured|insurance|policy|bima|बीमा|पॉलिसी|term plan|cover/i],
-  ['invest', /where (should|do|can) i (invest|put)|invest(ing)? (₹|rs\.?\s?)?\d|spare money|extra money|surplus|kahan invest|kaha invest|कहाँ (निवेश|लगा)|कहां (निवेश|लगा)|बची रकम/i],
+  ['invest', /kab invest|when (should|to|do) i invest|zyada kama|extra kama|where (should|do|can) i (invest|put)|invest(ing)? (₹|rs\.?\s?)?\d|spare money|extra money|surplus|kahan invest|kaha invest|कहाँ (निवेश|लगा)|कहां (निवेश|लगा)|बची रकम/i],
   ['emergency', /without (a |my )?(salary|income|job)|lose my job|job (chali|gayi|chhut)|bina salary|emergency|safety.?net|buffer|kitne mahine|कितने महीने|इमरजेंसी/i],
   ['portfolio', /\bfunds?\b|return|tax.?free|टैक्स.?फ़?्री|फ़ंड|फंड|रिटर्न/i],
   ['loans', /loan|emi|लोन|ईएमआई/i],
@@ -188,6 +199,48 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
       next = { tool: 'draft_email', input: { kind: 'rate_reduction' } };
       break;
     }
+    case 'audit': {
+      const scope = /fund|mutual|\bsip\b|portfolio|holding|फंड|फ़ंड|म्यूचुअल|पोर्टफोलियो/i.test(text) ? 'funds' : /spend|spent|bank|card|statement|kharch|खर्च|कार्ड|बैंक|स्टेटमेंट/i.test(text) ? 'spending' : 'all';
+      const r = await call('money_audit', { scope });
+      const f = (r.findings ?? []) as { what: string; costs_per_year: string | null; one_time_amount: string | null; fix: string }[];
+      const amt = (x: (typeof f)[number]) => x.costs_per_year ? say(`${x.costs_per_year} सालाना`, `${x.costs_per_year} a year`) : x.one_time_amount ? x.one_time_amount : '';
+      const top = f.slice(0, 3);
+      answer = !top.length
+        ? say(`आपके ${scope === 'funds' ? 'फ़ंड' : scope === 'spending' ? 'खर्च' : 'पैसों'} में कुछ महँगा नहीं दिखा। जाँचा: ${(r.checked ?? []).join(', ')}।`, `Nothing costly stands out in your ${scope === 'funds' ? 'funds' : scope === 'spending' ? 'spending' : 'money'}. I checked ${(r.checked ?? []).join(', ')}.`)
+        : say(`सबसे बड़े ${top.length}: ` + top.map((x, i) => `${i + 1}) ${x.what}${amt(x) ? ` (${amt(x)})` : ''}, ${x.fix}`).join('। ') + '। पहले वाले पर मदद करूँ?',
+          `The biggest ${top.length}: ` + top.map((x, i) => `${i + 1}) ${x.what}${amt(x) ? ` (${amt(x)})` : ''}: ${x.fix}`).join('. ') + '. Want help with the first one?');
+      break;
+    }
+    case 'calc': {
+      const t = text.toLowerCase();
+      const yrs = Number((t.match(/(\d+(?:\.\d+)?)\s*(saal|sal|years?|yrs?|साल|वर्ष)/) ?? [])[1]);
+      const rate = Number((t.match(/(\d+(?:\.\d+)?)\s*%/) ?? [])[1]) || 12;
+      const m = t.replace(/(\d+(?:\.\d+)?)\s*(saal|sal|years?|yrs?|साल|वर्ष|%)/g, ' ').match(/(\d[\d,]*(?:\.\d+)?)\s*(lakh|lac|लाख|k\b|thousand|hazaa?r|हज़ार|हजार)?/);
+      const amount = m ? Number(m[1].replace(/,/g, '')) * (/lakh|lac|लाख/.test(m[2] ?? '') ? 1e5 : /k|thousand|hazaa?r|हज़ार|हजार/.test(m[2] ?? '') ? 1e3 : 1) : NaN;
+      const every = /roz|daily|a day|per day|har din|every day|रोज़|रोज/.test(t) ? 'day' : /lump ?sum|ek baar|एक बार|\bonce\b/.test(t) ? 'once' : /yearly|a year|per year|har saal|हर साल/.test(t) ? 'year' : 'month';
+      const r = await call('sip_calculator', { amount_rupees: amount, every, years: yrs, annual_return_pct: rate });
+      const per = { day: say('रोज़', 'a day'), month: say('हर महीने', 'a month'), year: say('हर साल', 'a year'), once: say('एक बार', 'once') }[every];
+      answer = r.error ? say('रक़म, कितनी बार और कितने साल, यह बताइए; जैसे "500 रोज़, 10 साल"।', 'Tell me the amount, how often and for how many years, like "₹500 a day for 10 years".')
+        : say(`${r.amount} ${per}, ${r.years} साल, ${r.assumed_return_per_year_pct}% सालाना मानकर: करीब ${r.value_at_end} बनेंगे। आप डालेंगे ${r.you_put_in}, बढ़त ${r.growth}। रिटर्न तय नहीं होता, यह सिर्फ़ अंदाज़ा है।`,
+          `${r.amount} ${per} for ${r.years} years, at an assumed ${r.assumed_return_per_year_pct}% a year: about ${r.value_at_end}. You'd put in ${r.you_put_in}; the growth is ${r.growth}. Returns aren't fixed, so this is an illustration.`);
+      break;
+    }
+    case 'market': {
+      const r = await call('portfolio_xray');
+      answer = r.error ? say('अभी आपका म्यूचुअल फ़ंड स्टेटमेंट (CAS) नहीं जुड़ा। जोड़ने पर बता पाऊँगा कि गिरावट का आप पर क्या असर है।', 'I don’t have your mutual fund statement (CAS) yet. Add it and I can tell you what a fall means for you.')
+        : say(`आपके फ़ंड ${r.value} के हैं और शुरू से साल का ${r.your_return_per_year_pct}% कमाया है। गिरावट आती-जाती है; असली सवाल यह है कि पैसा कब चाहिए। 3 साल के अंदर चाहिए तो वह हिस्सा इक्विटी में नहीं होना चाहिए; लंबे लक्ष्य के लिए SIP चालू रखें।`,
+          `Your funds are worth ${r.value} and have earned ${r.your_return_per_year_pct}% a year since you started. Falls come and go; what matters is when you need the money. Money you need within 3 years shouldn’t be in equity; for long goals, keep the SIPs going.`);
+      break;
+    }
+    case 'picks':
+      // D-051: no fund names in any mode; generic categories by horizon, the no-licence line, the education-only disclaimer
+      answer = say(`${NO_LICENCE.hi} लक्ष्य के हिसाब से: एक साल के अंदर चाहिए तो लिक्विड फ़ंड; 3 से 5 साल के लिए अच्छी रेटिंग वाला मल्टी-एसेट या हाइब्रिड फ़ंड; 7 साल या ज़्यादा के लिए कम खर्च वाला इंडेक्स फ़ंड, SIP से। ${DISCLAIMER.guided.hi}`,
+        `${NO_LICENCE.en} By when you need the money: within a year, a liquid fund; 3 to 5 years, a well-rated multi-asset or hybrid fund; 7 years or more, a low-cost index fund through a SIP. ${DISCLAIMER.guided.en}`);
+      break;
+    case 'learn':
+      answer = say('यह सामान्य सवाल है; मैं आपके अपने स्टेटमेंट से जवाब देता हूँ, बिना AI के ऐसे सवाल नहीं समझा पाता। आपके डेटा से पूछिए, जैसे "मेरे फ़ंड में क्या गलत है?" या "इमरजेंसी फंड कितने महीने का है?"',
+        'That’s a general question; I answer from your own statements and can’t explain it well without the AI. Ask about your data, like "Where am I wrong with my mutual funds?" or "How many months is my safety net?"');
+      break;
     case 'private':
       answer = say('मैं PAN, आधार, खाता या कार्ड नंबर, पासवर्ड या आपका ईमेल कभी नहीं पढ़ता। मुनीम खाते और कार्ड के सिर्फ़ आख़िरी 4 अंक रखता है।',
         'I never read out PAN, Aadhaar, account or card numbers, passwords or your email. Munim keeps only the last 4 digits of an account or card.');
@@ -249,7 +302,7 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
           ? say(`रेगुलर प्लान पर करीब ${g.extra_fees_per_year_estimate} सालाना ज़्यादा फ़ीस जा रही है। एक साल से पुराने ${pl.move_to_direct_value} के यूनिट उसी फ़ंड के डायरेक्ट प्लान में ले जाने पर ${pl.gains_booked} का फ़ायदा टैक्स-फ़्री सीमा में बुक होगा, यानी अभी कोई टैक्स नहीं, और हर साल करीब ${pl.fees_saved_per_year} बचेंगे (${funds})। एक साल से नए यूनिट पर 20% टैक्स और एग्ज़िट लोड लग सकता है, उन्हें अभी रहने दें।`,
             `Regular plans cost you about ${g.extra_fees_per_year_estimate} a year in extra fees. Moving ${pl.move_to_direct_value} of units older than a year to the direct plan of the same funds (${funds}) books ${pl.gains_booked} of gains inside the tax-free limit, so no tax now, and saves about ${pl.fees_saved_per_year} a year. Units under a year old would be taxed at 20% and may carry an exit load, so leave those for now.`)
           : say(`रेगुलर प्लान पर करीब ${g.extra_fees_per_year_estimate} सालाना ज़्यादा फ़ीस जा रही है। उसी फ़ंड का डायरेक्ट प्लान सस्ता होता है। बदलने का मतलब है बेचना और फिर खरीदना: एक साल से नए यूनिट पर 20% टैक्स और एग्ज़िट लोड लग सकता है, और इस साल ${t.limit_left_this_year} तक का लंबी अवधि का फ़ायदा टैक्स-फ़्री है। फ़ैसला इन बातों को देखकर या किसी SEBI-रजिस्टर्ड सलाहकार के साथ लें।`,
-            `Regular plans cost you about ${g.extra_fees_per_year_estimate} a year in extra fees; the direct plan of the same fund costs less. Switching means selling and buying again: units under a year old would be taxed at 20% and may carry an exit load, and up to ${t.limit_left_this_year} of long-term gains is tax-free this year. Weigh these facts, or decide with a SEBI-registered adviser.`);
+            `Regular plans cost you about ${g.extra_fees_per_year_estimate} a year in extra fees; the direct plan of the same fund costs less. Switching means selling and buying again: units under a year old would be taxed at 20% and may carry an exit load, and up to ${t.limit_left_this_year} of long-term gains is tax-free this year. Weigh these facts; Munim can’t name funds since it doesn’t have an investment adviser licence yet.`);
       } else if (pl && /should|what (do|to)|kya kar|क्या कर|सलाह|advice|suggest/i.test(text)) {
         // test mode (named plan allowed): one decisive plan, numbers straight from the tool
         answer = say(`दो काम कीजिए। पहला, 31 मार्च से पहले ${funds} के एक साल से पुराने ${pl.move_to_direct_value} के यूनिट उसी फ़ंड के डायरेक्ट प्लान में ले जाइए: ${pl.gains_booked} का फ़ायदा टैक्स-फ़्री बुक होगा और हर साल करीब ${pl.fees_saved_per_year} फ़ीस बचेगी। दूसरा, हर महीने रेगुलर प्लान में जा रही ${g.sip_into_regular_per_month} की SIP उसी फ़ंड के डायरेक्ट प्लान में भेजिए।`,
