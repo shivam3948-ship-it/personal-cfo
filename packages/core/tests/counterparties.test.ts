@@ -13,19 +13,26 @@ const T = rows([
   ['MB-PRIYA VERMA-REF 12345', 'debit'],                                 // mobile banking transfer
   ['NEFT CR-HDFC0001-RAMESH GUPTA-REF', 'credit'],
   ['UPI-SWIGGY-SWIGGY@AXIS-612345678904', 'debit'],                      // a business: keep it
+  ['UPI/DR/612345678905/SURESH YADAV/YESB/suresh@ybl/Payment for rent', 'debit'], // categorised Rent: still a person
+  ['UPI/DR/612345678906/MEENA DEVI/SBIN/meena@oksbi/school fees', 'debit'],
+  ['UPI/DR/612345678907/ANIL KUMAR/PUNB/anil@ybl/petrol', 'debit'],
+  ['BY TRANSFER-NEFT*HDFC0000123*RAJESH GUPTA*NEFT INW', 'credit'],          // SBI star format
+  ['UPI/CR/612345678908/SELF/HDFC/me@okhdfc/THANK YOU', 'credit'],
 ]);
 
 describe('counterparty names', () => {
   const names = counterpartyNames(T);
   it('finds every person, keeps known businesses', () => {
-    for (const n of ['RAHUL KUMAR', 'ASHA SHARMA', 'NEHA JAIN', 'PRIYA VERMA', 'RAMESH GUPTA']) expect(names).toContain(n);
+    for (const n of ['RAHUL KUMAR', 'ASHA SHARMA', 'NEHA JAIN', 'PRIYA VERMA', 'RAMESH GUPTA', 'SURESH YADAV', 'MEENA DEVI', 'ANIL KUMAR', 'RAJESH GUPTA']) expect(names).toContain(n);
     expect(names).not.toContain('Swiggy');
-    expect(names.some((n) => /^(UPI|NEFT|MB|REF|PAYMENT)$/i.test(n))).toBe(false);
+    // never bank codes or narration words, so "HDFC Bank" stays readable
+    for (const w of ['HDFC', 'SBIN', 'YESB', 'PUNB', 'SELF', 'THANK YOU', 'Payment for rent', 'school fees', 'petrol', 'UPI', 'NEFT', 'MB', 'REF', 'PAYMENT', 'NEFT INW', 'BY TRANSFER']) expect(names, w).not.toContain(w);
   });
   it('with them, no name survives a tool result that lists merchants', () => {
     const result = { by_merchant: T.map((t) => ({ merchant: t.merchant, amount: '₹100' })), note: 'Paid RAHUL KUMAR twice' };
     const out = JSON.stringify(forLlm(result, names));
-    for (const n of ['RAHUL', 'ASHA', 'NEHA', 'PRIYA', 'RAMESH']) expect(out).not.toContain(n);
+    for (const n of ['RAHUL', 'ASHA', 'NEHA', 'PRIYA', 'RAMESH', 'SURESH', 'MEENA', 'ANIL', 'RAJESH']) expect(out).not.toContain(n);
+    expect(JSON.stringify(forLlm({ note: 'Paid by HDFC Bank card' }, names))).toContain('HDFC Bank');
     expect(out).toContain('Swiggy');
   });
 });
