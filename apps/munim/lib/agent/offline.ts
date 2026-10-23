@@ -24,7 +24,7 @@ const INTENTS: [string, RegExp][] = [
   // a market fall: the portfolio and the time horizon, not the spending summary (eval sa-crash)
   ['market', /market\w*\s*(gir|fall|crash|down|neeche|niche|गिर)|\bcrash|बाज़ार गिर|बाजार गिर|मार्केट गिर|(paisa|money|investment\w*) (safe|surakshit)|पैसा सुरक्षित/i],
   // "top funds", "which fund should I buy": Munim never picks a fund to buy, in any mode (AGENTS.md)
-  ['picks', /top funds?|best funds?|kaun ?sa fund|which funds? (to|should i|do i|can i) ?(buy|invest|pick)|tell me (a|the|which) fund|name (a|the|one) fund|fund (ka )?naam|naam bata|फंड का नाम|achh?a fund|अच्छा फंड|बेस्ट फंड|टॉप फंड/i],
+  ['picks', /which funds? (should|do|can) i (move|put|shift|switch)|move my (money|savings) into|(name|naam) of (the|a|any) .{0,30}fund|fund (to|i should) (move|switch)|top funds?|best funds?|kaun ?sa fund|which funds? (to|should i|do i|can i) ?(buy|invest|pick)|tell me (a|the|which) fund|name (a|the|one) fund|fund (ka )?naam|naam bata|फंड का नाम|achh?a fund|अच्छा फंड|बेस्ट फंड|टॉप फंड/i],
   // general money questions (debt vs equity, is ELSS right): honest that this answers from the user's data (eval sa-debt, sa-elss)
   ['learn', /(better hai ya|ya .{0,20}better|\bvs\.?\b|versus|difference between|kya hota hai|what is an? |explain|samjha|confus).{0,40}(fund|elss|equity|debt|sip|nps|ppf|\bfd\b|index)|(fund|elss|equity|debt|sip|nps|ppf|\bfd\b|index).{0,40}(better hai ya|\bvs\.?\b|versus|confus|kya hota hai)|\belss\b.{0,40}(sahi|lo\b|lena|should|chahiye)/i],
   ['claim', /claim|hospital|admit|surgery|operation|cataract|अस्पताल|क्लेम|ऑपरेशन|मोतियाबिंद|भर्ती|सर्जरी/i],
@@ -328,8 +328,8 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
       const full = Number(r.months_covered) >= Number(r.target_months);
       answer = full
         ? say(`सेफ़्टी नेट पूरा है। ${BY_HORIZON.hi}`, `Your safety net is full. ${BY_HORIZON.en}`) + disc()
-        : say(`पहले सेफ़्टी नेट पूरा कीजिए: अभी ${r.months_covered} महीने का है, लक्ष्य ${r.target_months} महीने, ${r.gap} बाकी। तब तक हर महीने की बचत RD या लिक्विड फ़ंड में डालिए। उसके बाद 7 साल से लंबे लक्ष्य के लिए इक्विटी SIP, 3 से 7 साल के लिए हाइब्रिड या डेट फ़ंड।`,
-            `Fill your safety net first: it covers ${r.months_covered} months against a ${r.target_months}-month target, ${r.gap} to go. Until then, put the monthly amount in a recurring deposit or liquid fund. After that, an equity SIP for goals 7+ years away, hybrid or debt funds for 3 to 7 years.`) + disc();
+        : say(`पहले सेफ़्टी नेट पूरा कीजिए: अभी ${r.months_covered} महीने का है, लक्ष्य ${r.target_months} महीने, ${r.gap} बाकी। तब तक हर महीने की रक़म RD या लिक्विड फ़ंड में रखें। उसके बाद: ${BY_HORIZON.hi}`,
+            `Fill your safety net first: it covers ${r.months_covered} months against a ${r.target_months}-month target, ${r.gap} to go. Until then, put the monthly amount in a recurring deposit or a liquid fund. After that: ${BY_HORIZON.en}`) + disc();
       break;
     }
     case 'emergency': {

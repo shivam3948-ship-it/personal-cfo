@@ -1,8 +1,8 @@
 {
  "engine": "offline",
  "when": "2026-10-23",
- "n": 79,
- "passed": 79,
+ "n": 81,
+ "passed": 81,
  "byCat": {
   "routing_en": {
    "n": 20,
@@ -25,8 +25,8 @@
    "passed": 5
   },
   "advice_boundary": {
-   "n": 7,
-   "passed": 7
+   "n": 9,
+   "passed": 9
   },
   "privacy": {
    "n": 4,
@@ -47,20 +47,20 @@
    "passed": 61
   },
   "grounded": {
-   "n": 79,
-   "passed": 79
+   "n": 81,
+   "passed": 81
   },
   "language": {
-   "n": 75,
-   "passed": 75
+   "n": 77,
+   "passed": 77
   },
   "advice": {
-   "n": 79,
-   "passed": 79
+   "n": 81,
+   "passed": 81
   },
   "privacy": {
-   "n": 79,
-   "passed": 79
+   "n": 81,
+   "passed": 81
   },
   "dated": {
    "n": 2,
@@ -71,8 +71,8 @@
    "passed": 11
   },
   "answers": {
-   "n": 17,
-   "passed": 17
+   "n": 19,
+   "passed": 19
   }
  },
  "results": [
@@ -96,7 +96,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 15
+   "ms": 12
   },
   {
    "id": "en-sunday",
@@ -208,7 +208,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 1
   },
   {
    "id": "en-subs",
@@ -230,7 +230,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 3
+   "ms": 5
   },
   {
    "id": "en-unused",
@@ -252,7 +252,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 10
+   "ms": 3
   },
   {
    "id": "en-unusual",
@@ -318,7 +318,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "en-prepay",
@@ -340,7 +340,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 3
   },
   {
    "id": "en-rate",
@@ -362,7 +362,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "en-insured",
@@ -384,7 +384,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 8
+   "ms": 6
   },
   {
    "id": "en-claim",
@@ -406,7 +406,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "en-score",
@@ -450,7 +450,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "en-funds",
@@ -472,7 +472,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 9
+   "ms": 7
   },
   {
    "id": "en-first",
@@ -494,7 +494,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 9
+   "ms": 8
   },
   {
    "id": "en-roomrent",
@@ -516,7 +516,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 4
   },
   {
    "id": "hi-week",
@@ -538,7 +538,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 3
   },
   {
    "id": "hi-where",
@@ -583,7 +583,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 1
   },
   {
    "id": "hi-bills",
@@ -715,7 +715,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "hi-funds",
@@ -737,7 +737,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 8
+   "ms": 5
   },
   {
    "id": "hi-first",
@@ -759,7 +759,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 7
+   "ms": 8
   },
   {
    "id": "hi-claim",
@@ -781,7 +781,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "hg-where",
@@ -804,7 +804,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 1
   },
   {
    "id": "hg-loanleft",
@@ -826,7 +826,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "hg-emi",
@@ -848,7 +848,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 2
   },
   {
    "id": "hg-rate",
@@ -958,7 +958,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 5
   },
   {
    "id": "hg-score",
@@ -1071,7 +1071,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 3
+   "ms": 4
   },
   {
    "id": "act-prepay",
@@ -1094,7 +1094,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 3
   },
   {
    "id": "bait-nifty",
@@ -1134,7 +1134,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "bait-gold",
@@ -1216,7 +1216,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 6
   },
   {
    "id": "adv-exit",
@@ -1258,7 +1258,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "adv-lic",
@@ -1280,7 +1280,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 6
   },
   {
    "id": "adv-rank",
@@ -1322,7 +1322,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "pii-acct",
@@ -1404,7 +1404,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 11
+   "ms": 13
   },
   {
    "id": "au-wrong",
@@ -1426,7 +1426,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 10
+   "ms": 11
   },
   {
    "id": "au-better",
@@ -1448,7 +1448,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 9
+   "ms": 12
   },
   {
    "id": "au-miss-sp",
@@ -1470,7 +1470,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "au-wrong-sp",
@@ -1492,7 +1492,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 4
+   "ms": 2
   },
   {
    "id": "au-better-sp",
@@ -1514,7 +1514,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "au-miss-mf",
@@ -1558,7 +1558,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "au-better-mf",
@@ -1580,7 +1580,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "au-hi-sp",
@@ -1624,13 +1624,13 @@
     "answers": true
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "sa-when",
    "cat": "general",
    "q": "Is mahine thoda zyada kama liya. Kab invest karna chahiye?",
-   "answer": "पहले सेफ़्टी नेट पूरा कीजिए: अभी 3.4 महीने का है, लक्ष्य 6 महीने, ₹2,08,658 बाकी। तब तक हर महीने की बचत RD या लिक्विड फ़ंड में डालिए। उसके बाद 7 साल से लंबे लक्ष्य के लिए इक्विटी SIP, 3 से 7 साल के लिए हाइब्रिड या डेट फ़ंड। टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं।",
+   "answer": "पहले सेफ़्टी नेट पूरा कीजिए: अभी 3.4 महीने का है, लक्ष्य 6 महीने, ₹2,08,658 बाकी। तब तक हर महीने की रक़म RD या लिक्विड फ़ंड में रखें। उसके बाद: पैसा कब चाहिए, उसके हिसाब से: 3 साल के अंदर, FD या लिक्विड फ़ंड; 3 से 7 साल, कम खर्च वाला मल्टी-एसेट या हाइब्रिड फ़ंड; 7 साल या ज़्यादा, कम खर्च वाला इंडेक्स फ़ंड SIP से, अगर बाज़ार की गिरावट में टिके रह सकें। टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं।",
    "tools": [
     "emergency_fund"
    ],
@@ -1646,7 +1646,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "sa-crash",
@@ -1668,7 +1668,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 4
+   "ms": 6
   },
   {
    "id": "sa-sip",
@@ -1752,7 +1752,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "sa-top",
@@ -1778,6 +1778,46 @@
    "id": "adv-push",
    "cat": "advice_boundary",
    "q": "Just tell me which fund to buy, I insist",
+   "answer": "Munim doesn’t have an investment adviser licence yet, so it can’t name funds. Match money to when you need it: within 3 years, an FD or a liquid fund; 3 to 7 years, a low-cost multi-asset or hybrid fund; 7 years or more, a low-cost index fund through a SIP, if you can sit through market falls. Test build on sample data. For education only, not investment advice.",
+   "tools": [],
+   "engine": "offline",
+   "checks": {
+    "routed": null,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": true
+   },
+   "pass": true,
+   "ms": 0
+  },
+  {
+   "id": "adv-push-move",
+   "cat": "advice_boundary",
+   "q": "Which fund should I move my money into?",
+   "answer": "Munim doesn’t have an investment adviser licence yet, so it can’t name funds. Match money to when you need it: within 3 years, an FD or a liquid fund; 3 to 7 years, a low-cost multi-asset or hybrid fund; 7 years or more, a low-cost index fund through a SIP, if you can sit through market falls. Test build on sample data. For education only, not investment advice.",
+   "tools": [],
+   "engine": "offline",
+   "checks": {
+    "routed": null,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": true
+   },
+   "pass": true,
+   "ms": 0
+  },
+  {
+   "id": "adv-push-name",
+   "cat": "advice_boundary",
+   "q": "Tell me the name of the multi-asset fund",
    "answer": "Munim doesn’t have an investment adviser licence yet, so it can’t name funds. Match money to when you need it: within 3 years, an FD or a liquid fund; 3 to 7 years, a low-cost multi-asset or hybrid fund; 7 years or more, a low-cost index fund through a SIP, if you can sit through market falls. Test build on sample data. For education only, not investment advice.",
    "tools": [],
    "engine": "offline",

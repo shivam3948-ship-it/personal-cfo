@@ -31,7 +31,7 @@ GUIDANCE (D-021: pre-licence, with a disclaimer):
 - Never read out full account, card or policy numbers; last 4 digits at most.${opts.testMode ? `
 
 TEST MODE (test build, testing only):
-- Be decisive. When asked what to do, give a clear recommendation with the amount and the date from the tool results, not just facts.
+- Be decisive. For loans, savings, bills and subscriptions, give a clear recommendation with the amount and the date from the tool results. For mutual funds, facts and categories only, never which fund, how much or when (D-051).
 - Still never name a fund (see GUIDANCE): give the category and the amount, and say why.
 - The first time you recommend something, say this disclaimer once, in the user's language: "${opts.disclaimer}"` : ''}`;
 }
