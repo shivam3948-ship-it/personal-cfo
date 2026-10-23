@@ -4,6 +4,9 @@
 // Voice: mic → /api/stt (Sarvam) or the browser's speech recognition, after a one-time note on where the audio goes.
 import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
+import { askLocal } from '@/lib/local/askLocal';
+import { DISCLAIMER } from '@/lib/advice';
+import { redact } from '@core/privacy/redact';
 import { forSpeech } from '@core/agent/lang';
 import { record, browserListen, browserSttAvailable, browserSpeak, playBase64, stopSpeaking, unlockAudio, type RecorderHandle } from '@/ui/voice';
 
@@ -33,7 +36,8 @@ function ctxOf(): { ctx: Ctx; back: string } {
   return { ctx, back: path.startsWith('/') && !path.startsWith('//') ? path : '/' };
 }
 
-export default function AskLive() {
+/** `local`: answer from your own statements on this phone (D-050) instead of the sample family on the server. */
+export default function AskLive({ local = false }: { local?: boolean }) {
   const [{ ctx, back }, setCtx] = useState<{ ctx: Ctx; back: string }>({ ctx: 'today', back: '/' });
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState('');
@@ -55,7 +59,8 @@ export default function AskLive() {
   const input = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => { const c = ctxOf(); setCtx(c); track('ask_opened', { ctx: c.ctx }); }, []);
-  useEffect(() => { fetch('/api/ask', { cache: 'no-store' }).then((r) => r.json()).then((j) => j.disclaimer && setDisc({ ...j.disclaimer, test: !!j.testMode })).catch(() => {}); }, []);
+  // on your own data the test build's line drops "sample data" (internal mode, never demo: AGENTS.md)
+  useEffect(() => { fetch('/api/ask', { cache: 'no-store' }).then((r) => r.json()).then((j) => j.disclaimer && setDisc({ ...(local && j.testMode ? DISCLAIMER.internal : j.disclaimer), test: !!j.testMode })).catch(() => {}); }, [local]);
   const hiLast = [...msgs].reverse().find((m) => m.role === 'assistant' && /[\u0900-\u097F]/.test(m.content));
   useEffect(() => { fetch('/api/stt', { cache: 'no-store' }).then((r) => r.json()).then((j) => { if (!j.configured && browserSttAvailable()) setSttMode('browser'); }).catch(() => {}); }, []);
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [msgs, busy]);
@@ -67,9 +72,11 @@ export default function AskLive() {
     setMsgs(next); setText(''); setBusy(true); setErr(null);
     track('ask_sent', { ctx, turn: next.filter((m) => m.role === 'user').length, via });
     try {
-      const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: next.map(({ role, content }) => ({ role, content })) }) });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error ?? 'Munim could not answer just now.');
+      const turns = next.map(({ role, content }) => ({ role, content }));
+      const j = local ? await askLocal(turns, disc.test) : await (async () => {
+        const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns }) });
+        const x = await r.json(); if (!r.ok) throw new Error(x.error ?? 'Munim could not answer just now.'); return x;
+      })();
       setMsgs([...next, { role: 'assistant', content: j.answer, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine } }]);
       if (via === 'voice') listen(j.answer, next.length, 'auto'); // asked by voice → answered by voice; typed → stays quiet
     } catch (e) { setErr((e as Error).message); setMsgs(next); }
@@ -113,7 +120,9 @@ export default function AskLive() {
     track('answer_listened', { ctx, how });
     stopSpeaking(); setSpeaking(idx);
     try {
-      const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: textToSay, lang }) });
+      // on your own data the spoken text leaves the phone for the voice service: same identifier scrub as the AI path (D-050)
+      const spoken = local ? redact(textToSay).replace(/\b(UPI|NEFT|IMPS)[-/][^\s,.।]+/gi, 'a payment') : textToSay;
+      const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: spoken, lang }) });
       const j = await r.json();
       if (r.ok && j.audioBase64) { await playBase64(j.audioBase64, j.mime); return; }
       await browserSpeak(forSpeech(textToSay, lang), lang);

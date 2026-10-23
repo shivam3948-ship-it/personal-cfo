@@ -1,10 +1,10 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { MODEL, getClient, type LlmClient } from '@core/llm';
 import { systemPrompt } from './prompt';
-import { DISCLAIMER, namesFunds } from '@/lib/session';
+import { DISCLAIMER, namesFunds } from '@/lib/advice';
 import { TOOLS, runTool, type ToolCtx } from './tools';
 import { checkNumbers, type NumberCheck } from '@core/agent/guard';
-import type { Action } from '@/lib/actions';
+import type { Action } from '@/lib/actionsCore';
 import { asOfDate } from '@core/finance/picture';
 import { holderNames, redact } from '@core/privacy/redact';
 
@@ -17,7 +17,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const t0 = Date.now();
   const system = systemPrompt({ asOf: asOfDate(ctx.ds), lang: ctx.lang, dataLabel: ctx.ds.label, sources: ctx.ds.log.filter((l) => l.file !== '(all documents)').map((l) => `${l.file} (${l.kind})`), testMode: namesFunds(ctx.adviceMode), disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang] });
   // The user's own words can carry PII too ("my PAN is…"): scrub them like document text before they reach the model.
-  const names = holderNames(ctx.ds.docs.map((d) => d.text));
+  const names = [...holderNames(ctx.ds.docs.map((d) => d.text)), ...(ctx.names ?? [])];
   const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: t.role === 'user' ? redact(t.content, { names }) : t.content }));
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   let repaired = false;
@@ -44,8 +44,9 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       try { out = await runTool(u.name, (u.input ?? {}) as Record<string, unknown>, ctx); }
       catch (e) { out = { result: { error: (e as Error).message } }; }
       trace.push({ tool: u.name, input: (u.input ?? {}) as Record<string, unknown>, result: out.result, ms: Date.now() - s });
-      results.push(out.result); if (out.action && !(out.action as { duplicate?: boolean }).duplicate) actions.push(out.action);
-      toolResults.push({ type: 'tool_result', tool_use_id: u.id, content: JSON.stringify(out.result), is_error: 'error' in out.result });
+      const shown = ctx.sanitize ? ctx.sanitize(out.result) : out.result; // what the AI sees is what the number check trusts
+      results.push(shown); if (out.action && !(out.action as { duplicate?: boolean }).duplicate) actions.push(out.action);
+      toolResults.push({ type: 'tool_result', tool_use_id: u.id, content: JSON.stringify(shown), is_error: 'error' in shown });
     }
     messages.push({ role: 'user', content: toolResults });
   }
