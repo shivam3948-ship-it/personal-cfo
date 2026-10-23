@@ -13,23 +13,29 @@ export const clearPending = (sid: string) => pendingBySid.delete(sid);
 const INTENTS: [string, RegExp][] = [
   // Devanagari is not \w in JS regex, so word ends are lookaheads, not \b.
   ['confirm', /^(?:\s*(?:haan|han|ha|haa|yes|yeah|yep|ok|okay|sure|please|kar do|karo|kardo|kar dijiye|theek hai|thik hai|ji|bilkul|हाँ|हां|हा|जी|ठीक है|कर दो|करो|कर दीजिए|बिल्कुल|प्लीज़)(?=[\s.!,।]|$)[\s.!,।]*)+$/i],
+  // asking for an identifier: never read one out (eval pii-*)
+  ['private', /\b(pan|aadhaa?r|password|otp|cvv|upi pin)\b|account (no|number)|card (no\.?|number)|email (address|id)|my e-?mail|पैन|आधार|पासवर्ड|खाता नंबर|कार्ड नंबर/i],
   ['claim', /claim|hospital|admit|surgery|operation|cataract|अस्पताल|क्लेम|ऑपरेशन|मोतियाबिंद|भर्ती|सर्जरी/i],
   // specific fund words first, so "switch to direct plans" isn't read as a loan switch
   ['portfolio', /mutual fund|direct plan|regular plan|\bdirect\b|portfolio|xirr|\belss\b|tax.?free gain|ltcg|harvest|पोर्टफोलियो|म्यूचुअल|डायरेक्ट|रेगुलर प्लान/i],
+  // "how much is left on my loan" is the loan's own status, not a rate negotiation (eval *-loanleft)
+  ['loanleft', /(kitna|kitni|kitne) (baaki|baki|bacha|bache)|बाकी|बचा है|बचे हैं|left on|outstanding|how much (do i )?(still )?owe|(loan|emi)s? (left|remaining)|remaining (loan|emi|balance)/i],
   ['negotiate', /negotiat|rate (kam|reduce|cut|lower)|interest kam|byaj kam|ब्याज कम|सस्ता|offer|switch|balance transfer|better (rate|terms)|refinanc/i],
   ['prepay', /prepay|pre-pay|jaldi chuka|jaldi band|close (my|the) loan|chukana|chuka (du|doon|sakta|sakti)|पहले चुका|जल्दी चुका|चुका (दूं|दूँ|सकता|सकती)/i],
   ['draft', /\bdraft|\bemail\b|\bmail\b|ईमेल|refund|रिफ़ंड|रिफंड|dispute|शिकायत|letter/i],
   ['remind', /remind|yaad dila|याद दिला|reminder|रिमाइंडर/i],
-  ['goal', /\bgoal\b|save for|bachana hai|लक्ष्य|जमा करना/i],
+  ['goal', /\bgoal\b|save for|saving for|save (₹|rs\.?\s?)?[\d,.]+\s*(lakh|lac|k|thousand|hazaar|हज़ार|लाख)?\s*(for|by)\b|bachana hai|लक्ष्य|जमा करना/i],
+  // how the month went in money terms: income, spending, committed, surplus (eval en-saved, en-surplus)
+  ['overview', /how much (did|do|have) i (save|saved)|did i save|saved last month|(monthly|my) surplus|savings rate|income (vs|and) (spend|expense)|kitna bacha(ya)? (is|pichhle) mahine|बचत कितनी|कितनी बचत/i],
   ['advice', /what should i (do|fix)|fix first|what do i do|next step|priorit|advice|advise|suggest|pehle kya|पहले क्या|kya karu|kya karun|kya karna chahiye|salah|सलाह|क्या करूँ|क्या करूं|क्या करना चाहिए|सुझाव/i],
   ['briefing', /sunday|weekly|week|summary|how am i doing|kya chal|kaisa chal|haal|money call|हाल|सारांश|हफ़्ते|हफ्ते|कैसा चल|क्या चल/i],
-  ['subscriptions', /subscri|cancel|netflix|cult|gym|leak|trial|lingopro|सब्सक्रिप्शन|रद्द|बंद कर/i],
+  ['subscriptions', /don[’']?t use|not using|unused|istemal nahi|इस्तेमाल नहीं|subscri|cancel|netflix|cult|gym|leak|trial|lingopro|सब्सक्रिप्शन|रद्द|बंद कर/i],
   ['unusual', /unusual|ajeeb|spike|weird|zyada kharch|असामान्य|अजीब|ज़्यादा खर्च|ज्यादा खर्च/i],
   ['credit', /credit score|cibil|\bscore\b|स्कोर|सिबिल/i],
   ['upcoming', /upcoming|due|aane wale|kab (hai|tak)|bill(s)?\b|payment|देय|आने वाले|बिल|भुगतान/i],
-  ['insurance', /insurance|policy|bima|बीमा|पॉलिसी|term plan|cover/i],
+  ['insurance', /insured|insurance|policy|bima|बीमा|पॉलिसी|term plan|cover/i],
   ['invest', /where (should|do|can) i (invest|put)|invest(ing)? (₹|rs\.?\s?)?\d|spare money|extra money|surplus|kahan invest|kaha invest|कहाँ (निवेश|लगा)|कहां (निवेश|लगा)|बची रकम/i],
-  ['emergency', /emergency|safety.?net|buffer|kitne mahine|कितने महीने|इमरजेंसी/i],
+  ['emergency', /without (a |my )?(salary|income|job)|lose my job|job (chali|gayi|chhut)|bina salary|emergency|safety.?net|buffer|kitne mahine|कितने महीने|इमरजेंसी/i],
   ['portfolio', /\bfunds?\b|return|tax.?free|टैक्स.?फ़?्री|फ़ंड|फंड|रिटर्न/i],
   ['loans', /loan|emi|लोन|ईएमआई/i],
   ['spend', /where|kahan|kahaan|kharch|spend|spent|money go|paisa|खर्च|कहाँ|कहां|पैसा/i],
@@ -66,7 +72,8 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
   const say = (h: string, e: string) => (hi ? h : e);
   const d = (iso?: string | null) => (iso ? spokenDate(iso, ctx.lang) : '');
   let answer = ''; let next: Pending = null;
-  const intent = intentOf(text);
+  const loose = /^\s*(haan|han|haa|yes|yeah|ok|okay|sure|ji|theek|thik|हाँ|हां|जी|ठीक)\b/i.test(text) && text.trim().split(/\s+/).length <= 6;
+  const intent = pendingBySid.get(ctx.sid) && loose ? 'confirm' : intentOf(text);
   const pending = pendingBySid.get(ctx.sid) ?? null;
 
   if (intent === 'confirm' && pending) {
@@ -78,7 +85,9 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
     else if (pending.tool === 'save_prepayment_plan') answer = say(`प्लान सेव: ${r.plan}, ${d(r.date)} को। इससे ब्याज में ${r.interest_saved} बचेंगे।`, `Saved: ${r.plan} on ${d(r.date)}. That saves ${r.interest_saved} in interest.`);
     else answer = say('हो गया।', 'Done.');
   } else switch (intent) {
-    case 'confirm':
+    case 'confirm': // a yes with nothing waiting: acknowledge, don't recite the help text
+      answer = say('ठीक है। और कुछ पूछना है?', 'Okay. Anything else?');
+      break;
     case 'help':
       answer = say('मैं आपके बैंक, कार्ड, लोन, बीमा और क्रेडिट रिपोर्ट से जवाब देता हूँ। पूछिए: "मेरा पैसा कहाँ जा रहा है?", "कौन से सब्सक्रिप्शन बेकार हैं?", या "क्या मैं लोन जल्दी चुका सकता हूँ?"', 'I answer from your bank, card, loan, insurance and credit documents. Try: "Where is my money going?", "Which subscriptions should I cut?", or "Can I prepay my loan?"');
       break;
@@ -177,6 +186,28 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
         `${String(r.offer).replace(' at ', ' का ')} वाला ऑफ़र है, पर लोन बदलने पर ${r.switch_costs.foreclosure_charge_incl_gst} फ़ोरक्लोज़र चार्ज लगेगा, तो ${String(r.switch_net_saving).startsWith('-') ? `उल्टा ${String(r.switch_net_saving).slice(1)} का नुकसान होगा` : `कुल फ़ायदा ${r.switch_net_saving} है`}${r.offer_expires_before_switch_allowed ? `, और ऑफ़र ${d(r.offer_valid_till)} को खत्म हो जाएगा` : ''}। बेहतर है ${r.loan.split('(')[1]?.replace(')', '') ?? 'अपने लेंडर'} से यही रेट माँगें, तो बिना फ़ीस ${r.if_current_lender_matches_rate.saving} बचेंगे। क्या मैं रेट कम करने का ईमेल ड्राफ़्ट करूँ?`,
         `${r.offer} looks cheaper, but switching costs ${r.switch_costs.foreclosure_charge_incl_gst} in foreclosure charges, so ${String(r.switch_net_saving).startsWith('-') ? `you'd lose ${String(r.switch_net_saving).slice(1)}` : `the net saving is ${r.switch_net_saving}`}${r.offer_expires_before_switch_allowed ? `, and the offer expires on ${d(r.offer_valid_till)}, before you're even allowed to foreclose` : ''}. Asking your current lender to match the rate saves ${r.if_current_lender_matches_rate.saving} with no fees. Shall I draft that request?`);
       next = { tool: 'draft_email', input: { kind: 'rate_reduction' } };
+      break;
+    }
+    case 'private':
+      answer = say('मैं PAN, आधार, खाता या कार्ड नंबर, पासवर्ड या आपका ईमेल कभी नहीं पढ़ता। मुनीम खाते और कार्ड के सिर्फ़ आख़िरी 4 अंक रखता है।',
+        'I never read out PAN, Aadhaar, account or card numbers, passwords or your email. Munim keeps only the last 4 digits of an account or card.');
+      break;
+    case 'loanleft': {
+      const o = await call('loans_overview');
+      const loans = (o.loans ?? []) as { loan: string; lender: string; emi: string; emis_left: number; outstanding: string; ends: string }[];
+      const pick = /car|कार/i.test(text) ? loans.filter((l) => /car/i.test(l.loan)) : /personal|पर्सनल/i.test(text) ? loans.filter((l) => /personal/i.test(l.loan)) : /home|ghar|घर|होम/i.test(text) ? loans.filter((l) => /home/i.test(l.loan)) : loans;
+      const list = pick.length ? pick : loans;
+      answer = !list.length ? say('आपके दस्तावेज़ों में कोई लोन नहीं मिला।', 'I don’t have any loan in your documents.')
+        : say(list.map((l) => `${loanHi(l.loan)} (${l.lender}): ${l.outstanding} बाकी, ${l.emis_left} EMI बची हैं (EMI ${l.emi}), ${d(l.ends)} ${l.ends.slice(0, 4)} तक`).join('। ') + '।',
+          list.map((l) => `Your ${l.loan} with ${l.lender}: ${l.outstanding} still to pay, ${l.emis_left} EMIs left at ${l.emi}, ending ${d(l.ends)} ${l.ends.slice(0, 4)}`).join('. ') + '.');
+      break;
+    }
+    case 'overview': {
+      const o = await call('money_overview');
+      const m = ((o.months ?? []) as { month: string; complete: boolean; income: string; true_spend: string; committed: string; surplus: string; savings_rate: string }[]).filter((x) => x.complete).at(-1);
+      answer = !m ? say('अभी कोई पूरा महीना नहीं है; एक पूरे महीने का स्टेटमेंट जोड़ें।', 'There’s no complete month yet; add a full month’s statement.')
+        : say(`${m.month} में आमदनी ${m.income}, खर्च ${m.true_spend}, EMI-SIP-बीमा ${m.committed}। बचत ${m.surplus} रही, यानी ${m.savings_rate}।`,
+          `In ${m.month} you earned ${m.income}, spent ${m.true_spend} and put ${m.committed} into EMIs, SIPs and insurance, so you saved ${m.surplus}, ${m.savings_rate} of income.`);
       break;
     }
     case 'claim': {
