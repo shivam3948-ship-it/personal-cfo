@@ -44,7 +44,7 @@ export default function AskLive({ local = false }: { local?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   // disclaimer comes from the server (it depends on the session's advice mode); the safe wording shows until it arrives
-  const [disc, setDisc] = useState<{ en: string; hi: string; test: boolean }>({ en: 'General guidance, not SEBI-registered investment advice.', hi: 'सामान्य जानकारी, SEBI-रजिस्टर्ड निवेश सलाह नहीं।', test: false });
+  const [disc, setDisc] = useState<{ en: string; hi: string; test: boolean }>({ ...DISCLAIMER.guided, test: false});
   // voice: idle → (consent once) → listening → hearing (speech to text) → the question is sent like a typed one
   const [voice, setVoice] = useState<'idle' | 'consent' | 'listening' | 'hearing'>('idle');
   const [level, setLevel] = useState(0);

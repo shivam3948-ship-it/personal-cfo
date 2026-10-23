@@ -16,9 +16,14 @@ export const RULES = {
   copayWarnYears: 2,
 } as const;
 
+/** The one table for "where should this money go", by when it's needed (D-051 review): categories only, never a fund. */
+export const BY_HORIZON = {
+  en: 'Match money to when you need it: within 3 years, an FD or a liquid fund; 3 to 7 years, a low-cost multi-asset or hybrid fund; 7 years or more, a low-cost index fund through a SIP, if you can sit through market falls.',
+  hi: 'पैसा कब चाहिए, उसके हिसाब से: 3 साल के अंदर, FD या लिक्विड फ़ंड; 3 से 7 साल, कम खर्च वाला मल्टी-एसेट या हाइब्रिड फ़ंड; 7 साल या ज़्यादा, कम खर्च वाला इंडेक्स फ़ंड SIP से, अगर बाज़ार की गिरावट में टिके रह सकें।',
+};
 export const DISCLAIMER = {
-  en: 'Guidance from your own documents and common rules of thumb. Not SEBI-registered investment advice; registered advice comes only after an RIA licence. Insurance points are general, not a policy recommendation.',
-  hi: 'यह आपके दस्तावेज़ों और आम नियमों पर आधारित सलाह है, SEBI-रजिस्टर्ड निवेश सलाह नहीं। बीमा के बारे में बातें सामान्य हैं, किसी पॉलिसी की सिफ़ारिश नहीं।',
+  en: 'Guidance from your own documents and common rules of thumb. For education only, not investment advice; Munim doesn’t have an investment adviser licence yet. Insurance points are general, not a policy recommendation.',
+  hi: 'यह आपके दस्तावेज़ों और आम नियमों पर आधारित है। सिर्फ़ जानकारी के लिए, निवेश सलाह नहीं; मुनीम के पास अभी निवेश सलाहकार का लाइसेंस नहीं है। बीमा के बारे में बातें सामान्य हैं, किसी पॉलिसी की सिफ़ारिश नहीं।',
 };
 
 export type StepId = 'cash_flow' | 'card_debt' | 'high_interest_loans' | 'emergency_fund' | 'health_cover' | 'life_cover' | 'savings_policies' | 'invest_surplus';
@@ -147,7 +152,7 @@ export function foundationPlan(ds: Dataset) {
   steps.push({
     id: 'invest_surplus', order: 7, status: avgSurplus === null ? 'unknown' : gapsBefore.length ? 'review' : 'todo',
     finding: avgSurplus === null ? 'No complete month of bank data.' : `SIP of ${inr(sip)} a month already running; average surplus after it ${inr(avgSurplus)}.`,
-    recommendation: `${gapsBefore.length ? 'Fix the earlier steps first, then ' : ''}match money to when you need it: goals within 3 years in FDs or liquid funds; 3–7 years in hybrid or short-duration debt funds; 7+ years in equity funds through SIPs (index or diversified). Keep the existing SIP running through market falls.`,
+    recommendation: `${gapsBefore.length ? 'Fix the earlier steps first, then ' : ''}match money to when you need it: within 3 years, an FD or a liquid fund; 3 to 7 years, a low-cost multi-asset or hybrid fund; 7 years or more, a low-cost index fund through a SIP, if you can sit through market falls. Keep the existing SIP running through market falls.`,
     basis: 'horizon buckets (0–3 / 3–7 / 7+ years) are a general allocation rule, category level only, no specific funds',
     numbers: { current_sip: sip, steps_to_fix_first: gapsBefore.length },
   });

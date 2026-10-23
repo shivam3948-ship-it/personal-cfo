@@ -64,7 +64,8 @@ describe('view models reproduce the designs from the engine', () => {
 
 // Advice gate on the X-ray screen itself (D-043): guided users never get the named-fund plan, in the data or on screen.
 describe('X-ray advice gate', () => {
-  it('guided: no fund names in the plan data, no plan button, SEBI disclaimer; demo keeps the plan', async () => {
+  // D-051: no mode before 'advised' names a fund, test builds included; every mode says "for education only"
+  it('guided and demo: no fund names in the plan data, no plan button, education-only disclaimer', async () => {
     const { renderToString } = await import('react-dom/server');
     const { createElement } = await import('react');
     const Xray = (await import('@/screens/Xray')).default;
@@ -72,14 +73,14 @@ describe('X-ray advice gate', () => {
     const g = buildXray(ds, { adviceMode: 'guided' }) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     const d = buildXray(ds, { adviceMode: 'demo' }) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     expect(g.XR.harvest.combo.funds).toEqual([]);
-    expect(d.XR.harvest.combo.funds.length).toBeGreaterThan(0);
+    expect(d.XR.harvest.combo.funds).toEqual([]);
     const html = (data: unknown) => renderToString(createElement(Xray, { theme: 'light', state: 'ready', data }));
     const hg = html(g), hd = html(d);
     expect(hg).not.toContain('See the plan');
     expect(hg).not.toContain('Start here');
-    expect(hg).toContain('SEBI-registered');
-    expect(hd).toContain('See the plan');
-    expect(hd).toContain('For testing only, not investment advice.');
+    expect(hg).toContain('For education only, not investment advice.');
+    expect(hd).not.toContain('See the plan');
+    expect(hd).toContain('Test build on sample data. For education only, not investment advice.');
   });
 });
 

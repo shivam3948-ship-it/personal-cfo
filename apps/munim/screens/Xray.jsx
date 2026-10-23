@@ -18,7 +18,7 @@ class Component extends DCLogic {
     var PF = this.props.data.PF;
     var XR = this.props.data.XR;   // xray_v2_numbers.py (FIFO lots, sample CAS)
     var X3 = this.props.data.X3;   // xray_v3_numbers.py: overlap (synthetic sample holdings), FD at 7%, did-it-work preview
-    var MODE = this.props.data.MODE;   // advice mode from the server: demo/internal/advised may show the named-fund plan; guided gets facts and categories (D-043)
+    var MODE = this.props.data.MODE;   // advice mode from the server: only advised shows the named-fund plan (D-051); everyone else gets facts and categories
     var DISC = this.props.data.DISC;   // the mode's disclaimer, from the server
     var CAS_SRC = this.props.data.CAS_SRC;   // whose CAS: 'sample' (the demo family) or 'yours' (read on this phone)
     var END = new Date(PF.asOf || '2026-10-15'), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -26,7 +26,7 @@ class Component extends DCLogic {
     var maxV = Math.max.apply(null, rows.map(function (r) { return Math.max(r.fund, r.you); }));
     var ahead = rows.filter(function (r) { return r.you - r.fund >= 0.5; }).length, behind = rows.filter(function (r) { return r.fund - r.you >= 0.5; }).length, even = rows.length - ahead - behind;
     var eq = sum(PF.funds.filter(function (f) { return f[3] === 'equity'; }).map(function (f) { return f[4]; })), dt = PF.value - eq;
-    var named = MODE !== 'guided' && MODE !== 'off';
+    var named = MODE === 'advised'; // D-051: no fund is named for a move or switch until there's an adviser licence, test builds included
     var H = XR.harvest, G = XR.regular, E = XR.elss, C = H.combo, O = X3.overlap, FD = X3.fd, DID = X3.did;
     // the fund compared with an index fund: whichever one has index prices for all its dates (data-driven, any CAS)
     var vk = Object.keys(XR.vsIndex || {})[0] || null, M = vk ? XR.vsIndex[vk] : null;
@@ -72,7 +72,7 @@ class Component extends DCLogic {
           notes: [].concat(of && of[2] !== 'Index' ? [other + ' is an actively managed ' + of[1].toLowerCase() + ' plan, yet ' + top[2] + '% of it matches your index fund, so part of its higher fee buys what the index fund already gives you.' + (none.length ? ' ' + none.join(' and ') + ' overlap' + (none.length === 1 ? 's' : '') + ' with none.' : '')] : [],
             [/sample/i.test(O.asOf || '') ? 'Holdings here are a synthetic sample; the app uses each fund’s monthly portfolio disclosure.' : 'From each fund’s monthly portfolio disclosure.']) }]);
     }
-    if (E && E.freeValue > 0) specs.push(['elss', 'Lock-in', 'Unlocked', 'fact', R(E.freeValue) + ' of ' + E.fund + ' is free to move',
+    if (E && E.freeValue > 0) specs.push(['elss', 'Lock-in', 'Unlocked', 'fact', R(E.freeValue) + ' of your tax-saver fund is past its 3-year lock-in',
         (E.lockedValue > 0 ? 'Units older than 3 years are free; ' + R(E.lockedValue) + ' is still locked.' : 'Every unit is past the 3-year lock-in.') + (E.plan === 'Regular' && G.feeTotal > 0 ? ' It’s a regular plan, so it counts in card 2.' : ''),
         { notes: [(E.freeGain > H.exempt ? 'Its ' + R(E.freeGain) + ' gain alone is more than this year’s tax-free limit. ' : '') + 'Buying ELSS again starts a new 3-year lock-in; under the new tax regime ELSS gives no deduction.'] }]);
     if (M) specs.push(['index', 'Returns', 'Your dates', 'fact', vk + (M.diff < 0 ? ' trails a plain index fund by ' + R(-M.diff) : ' is ahead of a plain index fund by ' + R(M.diff)),
@@ -82,7 +82,7 @@ class Component extends DCLogic {
           notes: ['This is what its extra risk has paid so far, not a forecast.' + (eqCount > 2 ? ' Your other funds need index prices for their dates: coming soon.' : '')] }]);
     var cards = specs.map(function (c, i) { return card(c[0], (i + 1) + ' · ' + c[1], c[2], c[3], c[4], c[5], c[6]); });
     var hist = (this.props.history ?? 'none') === 'preview';
-    var planOpen = s.plan !== undefined ? s.plan : (this.props.open ?? 'none') === 'plan';
+    var planOpen = named && (s.plan !== undefined ? s.plan : (this.props.open ?? 'none') === 'plan'); // D-051: the plan sheet names funds, amounts and steps, so only with a licence
     var d = {
       count: cards.length, xirr: PF.xirr + '%', since: PF.since, taxSave: R(H.taxSavedLater), feeYr: R(G.feeTotal), fdExtra: R(FD.extra), cards: cards,
       did: [{ what: 'Moved ' + R(DID.movedPaise) + ' to direct plans', when: DID.months + ' months ago · card 2', v: R(DID.feeSavedSoFar) + ' less fees so far' },
