@@ -6,6 +6,7 @@ import type { AgentReply, TraceStep, Turn } from './claude';
 import type { Action } from '@/lib/actionsCore';
 import { addMonths, spokenDate } from '@core/dates';
 import { DISCLAIMER, NO_LICENCE } from '@/lib/advice';
+import { BY_HORIZON } from '@core/finance/advice';
 
 type Pending = { tool: string; input: Record<string, unknown> } | null;
 const pendingBySid = new Map<string, Pending>();
@@ -81,6 +82,7 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
     return out.result as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   };
   const say = (h: string, e: string) => (hi ? h : e);
+  const disc = () => ' ' + say(DISCLAIMER[ctx.adviceMode].hi, DISCLAIMER[ctx.adviceMode].en); // D-051: every recommendation carries it
   const d = (iso?: string | null) => (iso ? spokenDate(iso, ctx.lang) : '');
   let answer = ''; let next: Pending = null;
   const loose = /^\s*(haan|han|haa|yes|yeah|ok|okay|sure|ji|theek|thik|हाँ|हां|जी|ठीक)\b/i.test(text) && text.trim().split(/\s+/).length <= 6;
@@ -207,8 +209,8 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
       const top = f.slice(0, 3);
       answer = !top.length
         ? say(`आपके ${scope === 'funds' ? 'फ़ंड' : scope === 'spending' ? 'खर्च' : 'पैसों'} में कुछ महँगा नहीं दिखा। जाँचा: ${(r.checked ?? []).join(', ')}।`, `Nothing costly stands out in your ${scope === 'funds' ? 'funds' : scope === 'spending' ? 'spending' : 'money'}. I checked ${(r.checked ?? []).join(', ')}.`)
-        : say(`सबसे बड़े ${top.length}: ` + top.map((x, i) => `${i + 1}) ${x.what}${amt(x) ? ` (${amt(x)})` : ''}, ${x.fix}`).join('। ') + '। पहले वाले पर मदद करूँ?',
-          `The biggest ${top.length}: ` + top.map((x, i) => `${i + 1}) ${x.what}${amt(x) ? ` (${amt(x)})` : ''}: ${x.fix}`).join('. ') + '. Want help with the first one?');
+        : say(`सबसे बड़े ${top.length}: ` + top.map((x, i) => `${i + 1}) ${x.what}${amt(x) ? ` (${amt(x)})` : ''}, ${x.fix}`).join('। ') + '। पहले वाले पर मदद करूँ?' + disc(),
+          `The biggest ${top.length}: ` + top.map((x, i) => `${i + 1}) ${x.what}${amt(x) ? ` (${amt(x)})` : ''}: ${x.fix}`).join('. ') + '. Want help with the first one?' + disc());
       break;
     }
     case 'calc': {
@@ -228,14 +230,13 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
     case 'market': {
       const r = await call('portfolio_xray');
       answer = r.error ? say('अभी आपका म्यूचुअल फ़ंड स्टेटमेंट (CAS) नहीं जुड़ा। जोड़ने पर बता पाऊँगा कि गिरावट का आप पर क्या असर है।', 'I don’t have your mutual fund statement (CAS) yet. Add it and I can tell you what a fall means for you.')
-        : say(`आपके फ़ंड ${r.value} के हैं और शुरू से साल का ${r.your_return_per_year_pct}% कमाया है। गिरावट आती-जाती है; असली सवाल यह है कि पैसा कब चाहिए। 3 साल के अंदर चाहिए तो वह हिस्सा इक्विटी में नहीं होना चाहिए; लंबे लक्ष्य के लिए SIP चालू रखें।`,
-          `Your funds are worth ${r.value} and have earned ${r.your_return_per_year_pct}% a year since you started. Falls come and go; what matters is when you need the money. Money you need within 3 years shouldn’t be in equity; for long goals, keep the SIPs going.`);
+        : say(`आपके फ़ंड ${r.value} के हैं और शुरू से साल का ${r.your_return_per_year_pct}% कमाया है। गिरावट आती-जाती है; असली सवाल यह है कि पैसा कब चाहिए। 3 साल के अंदर चाहिए तो वह हिस्सा इक्विटी में नहीं होना चाहिए; लंबे लक्ष्य के लिए SIP चालू रखें।` + disc(),
+          `Your funds are worth ${r.value} and have earned ${r.your_return_per_year_pct}% a year since you started. Falls come and go; what matters is when you need the money. Money you need within 3 years shouldn’t be in equity; for long goals, keep the SIPs going.` + disc());
       break;
     }
     case 'picks':
       // D-051: no fund names in any mode; generic categories by horizon, the no-licence line, the education-only disclaimer
-      answer = say(`${NO_LICENCE.hi} लक्ष्य के हिसाब से: एक साल के अंदर चाहिए तो लिक्विड फ़ंड; 3 से 5 साल के लिए अच्छी रेटिंग वाला मल्टी-एसेट या हाइब्रिड फ़ंड; 7 साल या ज़्यादा के लिए कम खर्च वाला इंडेक्स फ़ंड, SIP से। ${DISCLAIMER.guided.hi}`,
-        `${NO_LICENCE.en} By when you need the money: within a year, a liquid fund; 3 to 5 years, a well-rated multi-asset or hybrid fund; 7 years or more, a low-cost index fund through a SIP. ${DISCLAIMER.guided.en}`);
+      answer = say(`${NO_LICENCE.hi} ${BY_HORIZON.hi}`, `${NO_LICENCE.en} ${BY_HORIZON.en}`) + disc();
       break;
     case 'learn':
       answer = say('यह सामान्य सवाल है; मैं आपके अपने स्टेटमेंट से जवाब देता हूँ, बिना AI के ऐसे सवाल नहीं समझा पाता। आपके डेटा से पूछिए, जैसे "मेरे फ़ंड में क्या गलत है?" या "इमरजेंसी फंड कितने महीने का है?"',
@@ -301,7 +302,7 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
         answer = pl
           ? say(`रेगुलर प्लान पर करीब ${g.extra_fees_per_year_estimate} सालाना ज़्यादा फ़ीस जा रही है। एक साल से पुराने ${pl.move_to_direct_value} के यूनिट उसी फ़ंड के डायरेक्ट प्लान में ले जाने पर ${pl.gains_booked} का फ़ायदा टैक्स-फ़्री सीमा में बुक होगा, यानी अभी कोई टैक्स नहीं, और हर साल करीब ${pl.fees_saved_per_year} बचेंगे (${funds})। एक साल से नए यूनिट पर 20% टैक्स और एग्ज़िट लोड लग सकता है, उन्हें अभी रहने दें।`,
             `Regular plans cost you about ${g.extra_fees_per_year_estimate} a year in extra fees. Moving ${pl.move_to_direct_value} of units older than a year to the direct plan of the same funds (${funds}) books ${pl.gains_booked} of gains inside the tax-free limit, so no tax now, and saves about ${pl.fees_saved_per_year} a year. Units under a year old would be taxed at 20% and may carry an exit load, so leave those for now.`)
-          : say(`रेगुलर प्लान पर करीब ${g.extra_fees_per_year_estimate} सालाना ज़्यादा फ़ीस जा रही है। उसी फ़ंड का डायरेक्ट प्लान सस्ता होता है। बदलने का मतलब है बेचना और फिर खरीदना: एक साल से नए यूनिट पर 20% टैक्स और एग्ज़िट लोड लग सकता है, और इस साल ${t.limit_left_this_year} तक का लंबी अवधि का फ़ायदा टैक्स-फ़्री है। फ़ैसला इन बातों को देखकर या किसी SEBI-रजिस्टर्ड सलाहकार के साथ लें।`,
+          : say(`रेगुलर प्लान पर करीब ${g.extra_fees_per_year_estimate} सालाना ज़्यादा फ़ीस जा रही है। उसी फ़ंड का डायरेक्ट प्लान सस्ता होता है। बदलने का मतलब है बेचना और फिर खरीदना: एक साल से नए यूनिट पर 20% टैक्स और एग्ज़िट लोड लग सकता है, और इस साल ${t.limit_left_this_year} तक का लंबी अवधि का फ़ायदा टैक्स-फ़्री है। इन बातों को तौलिए; मुनीम के पास अभी निवेश सलाहकार का लाइसेंस नहीं है।`,
             `Regular plans cost you about ${g.extra_fees_per_year_estimate} a year in extra fees; the direct plan of the same fund costs less. Switching means selling and buying again: units under a year old would be taxed at 20% and may carry an exit load, and up to ${t.limit_left_this_year} of long-term gains is tax-free this year. Weigh these facts; Munim can’t name funds since it doesn’t have an investment adviser licence yet.`);
       } else if (pl && /should|what (do|to)|kya kar|क्या कर|सलाह|advice|suggest/i.test(text)) {
         // test mode (named plan allowed): one decisive plan, numbers straight from the tool
@@ -326,10 +327,9 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
       const r = await call('emergency_fund');
       const full = Number(r.months_covered) >= Number(r.target_months);
       answer = full
-        ? say('सेफ़्टी नेट पूरा है। अब लक्ष्य के हिसाब से लगाइए: 3 साल से कम के लिए FD या लिक्विड फ़ंड, 3 से 7 साल के लिए हाइब्रिड या डेट फ़ंड, 7 साल से ज़्यादा के लिए SIP से इक्विटी फ़ंड।',
-            'Your safety net is full. Now invest by goal: under 3 years, an FD or liquid fund; 3 to 7 years, hybrid or debt funds; 7 years or more, an equity SIP.')
+        ? say(`सेफ़्टी नेट पूरा है। ${BY_HORIZON.hi}`, `Your safety net is full. ${BY_HORIZON.en}`) + disc()
         : say(`पहले सेफ़्टी नेट पूरा कीजिए: अभी ${r.months_covered} महीने का है, लक्ष्य ${r.target_months} महीने, ${r.gap} बाकी। तब तक हर महीने की बचत RD या लिक्विड फ़ंड में डालिए। उसके बाद 7 साल से लंबे लक्ष्य के लिए इक्विटी SIP, 3 से 7 साल के लिए हाइब्रिड या डेट फ़ंड।`,
-            `Fill your safety net first: it covers ${r.months_covered} months against a ${r.target_months}-month target, ${r.gap} to go. Until then, put the monthly amount in a recurring deposit or liquid fund. After that, an equity SIP for goals 7+ years away, hybrid or debt funds for 3 to 7 years.`);
+            `Fill your safety net first: it covers ${r.months_covered} months against a ${r.target_months}-month target, ${r.gap} to go. Until then, put the monthly amount in a recurring deposit or liquid fund. After that, an equity SIP for goals 7+ years away, hybrid or debt funds for 3 to 7 years.`) + disc();
       break;
     }
     case 'emergency': {

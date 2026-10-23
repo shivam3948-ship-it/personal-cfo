@@ -211,7 +211,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
         vs_plain_index_fund_same_dates: Object.fromEntries(Object.entries(x.vsIndex).map(([k, z]) => [k, { invested: R(z.invested), fund_value: R(z.fundValue), index_fund_value: R(z.indexValue), difference: R(z.diff) }])),
         guidance: named
           ? 'Sample data (demo): you may walk through the plan above (which units, how much, by when). Never name a new fund to buy, and never tell the user to exit a fund.'
-          : 'Facts and categories only: what regular-plan fees cost, that direct plans of the same fund cost less, the tax-free limit and deadline. Do not tell the user which fund to move, sell or buy, how much, or when. Suggest they decide with the facts, or with a SEBI-registered adviser.',
+          : 'Facts and categories only: what regular-plan fees cost, that direct plans of the same fund cost less, the tax-free limit and deadline. Do not tell the user which fund to move, sell or buy, how much, or when. Suggest they decide with the facts; Munim doesn\'t have an investment adviser licence yet.',
       } };
     }
     case 'search_documents': {
@@ -234,7 +234,8 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       return { result: {
         scope, checked: a.checked, nothing_wrong_with: a.clean,
         findings: a.findings.slice(0, 6).map((f) => ({ area: f.area, what: hi ? f.whatHi : f.what, costs_per_year: f.perYear ? R(f.perYear) : null, one_time_amount: f.oneTime ? `${R(f.oneTime)}${f.oneTimeLabel ? ' ' + (hi ? f.oneTimeLabel.hi : f.oneTimeLabel.en) : ''}` : null, fix: hi ? f.fixHi : f.fix })),
-        how_to_say_it: 'Lead with the biggest one or two findings and their rupees, then offer to act on the first. Categories only for funds unless they are named here.',
+        disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang],
+        how_to_say_it: 'Lead with the biggest one or two findings and their rupees, then offer to act on the first. For funds, state the facts (fees, the tax-free limit and its date); never say which fund, how much or when to move. Say the disclaimer once.',
       } };
     }
     case 'sip_calculator': {
@@ -243,7 +244,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       if (!(amount > 0) || !(years > 0) || years > 60 || !(rate > -50 && rate < 50)) return { result: { error: 'Give an amount, how often and for how many years.' } };
       const v = sipValue(Math.round(amount * 100), every, years, rate);
       return { result: { amount: R(Math.round(amount * 100)), every, years, assumed_return_per_year_pct: rate, you_put_in: R(v.invested), value_at_end: R(v.value), growth: R(v.gain),
-        caveat: 'At an assumed fixed return; real returns go up and down and are not guaranteed.' } };
+        caveat: 'At an assumed fixed return; real returns go up and down and are not guaranteed.', disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang] } };
     }
     case 'advice_plan': {
       const plan = foundationPlan(ds);

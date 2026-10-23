@@ -36,7 +36,8 @@ export function moneyAudit(ds: Dataset, scope: AuditScope, opts: { nameFunds: bo
     for (const l of lk) out.push({ area: 'spending', kind: l.kind, what: l.title, whatHi: l.titleHi, perYear: l.kind === 'duplicate' ? null : l.annualCost, oneTime: l.kind === 'duplicate' ? l.amount : null, oneTimeLabel: { en: 'charged twice', hi: 'दो बार कटे' },
       fix: l.actionHint === 'cancel' ? 'cancel it' : l.kind === 'duplicate' ? 'ask for the second charge back' : l.kind === 'trial_charge' ? 'cancel or ask for a refund' : l.kind === 'price_rise' ? 'decide if it is still worth it, or move to a cheaper plan' : 'ask the bank to waive or reverse it',
       fixHi: l.actionHint === 'cancel' ? 'इसे बंद करें' : l.kind === 'duplicate' ? 'दूसरी बार कटा पैसा वापस माँगें' : l.kind === 'trial_charge' ? 'बंद करें या रिफ़ंड माँगें' : l.kind === 'price_rise' ? 'देखें कि अब भी फ़ायदे का है, या सस्ता प्लान लें' : 'बैंक से माफ़ करने को कहें' });
-    if (!lk.length) clean.push('no unused memberships, duplicate charges or bank fees');
+    // statements show that a charge recurs, not whether it's used: never claim "no unused memberships" from them
+    if (!lk.length) clean.push('no duplicate or trial charges, price rises or bank fees');
     const fin = ds.cardStatements.filter((c) => c.charges > 0);
     if (fin.length) {
       const total = sum(fin.map((c) => c.charges));
@@ -57,10 +58,10 @@ export function moneyAudit(ds: Dataset, scope: AuditScope, opts: { nameFunds: bo
       what: `${regFunds.length} fund${regFunds.length > 1 ? 's' : ''} in regular plans${opts.nameFunds ? ` (${regFunds.join(', ')})` : ''}, paying extra commission`,
       whatHi: `${regFunds.length} फ़ंड रेगुलर प्लान में${opts.nameFunds ? ` (${regFunds.join(', ')})` : ''}, ज़्यादा कमीशन`,
       perYear: x.regular.feeTotal, oneTime: null,
-      fix: 'move new SIPs to the direct plan of the same fund; switch old units when the tax works out', fixHi: 'नई SIP उसी फ़ंड के डायरेक्ट प्लान में करें; पुराने यूनिट टैक्स देखकर बदलें' });
+      fix: 'the direct plan of the same fund costs less; switching sells and buys again, so tax and exit load apply', fixHi: 'उसी फ़ंड का डायरेक्ट प्लान सस्ता होता है; बदलने का मतलब बेचना और फिर खरीदना, इसलिए टैक्स और एग्ज़िट लोड लगता है' });
     else clean.push('all funds in direct plans');
     if (x.harvest.harvest > 0 && x.harvest.usedKnown) out.push({ area: 'funds', kind: 'tax_free_gains', what: `Tax-free gains not booked this year, before ${spokenDate(x.harvest.deadline)}`, whatHi: `इस साल के टैक्स-फ़्री फ़ायदे अभी बुक नहीं, ${spokenDate(x.harvest.deadline, 'hi')} से पहले`,
-      perYear: null, oneTime: x.harvest.taxSavedLater, oneTimeLabel: { en: 'less tax later', hi: 'बाद में कम टैक्स' }, fix: 'book long-term gains up to the tax-free limit before 31 March', fixHi: '31 मार्च से पहले टैक्स-फ़्री सीमा तक फ़ायदा बुक करें' });
+      perYear: null, oneTime: x.harvest.taxSavedLater, oneTimeLabel: { en: 'less tax later', hi: 'बाद में कम टैक्स' }, fix: 'long-term gains booked inside this year’s limit are not taxed; the limit lapses on 31 March', fixHi: 'इस साल की सीमा के अंदर बुक किया लंबी अवधि का फ़ायदा टैक्स-फ़्री है; सीमा 31 मार्च को ख़त्म होती है' });
     const behind = Object.entries(x.vsIndex).filter(([, z]) => z.diff < 0).sort((a, b) => a[1].diff - b[1].diff);
     if (behind.length) out.push({ area: 'funds', kind: 'trailing_index', what: `${behind.length} fund${behind.length > 1 ? 's' : ''}${opts.nameFunds ? ` (${behind.map(([k]) => k).join(', ')})` : ''} behind a plain index fund bought on the same dates`,
       whatHi: `${behind.length} फ़ंड${opts.nameFunds ? ` (${behind.map(([k]) => k).join(', ')})` : ''} उन्हीं तारीख़ों पर लिए इंडेक्स फ़ंड से पीछे`,

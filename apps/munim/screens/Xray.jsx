@@ -72,7 +72,7 @@ class Component extends DCLogic {
           notes: [].concat(of && of[2] !== 'Index' ? [other + ' is an actively managed ' + of[1].toLowerCase() + ' plan, yet ' + top[2] + '% of it matches your index fund, so part of its higher fee buys what the index fund already gives you.' + (none.length ? ' ' + none.join(' and ') + ' overlap' + (none.length === 1 ? 's' : '') + ' with none.' : '')] : [],
             [/sample/i.test(O.asOf || '') ? 'Holdings here are a synthetic sample; the app uses each fund’s monthly portfolio disclosure.' : 'From each fund’s monthly portfolio disclosure.']) }]);
     }
-    if (E && E.freeValue > 0) specs.push(['elss', 'Lock-in', 'Unlocked', 'fact', R(E.freeValue) + ' of ' + E.fund + ' is free to move',
+    if (E && E.freeValue > 0) specs.push(['elss', 'Lock-in', 'Unlocked', 'fact', R(E.freeValue) + ' of your tax-saver fund is past its 3-year lock-in',
         (E.lockedValue > 0 ? 'Units older than 3 years are free; ' + R(E.lockedValue) + ' is still locked.' : 'Every unit is past the 3-year lock-in.') + (E.plan === 'Regular' && G.feeTotal > 0 ? ' It’s a regular plan, so it counts in card 2.' : ''),
         { notes: [(E.freeGain > H.exempt ? 'Its ' + R(E.freeGain) + ' gain alone is more than this year’s tax-free limit. ' : '') + 'Buying ELSS again starts a new 3-year lock-in; under the new tax regime ELSS gives no deduction.'] }]);
     if (M) specs.push(['index', 'Returns', 'Your dates', 'fact', vk + (M.diff < 0 ? ' trails a plain index fund by ' + R(-M.diff) : ' is ahead of a plain index fund by ' + R(M.diff)),
@@ -82,7 +82,7 @@ class Component extends DCLogic {
           notes: ['This is what its extra risk has paid so far, not a forecast.' + (eqCount > 2 ? ' Your other funds need index prices for their dates: coming soon.' : '')] }]);
     var cards = specs.map(function (c, i) { return card(c[0], (i + 1) + ' · ' + c[1], c[2], c[3], c[4], c[5], c[6]); });
     var hist = (this.props.history ?? 'none') === 'preview';
-    var planOpen = s.plan !== undefined ? s.plan : (this.props.open ?? 'none') === 'plan';
+    var planOpen = named && (s.plan !== undefined ? s.plan : (this.props.open ?? 'none') === 'plan'); // D-051: the plan sheet names funds, amounts and steps, so only with a licence
     var d = {
       count: cards.length, xirr: PF.xirr + '%', since: PF.since, taxSave: R(H.taxSavedLater), feeYr: R(G.feeTotal), fdExtra: R(FD.extra), cards: cards,
       did: [{ what: 'Moved ' + R(DID.movedPaise) + ' to direct plans', when: DID.months + ' months ago · card 2', v: R(DID.feeSavedSoFar) + ' less fees so far' },

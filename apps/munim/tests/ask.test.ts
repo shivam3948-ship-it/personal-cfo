@@ -16,7 +16,7 @@ const CASES: [string, string][] = [
   ['Where is my money going?', 'spending_breakdown'],
   ['मेरा पैसा कहाँ जा रहा है?', 'spending_breakdown'],
 ];
-const BANNED = /\b(buy|invest in|exit|sell|redeem|surrender)\b.{0,30}\b(fund|policy|scheme)\b/i;
+const BANNED = /\b(buy|invest in|exit(?! load)|sell|redeem|surrender)\b.{0,30}\b(fund|policy|scheme)\b/i;
 
 describe('Ask Munim offline', async () => {
   const ds = await loadDemo();
