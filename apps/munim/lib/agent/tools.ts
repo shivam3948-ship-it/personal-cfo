@@ -10,14 +10,20 @@ import { annualPremium, claimPlan, policyView } from '@core/finance/insurance';
 import { groupOf } from '@core/finance/categorize';
 import { foundationPlan } from '@core/finance/advice';
 import { safetyNet } from '@core/finance/essentials';
-import { DISCLAIMER, namesFunds, type AdviceMode } from '@/lib/session';
+import { DISCLAIMER, namesFunds, type AdviceMode } from '@/lib/advice';
 import { portfolioView } from '@core/portfolio/engine';
 import { xrayInsights, fdComparison } from '@core/portfolio/insights';
-import { addAction, gcalLink, type Action } from '@/lib/actions';
+import { gcalLink, type Action } from '@/lib/actionsCore';
 import { draftEmail, type DraftKind } from '@/lib/drafts';
 import { holderNames, redact } from '@core/privacy/redact';
 
-export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMode: AdviceMode }
+/** `addAction` saves an action where this conversation lives: the server's store for the sample, this browser for your data.
+ *  `icsUrl` is where the reminder's calendar file can be opened. */
+export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMode: AdviceMode; addAction: (sid: string, a: Omit<Action, 'id' | 'createdAt'>) => Action & { duplicate?: boolean }; icsUrl?: (a: Action) => string;
+  /** On the phone (D-050): every tool result passes through this before the AI sees it, and the number check uses the same filtered result. */
+  sanitize?: (r: Record<string, unknown>) => Record<string, unknown>;
+  /** Names to scrub from the user's own words before they leave (e.g. the first name given at onboarding). */
+  names?: string[] }
 export interface ToolOutput { result: Record<string, unknown>; action?: Action }
 
 // Rupees, no paise: these are spoken aloud. The guard tolerates the ≤₹0.50 rounding.
@@ -233,8 +239,8 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
     case 'create_reminder': {
       const date = String(input.date ?? '');
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { result: { error: 'date must be YYYY-MM-DD' } };
-      const a = addAction(ctx.sid, { kind: 'reminder', title: String(input.title ?? 'Reminder'), reminder: { date, time: input.time ? String(input.time) : undefined, notes: input.notes ? String(input.notes) : undefined } });
-      return { result: { done: true, already_existed: !!a.duplicate, action_id: a.id, title: a.title, date, calendar_file: `/api/actions/${a.id}/ics`, google_calendar: gcalLink(a) }, action: a };
+      const a = ctx.addAction(ctx.sid, { kind: 'reminder', title: String(input.title ?? 'Reminder'), reminder: { date, time: input.time ? String(input.time) : undefined, notes: input.notes ? String(input.notes) : undefined } });
+      return { result: { done: true, already_existed: !!a.duplicate, action_id: a.id, title: a.title, date, calendar_file: ctx.icsUrl ? ctx.icsUrl(a) : `/api/actions/${a.id}/ics`, google_calendar: gcalLink(a) }, action: a };
     }
     case 'draft_email': return draft(input, ctx);
     case 'create_savings_goal': {
@@ -243,7 +249,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const monthly = Math.ceil(target / months / 100) * 100;
       const pics = monthPictures(ds).filter((p) => p.complete);
       const avg = pics.length ? Math.round(sum(pics.map((p) => p.surplus)) / pics.length) : null;
-      const a = addAction(ctx.sid, { kind: 'goal', title: String(input.name ?? 'Goal'), goal: { target, byDate: by, monthlyNeeded: monthly, avgSurplus: avg, feasible: avg === null ? null : avg >= monthly } });
+      const a = ctx.addAction(ctx.sid, { kind: 'goal', title: String(input.name ?? 'Goal'), goal: { target, byDate: by, monthlyNeeded: monthly, avgSurplus: avg, feasible: avg === null ? null : avg >= monthly } });
       return { result: { done: true, already_existed: !!a.duplicate, goal: a.title, target: R(target), by: by, months, monthly_needed: R(monthly), average_monthly_surplus: R(avg), fits_current_surplus: a.goal!.feasible }, action: a };
     }
     case 'save_prepayment_plan': {
@@ -251,8 +257,8 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       if (!l) return { result: { error: `No loan matching "${input.loan}"` } };
       const amt = Math.round(Number(input.amount_rupees) * 100); const date = String(input.date ?? addDays(asOf, 1));
       const r = simulatePrepayment(l, amt, asOf);
-      const a = addAction(ctx.sid, { kind: 'prepayment_plan', title: `Prepay ${inr(r.amount)} on ${l.lender} ${l.type} loan`, reminder: { date, notes: `Interest saved about ${inr(r.interestSaved)}; ${r.monthsSaved} EMIs fewer. Ask the lender to reduce tenure, keep the EMI.` }, plan: { loanId: l.id, amount: r.amount, date, interestSaved: r.interestSaved, monthsSaved: r.monthsSaved } });
-      return { result: { done: true, already_existed: !!a.duplicate, plan: a.title, date, interest_saved: R(r.interestSaved), months_saved: r.monthsSaved, allowed_now: r.allowed, calendar_file: `/api/actions/${a.id}/ics` }, action: a };
+      const a = ctx.addAction(ctx.sid, { kind: 'prepayment_plan', title: `Prepay ${inr(r.amount)} on ${l.lender} ${l.type} loan`, reminder: { date, notes: `Interest saved about ${inr(r.interestSaved)}; ${r.monthsSaved} EMIs fewer. Ask the lender to reduce tenure, keep the EMI.` }, plan: { loanId: l.id, amount: r.amount, date, interestSaved: r.interestSaved, monthsSaved: r.monthsSaved } });
+      return { result: { done: true, already_existed: !!a.duplicate, plan: a.title, date, interest_saved: R(r.interestSaved), months_saved: r.monthsSaved, allowed_now: r.allowed, calendar_file: ctx.icsUrl ? ctx.icsUrl(a) : `/api/actions/${a.id}/ics` }, action: a };
     }
   }
   return { result: { error: `Unknown tool ${name}` } };
@@ -293,7 +299,7 @@ function draft(input: Record<string, unknown>, ctx: ToolCtx): ToolOutput {
     const fees = ds.txns.filter((t) => t.category === 'Fees & charges').map((t) => `${t.date}: ${inr(t.amount, 'auto')}`);
     mail = draftEmail({ kind: 'fee_waiver', fees, accountLast4: bank?.last4 });
   }
-  const a = addAction(ctx.sid, { kind: 'email', title: mail.subject, email: mail });
+  const a = ctx.addAction(ctx.sid, { kind: 'email', title: mail.subject, email: mail });
   return { result: { done: true, already_existed: !!a.duplicate, drafted: kind, to: mail.to, subject: mail.subject, note: 'Draft saved in the actions panel; the user reviews and sends it.' }, action: a };
 }
 

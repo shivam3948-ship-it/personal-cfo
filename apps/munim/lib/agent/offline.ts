@@ -3,7 +3,7 @@ import { runTool, type ToolCtx } from './tools';
 import { checkNumbers } from '@core/agent/guard';
 import { parseAmountRupees } from '@core/agent/lang';
 import type { AgentReply, TraceStep, Turn } from './claude';
-import type { Action } from '@/lib/actions';
+import type { Action } from '@/lib/actionsCore';
 import { addMonths, spokenDate } from '@core/dates';
 
 type Pending = { tool: string; input: Record<string, unknown> } | null;
