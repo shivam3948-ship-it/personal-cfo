@@ -13,7 +13,9 @@ async function variants(): Promise<[string, Dataset][]> {
   const cardOnly = { ...emptyDataset('card only'), accounts: s.accounts.filter((a) => a.kind === 'card'), txns: s.txns.filter((t) => t.account.startsWith('card:')), cardStatements: s.cardStatements };
   const firstMonth = { ...bankOnly, txns: bankOnly.txns.filter((t) => t.date >= '2026-10-01') }; // nothing earlier to compare with
   const july = { ...bankOnly, txns: bankOnly.txns.filter((t) => t.date < '2026-08-01') }; // a statement set that ends in July, not October
-  return [['bank only', bankOnly], ['no salary', noSalary], ['one month', oneMonth], ['card only', cardOnly], ['first month', firstMonth], ['ends in July', july]];
+  // a year of card statements starting late in a month: "this month" must be the latest month, not that first partial one
+  const yearCard = { ...emptyDataset('year'), txns: s.txns.filter((t) => t.account.startsWith('card:')).concat([{ id: 'old#1', date: '2025-10-30', desc: 'LINKEDIN PREMIUM ANNUAL', amount: 999900, dir: 'debit', account: 'card:9012', source: 'card_statement', sourceFile: 'old.pdf', category: 'Subscriptions', merchant: 'LinkedIn Premium' }]), cardStatements: s.cardStatements };
+  return [['year of card', yearCard], ['bank only', bankOnly], ['no salary', noSalary], ['one month', oneMonth], ['card only', cardOnly], ['first month', firstMonth], ['ends in July', july]];
 }
 
 describe('Spends on any statements', async () => {
@@ -28,6 +30,7 @@ describe('Spends on any statements', async () => {
       const html = renderToString(createElement(Spends, { theme: 'light', state: 'ready', data: v }));
       expect(html).not.toMatch(/NaN|undefined|Infinity/);
       expect(html).not.toMatch(/₹-|−₹-|usual \(₹0\)/); // never a negative amount to save, never a ₹0 "usual"
+      if (name === 'year of card') { expect(v.META.cur).toBe(9); expect(html).not.toContain('LinkedIn Premium’s yearly'); } // October 2026, not the year-old charge
       if (v.META.pastN === 0) expect(html).not.toMatch(/(above|below) your usual pace|Save the ₹|vs a usual month/);
       expect(html).not.toMatch(/cult\.fit unused|Ask Orbit|••4521|Includes LingoPro/); // sample-family facts (from its emails and loans) never appear on someone else's screen
       const t = buildTransactions(ds);

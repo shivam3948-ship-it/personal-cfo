@@ -2,7 +2,8 @@
 // Pure and browser-safe: lib/local/patch.ts runs it in the browser; tests run it on the sample family's statements.
 // The check-in keeps its three cards: Save (money path, from ESS/EMG), the latest day in your statements, and one fix.
 import type { Dataset } from '@core/types';
-import { asOfDate, latestBankBalance, monthPictures } from '@core/finance/picture';
+import { asOfDate, latestBankBalance, leaks, monthPictures, subscriptionsToConfirm } from '@core/finance/picture';
+import { inr } from '@core/money';
 import { bucketOf, buildSpendsMain } from './spendsMain';
 import { cleanMerchant } from './spends';
 
@@ -18,11 +19,28 @@ export interface TodayMine {
   bill: { amount: number; due: string; dueIso: string; covered: boolean | null } | null; // the latest card bill, and whether the latest bank balance covers it
   day: { none?: boolean; date: string; label: string; spent: number; usual: number | null; top: [string, number][]; unsorted: number }; // whole rupees
   fix: { title: string; sub: string; href: string } | null;
+  /** The subscription card (D-052): a finding the statements prove, else one recurring charge to confirm. */
+  sub: { merchant: string; kind: 'still_charged' | 'unused' | 'renewal' | 'ask'; title: string; sub: string } | null;
+}
+
+/** Which subscription the "One fix" card asks about: proof first (charged after cancelling, a membership with no orders,
+ *  a renewal within 30 days), then the most expensive recurring charge you haven't answered about. */
+export function subCard(ds: Dataset): TodayMine['sub'] {
+  const lk = leaks(ds);
+  const pick = (k: string) => lk.find((l) => l.kind === k);
+  const still = pick('still_charged'), unused = pick('membership_unused'), renew = pick('renewal');
+  if (still) return { merchant: still.merchant, kind: 'still_charged', title: still.title, sub: `${inr(still.amount)} went out. Check the cancellation went through, and ask for it back.` };
+  if (unused) return { merchant: unused.merchant, kind: 'unused', title: unused.title, sub: `It costs ${inr(unused.annualCost)} a year.` };
+  if (renew) return { merchant: renew.merchant, kind: 'renewal', title: renew.title, sub: 'Decide now: once it renews, the money is usually gone.' };
+  const r = subscriptionsToConfirm(ds)[0];
+  if (!r) return null;
+  const per = r.cadence === 'yearly' ? 'a year' : 'a month';
+  return { merchant: r.merchant, kind: 'ask', title: `${inr(r.amount)} ${per} to ${r.merchant}. Still using it?`, sub: `Last charged ${dm(r.lastDate)}. Your bank statement can’t tell if you use it; you can.` };
 }
 
 export function buildTodayMine(ds: Dataset): TodayMine {
   const asOf = asOfDate(ds);
-  if (!ds.txns.length) return { mine: true, verdictSub: 'From your mutual fund statement', dateLine: '', inv: false, bill: null, fix: null, // a CAS but no bank or card statement yet
+  if (!ds.txns.length) return { mine: true, verdictSub: 'From your mutual fund statement', dateLine: '', inv: false, bill: null, fix: null, sub: null, // a CAS but no bank or card statement yet
     day: { none: true, date: asOf, label: '', spent: 0, usual: null, top: [], unsorted: 0 } };
   // the most recent day with everyday spending (a day with only an SIP or a transfer says nothing about spending)
   const evDays = ds.txns.filter((t) => t.dir === 'debit' && bucketOf(t.category ?? 'Other', 'debit') === 'everyday').map((t) => t.date).sort();
@@ -54,5 +72,6 @@ export function buildTodayMine(ds: Dataset): TodayMine {
     verdictSub: `From your statements, up to ${dm(asOf)}`,
     day: { date: day, label: `Your last spending day, ${dm(day)}`, spent: Math.round(spent / 100), usual, top, unsorted: Math.round(unsorted / 100) },
     fix: f ? { title: f.title, sub: f.sub, href: cat ? `/spends/category/${encodeURIComponent(cat)}` : '/spends' } : null,
+    sub: subCard(ds),
   };
 }

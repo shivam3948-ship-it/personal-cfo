@@ -171,6 +171,8 @@ export interface Dataset {
   credit?: CreditReport;
   offers: LoanOffer[];
   notices: Notice[];
+  /** Your answers to "Still using it?", kept on the phone (D-052): merchant → answer and when. */
+  subAnswers?: Record<string, { answer: 'yes' | 'no' | 'later'; at: string }>;
   docs: DocText[];
   log: IngestResult[];
   label: string; // "Sample data" or "Your uploads"

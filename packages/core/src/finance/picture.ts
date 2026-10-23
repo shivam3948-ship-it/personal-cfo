@@ -1,7 +1,7 @@
 import type { Dataset, Paise, Txn } from '../types';
 import { CATEGORIES, groupOf } from './categorize';
 import { addDays, addMonths, daysBetween, monthKey, spokenDate } from '../dates';
-import { groupIndian, pct, sum } from '../money';
+import { groupIndian, inr, pct, sum } from '../money';
 import { monthName } from '../dates';
 const monthLabel = (k: string) => monthName(k, 'en');
 import { loanStatus } from './loans';
@@ -125,7 +125,7 @@ export function duplicates(ds: Dataset): Duplicate[] {
   return [...m.values()].filter((l) => l.length > 1).map((l) => ({ merchant: l[0].merchant ?? l[0].desc, date: l[0].date, amount: l[0].amount, count: l.length, extra: l[0].amount * (l.length - 1), account: l[0].account, ids: l.map((t) => t.id) }));
 }
 
-export interface Leak { kind: 'subscription' | 'duplicate' | 'fee' | 'price_rise' | 'trial_charge' | 'inactive'; title: string; titleHi: string; since?: string; date?: string; annualCost: Paise; amount: Paise; merchant: string; evidence: string[]; actionHint: string; deadline?: string }
+export interface Leak { kind: 'subscription' | 'duplicate' | 'fee' | 'price_rise' | 'trial_charge' | 'inactive' | 'membership_unused' | 'renewal' | 'still_charged'; title: string; titleHi: string; since?: string; date?: string; annualCost: Paise; amount: Paise; merchant: string; evidence: string[]; actionHint: string; deadline?: string }
 
 export function leaks(ds: Dataset): Leak[] {
   const out: Leak[] = [];
@@ -143,6 +143,7 @@ export function leaks(ds: Dataset): Leak[] {
       out.push({ kind: 'price_rise', title: `${merchant} price rises from ₹${oldP / 100} to ₹${newP / 100} on ${n.data.effective ? spokenDate(String(n.data.effective)) : 'the next bill'}`, titleHi: `${merchant} का दाम ${n.data.effective ? `${spokenDate(String(n.data.effective), 'hi')} से` : 'अगले बिल से'} ₹${oldP / 100} से ₹${newP / 100} हो रहा है`, amount: newP - oldP, annualCost: (newP - oldP) * 12, merchant, evidence: [n.file], actionHint: 'review_plan', deadline: String(n.data.effective) });
     }
   }
+  out.push(...membershipChecks(ds, rec, asOf));
   for (const d of duplicates(ds)) out.push({ kind: 'duplicate', date: d.date, title: `${d.merchant} charged ${d.count} times on ${spokenDate(d.date)}`, titleHi: `${d.merchant} ने ${spokenDate(d.date, 'hi')} को ${d.count} बार पैसे काटे`, amount: d.extra, annualCost: d.extra, merchant: d.merchant, evidence: d.ids, actionHint: 'dispute' });
   const fees = ds.txns.filter((t) => t.category === 'Fees & charges' && t.dir === 'debit');
   if (fees.length) {
@@ -161,6 +162,65 @@ export function leaks(ds: Dataset): Leak[] {
   // Most money first; anything with a deadline in the next 14 days counts double.
   const score = (l: Leak) => l.annualCost * (l.deadline && daysBetween(asOf, l.deadline) <= 14 && daysBetween(asOf, l.deadline) >= 0 ? 2 : 1);
   return out.sort((a, b) => (a.kind === 'subscription' ? 1 : 0) - (b.kind === 'subscription' ? 1 : 0) || score(b) - score(a));
+}
+
+// ---------- memberships, renewals, your answers (D-052) ----------
+// A statement shows that a charge recurs, never whether the service is used. Three things it CAN show:
+//   1. a membership whose usage is itself a charge (Swiggy One → Swiggy orders): no orders in 60 days = paying for nothing
+//   2. a yearly charge coming up within 30 days: decide before the money goes
+//   3. you said "No, I'll cancel" and it was charged again after that
+/** Memberships whose use shows up as orders or rides in the same statements. */
+export const MEMBERSHIP_USE: Record<string, { uses: string; what: string; whatHi: string }> = {
+  'Swiggy One': { uses: 'Swiggy', what: 'Swiggy orders', whatHi: 'Swiggy ऑर्डर' },
+  'Zomato Gold': { uses: 'Zomato', what: 'Zomato orders', whatHi: 'Zomato ऑर्डर' },
+  'Uber One': { uses: 'Uber', what: 'Uber rides', whatHi: 'Uber राइड' },
+  'Zepto Pass': { uses: 'Zepto', what: 'Zepto orders', whatHi: 'Zepto ऑर्डर' },
+  'Flipkart VIP': { uses: 'Flipkart', what: 'Flipkart orders', whatHi: 'Flipkart ऑर्डर' },
+};
+const USE_WINDOW_DAYS = 60;
+function membershipChecks(ds: Dataset, rec: Recurring[], asOf: string): Leak[] {
+  const out: Leak[] = [];
+  const said = ds.subAnswers ?? {};
+  for (const r of rec) {
+    const ans = said[r.merchant];
+    // 3. still charged after "No"
+    if (ans?.answer === 'no' && r.lastDate <= ans.at.slice(0, 10)) continue; // you're cancelling it: quiet unless it's charged again
+    if (ans?.answer === 'no' && r.lastDate > ans.at.slice(0, 10)) {
+      out.push({ kind: 'still_charged', date: r.lastDate, title: `${r.merchant} charged again on ${spokenDate(r.lastDate)}, after you decided to cancel`, titleHi: `${r.merchant} ने रद्द करने के फ़ैसले के बाद ${spokenDate(r.lastDate, 'hi')} को फिर पैसे काटे`,
+        amount: r.amount, annualCost: r.annualCost, merchant: r.merchant, evidence: r.ids.slice(-1), actionHint: 'cancel' });
+      continue;
+    }
+    if (ans?.answer === 'yes' && daysBetween(ans.at.slice(0, 10), asOf) < 90) continue; // you said you use it: don't nag for 90 days
+    if (ans?.answer === 'later' && daysBetween(ans.at.slice(0, 10), asOf) < 7) continue; // "ask me later": a week of quiet
+    // 1. membership with no matching orders
+    const m = MEMBERSHIP_USE[r.merchant];
+    const active = r.cadence === 'yearly' ? daysBetween(r.lastDate, asOf) <= 366 : daysBetween(r.lastDate, asOf) <= 45;
+    if (m && active) {
+      const from = addDays(asOf, -USE_WINDOW_DAYS);
+      const uses = ds.txns.filter((t) => t.dir === 'debit' && t.merchant === m.uses);
+      const recent = uses.filter((t) => t.date >= from && t.date <= asOf);
+      if (!recent.length) {
+        const lastUse = uses.map((t) => t.date).sort().at(-1);
+        out.push({ kind: 'membership_unused', since: lastUse, title: `${r.merchant}, but no ${m.what} ${lastUse ? `since ${spokenDate(lastUse)}` : `in ${USE_WINDOW_DAYS} days`}`,
+          titleHi: `${r.merchant} चालू है, पर ${lastUse ? `${spokenDate(lastUse, 'hi')} से` : `${USE_WINDOW_DAYS} दिन से`} कोई ${m.whatHi} नहीं`,
+          amount: r.amount, annualCost: r.annualCost, merchant: r.merchant, evidence: r.ids.slice(-1), actionHint: 'cancel' });
+        continue;
+      }
+    }
+    // 2. a yearly renewal within 30 days
+    if (r.cadence === 'yearly' && r.nextExpected && daysBetween(asOf, r.nextExpected) >= 0 && daysBetween(asOf, r.nextExpected) <= 30) {
+      out.push({ kind: 'renewal', deadline: r.nextExpected, title: `${r.merchant} renews for ${inr(r.amount)} on ${spokenDate(r.nextExpected)}`, titleHi: `${r.merchant} ${spokenDate(r.nextExpected, 'hi')} को ${inr(r.amount)} में रिन्यू होगा`,
+        amount: r.amount, annualCost: r.annualCost, merchant: r.merchant, evidence: r.ids.slice(-1), actionHint: 'decide' });
+    }
+  }
+  return out;
+}
+
+/** Recurring charges to ask "Still using it?" about, most expensive first: not answered, or answered "later" over 7 days ago. */
+export function subscriptionsToConfirm(ds: Dataset): Recurring[] {
+  const said = ds.subAnswers ?? {}; const asOf = asOfDate(ds);
+  return recurring(ds).filter((r) => (r.category === 'Subscriptions' || r.category === 'Fitness') && r.cadence !== 'once')
+    .filter((r) => { const a = said[r.merchant]; return !a || (a.answer === 'later' && daysBetween(a.at.slice(0, 10), asOf) >= 7); });
 }
 
 // ---------- unusual spending ----------

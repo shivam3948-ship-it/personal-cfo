@@ -24,6 +24,7 @@ export const EVENTS = {
   onboarding_later: 'onboarding_later',         // {}
   switched_to_sample: 'switched_to_sample',     // {}
   sample_bar_add_tapped: 'sample_bar_add_tapped', // {}
+  sub_answered: 'sub_answered',                 // { answer } (never the merchant) (D-052)
   ask_sent: 'ask_sent',                         // { ctx, turn } (never the question text)
 } as const;
 export type EventName = keyof typeof EVENTS;
