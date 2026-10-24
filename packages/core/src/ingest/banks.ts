@@ -28,8 +28,39 @@ export function detectFormat(lines: string[]): BankFormat | null {
 
 export function readBank(lines: string[], file: string): BankRead | null {
   const f = detectFormat(lines);
-  return f === 'hdfc_savings' ? hdfcSavings(lines, file) : f === 'sbi_savings' ? sbiSavings(lines, file) : f === 'canara_savings' ? canaraSavings(lines, file)
+  const r = f === 'hdfc_savings' ? hdfcSavings(lines, file) : f === 'sbi_savings' ? sbiSavings(lines, file) : f === 'canara_savings' ? canaraSavings(lines, file)
     : f === 'hdfc_card' ? hdfcCard(lines, file) : f === 'axis_card' ? axisCard(lines, file) : null;
+  // Axis prints no statement period (its "period" is the rows' own first and last dates), so only the date itself is checked
+  if (r) r.checks.push(...dateChecks(r.txns, r.format === 'axis_card' ? undefined : r.period, r.account.kind === 'bank' ? 'bank' : 'card'));
+  return r;
+}
+
+const realDate = (d: string) => { if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return false; const t = new Date(d + 'T00:00:00Z'); return !isNaN(+t) && t.toISOString().slice(0, 10) === d; };
+const shift = (d: string, days: number) => new Date(Date.parse(d + 'T00:00:00Z') + days * 864e5).toISOString().slice(0, 10);
+/** How far a genuine row can sit outside the printed period, in days, from real statements (D-053): a bank statement can
+ *  carry a row dated a day or two after "To"; a card statement lists a purchase by the day it was made, which can be weeks
+ *  before the billing period it was posted in. Wide enough for those, narrow enough to catch a misread year. */
+export const DATE_SLACK = { bank: { before: 3, after: 5 }, card: { before: 60, after: 5 } } as const;
+/** A bank row may sit up to this many days before the row above it (a real Canara statement has one such step in 390). */
+export const ORDER_SLACK_DAYS = 3;
+
+/** Date checks (D-053, borrowed from FinAnalyzer's checker): the amounts can reconcile while a date is wrong (a misread
+ *  year, 01 read as 11), and a wrong date puts spending in the wrong month. Every row must carry a real date and sit within
+ *  the printed statement period (give or take DATE_SLACK); in a bank account, rows must also come in date order. Card
+ *  statements group rows (domestic, then international), so order isn't checked there. */
+export function dateChecks(txns: Txn[], period: { from: string; to: string } | undefined, kind: 'bank' | 'card'): Check[] {
+  const bad = txns.filter((t) => !realDate(t.date));
+  const out = [check('dates', 'Every row has a real date', !bad.length, bad.length ? `${bad.length} rows without a readable date` : `${txns.length} dates read`)];
+  if (period && realDate(period.from) && realDate(period.to)) {
+    const lo = shift(period.from, -DATE_SLACK[kind].before), hi = shift(period.to, DATE_SLACK[kind].after);
+    const outside = txns.filter((t) => t.date < lo || t.date > hi);
+    out.push(check('in_period', 'Every row is dated within the statement period', !outside.length, outside.length ? `${outside.length} rows far outside ${period.from} to ${period.to}, first ${outside[0].date}` : `${txns.length} rows near ${period.from} to ${period.to}`));
+  }
+  if (kind === 'bank') {
+    const i = txns.findIndex((t, k) => k > 0 && t.date < shift(txns[k - 1].date, -ORDER_SLACK_DAYS));
+    out.push(check('order', 'Rows are in date order', i < 0, i < 0 ? 'in order' : `row ${i + 1} (${txns[i].date}) is dated well before row ${i} (${txns[i - 1].date})`));
+  }
+  return out;
 }
 
 /** Balance walk decides debit vs credit when a row prints one amount without saying which column (HDFC savings). */
