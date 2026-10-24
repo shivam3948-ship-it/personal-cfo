@@ -89,7 +89,7 @@ describe('bank and card statement readers', () => {
   it('Canara savings: multi-line rows end at "Chq:", direction from the balance walk, page furniture skipped', () => {
     const r = readBank(CANARA, 'k.pdf')!;
     expect(r.txns.map((t) => [t.date, t.dir, t.amount])).toEqual([['2026-07-02', 'debit', 45000], ['2026-07-05', 'credit', 4000000], ['2026-07-09', 'debit', 35000]]);
-    expect(r.checks.map((c) => [c.id, c.ok])).toEqual([['walk', true], ['closing', true]]);
+    expect(r.checks.map((c) => [c.id, c.ok])).toEqual([['walk', true], ['closing', true], ['dates', true], ['in_period', true], ['order', true]]);
     expect(r.txns[0].desc).toContain('swiggy@ybl');
     expect(r.txns[1].desc).toMatch(/EMPLOYER/);
     expect(r.txns.map((t) => t.desc).join(' ')).not.toMatch(/Chq:|page \d|\d{2}:\d{2}:\d{2}|Particulars/);

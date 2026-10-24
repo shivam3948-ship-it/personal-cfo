@@ -6,7 +6,7 @@ import { emptyDataset, type Dataset, type Txn } from '../src/types';
 
 // D-052: what statements can say about subscriptions. Fixture: Swiggy One every month and no Swiggy order since July;
 // Uber One every month with rides; a yearly app renewing within 30 days; Netflix every month (usage invisible).
-const row = (id: string, date: string, desc: string, rupees: number): Txn => ({ id, date, desc, amount: rupees * 100, dir: 'debit', account: 'card:1234', source: 'card_statement' });
+const row = (id: string, date: string, desc: string, rupees: number): Txn => ({ id, date, desc, amount: rupees * 100, dir: 'debit', account: 'card:1234', source: 'card_statement', sourceFile: 'card.pdf' });
 function fixture(answers?: Dataset['subAnswers']): Dataset {
   const t: Txn[] = [];
   for (const [i, m] of ['2026-07-05', '2026-08-05', '2026-09-05', '2026-10-05'].entries()) {
