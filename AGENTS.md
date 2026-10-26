@@ -1,7 +1,7 @@
 # AGENTS.md — working rules for any AI coding agent (Claude Code, Codex, Cursor, …)
 
 ## Project
-Personal CFO (working name): an AI personal CFO for Indian mutual fund investors who want to stay involved but lack time (primary), and for families checking a parent's portfolio (secondary); see docs/11. Phase 1 = CAS upload → portfolio x-ray → grounded AI explanations + chat, plus an advice engine running only in internal/demo modes. Read `DECISIONS.md` first; it overrides anything stale elsewhere.
+Munim: an AI personal CFO for India. **Primary user: the first-time saver in tier-2 and tier-3 cities** (Hindi-first, small amounts, no mutual funds yet; D-054), who grows into an investor (D-035). Time-poor investors and families checking a parent's portfolio are later stages, not the design target. See docs/13 §8 and docs/11. Phase 1 = CAS upload → portfolio x-ray → grounded AI explanations + chat, plus an advice engine running only in internal/demo modes. Read `DECISIONS.md` first; it overrides anything stale elsewhere.
 
 ## Non-negotiables
 1. **No fund names, in any mode, until the adviser licence (D-051).** Suggest generic categories by horizon (liquid fund, well-rated multi-asset or hybrid fund, low-cost index fund); if pushed, say Munim doesn't have an investment adviser licence yet. Every recommendation carries "For education only, not investment advice."

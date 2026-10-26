@@ -34,4 +34,4 @@
 ## Open
 1. Research before building: 10–15 interviews in 2 tier-2 or tier-3 cities, plus the Play Store review analysis already done (docs/26, docs/27).
 2. Does the variant need its own Today verdict style? For example, plainer numbers, and "₹" before every amount spoken aloud.
-3. The tier-2/3 segment was **parked** in D-015 / docs/11. This reopens it as a variant, not as the primary segment. Confirm the priority.
+3. ~~The tier-2/3 segment was parked in D-015. Confirm the priority.~~ **Resolved by D-054 (26 Oct): the tier-2/3 first-time saver is the primary user.** Whether "Bharat" becomes the default rather than a variant is still open.

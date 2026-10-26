@@ -1,6 +1,6 @@
 # 13 · Problem Depth: 5 whys, current behaviour, behaviour change, and the Groww lesson
 
-**Status:** v0.1 · **Last updated:** 2026-10-05
+**Status:** v0.2 · **Last updated:** 2026-10-26 (§8: the tier-2/3 first-time saver, now the primary user, D-054)
 Figures are sourced; judgements are labelled as ours. Pain magnitude per person is **unknown until we run real CAS files** (golden set, MVP).
 
 ## 1. Five whys
@@ -127,3 +127,62 @@ How we'll know: Monthly Verified Actions and 30-day re-upload (docs/05), with pr
 **Why the business model differs:** first-timers start tiny (Bachatt from ₹100). A fee-only RIA model can't price that; distribution commissions can. That's why Bachatt is an AMFI-registered distributor, and why this segment conflicts with our no-commission stance (D-007).
 
 **Our position:** keep Ramesh parked for Phase 1 (nothing to analyse; different economics). Reach him through Phase 1.5 (Hindi/voice "explain my money"), Phase 2 (investable surplus from bank statements) and Phase 3 goals under an RIA. Revisit D-007 if we ever want to serve him at scale.
+
+## 8. The tier-2/3 first-time saver: primary user from 26 Oct 2026 (D-054)
+**Who:** Ramesh and Sunita (docs/11 §5, docs/35). Daily or irregular UPI income; money in cash, a bank account, an FD or RD, post office schemes, gold and an LIC policy, sometimes a chit; Hindi first; no mutual funds yet.
+**Evidence level:** secondary data plus our judgement. **No interviews have been done** (the docs/35 plan hasn't run), so every judgement below is a hypothesis.
+
+### 8.1 Five whys
+**Problem:** they save little and irregularly, and can't see where the money goes or whether what they hold is safe and worth it.
+
+| Why | Answer | Evidence |
+|---|---|---|
+| 1. Why do they save so little? | Saving is whatever is left at month-end, and with irregular income little is left. | Our judgement. Small automatic saves work when they come first: the daily habit is what Bachatt's happy users praise (19.6% of its 4–5★ reviews with text, docs/26) |
+| 2. Why don't they see what's leaking? | Their money is spread across UPI, cash, a bank account, FD, gold and LIC. Bank apps show a list of transactions, not where the money went. | Our judgement; product audit (docs/02) |
+| 3. Why don't they use apps that help? | Apps feel complex and untrusted, and most are in English. | Among non-investors, complexity 74% and trust 51% are barriers; 94% prefer Hindi or regional languages (SEBI survey 2025, docs/08, §7) |
+| 4. Why don't those apps earn trust? | They fail when people want their money back, and their bots block a human. | 53.5% of low-rated savings-app reviews are about withdrawals; 25.6% call the app a fraud (docs/26, docs/27) |
+| 5. Why does nobody fix that? | Their revenue comes from deposits and distribution, not from the saver's outcome. Honest advice is regulated and doesn't pay at ₹10 a day. | About 58,000 MF investors per RIA; RIA fee caps (docs/08 P4, docs/03) |
+
+**Root cause:** no trusted guide sees all of a small saver's money, speaks their language, and gains only when they gain.
+**Munim's bet:** code computes, voice explains in Hindi, Munim earns only when the user measurably saves (D-038), and it never holds the money.
+
+### 8.2 What they do now
+| Alternative | Why it falls short |
+|---|---|
+| **Nothing:** check the balance by SMS, save what's left | Usually nothing is left, and the leaks stay invisible |
+| Cash at home, the bank's savings account | Safe, but easy to spend and earns little |
+| FD, RD, post office schemes | Trusted, but they say nothing about spending (our judgement) |
+| Gold, LIC endowment policies | Familiar; often low returns and costly to exit (our judgement) |
+| Chit funds and committees | Social discipline, but a default risk (our judgement) |
+| Micro-savings apps (Jar, Bachatt) | Make saving easy; fail at withdrawal (docs/26, docs/27) |
+| Ask family, a shopkeeper or an agent | Trusted, but not informed, or paid to sell |
+
+### 8.3 How big is the pain? (honest read)
+- **Chronic and low-intensity, with spikes:** a medical bill, school fees, a festival or wedding, an EMI that bounces, a withdrawal that's stuck.
+- **Size (indicative, survey-based):** 9.5% of households invest; about 67 M non-investing households intend to start within a year (SEBI survey 2025, computed in §7). 27% of adults meet the OECD financial-literacy bar (NCFE 2019).
+- **Unknown:** how much a real saver leaks in a month, and whether they feel it. The 10 interviews (docs/35) and the first real statements must measure this.
+
+### 8.4 The behaviour change we need, and how we get it
+**From:** save what's left; look only when something breaks → **To:** a 2-minute check-in, by voice in Hindi: see yesterday, save ₹10–50 first, fix one leak.
+
+| Force | For the saver | Our design response |
+|---|---|---|
+| **Push** | Short at month-end; scared when an emergency hits | Lead with "you can save ₹X today" and safety-net progress |
+| **Pull** | Seeing money grow; answers in their language | Voice-first check-in, every amount in rupees |
+| **Anxiety** | Fraud fear; "will I get it back?"; sharing statements | Statements read on the phone; Munim never holds money; withdrawal rules shown before any save |
+| **Habit** | Not looking at all | Prompts on income days (a UPI credit), bill due dates, the Sunday recap |
+
+**Levers (prompt × ability × motivation):**
+- **Prompt:** income days and bill due dates.
+- **Ability:** voice, ₹10 steps, one card at a time.
+- **Motivation:** streak and safety-net progress, leaks in rupees.
+
+### 8.5 Probability of change (our judgement, not a statistic)
+- **A daily habit with no prompt: low.**
+- **A check-in tied to income days: moderate.**
+- **One-off moments** (a leak with a rupee number, a bill about to bounce, the safety net reached): **highest**.
+- **Evidence that change is possible:** daily micro-saving already works at scale; Bachatt shows 4.6★ from 1.77 lakh ratings (docs/27).
+- **Two gaps cut the probability today and must close first:**
+    1. **Data in:** Munim reads statement PDFs, and first-time savers rarely download them. Reading SMS and UPI on Android (docs/40) is the likely path.
+    2. **Language:** Today, Invest, X-ray, Sunday and Ask aren't in Hindi yet.
+- **How we'll know:** week-4 check-in retention, the share who save in week 1, and saves kept for 90 days. Targets get set after the first 10 interviews.
