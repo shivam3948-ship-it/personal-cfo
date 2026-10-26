@@ -22,6 +22,10 @@ create table if not exists public.sample_traces (
   ms integer, grounded boolean, unverified integer,
   calls jsonb not null default '[]'::jsonb
 );
+-- safe to run again: adds the install column if an earlier copy of this file created the table without it
+alter table public.sample_traces add column if not exists install text;
+delete from public.sample_traces where install is null or install !~ '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$';
+alter table public.sample_traces alter column install set not null;
 create index if not exists sample_traces_install on public.sample_traces (install);
 create index if not exists events_install on public.events (install);
 alter table public.sample_traces enable row level security;

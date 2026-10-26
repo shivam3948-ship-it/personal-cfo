@@ -11,7 +11,7 @@ type Step = 'lang' | 'start' | 'name' | 'add';
 const T = {
   en: {
     startQ: 'How would you like to start?', mine: 'Use my statements', mineD: 'Bank, card and mutual fund statements. Munim reads them on this phone; nothing is uploaded.',
-    sample: 'Look around first', sampleD: 'See Munim with a made-up family’s money. Add yours any time.', privacy: 'No sign-up. Your statements stay on this phone and you can delete them any time.', usage: 'Munim sends counts of which screens and answers get used, never your numbers. Questions asked about the sample family are kept for 90 days to improve answers.', usageOffBtn: 'Turn off', usageOnBtn: 'Turn on', usageOff: 'Usage counts are off.',
+    sample: 'Look around first', sampleD: 'See Munim with a made-up family’s money. Add yours any time.', privacy: 'No sign-up. Your statements stay on this phone and you can delete them any time.', usage: 'Munim sends counts of which screens and answers get used, never your numbers. Questions asked about the sample family are kept for 90 days to improve answers.', usageOffBtn: 'Turn off', usageOnBtn: 'Turn on', usageOff: 'Usage counts are off.', usageSignal: 'Your browser asks sites not to track, so Munim sends nothing.',
     nameQ: 'What should Munim call you?', namePh: 'First name', nameNote: 'Only your first name. It stays on this phone.', preview: 'Munim will greet you like this', hello: (n: string) => `Welcome, ${n}`, helloNone: 'Welcome',
     previewSub: 'Here’s your money today.', addQ: 'Add a statement', addSub: 'Start with one. More months make the comparisons better.',
     bank: 'Bank and card statements', bankD: 'HDFC, SBI and Canara savings · HDFC and Axis credit cards', bankBtn: 'Choose statement PDF',
@@ -20,7 +20,7 @@ const T = {
   },
   hi: {
     startQ: 'कैसे शुरू करना चाहेंगे?', mine: 'मेरे स्टेटमेंट से', mineD: 'बैंक, कार्ड और म्यूचुअल फ़ंड के स्टेटमेंट। मुनीम इन्हें इसी फ़ोन पर पढ़ता है; कुछ भी अपलोड नहीं होता।',
-    sample: 'पहले देख लूँ', sampleD: 'एक काल्पनिक परिवार के पैसों के साथ मुनीम देखें। अपना कभी भी जोड़ें।', privacy: 'कोई साइन-अप नहीं। आपके स्टेटमेंट इसी फ़ोन पर रहते हैं, कभी भी मिटा सकते हैं।', usage: 'मुनीम यह गिनती भेजता है कि कौन सी स्क्रीन और जवाब इस्तेमाल हुए, आपके आँकड़े कभी नहीं। सैंपल परिवार के बारे में पूछे गए सवाल 90 दिन तक रखे जाते हैं, ताकि जवाब बेहतर हों।', usageOffBtn: 'बंद करें', usageOnBtn: 'चालू करें', usageOff: 'इस्तेमाल की गिनती बंद है।',
+    sample: 'पहले देख लूँ', sampleD: 'एक काल्पनिक परिवार के पैसों के साथ मुनीम देखें। अपना कभी भी जोड़ें।', privacy: 'कोई साइन-अप नहीं। आपके स्टेटमेंट इसी फ़ोन पर रहते हैं, कभी भी मिटा सकते हैं।', usage: 'मुनीम यह गिनती भेजता है कि कौन सी स्क्रीन और जवाब इस्तेमाल हुए, आपके आँकड़े कभी नहीं। सैंपल परिवार के बारे में पूछे गए सवाल 90 दिन तक रखे जाते हैं, ताकि जवाब बेहतर हों।', usageOffBtn: 'बंद करें', usageOnBtn: 'चालू करें', usageOff: 'इस्तेमाल की गिनती बंद है।', usageSignal: 'आपका ब्राउज़र साइटों से ट्रैक न करने को कहता है, इसलिए मुनीम कुछ नहीं भेजता।',
     nameQ: 'मुनीम आपको किस नाम से बुलाए?', namePh: 'पहला नाम', nameNote: 'सिर्फ़ पहला नाम। यह इसी फ़ोन पर रहता है।', preview: 'मुनीम ऐसे बात करेगा', hello: (n: string) => `नमस्ते, ${n}`, helloNone: 'नमस्ते',
     previewSub: 'यह रहा आज आपका पैसा।', addQ: 'एक स्टेटमेंट जोड़ें', addSub: 'एक से शुरू करें। ज़्यादा महीने, बेहतर तुलना।',
     bank: 'बैंक और कार्ड स्टेटमेंट', bankD: 'HDFC, SBI और केनरा बचत खाता · HDFC और एक्सिस क्रेडिट कार्ड', bankBtn: 'स्टेटमेंट PDF चुनें',
@@ -91,7 +91,7 @@ export default function Welcome() {
           <div style={{ ...S.card, background: 'var(--tint)', boxShadow: 'none', display: 'flex', gap: 10, padding: '14px 16px' }}>
             <span aria-hidden="true">🔒</span>
             <span style={{ display: 'grid', gap: 6, fontSize: 13.5, color: 'var(--ink2)' }}>{t.privacy}
-              <span>{usage ? t.usage : t.usageOff}{' '}
+              <span>{signal ? t.usageSignal : usage ? t.usage : t.usageOff}{' '}
                 {!signal && <button type="button" onClick={() => { const on = !usage; setUsageOn(on); void setUsage(on); }} aria-pressed={!usage} style={{ minHeight: 44, padding: '0 4px', border: 0, background: 'transparent', color: 'var(--link)', font: 'inherit', fontWeight: 600, cursor: 'pointer' }}>{usage ? t.usageOffBtn : t.usageOnBtn}</button>}
               </span>
             </span>
