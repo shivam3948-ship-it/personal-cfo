@@ -12,6 +12,6 @@ export default function Page() {
   const [state, setState] = useState<{ hi: boolean; local: boolean } | null>(null);
   useEffect(() => { const p = getProfile(); myData().then((d) => setState({ hi: p?.lang === 'hi', local: p?.start === 'mine' && !!d })).catch(() => setState({ hi: p?.lang === 'hi', local: false })); }, []);
   if (!state) return null;
-  if (state.local) return <AskLive local />;
-  return <div style={{ ['--screen-h' as string]: `calc(100dvh - ${BAR}px)` }}><SampleBar hi={state.hi} /><AskLive /></div>;
+  if (state.local) return <AskLive local hi={state.hi} />;
+  return <div style={{ ['--screen-h' as string]: `calc(100dvh - ${BAR}px)` }}><SampleBar hi={state.hi} /><AskLive hi={state.hi} /></div>;
 }

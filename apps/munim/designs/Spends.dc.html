@@ -426,12 +426,12 @@ class Component extends DCLogic {
       paceBelow: function (x) { return 'आम रफ़्तार से ' + x + ' कम'; }, paceAbove: function (x) { return 'आम रफ़्तार से ' + x + ' ज़्यादा'; },
       legendYou: 'इस महीने', legendUsual: 'आम महीना', how: 'कैसे?', day1: '1', today: 'आज', paceTitle: 'रफ़्तार का हिसाब', close: 'बंद करें',
       moneyTitle: 'आमदनी', moneyPeriod: curFull + ' 1–' + DAY, last3: 'पिछले 3 महीने और यह महीना', spentSoFar: 'इस महीने कुल खर्च', leftLabel: 'बचे', notIncome: 'आमदनी में नहीं गिना: रिफ़ंड (ये उसी कैटेगरी का खर्च घटाते हैं), कार्ड कैशबैक, कार्ड बिल भुगतान और अपने ही खातों के बीच ट्रांसफ़र।',
-      moneyIn: 'आमदनी', leftAfter: 'खर्च के बाद बचे', trust: 'हर स्टेटमेंट का हिसाब मिलता है ·', yourData: 'आपका डेटा', dataTitle: 'आपका डेटा', dataIntro: 'Munim ने ये फ़ाइलें आपके फ़ोन पर पढ़ीं। हर स्टेटमेंट के टोटल रुपये तक मिलाए गए।', addStatement: 'नया स्टेटमेंट जोड़ें', dataPrivacy: 'फ़ाइलें आपके फ़ोन से बाहर नहीं जातीं।',
+      moneyIn: 'आमदनी', leftAfter: 'खर्च के बाद बचे', trust: 'हर स्टेटमेंट का हिसाब मिलता है ·', yourData: 'आपका डेटा', dataTitle: 'आपका डेटा', dataIntro: 'मुनीम ने ये फ़ाइलें आपके फ़ोन पर पढ़ीं। हर स्टेटमेंट के टोटल रुपये तक मिलाए गए।', addStatement: 'नया स्टेटमेंट जोड़ें', dataPrivacy: 'फ़ाइलें आपके फ़ोन से बाहर नहीं जातीं।',
       monthsTitle: 'महीने', monthsNote: 'पिछला महीना चुनने पर उसका रिपोर्ट कार्ड खुलता है।', mathHead: DAY + ' तारीख़ तक रोज़ का खर्च, पिछले ' + META.pastN + ' महीने', mathFoot: 'बीच वाला महीना ही "आम तौर" है।', notCounted: 'गिना नहीं गया', notCountedWhat: 'अपने खातों में ट्रांसफ़र, कार्ड बिल भुगतान और निवेश।',
       outLabel: 'इस महीने कुल खर्च', everyday: 'रोज़ का', fixed: 'तय खर्च', others: 'अन्य', othersSub: 'परिवार, बिना कैटेगरी',
       changeHead: 'आप क्या बदल सकते हैं', saveKicker: 'सबसे पहले बचत', otherAmount: 'दूसरी रक़म', whereHead: 'पैसा कहाँ गया', vsUsual: 'आम तौर से तुलना', recentHead: 'हाल के लेन-देन',
       retry: 'फिर कोशिश करें', errLine: 'ताज़ा नहीं हो पाया। 7:40 बजे तक का हिसाब दिख रहा है।', loading: 'आपका खर्च जोड़ा जा रहा है…',
-      emptyTitle: 'अपना पहला बैंक स्टेटमेंट जोड़ें', emptyBody: 'Munim स्टेटमेंट आपके फ़ोन पर ही पढ़ता है और बताता है पैसा कहाँ गया।', emptyCta: 'बैंक स्टेटमेंट जोड़ें', emptyAlt: 'सैंपल डेटा से देखें', emptyNote: 'अभी HDFC, SBI और केनरा खाते, HDFC और एक्सिस क्रेडिट कार्ड।'
+      emptyTitle: 'अपना पहला बैंक स्टेटमेंट जोड़ें', emptyBody: 'मुनीम स्टेटमेंट आपके फ़ोन पर ही पढ़ता है और बताता है पैसा कहाँ गया।', emptyCta: 'बैंक स्टेटमेंट जोड़ें', emptyAlt: 'सैंपल डेटा से देखें', emptyNote: 'अभी HDFC, SBI और केनरा खाते, HDFC और एक्सिस क्रेडिट कार्ड।'
     } : {
       title: 'Spends', period: curFull + ' · 1–' + DAY, heroLabel: 'Everyday spending, 1–' + DAY + ' ' + cur3, show: 'Show the math', hide: 'Hide the math',
       paceBelow: function (x) { return x + ' below your usual pace'; }, paceAbove: function (x) { return x + ' above your usual pace'; },
@@ -445,8 +445,8 @@ class Component extends DCLogic {
       emptyTitle: 'Add your first bank statement', emptyBody: 'Munim reads it on your phone and shows where your money went, and what you can change.', emptyCta: 'Add bank statement', emptyAlt: 'Try with sample data', emptyNote: 'Supported now: HDFC, SBI and Canara accounts, HDFC and Axis credit cards.'
     };
     Object.assign(C, hi ? {
-      backToNow: curFull + ' पर लौटें', reportSub: 'महीना बंद: क्या बदला, क्या रखें, आगे का प्लान', noReport: 'रिपोर्ट कार्ड सितंबर से शुरू होते हैं, जो Munim में बंद किया पहला महीना था। ये महीने आपके अपलोड किए स्टेटमेंट से हैं।',
-      pastTxNote: 'इस महीने के रोज़ के खर्च के चार सबसे बड़े भुगतान।', sortNow: 'छाँटें', sortTitle: 'इन्हें छाँटने में मदद करें', rememberSub: 'अपने आप बंद रहता है। नियम बनाने से पहले Munim पूछता है।', skipForNow: 'अभी छोड़ें',
+      backToNow: curFull + ' पर लौटें', reportSub: 'महीना बंद: क्या बदला, क्या रखें, आगे का प्लान', noReport: 'रिपोर्ट कार्ड सितंबर से शुरू होते हैं, जो मुनीम में बंद किया पहला महीना था। ये महीने आपके अपलोड किए स्टेटमेंट से हैं।',
+      pastTxNote: 'इस महीने के रोज़ के खर्च के चार सबसे बड़े भुगतान।', sortNow: 'छाँटें', sortTitle: 'इन्हें छाँटने में मदद करें', rememberSub: 'अपने आप बंद रहता है। नियम बनाने से पहले मुनीम पूछता है।', skipForNow: 'अभी छोड़ें',
       sortDoneNote: 'आपके जवाबों से खर्च टैब अपडेट हो गया। इन्हें "सारे लेन-देन" में कभी भी बदलें।', done: 'हो गया', startOver: 'सब वापस लें'
     } : {
       backToNow: 'Back to ' + curFull, reportSub: 'Close your month: what changed, what to keep, the plan', noReport: (META.reportFrom ? 'Report cards start from ' + META.reportFrom + ', the first month you closed in Munim. ' : 'Report cards start from the first month you close in Munim. ') + 'These months come from your uploaded statements.',
@@ -548,7 +548,7 @@ class Component extends DCLogic {
       { icon: '!', title: 'cult.fit जुलाई से बंद पड़ा', sub: R(199900) + ' हर महीने', gain: R(LEAK.cult) + '/साल' },
       { icon: '2×', title: 'Netflix ने दो बार पैसे काटे', sub: '18 सितंबर · रिफ़ंड माँगें', gain: R(LEAK.dup) },
       { icon: '₹', title: 'LingoPro ट्रायल पेड हो गया', sub: 'रद्द करें या रिफ़ंड माँगें', gain: R(LEAK.lingo) },
-      { icon: '%', title: 'Orbit से 11.25% ब्याज माँगें', sub: 'Neem का ऑफ़र लेने पर फ़ीस से ' + R(-orbitSwitchNet) + ' का घाटा', gain: R(orbitMatch), tag: 'Munim को इससे कुछ नहीं मिलता', kind: 'rate' }
+      { icon: '%', title: 'Orbit से 11.25% ब्याज माँगें', sub: 'Neem का ऑफ़र लेने पर फ़ीस से ' + R(-orbitSwitchNet) + ' का घाटा', gain: R(orbitMatch), tag: 'मुनीम को इससे कुछ नहीं मिलता', kind: 'rate' }
     ] : FIXES ? FIXES.map(function (f) { return Object.assign({}, f); }) : [
       { kind: 'pace', icon: '↑', title: 'Food delivery up ' + foodPct + '% this month', sub: 'Skip 2 orders, save ' + R(foodSkip2), gain: R(foodSkip2), href: 'CategoryFood.dc.html' },
       { icon: '!', title: 'cult.fit unused since July', sub: R(199900) + ' a month', gain: R(LEAK.cult) + '/yr' },
@@ -580,7 +580,7 @@ class Component extends DCLogic {
         : 'No fixed payday. Your income ranged ' + R(lo) + '–' + R(hiV) + ' over the last 3 months. Planning on your lowest month keeps you safe; anything above it goes to savings first.';
     } else if (!IN.salDates.length) {
       nextHead = hi ? 'इन स्टेटमेंट में सैलरी नहीं दिखी' : 'No salary in these statements';
-      nextBody = hi ? 'Munim उसी पर प्लान करता है जो सच में आया।' : 'Munim plans on what actually came in, month by month.';
+      nextBody = hi ? 'मुनीम उसी पर प्लान करता है जो सच में आया।' : 'Munim plans on what actually came in, month by month.';
     } else {
       var sd = IN.salDates, last = sd[sd.length - 1].split('-'), nm = parseInt(last[1], 10) % 12, ny = parseInt(last[0], 10) + (nm === 0 ? 1 : 0);
       var next = ny + '-' + String(nm + 1).padStart(2, '0') + '-' + last[2];
@@ -611,7 +611,7 @@ class Component extends DCLogic {
     var u = { hasCur: !!cu, allDone: UNS.length > 0 && pending.length === 0, opts: [], cur: { name: '', amt: '', ink: 'var(--ink)', sub: '', raw: '', q: '', note: '' }, canRemember: false, remember: s.remember,
       swBg: s.remember ? 'var(--btn)' : 'var(--hair2)', swX: s.remember ? '21px' : '3px', noPick: !s.sortPick, ctaBg: s.sortPick ? 'var(--btn)' : 'var(--hair2)', ctaInk: s.sortPick ? 'var(--on-btn)' : 'var(--muted)', cta: '', rememberLabel: '',
       entryTitle: hi ? pending.length + ' भुगतान आपसे पूछने हैं' : pending.length + (pending.length === 1 ? ' payment needs you' : ' payments need you'),
-      entrySub: (pendOut ? R(pendOut) + (hi ? ' गया' : ' out') : '') + (pendOut && pendIn ? ' · ' : '') + (pendIn ? R(pendIn) + (hi ? ' आया' : ' in') : '') + (hi ? ' · Munim पहचान नहीं पाया' : ' · Munim couldn’t tell what they were'),
+      entrySub: (pendOut ? R(pendOut) + (hi ? ' गया' : ' out') : '') + (pendOut && pendIn ? ' · ' : '') + (pendIn ? R(pendIn) + (hi ? ' आया' : ' in') : '') + (hi ? ' · मुनीम पहचान नहीं पाया' : ' · Munim couldn’t tell what they were'),
       progress: hi ? (UNS.length - pending.length + 1) + ' / ' + UNS.length : (UNS.length - pending.length + 1) + ' of ' + UNS.length, doneTitle: hi ? '✓ सब छँट गया' : '✓ All sorted', doneRows: [] };
     if (cu) {
       u.cur = { name: cu.name, amt: (cu.dir === 'credit' ? '+' : '−') + R(cu.amt), ink: cu.dir === 'credit' ? 'var(--link)' : 'var(--ink)', sub: cu.day + (hi ? ' अक्टूबर · ' : ' Oct · ') + cu.acct, raw: cu.raw,

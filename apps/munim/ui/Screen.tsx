@@ -62,23 +62,29 @@ export function SampleBar({ hi }: { hi: boolean }) {
   );
 }
 
+/** Hindi for the wrapper's own loading and error lines; read after mount (the profile lives in this browser). */
+function useHi() { const [hi, setHi] = useState(false); useEffect(() => { setHi(getProfile()?.lang === 'hi'); }, []); return hi; }
+
 function Loading() {
+  const hi = useHi();
   return (
     <div aria-busy="true" style={{ maxWidth: 480, margin: '0 auto', padding: '16px', display: 'grid', gap: 12 }}>
       <span className="skel" style={{ height: 32, width: '40%' }} />
       <span className="skel" style={{ height: 180, borderRadius: 22 }} />
       <span className="skel" style={{ height: 220, borderRadius: 22 }} />
-      <span style={{ fontSize: 13.5, color: 'var(--muted)', textAlign: 'center' }}>Adding up your money…</span>
+      <span style={{ fontSize: 13.5, color: 'var(--muted)', textAlign: 'center' }}>{hi ? 'आपका हिसाब जोड़ा जा रहा है…' : 'Adding up your money…'}</span>
     </div>
   );
 }
 
-function Failed({ message, onRetry, retryLabel = 'Retry' }: { message: string; onRetry: () => void; retryLabel?: string }) {
+function Failed({ message, onRetry, retryLabel }: { message: string; onRetry: () => void; retryLabel?: 'Retry' | 'Back' }) {
+  const hi = useHi();
+  const label = (retryLabel ?? 'Retry') === 'Back' ? (hi ? 'वापस' : 'Back') : (hi ? 'फिर कोशिश करें' : 'Retry');
   return (
     <div role="alert" style={{ maxWidth: 480, margin: '0 auto', padding: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--err-tint)', color: 'var(--err-ink)', borderRadius: 16, padding: '6px 6px 6px 14px' }}>
         <span style={{ flex: 1, fontSize: 14 }}>{message}</span>
-        <button type="button" onClick={onRetry} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 0, background: 'var(--card)', color: 'var(--ink)', fontSize: 14, fontWeight: 600 }}>{retryLabel}</button>
+        <button type="button" onClick={onRetry} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 0, background: 'var(--card)', color: 'var(--ink)', fontSize: 14, fontWeight: 600 }}>{label}</button>
       </div>
     </div>
   );

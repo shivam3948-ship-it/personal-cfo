@@ -38,29 +38,29 @@ button{font:inherit;color:inherit}
   </div>
   <div style="position: absolute; inset: 0; overflow-y: auto; padding: 12px 16px 96px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box">
     <header style="flex: none; display: flex; align-items: center; gap: 4px; position: relative">
-      <a href="Invest.dc.html" aria-label="Back to Invest" style="width: 44px; height: 44px; margin-left: -10px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; color: var(--ink)">
+      <a href="Invest.dc.html" aria-label="{{c.backAria}}" style="width: 44px; height: 44px; margin-left: -10px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; color: var(--ink)">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg>
       </a>
-      <span style="flex: 1; display: grid"><h1 class="serif" style="margin: 0; font-size: 26px">Portfolio x-ray</h1><span style="font-size: 12px; color: var(--ink2)">{{casLine}}</span></span>
-      <button type="button" onClick="{{saveReport}}" aria-label="Save or share this report" style="width: 44px; height: 44px; margin-right: -8px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink)">
+      <span style="flex: 1; display: grid"><h1 class="serif" style="margin: 0; font-size: 26px">{{c.title}}</h1><span style="font-size: 12px; color: var(--ink2)">{{casLine}}</span></span>
+      <button type="button" onClick="{{saveReport}}" aria-label="{{c.saveAria}}" style="width: 44px; height: 44px; margin-right: -8px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink)">
         <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"></path><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"></path></svg>
       </button>
     </header>
 
     <section aria-labelledby="sum" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
-      <h2 id="sum" class="serif" style="margin: 0; font-size: 21px; line-height: 1.2">{{d.count}} things worth acting on</h2>
+      <h2 id="sum" class="serif" style="margin: 0; font-size: 21px; line-height: 1.2">{{d.countHead}}</h2>
       <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
-        <div style="background: var(--mari-tint); border-radius: 14px; padding: 9px 12px; display: grid; gap: 1px"><b class="serif" style="font-size: 21px; color: var(--mari-ink)">{{d.taxSave}}</b><span style="font-size: 12px; color: var(--mari-ink)">less future tax · act by 31 Mar</span></div>
-        <div style="background: var(--tint); border-radius: 14px; padding: 9px 12px; display: grid; gap: 1px"><b class="serif" style="font-size: 21px; color: var(--link)">{{d.feeYr}}</b><span style="font-size: 12px; color: var(--ink2)">a year in regular-plan fees</span></div>
+        <div style="background: var(--mari-tint); border-radius: 14px; padding: 9px 12px; display: grid; gap: 1px"><b class="serif" style="font-size: 21px; color: var(--mari-ink)">{{d.taxSave}}</b><span style="font-size: 12px; color: var(--mari-ink)">{{c.taxTile}}</span></div>
+        <div style="background: var(--tint); border-radius: 14px; padding: 9px 12px; display: grid; gap: 1px"><b class="serif" style="font-size: 21px; color: var(--link)">{{d.feeYr}}</b><span style="font-size: 12px; color: var(--ink2)">{{c.feeTile}}</span></div>
       </div>
-      <span style="font-size: 13px; color: var(--ink2)">Your money earned <b style="font-weight: 600; color: var(--ink)">{{d.xirr}} a year</b>: <b style="font-weight: 600; color: var(--ink)">{{d.fdExtra}} more</b> than a 7% FD on the same dates. No SIP paused or sold since {{d.since}}.</span>
+      <span style="font-size: 13px; color: var(--ink2)">{{c.e1}} <b style="font-weight: 600; color: var(--ink)">{{d.xirr}} {{c.aYear}}</b>{{c.e2}}<b style="font-weight: 600; color: var(--ink)">{{d.fdExtra}} {{c.more}}</b>{{c.e3}} {{d.sinceLine}}</span>
     </section>
 
     <section aria-labelledby="moves" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 12px 16px; display: grid; gap: 6px; box-shadow: 0 0 0 1px var(--hair)">
-      <div style="display: flex; justify-content: space-between; align-items: center"><h2 id="moves" style="margin: 0; font-size: 15px; font-weight: 600">Did it work?</h2>
-        <sc-if value="{{hasHistory}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11.5px; font-weight: 600; color: var(--ink2); background: var(--tint); border-radius: 999px; padding: 2px 9px">Preview</span></sc-if></div>
+      <div style="display: flex; justify-content: space-between; align-items: center"><h2 id="moves" style="margin: 0; font-size: 15px; font-weight: 600">{{c.didHead}}</h2>
+        <sc-if value="{{hasHistory}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11.5px; font-weight: 600; color: var(--ink2); background: var(--tint); border-radius: 999px; padding: 2px 9px">{{c.preview}}</span></sc-if></div>
       <sc-if value="{{noHistory}}" hint-placeholder-val="{{ true }}">
-        <span style="font-size: 13px; color: var(--ink2)">Nothing to track yet. Act on a card below and Munim shows what it saved you, month by month.</span>
+        <span style="font-size: 13px; color: var(--ink2)">{{c.noHist}}</span>
       </sc-if>
       <sc-if value="{{hasHistory}}" hint-placeholder-val="{{ false }}">
         <sc-for list="{{d.did}}" as="m" hint-placeholder-count="3">
@@ -102,7 +102,7 @@ button{font:inherit;color:inherit}
         </sc-if>
         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 2px">
           <sc-if value="{{c.hasPlan}}" hint-placeholder-val="{{ false }}">
-            <button type="button" onClick="{{openPlan}}" aria-haspopup="dialog" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 14px; font-weight: 600; cursor: pointer">See the plan</button>
+            <button type="button" onClick="{{openPlan}}" aria-haspopup="dialog" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 14px; font-weight: 600; cursor: pointer">{{seePlan}}</button>
           </sc-if>
           <button type="button" onClick="{{c.toggleAdd}}" aria-pressed="{{c.added}}" style="min-height: 40px; padding: 0 12px; border-radius: 999px; border: 0; background: {{c.addBg}}; color: {{c.addInk}}; box-shadow: {{c.addRing}}; font-size: 13.5px; font-weight: 600; cursor: pointer">{{c.addText}}</button>
           <button type="button" onClick="{{c.toggleOpen}}" aria-expanded="{{c.open}}" style="margin-left: auto; min-height: 40px; padding: 0 2px; border: 0; background: transparent; font-size: 13px; font-weight: 600; color: var(--link); cursor: pointer">{{c.moreText}}</button>
@@ -111,23 +111,23 @@ button{font:inherit;color:inherit}
     </sc-for>
 
     <details style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 4px 16px; box-shadow: 0 0 0 1px var(--hair)">
-      <summary style="min-height: 50px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none"><span style="display: grid"><b style="font-size: 15px; font-weight: 600">Your money vs your funds</b><span style="font-size: 12.5px; color: var(--muted)">{{d.vsVerdict}}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+      <summary style="min-height: 50px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none"><span style="display: grid"><b style="font-size: 15px; font-weight: 600">{{c.vsHead}}</b><span style="font-size: 12.5px; color: var(--muted)">{{d.vsVerdict}}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
       <div role="list" style="display: grid; gap: 12px; padding: 4px 0 12px">
         <sc-for list="{{d.rows}}" as="r" hint-placeholder-count="5">
           <div role="listitem" aria-label="{{r.aria}}" style="display: grid; gap: 4px">
             <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px"><span style="font-weight: 500">{{r.name}}</span><span style="flex: none; white-space: nowrap; font-size: 12.5px; color: {{r.diffInk}}; font-weight: 600">{{r.diff}}</span></div>
             <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px 8px; align-items: center; font-size: 12px; color: var(--muted)">
-              <span>Fund</span><span style="display: flex; align-items: center; gap: 6px"><span style="height: 8px; width: {{r.fundW}}; border-radius: 0 4px 4px 0; background: var(--hair2)"></span><span style="color: var(--ink2)">{{r.fund}}</span></span>
-              <span>You</span><span style="display: flex; align-items: center; gap: 6px"><span style="height: 8px; width: {{r.youW}}; border-radius: 0 4px 4px 0; background: var(--btn)"></span><b style="color: var(--ink); font-weight: 600">{{r.you}}</b></span>
+              <span>{{c.fund}}</span><span style="display: flex; align-items: center; gap: 6px"><span style="height: 8px; width: {{r.fundW}}; border-radius: 0 4px 4px 0; background: var(--hair2)"></span><span style="color: var(--ink2)">{{r.fund}}</span></span>
+              <span>{{c.you}}</span><span style="display: flex; align-items: center; gap: 6px"><span style="height: 8px; width: {{r.youW}}; border-radius: 0 4px 4px 0; background: var(--btn)"></span><b style="color: var(--ink); font-weight: 600">{{r.you}}</b></span>
             </div>
           </div>
         </sc-for>
-        <span style="font-size: 12.5px; color: var(--ink2); background: var(--tint); border-radius: 12px; padding: 10px 12px">"Fund" is its own growth since your first purchase. "You" is your money's yearly return on your actual dates. Pausing SIPs in a fall is what usually puts investors behind.</span>
+        <span style="font-size: 12.5px; color: var(--ink2); background: var(--tint); border-radius: 12px; padding: 10px 12px">{{c.vsNote}}</span>
       </div>
     </details>
 
     <details style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 4px 16px; box-shadow: 0 0 0 1px var(--hair)">
-      <summary style="min-height: 50px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none"><span style="display: grid"><b style="font-size: 15px; font-weight: 600">What you own</b><span style="font-size: 12.5px; color: var(--muted)">{{d.mixLabel}}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+      <summary style="min-height: 50px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none"><span style="display: grid"><b style="font-size: 15px; font-weight: 600">{{c.ownHead}}</b><span style="font-size: 12.5px; color: var(--muted)">{{d.mixLabel}}</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
       <div style="padding-bottom: 8px">
         <sc-for list="{{d.funds}}" as="f" hint-placeholder-count="5">
           <div style="display: flex; align-items: center; gap: 10px; min-height: 48px; border-top: 1px solid var(--hair)">
@@ -138,8 +138,8 @@ button{font:inherit;color:inherit}
       </div>
     </details>
 
-    <section aria-label="Ask Munim" style="flex: none; position: relative; display: grid; gap: 8px; padding: 4px 2px">
-      <span style="font-size: 12.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted)">Ask Munim</span>
+    <section aria-label="{{c.ask}}" style="flex: none; position: relative; display: grid; gap: 8px; padding: 4px 2px">
+      <span style="font-size: 12.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted)">{{c.ask}}</span>
       <div style="display: flex; gap: 8px; flex-wrap: wrap">
         <sc-for list="{{d.asks}}" as="q" hint-placeholder-count="3">
           <a href="Voice.dc.html" style="min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: 999px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair2); color: var(--ink); font-size: 13.5px; text-decoration: none">{{q}}</a>
@@ -148,23 +148,23 @@ button{font:inherit;color:inherit}
     </section>
 
     <a href="Upload.dc.html" style="flex: none; position: relative; min-height: 44px; display: grid; place-items: center; font-size: 14px; font-weight: 600; color: var(--link); text-decoration: none">{{casCta}}</a>
-    <p style="flex: none; position: relative; margin: 0; padding: 0 4px; font-size: 12px; color: var(--muted)">{{disc}} Tax figures use today’s rules (12.5% on long-term equity gains above ₹1.25 lakh a year); check them for your situation.</p>
+    <p style="flex: none; position: relative; margin: 0; padding: 0 4px; font-size: 12px; color: var(--muted)">{{disc}} {{c.taxRules}}</p>
   </div>
 
   <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: absolute; left: 16px; right: 16px; bottom: 92px; z-index: 6; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 16px; border-radius: 14px; background: var(--ink); color: var(--bg); font-size: 14px">
-      <span style="flex: 1">Report saved as a PDF. Amounts can be hidden before sharing.</span>
-      <button type="button" onClick="{{hideToast}}" style="min-height: 40px; padding: 0 12px; border: 0; background: transparent; color: var(--bg); font-size: 14px; font-weight: 600; cursor: pointer">OK</button>
+      <span style="flex: 1">{{c.toast}}</span>
+      <button type="button" onClick="{{hideToast}}" style="min-height: 40px; padding: 0 12px; border: 0; background: transparent; color: var(--bg); font-size: 14px; font-weight: 600; cursor: pointer">{{c.ok}}</button>
     </div>
   </sc-if>
 
   <sc-if value="{{planOpen}}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; inset: 0; z-index: 10; background: var(--scrim)">
-      <section class="sheet" role="dialog" aria-label="The plan" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px">
+      <section class="sheet" role="dialog" aria-label="{{c.planAria}}" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px">
         <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
-        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 23px">One move, two wins</h2>
-          <button type="button" aria-label="Close" onClick="{{closePlan}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
-        <span style="font-size: 14px; color: var(--ink2); margin-top: -4px">Move regular-plan units to the direct plan of the same fund, only as many as fit this year’s tax-free limit.</span>
+        <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 23px">{{c.planTitle}}</h2>
+          <button type="button" aria-label="{{c.close}}" onClick="{{closePlan}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
+        <span style="font-size: 14px; color: var(--ink2); margin-top: -4px">{{c.planIntro}}</span>
         <ol style="margin: 0; padding: 0; list-style: none; display: grid; gap: 2px">
           <sc-for list="{{d.steps}}" as="p" hint-placeholder-count="4">
             <li style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--hair)">
@@ -178,22 +178,58 @@ button{font:inherit;color:inherit}
             <div style="background: var(--tint); border-radius: 12px; padding: 8px 10px; display: grid"><b style="font-size: 16px; font-weight: 700">{{o.v}}</b><span style="font-size: 11.5px; color: var(--ink2)">{{o.l}}</span></div>
           </sc-for>
         </div>
-        <span style="font-size: 12.5px; color: var(--muted)">Check before you act: these units are over a year old, so exit loads are usually nil (confirm in each fund’s document). Selling and buying back takes 1–3 working days, so your money is briefly out of the market. Munim tracks the result under “Did it work?”.</span>
-        <a href="Voice.dc.html" style="min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--hair2); color: var(--ink); font-size: 15px; font-weight: 600; text-decoration: none">Walk me through it with Munim</a>
+        <span style="font-size: 12.5px; color: var(--muted)">{{c.planNote}}</span>
+        <a href="Voice.dc.html" style="min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--hair2); color: var(--ink); font-size: 15px; font-weight: 600; text-decoration: none">{{c.walk}}</a>
       </section>
     </div>
   </sc-if>
-  <a href="Voice.dc.html" aria-label="Ask Munim" class="orb-teal" style="position: absolute; right: 16px; bottom: 24px; z-index: 5; width: 58px; height: 58px; border-radius: 50%; border: 3px solid var(--card); box-sizing: border-box; display: grid; place-items: center; text-decoration: none">
+  <a href="Voice.dc.html" aria-label="{{c.ask}}" class="orb-teal" style="position: absolute; right: 16px; bottom: 24px; z-index: 5; width: 58px; height: 58px; border-radius: 50%; border: 3px solid var(--card); box-sizing: border-box; display: grid; place-items: center; text-decoration: none">
     <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
   </a>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"history":{"editor":"enum","options":["none","preview"],"default":"none"},"open":{"editor":"enum","options":["none","plan","details"],"default":"none"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"history":{"editor":"enum","options":["none","preview"],"default":"none"},"open":{"editor":"enum","options":["none","plan","details"],"default":"none"},"variant":{"editor":"enum","options":["standard","bharat"],"default":"standard"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { plan: undefined, added: {}, opened: undefined, toast: false }; }
   renderVals() {
     var s = this.state, self = this;
     var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
+    var hi = (this.props.variant ?? 'standard') === 'bharat';
+    var T = function (en, h) { return hi ? h : en; };   // copy only: every branch below keeps its English condition
+    var MONHI = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+    var monHi = function (x) { var p = String(x).split(' '), i = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(p[0]); return i < 0 ? x : [MONHI[i]].concat(p.slice(1)).join(' '); };
+    // the mode's disclaimer comes from the server in English; its Hindi twin, word for word as lib/advice.ts DISCLAIMER[mode].hi
+    var discHi = function (en) { var EDU = 'सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं।';
+      return /SEBI-registered/.test(en) ? 'SEBI-रजिस्टर्ड सलाहकार की निवेश सलाह।' : /^Test build on sample data/.test(en) ? 'टेस्ट वर्ज़न, सैंपल डेटा पर। ' + EDU : /^Test build/.test(en) ? 'टेस्ट वर्ज़न। ' + EDU : EDU; };
+    // fund categories and plans come from the engine in English (packages/core classify())
+    var HI_FCAT = { 'Flexi cap': 'फ़्लेक्सी कैप', 'ELSS': 'ELSS', 'Index': 'इंडेक्स', 'Debt': 'डेट', 'Small cap': 'स्मॉल कैप', 'Mid cap': 'मिड कैप', 'Large cap': 'लार्ज कैप', 'Large & mid cap': 'लार्ज और मिड कैप',
+      'Liquid': 'लिक्विड', 'Hybrid': 'हाइब्रिड', 'Arbitrage': 'आर्बिट्राज', 'Gold / silver': 'सोना / चाँदी', 'Equity (other)': 'इक्विटी (अन्य)', 'Other': 'अन्य' };
+    var HI_PLAN = { 'Regular': 'रेगुलर', 'Direct': 'डायरेक्ट' };
+    var CC = hi ? {   // copy (C is the harvest combo below)
+      backAria: 'निवेश पर वापस', title: 'पोर्टफ़ोलियो एक्स-रे', saveAria: 'यह रिपोर्ट सेव या शेयर करें', taxTile: 'आगे कम टैक्स · 31 मार्च तक करें', feeTile: 'सालाना रेगुलर प्लान की फ़ीस',
+      e1: 'आपके पैसे ने', aYear: 'सालाना', e2: ' कमाया: उन्हीं तारीख़ों पर 7% FD से ', more: 'ज़्यादा', e3: '।',
+      didHead: 'क्या फ़ायदा हुआ?', preview: 'झलक', noHist: 'अभी देखने को कुछ नहीं। नीचे किसी कार्ड पर कदम उठाएँ, फिर मुनीम हर महीने दिखाएगा कि आपको कितना बचा।',
+      seePlan: 'प्लान देखें', vsHead: 'आपका पैसा बनाम आपके फ़ंड', fund: 'फ़ंड', you: 'आप',
+      vsNote: '"फ़ंड" यानी आपकी पहली खरीद से फ़ंड की अपनी बढ़त। "आप" यानी आपकी असली तारीख़ों पर आपके पैसे का सालाना रिटर्न। बाज़ार गिरने पर SIP रोक देना ही अक्सर निवेशकों को पीछे कर देता है।',
+      ownHead: 'आपके पास क्या है', ask: 'मुनीम से पूछें',
+      taxRules: 'टैक्स के आँकड़े आज के नियमों पर हैं (₹1.25 लाख सालाना से ऊपर के लॉन्ग-टर्म इक्विटी फ़ायदे पर 12.5%); अपनी स्थिति के हिसाब से जाँच लें।',
+      toast: 'रिपोर्ट PDF में सेव हो गई। शेयर करने से पहले रक़में छिपा सकते हैं।', ok: 'ठीक है', planAria: 'प्लान', planTitle: 'एक कदम, दो फ़ायदे', close: 'बंद करें',
+      planIntro: 'रेगुलर प्लान की यूनिट उसी फ़ंड के डायरेक्ट प्लान में ले जाएँ, बस उतनी जितनी इस साल की टैक्स-फ़्री लिमिट में आएँ।',
+      planNote: 'कदम उठाने से पहले जाँचें: ये यूनिट एक साल से पुरानी हैं, इसलिए एग्ज़िट लोड आम तौर पर नहीं लगता (हर फ़ंड के दस्तावेज़ में पक्का कर लें)। बेचकर वापस खरीदने में 1–3 कामकाजी दिन लगते हैं, तब तक आपका पैसा थोड़े समय बाज़ार से बाहर रहता है। नतीजा मुनीम “क्या फ़ायदा हुआ?” में दिखाता है।',
+      walk: 'मुनीम के साथ कदम-दर-कदम समझें'
+    } : {
+      backAria: 'Back to Invest', title: 'Portfolio x-ray', saveAria: 'Save or share this report', taxTile: 'less future tax · act by 31 Mar', feeTile: 'a year in regular-plan fees',
+      e1: 'Your money earned', aYear: 'a year', e2: ': ', more: 'more', e3: ' than a 7% FD on the same dates.',
+      didHead: 'Did it work?', preview: 'Preview', noHist: 'Nothing to track yet. Act on a card below and Munim shows what it saved you, month by month.',
+      seePlan: 'See the plan', vsHead: 'Your money vs your funds', fund: 'Fund', you: 'You',
+      vsNote: '"Fund" is its own growth since your first purchase. "You" is your money\'s yearly return on your actual dates. Pausing SIPs in a fall is what usually puts investors behind.',
+      ownHead: 'What you own', ask: 'Ask Munim',
+      taxRules: 'Tax figures use today’s rules (12.5% on long-term equity gains above ₹1.25 lakh a year); check them for your situation.',
+      toast: 'Report saved as a PDF. Amounts can be hidden before sharing.', ok: 'OK', planAria: 'The plan', planTitle: 'One move, two wins', close: 'Close',
+      planIntro: 'Move regular-plan units to the direct plan of the same fund, only as many as fit this year’s tax-free limit.',
+      planNote: 'Check before you act: these units are over a year old, so exit loads are usually nil (confirm in each fund’s document). Selling and buying back takes 1–3 working days, so your money is briefly out of the market. Munim tracks the result under “Did it work?”.',
+      walk: 'Walk me through it with Munim'
+    };
     var sum = function (a) { return a.reduce(function (t, x) { return t + x; }, 0); };
     // ---- inputs: portfolioView() on the sample CAS; insight inputs from FIFO lots (xray_v2_numbers.py); overlap/FD/did-it-work (compute_v3.py) ----
     var PF = { asOf: '2026-10-15', value: 127828450, cost: 84700000, xirr: 14.2, sipGaps: 0, sells: 0, since: 'Jan 2021',
@@ -225,71 +261,73 @@ class Component extends DCLogic {
     var card = function (id, n, tag, kind, title, line, extra) {
       var on = !!added[id], op = !!opened[id];
       return Object.assign({ n: n, tag: tag, tagInk: TAG[kind][0], tagBg: TAG[kind][1], title: title, line: line, opts: [], bars: [], notes: [], hasBars: false, hasPlan: false,
-        added: on, addText: on ? '✓ Sunday call' : '+ Sunday call', addBg: on ? 'var(--tint)' : 'var(--card)', addInk: on ? 'var(--link)' : 'var(--ink)', addRing: on ? 'none' : 'inset 0 0 0 1px var(--hair2)',
-        open: op, moreText: op ? 'Less' : 'Details ›',
+        added: on, addText: on ? T('✓ Sunday call', '✓ रविवार की मनी कॉल') : T('+ Sunday call', '+ रविवार की मनी कॉल'), addBg: on ? 'var(--tint)' : 'var(--card)', addInk: on ? 'var(--link)' : 'var(--ink)', addRing: on ? 'none' : 'inset 0 0 0 1px var(--hair2)',
+        open: op, moreText: op ? T('Less', 'कम दिखाएँ') : T('Details ›', 'पूरी जानकारी ›'),
         toggleAdd: function () { var a = Object.assign({}, added); a[id] = !on; self.setState({ added: a }); },
         toggleOpen: function () { var o = Object.assign({}, opened); o[id] = !op; self.setState({ opened: o }); } }, extra || {});
     };
     var pairMax = 100, top = (O.pairs || []).filter(function (p) { return p[2] > 0; })[0] || null;
     // each card only when its data is there, numbered in order (same conditions as the Invest summary count)
     var specs = [];
-    if (H.harvest > 0) specs.push(['harvest', 'Tax', H.daysLeft + ' days left', 'deadline', 'Book ' + R(H.left) + ' of gains tax-free by 31 Mar',
-        named ? 'About ' + R(H.taxSavedLater) + ' less tax when you finally sell.' + (G.feeTotal > 0 && C.lots ? ' One move does it, together with card 2.' : '') : 'About ' + R(H.taxSavedLater) + ' less tax when you finally sell, if gains are booked before the limit lapses.',
-        { hasPlan: named && C.lots > 0, notes: ['You have ' + R(H.ltGainAll) + ' of long-term gains and haven’t used this year’s limit. Selling and buying back resets your cost; the limit lapses on 31 Mar.', 'The saving assumes your gains are above the yearly limit when you finally sell.'] }]);
-    if (G.feeTotal > 0) specs.push(['direct', 'Costs', 'Estimate', 'est', 'Regular plans cost you about ' + R(G.feeTotal) + ' a year',
-        named ? (G.sipReg ? 'Start here: send your ' + R(G.sipReg) + '-a-month SIPs to direct plans. Costs ₹0.' : 'The direct plan of the same fund costs less; long-term units can move inside the tax-free limit.') : 'The direct plan of the same fund costs less. Switching means selling, so exit load and tax apply.',
+    if (H.harvest > 0) specs.push(['harvest', T('Tax', 'टैक्स'), T(H.daysLeft + ' days left', H.daysLeft + ' दिन बाकी'), 'deadline', T('Book ' + R(H.left) + ' of gains tax-free by 31 Mar', '31 मार्च तक ' + R(H.left) + ' का फ़ायदा टैक्स-फ़्री बुक करें'),
+        named ? T('About ' + R(H.taxSavedLater) + ' less tax when you finally sell.', 'आख़िर में बेचते समय लगभग ' + R(H.taxSavedLater) + ' कम टैक्स।') + (G.feeTotal > 0 && C.lots ? T(' One move does it, together with card 2.', ' कार्ड 2 के साथ एक ही कदम में हो जाता है।') : '') : T('About ' + R(H.taxSavedLater) + ' less tax when you finally sell, if gains are booked before the limit lapses.', 'अगर लिमिट खत्म होने से पहले फ़ायदा बुक हो जाए, तो आख़िर में बेचते समय लगभग ' + R(H.taxSavedLater) + ' कम टैक्स लगेगा।'),
+        { hasPlan: named && C.lots > 0, notes: [T('You have ' + R(H.ltGainAll) + ' of long-term gains and haven’t used this year’s limit. Selling and buying back resets your cost; the limit lapses on 31 Mar.', 'आपके पास ' + R(H.ltGainAll) + ' का लॉन्ग-टर्म फ़ायदा है और इस साल की लिमिट अभी इस्तेमाल नहीं हुई। बेचकर वापस खरीदने से आपकी लागत नई हो जाती है; लिमिट 31 मार्च को खत्म होती है।'), T('The saving assumes your gains are above the yearly limit when you finally sell.', 'यह बचत तभी है जब आख़िर में बेचते समय आपका फ़ायदा सालाना लिमिट से ज़्यादा हो।')] }]);
+    if (G.feeTotal > 0) specs.push(['direct', T('Costs', 'फ़ीस'), T('Estimate', 'अनुमान'), 'est', T('Regular plans cost you about ' + R(G.feeTotal) + ' a year', 'रेगुलर प्लान में आपके लगभग ' + R(G.feeTotal) + ' सालाना जाते हैं'),
+        named ? (G.sipReg ? T('Start here: send your ' + R(G.sipReg) + '-a-month SIPs to direct plans. Costs ₹0.', 'यहाँ से शुरू करें: अपनी ' + R(G.sipReg) + ' महीने की SIP डायरेक्ट प्लान में भेजें। खर्च ₹0।') : T('The direct plan of the same fund costs less; long-term units can move inside the tax-free limit.', 'उसी फ़ंड का डायरेक्ट प्लान सस्ता है; लॉन्ग-टर्म यूनिट टैक्स-फ़्री लिमिट के अंदर ले जा सकते हैं।')) : T('The direct plan of the same fund costs less. Switching means selling, so exit load and tax apply.', 'उसी फ़ंड का डायरेक्ट प्लान सस्ता होता है। स्विच करने का मतलब बेचना है, इसलिए एग्ज़िट लोड और टैक्स लगते हैं।'),
         { opts: !named ? [] : [].concat(
-            G.sipReg ? [opt('New SIPs to direct', 'Stops commission from the next instalment. Nothing to sell.', 'START HERE', true)] : [],
-            C.lots ? [opt('Move ' + R(C.value) + ' within the tax-free limit', 'Long-term units of ' + C.funds.join(' and ') + ': no tax, about ' + R(C.feeSavedYr) + ' a year less. Same move as card 1.', 'NO TAX', true)] : [],
-            G.ltValueReg ? [opt('Move all long-term units (' + R(G.ltValueReg) + ')', 'Tax about ' + R(G.taxIfSwitchAllLT) + ' now; saves about ' + R(G.feeOnLT) + ' a year' + (G.paybackYears ? '; pays back in about ' + G.paybackYears + ' years.' : '.'), 'LATER', false)] : []),
-          notes: [(stValue ? 'Leave units under a year old (' + R(stValue) + '): exit load and 20% short-term tax. ' : '') + 'The fee gap is an estimate (0.9% a year); check each fund’s expense ratio.'] }]);
+            G.sipReg ? [opt(T('New SIPs to direct', 'नई SIP डायरेक्ट में'), T('Stops commission from the next instalment. Nothing to sell.', 'अगली किस्त से कमीशन बंद। कुछ बेचना नहीं।'), T('START HERE', 'यहाँ से शुरू'), true)] : [],
+            C.lots ? [opt(T('Move ' + R(C.value) + ' within the tax-free limit', 'टैक्स-फ़्री लिमिट के अंदर ' + R(C.value) + ' ले जाएँ'), T('Long-term units of ' + C.funds.join(' and ') + ': no tax, about ' + R(C.feeSavedYr) + ' a year less. Same move as card 1.', C.funds.join(' और ') + ' की लॉन्ग-टर्म यूनिट: कोई टैक्स नहीं, सालाना लगभग ' + R(C.feeSavedYr) + ' कम। कार्ड 1 वाला ही कदम।'), T('NO TAX', 'टैक्स नहीं'), true)] : [],
+            G.ltValueReg ? [opt(T('Move all long-term units (' + R(G.ltValueReg) + ')', 'सारी लॉन्ग-टर्म यूनिट ले जाएँ (' + R(G.ltValueReg) + ')'), T('Tax about ' + R(G.taxIfSwitchAllLT) + ' now; saves about ' + R(G.feeOnLT) + ' a year' + (G.paybackYears ? '; pays back in about ' + G.paybackYears + ' years.' : '.'), 'अभी लगभग ' + R(G.taxIfSwitchAllLT) + ' टैक्स; सालाना लगभग ' + R(G.feeOnLT) + ' बचत' + (G.paybackYears ? '; करीब ' + G.paybackYears + ' साल में भरपाई।' : '।')), T('LATER', 'बाद में'), false)] : []),
+          notes: [(stValue ? T('Leave units under a year old (' + R(stValue) + '): exit load and 20% short-term tax. ', 'एक साल से कम पुरानी यूनिट (' + R(stValue) + ') रहने दें: उन पर एग्ज़िट लोड और 20% शॉर्ट-टर्म टैक्स लगेगा। ') : '') + T('The fee gap is an estimate (0.9% a year); check each fund’s expense ratio.', 'फ़ीस का फ़र्क अनुमान है (0.9% सालाना); हर फ़ंड का एक्सपेंस रेशियो देख लें।')] }]);
     if (top) {
       var idxF = PF.funds.filter(function (f) { return f[2] === 'Index'; })[0], idxL = idxF ? first(idxF[0]) : null;
       var other = top[0] === idxL ? top[1] : top[1] === idxL ? top[0] : null, of = other ? byFirst[other] : null;
       var none = PF.funds.filter(function (f) { return f[3] === 'equity' && !(O.pairs || []).some(function (p) { return p[2] > 0 && (p[0] === first(f[0]) || p[1] === first(f[0])); }); }).map(function (f) { return first(f[0]); });
-      specs.push(['overlap', 'Overlap', /sample/i.test(O.asOf || '') ? 'Sample holdings' : 'Fund holdings', 'fact', top[0] + ' and ' + top[1] + ' hold ' + top[2] + '% of the same stocks',
-        (O.in3plus.length ? O.in3plus.length + ' stocks sit in 3 of your ' + eqCount + ' equity funds. ' : '') + 'Your top 5 stocks are ' + O.top5PctOfEquity + '% of your equity.',
-        { hasBars: true, barsLabel: O.pairs.map(function (p) { return p[0] + ' and ' + p[1] + ' ' + p[2] + '%'; }).join(', '),
-          bars: O.pairs.filter(function (p) { return p[2] > 0; }).map(function (p) { return bar(p[0] + ' + ' + p[1], p[2], pairMax, p[2] >= 40 ? 'var(--warn)' : 'var(--hair2)', p[2] + '% same'); })
-            .concat(O.top5.map(function (t) { return bar(t[0], t[1], O.top5[0][1], 'var(--btn)', R(t[1]) + ' · ' + t[2] + ' funds'); })),
-          notes: [].concat(of && of[2] !== 'Index' ? [other + ' is an actively managed ' + of[1].toLowerCase() + ' plan, yet ' + top[2] + '% of it matches your index fund, so part of its higher fee buys what the index fund already gives you.' + (none.length ? ' ' + none.join(' and ') + ' overlap' + (none.length === 1 ? 's' : '') + ' with none.' : '')] : [],
-            [/sample/i.test(O.asOf || '') ? 'Holdings here are a synthetic sample; the app uses each fund’s monthly portfolio disclosure.' : 'From each fund’s monthly portfolio disclosure.']) }]);
+      specs.push(['overlap', T('Overlap', 'ओवरलैप'), /sample/i.test(O.asOf || '') ? T('Sample holdings', 'सैंपल होल्डिंग') : T('Fund holdings', 'फ़ंड की होल्डिंग'), 'fact', T(top[0] + ' and ' + top[1] + ' hold ' + top[2] + '% of the same stocks', top[0] + ' और ' + top[1] + ' में ' + top[2] + '% शेयर एक जैसे हैं'),
+        (O.in3plus.length ? T(O.in3plus.length + ' stocks sit in 3 of your ' + eqCount + ' equity funds. ', O.in3plus.length + ' शेयर आपके ' + eqCount + ' इक्विटी फ़ंड में से 3 में हैं। ') : '') + T('Your top 5 stocks are ' + O.top5PctOfEquity + '% of your equity.', 'आपके सबसे बड़े 5 शेयर आपकी इक्विटी का ' + O.top5PctOfEquity + '% हैं।'),
+        { hasBars: true, barsLabel: O.pairs.map(function (p) { return p[0] + T(' and ', ' और ') + p[1] + ' ' + p[2] + '%'; }).join(', '),
+          bars: O.pairs.filter(function (p) { return p[2] > 0; }).map(function (p) { return bar(p[0] + ' + ' + p[1], p[2], pairMax, p[2] >= 40 ? 'var(--warn)' : 'var(--hair2)', p[2] + T('% same', '% एक जैसे')); })
+            .concat(O.top5.map(function (t) { return bar(t[0], t[1], O.top5[0][1], 'var(--btn)', R(t[1]) + ' · ' + t[2] + T(' funds', ' फ़ंड')); })),
+          notes: [].concat(of && of[2] !== 'Index' ? [T(other + ' is an actively managed ' + of[1].toLowerCase() + ' plan, yet ' + top[2] + '% of it matches your index fund, so part of its higher fee buys what the index fund already gives you.' + (none.length ? ' ' + none.join(' and ') + ' overlap' + (none.length === 1 ? 's' : '') + ' with none.' : ''),
+              other + ' एक ऐक्टिव ' + (HI_PLAN[of[1]] || of[1]) + ' प्लान है, फिर भी इसका ' + top[2] + '% आपके इंडेक्स फ़ंड जैसा है, यानी इसकी ज़्यादा फ़ीस का एक हिस्सा उसी पर जाता है जो इंडेक्स फ़ंड पहले से दे रहा है।' + (none.length ? ' ' + none.join(' और ') + ' का किसी से ओवरलैप नहीं।' : ''))] : [],
+            [/sample/i.test(O.asOf || '') ? T('Holdings here are a synthetic sample; the app uses each fund’s monthly portfolio disclosure.', 'यहाँ की होल्डिंग एक काल्पनिक सैंपल है; app हर फ़ंड की हर महीने जारी होने वाली होल्डिंग लिस्ट इस्तेमाल करता है।') : T('From each fund’s monthly portfolio disclosure.', 'हर फ़ंड की हर महीने जारी होने वाली होल्डिंग लिस्ट से।')]) }]);
     }
-    if (E && E.freeValue > 0) specs.push(['elss', 'Lock-in', 'Unlocked', 'fact', R(E.freeValue) + ' of your tax-saver fund is past its 3-year lock-in',
-        (E.lockedValue > 0 ? 'Units older than 3 years are free; ' + R(E.lockedValue) + ' is still locked.' : 'Every unit is past the 3-year lock-in.') + (E.plan === 'Regular' && G.feeTotal > 0 ? ' It’s a regular plan, so it counts in card 2.' : ''),
-        { notes: [(E.freeGain > H.exempt ? 'Its ' + R(E.freeGain) + ' gain alone is more than this year’s tax-free limit. ' : '') + 'Buying ELSS again starts a new 3-year lock-in; under the new tax regime ELSS gives no deduction.'] }]);
-    if (M) specs.push(['index', 'Returns', 'Your dates', 'fact', vk + (M.diff < 0 ? ' trails a plain index fund by ' + R(-M.diff) : ' is ahead of a plain index fund by ' + R(M.diff)),
-        'Same ' + R(M.invested) + ' on the same ' + M.covered + ' dates.',
-        { hasBars: true, barsLabel: 'Invested ' + R(M.invested) + ', ' + first(vk) + ' ' + R(M.fundValue) + ', index fund ' + R(M.indexValue),
-          bars: [['You put in', M.invested, 'var(--hair2)'], [first(vk) + ' now', M.fundValue, M.diff < 0 ? 'var(--warn)' : 'var(--btn)'], ['Index fund', M.indexValue, 'var(--btn)']].map(function (b) { return bar(b[0], b[1], Math.max(M.invested, M.fundValue, M.indexValue), b[2]); }),
-          notes: ['This is what its extra risk has paid so far, not a forecast.' + (eqCount > 2 ? ' Your other funds need index prices for their dates: coming soon.' : '')] }]);
+    if (E && E.freeValue > 0) specs.push(['elss', T('Lock-in', 'लॉक-इन'), T('Unlocked', 'लॉक-इन खत्म'), 'fact', T(R(E.freeValue) + ' of your tax-saver fund is past its 3-year lock-in', 'आपके टैक्स-सेवर फ़ंड के ' + R(E.freeValue) + ' का 3 साल का लॉक-इन खत्म हो चुका है'),
+        (E.lockedValue > 0 ? T('Units older than 3 years are free; ' + R(E.lockedValue) + ' is still locked.', '3 साल से पुरानी यूनिट अब निकाली जा सकती हैं; ' + R(E.lockedValue) + ' अभी भी लॉक है।') : T('Every unit is past the 3-year lock-in.', 'हर यूनिट का 3 साल का लॉक-इन खत्म हो चुका है।')) + (E.plan === 'Regular' && G.feeTotal > 0 ? T(' It’s a regular plan, so it counts in card 2.', ' यह रेगुलर प्लान है, इसलिए कार्ड 2 में गिना गया है।') : ''),
+        { notes: [(E.freeGain > H.exempt ? T('Its ' + R(E.freeGain) + ' gain alone is more than this year’s tax-free limit. ', 'सिर्फ़ इसका ' + R(E.freeGain) + ' का फ़ायदा ही इस साल की टैक्स-फ़्री लिमिट से ज़्यादा है। ') : '') + T('Buying ELSS again starts a new 3-year lock-in; under the new tax regime ELSS gives no deduction.', 'ELSS दोबारा खरीदने पर नया 3 साल का लॉक-इन शुरू होता है; नई टैक्स व्यवस्था में ELSS पर कोई छूट नहीं मिलती।')] }]);
+    if (M) specs.push(['index', T('Returns', 'रिटर्न'), T('Your dates', 'आपकी तारीख़ें'), 'fact', vk + (M.diff < 0 ? T(' trails a plain index fund by ' + R(-M.diff), ' एक सीधे इंडेक्स फ़ंड से ' + R(-M.diff) + ' पीछे है') : T(' is ahead of a plain index fund by ' + R(M.diff), ' एक सीधे इंडेक्स फ़ंड से ' + R(M.diff) + ' आगे है')),
+        T('Same ' + R(M.invested) + ' on the same ' + M.covered + ' dates.', 'उन्हीं ' + M.covered + ' तारीख़ों पर वही ' + R(M.invested) + '।'),
+        { hasBars: true, barsLabel: T('Invested ' + R(M.invested) + ', ' + first(vk) + ' ' + R(M.fundValue) + ', index fund ' + R(M.indexValue), 'लगाए ' + R(M.invested) + ', ' + first(vk) + ' ' + R(M.fundValue) + ', इंडेक्स फ़ंड ' + R(M.indexValue)),
+          bars: [[T('You put in', 'आपने लगाए'), M.invested, 'var(--hair2)'], [first(vk) + T(' now', ' अभी'), M.fundValue, M.diff < 0 ? 'var(--warn)' : 'var(--btn)'], [T('Index fund', 'इंडेक्स फ़ंड'), M.indexValue, 'var(--btn)']].map(function (b) { return bar(b[0], b[1], Math.max(M.invested, M.fundValue, M.indexValue), b[2]); }),
+          notes: [T('This is what its extra risk has paid so far, not a forecast.', 'इसके ज़्यादा जोखिम का अब तक का नतीजा यह है; यह भविष्य का अनुमान नहीं।') + (eqCount > 2 ? T(' Your other funds need index prices for their dates: coming soon.', ' आपके बाकी फ़ंड के लिए उनकी तारीख़ों के इंडेक्स भाव चाहिए: जल्द आ रहा है।') : '')] }]);
     var cards = specs.map(function (c, i) { return card(c[0], (i + 1) + ' · ' + c[1], c[2], c[3], c[4], c[5], c[6]); });
     var hist = (this.props.history ?? 'none') === 'preview';
     var planOpen = named && (s.plan !== undefined ? s.plan : (this.props.open ?? 'none') === 'plan'); // D-051: the plan sheet names funds, amounts and steps, so only with a licence
     var d = {
-      count: cards.length, xirr: PF.xirr + '%', since: PF.since, taxSave: R(H.taxSavedLater), feeYr: R(G.feeTotal), fdExtra: R(FD.extra), cards: cards,
-      did: [{ what: 'Moved ' + R(DID.movedPaise) + ' to direct plans', when: DID.months + ' months ago · card 2', v: R(DID.feeSavedSoFar) + ' less fees so far' },
-        { what: 'Booked gains inside the tax-free limit', when: 'same move · card 1', v: R(DID.futureTax) + ' less tax later' },
-        { what: 'SIPs now go to direct plans', when: 'since then', v: R(DID.sipDirect) + ' commission-free' }],
-      vsVerdict: 'Ahead of the fund on ' + ahead + ', about even on ' + even + (behind ? ', behind on ' + behind : ''),
+      count: cards.length, countHead: T(cards.length + ' things worth acting on', 'ध्यान देने लायक ' + cards.length + ' बातें'), xirr: PF.xirr + '%', since: PF.since,
+      sinceLine: T('No SIP paused or sold since ' + PF.since + '.', monHi(PF.since) + ' से न कोई SIP रुकी, न कुछ बेचा गया।'), taxSave: R(H.taxSavedLater), feeYr: R(G.feeTotal), fdExtra: R(FD.extra), cards: cards,
+      did: [{ what: T('Moved ' + R(DID.movedPaise) + ' to direct plans', R(DID.movedPaise) + ' डायरेक्ट प्लान में ले गए'), when: T(DID.months + ' months ago · card 2', DID.months + ' महीने पहले · कार्ड 2'), v: T(R(DID.feeSavedSoFar) + ' less fees so far', 'अब तक ' + R(DID.feeSavedSoFar) + ' कम फ़ीस') },
+        { what: T('Booked gains inside the tax-free limit', 'टैक्स-फ़्री लिमिट के अंदर फ़ायदा बुक किया'), when: T('same move · card 1', 'वही कदम · कार्ड 1'), v: T(R(DID.futureTax) + ' less tax later', 'आगे ' + R(DID.futureTax) + ' कम टैक्स') },
+        { what: T('SIPs now go to direct plans', 'SIP अब डायरेक्ट प्लान में जाती हैं'), when: T('since then', 'तब से'), v: T(R(DID.sipDirect) + ' commission-free', R(DID.sipDirect) + ' बिना कमीशन') }],
+      vsVerdict: T('Ahead of the fund on ' + ahead + ', about even on ' + even + (behind ? ', behind on ' + behind : ''), ahead + ' में फ़ंड से आगे, ' + even + ' में लगभग बराबर' + (behind ? ', ' + behind + ' में पीछे' : '')),
       rows: rows.map(function (r) { var df = Math.round((r.you - r.fund) * 10) / 10;
-        return { name: r.f[0] + ' · since ' + r.since, fund: r.fund + '%', you: r.you + '%', fundW: Math.round(r.fund / maxV * 100) + '%', youW: Math.round(r.you / maxV * 100) + '%',
-          diff: Math.abs(df) < 0.5 ? 'about even' : (df > 0 ? '+' : '−') + Math.abs(df) + ' pts', diffInk: Math.abs(df) < 0.5 ? 'var(--muted)' : df > 0 ? 'var(--link)' : 'var(--warn)',
-          aria: r.f[0] + ': fund ' + r.fund + '% a year, your money ' + r.you + '% a year' }; }),
-      mixLabel: 'Equity ' + Math.round(eq / PF.value * 100) + '% · debt ' + Math.round(dt / PF.value * 100) + '% · ' + PF.funds.length + ' funds · ' + R(PF.value),
-      funds: PF.funds.map(function (f) { return { name: f[0], cat: f[2], plan: f[1], planInk: f[1] === 'Regular' ? 'var(--warn)' : 'var(--link)', value: R(f[4]) }; }),
-      asks: [top ? 'Do I need both ' + top[0] + ' and ' + top[1] + '?' : 'Are my funds too similar?', 'Is ' + PF.xirr + '% a year good?', G.feeTotal > 0 ? 'How do I switch to direct?' : 'What should I check next?'],
+        return { name: T(r.f[0] + ' · since ' + r.since, r.f[0] + ' · ' + monHi(r.since) + ' से'), fund: r.fund + '%', you: r.you + '%', fundW: Math.round(r.fund / maxV * 100) + '%', youW: Math.round(r.you / maxV * 100) + '%',
+          diff: Math.abs(df) < 0.5 ? T('about even', 'लगभग बराबर') : (df > 0 ? '+' : '−') + Math.abs(df) + T(' pts', ' पॉइंट'), diffInk: Math.abs(df) < 0.5 ? 'var(--muted)' : df > 0 ? 'var(--link)' : 'var(--warn)',
+          aria: T(r.f[0] + ': fund ' + r.fund + '% a year, your money ' + r.you + '% a year', r.f[0] + ': फ़ंड ' + r.fund + '% सालाना, आपका पैसा ' + r.you + '% सालाना') }; }),
+      mixLabel: T('Equity ' + Math.round(eq / PF.value * 100) + '% · debt ' + Math.round(dt / PF.value * 100) + '% · ' + PF.funds.length + ' funds · ' + R(PF.value), 'इक्विटी ' + Math.round(eq / PF.value * 100) + '% · डेट ' + Math.round(dt / PF.value * 100) + '% · ' + PF.funds.length + ' फ़ंड · ' + R(PF.value)),
+      funds: PF.funds.map(function (f) { return { name: f[0], cat: hi ? (HI_FCAT[f[2]] || f[2]) : f[2], plan: hi ? (HI_PLAN[f[1]] || f[1]) : f[1], planInk: f[1] === 'Regular' ? 'var(--warn)' : 'var(--link)', value: R(f[4]) }; }),
+      asks: [top ? T('Do I need both ' + top[0] + ' and ' + top[1] + '?', 'क्या मुझे ' + top[0] + ' और ' + top[1] + ' दोनों चाहिए?') : T('Are my funds too similar?', 'क्या मेरे फ़ंड बहुत मिलते-जुलते हैं?'), T('Is ' + PF.xirr + '% a year good?', 'क्या ' + PF.xirr + '% सालाना अच्छा है?'), G.feeTotal > 0 ? T('How do I switch to direct?', 'डायरेक्ट में कैसे स्विच करूँ?') : T('What should I check next?', 'अब आगे क्या देखूँ?')],
       steps: [
-        { n: '1', t: 'Pick the oldest units', d: C.lots + ' SIP instalments in ' + C.funds.join(' and ') + ', worth ' + R(C.value) + ', with ' + R(C.gain) + ' of gains: just under the ' + R(H.exempt) + ' limit.' },
-        { n: '2', t: 'Switch them to the direct plan', d: 'Ask the fund house (or your app) for a switch from the regular to the direct plan of the same fund.' },
-        { n: '3', t: 'Point your SIPs at direct', d: 'Stop the regular-plan SIPs and start the same amounts in the direct plans.' },
-        { n: '4', t: 'Repeat next April', d: 'A fresh ' + R(H.exempt) + ' limit every financial year.' } ],
-      outcome: [{ v: '₹0', l: 'tax now' }, { v: R(C.futureTax), l: 'less tax later' }, { v: R(C.feeSavedYr), l: 'a year in fees' }]
+        { n: '1', t: T('Pick the oldest units', 'सबसे पुरानी यूनिट चुनें'), d: T(C.lots + ' SIP instalments in ' + C.funds.join(' and ') + ', worth ' + R(C.value) + ', with ' + R(C.gain) + ' of gains: just under the ' + R(H.exempt) + ' limit.', C.funds.join(' और ') + ' में ' + C.lots + ' SIP किस्तें, कीमत ' + R(C.value) + ', फ़ायदा ' + R(C.gain) + ': ' + R(H.exempt) + ' की लिमिट से थोड़ा कम।') },
+        { n: '2', t: T('Switch them to the direct plan', 'इन्हें डायरेक्ट प्लान में स्विच करें'), d: T('Ask the fund house (or your app) for a switch from the regular to the direct plan of the same fund.', 'फ़ंड हाउस (या अपने app) से उसी फ़ंड के रेगुलर से डायरेक्ट प्लान में स्विच करने को कहें।') },
+        { n: '3', t: T('Point your SIPs at direct', 'SIP डायरेक्ट में करें'), d: T('Stop the regular-plan SIPs and start the same amounts in the direct plans.', 'रेगुलर प्लान की SIP बंद करें और उतनी ही रक़म की SIP डायरेक्ट प्लान में शुरू करें।') },
+        { n: '4', t: T('Repeat next April', 'अगले अप्रैल फिर करें'), d: T('A fresh ' + R(H.exempt) + ' limit every financial year.', 'हर साल (अप्रैल–मार्च) ' + R(H.exempt) + ' की नई लिमिट।') } ],
+      outcome: [{ v: '₹0', l: T('tax now', 'अभी टैक्स') }, { v: R(C.futureTax), l: T('less tax later', 'आगे कम टैक्स') }, { v: R(C.feeSavedYr), l: T('a year in fees', 'फ़ीस में सालाना बचत') }]
     };
-    var casDate = (+PF.asOf.slice(8, 10)) + ' ' + MON[+PF.asOf.slice(5, 7) - 1];
-    return { theme: this.props.theme ?? 'light', disc: DISC, d: d, planOpen: planOpen,
-      casLine: CAS_SRC === 'yours' ? 'Your CAS of ' + casDate + ' · read on your phone' : 'Sample CAS of ' + casDate + ' · add yours to see your own',
-      casCta: CAS_SRC === 'yours' ? 'Holdings look wrong? Add a newer statement ›' : 'Add your CAS ›', hasHistory: hist, noHistory: !hist, toast: !!s.toast,
+    var casDate = (+PF.asOf.slice(8, 10)) + ' ' + (hi ? MONHI : MON)[+PF.asOf.slice(5, 7) - 1];
+    return { theme: this.props.theme ?? 'light', disc: hi ? discHi(DISC) : DISC, c: CC, seePlan: CC.seePlan, d: d, planOpen: planOpen,
+      casLine: CAS_SRC === 'yours' ? T('Your CAS of ' + casDate + ' · read on your phone', 'आपका CAS, ' + casDate + ' · फ़ोन पर ही पढ़ा गया') : T('Sample CAS of ' + casDate + ' · add yours to see your own', 'सैंपल CAS, ' + casDate + ' · अपना देखने के लिए अपना CAS जोड़ें'),
+      casCta: CAS_SRC === 'yours' ? T('Holdings look wrong? Add a newer statement ›', 'होल्डिंग गलत दिख रही हैं? नया स्टेटमेंट जोड़ें ›') : T('Add your CAS ›', 'अपना CAS जोड़ें ›'), hasHistory: hist, noHistory: !hist, toast: !!s.toast,
       saveReport: function () { self.setState({ toast: true }); }, hideToast: function () { self.setState({ toast: false }); },
       openPlan: function () { self.setState({ plan: true }); }, closePlan: function () { self.setState({ plan: false }); } };
   }
