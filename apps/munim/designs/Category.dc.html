@@ -214,7 +214,7 @@ class Component extends DCLogic {
       a.cta = s.pick ? (hi ? R(s.pick * avg) + ' बचाएँ' : 'Save ' + R(s.pick * avg)) : (hi ? 'रक़म चुनें' : 'Pick an amount');
       a.ctaBg = s.pick ? 'var(--btn)' : 'var(--hair2)'; a.ctaInk = s.pick ? 'var(--on-btn)' : 'var(--muted)';
       a.savedLine = s.pick ? (hi ? '✓ ' + R(s.pick * avg) + ' बचत में डाल दिए' : '✓ ' + R(s.pick * avg) + ' moved to savings') : '';
-      a.skipNote = hi ? 'इस महीने औसत ' + R(avg) + ' प्रति ' + unit[2] + '। Munim कुछ नहीं रोकता।' : 'Your average this month is ' + R(avg) + (/^[aeiou]/.test(unit[0]) ? ' an ' : ' a ') + unit[0] + '. Munim never blocks a payment.';
+      a.skipNote = hi ? 'इस महीने औसत ' + R(avg) + ' प्रति ' + unit[2] + '। मुनीम कुछ नहीं रोकता।' : 'Your average this month is ' + R(avg) + (/^[aeiou]/.test(unit[0]) ? ' an ' : ' a ') + unit[0] + '. Munim never blocks a payment.';
     } else if (kind === 'cash') {
       a.isCash = true;
       var same = D.m.length > 1 && D.m.slice(0, -1).every(function (v) { return v === D.m[D.m.length - 1]; });
@@ -236,16 +236,16 @@ class Component extends DCLogic {
         a.noteSub = hi ? 'यह बचत खर्च टैब की "सबसे पहले बचत" रक़म में पहले से जुड़ी है।' : 'It’s already part of the "Savings first" amount on Spends.';
       } else if (kind === 'need') {
         a.noteTitle = hi ? 'ज़रूरी खर्च' : 'An essential cost';
-        a.noteSub = hi ? 'यहाँ बचत का सुझाव नहीं; Munim सिर्फ़ असामान्य बढ़त पर बताएगा।' : 'Munim won’t push savings here; it flags only an unusual jump.';
+        a.noteSub = hi ? 'यहाँ बचत का सुझाव नहीं; मुनीम सिर्फ़ असामान्य बढ़त पर बताएगा।' : 'Munim won’t push savings here; it flags only an unusual jump.';
       } else if (!hasHist) {
         a.noteTitle = hi ? 'तुलना के लिए अभी एक ही महीना' : 'Only one month so far';
-        a.noteSub = hi ? 'पिछले महीनों के स्टेटमेंट जोड़ें, Munim आपका आम खर्च बताएगा।' : 'Add earlier statements and Munim will show your usual here.';
+        a.noteSub = hi ? 'पिछले महीनों के स्टेटमेंट जोड़ें, मुनीम आपका आम खर्च बताएगा।' : 'Add earlier statements and Munim will show your usual here.';
       } else {
         a.noteTitle = hi ? 'आम तौर जैसा' : 'In line with your usual';
         a.noteSub = hi ? 'यहाँ बदलने को कुछ नहीं।' : 'Nothing to change here.';
       }
     }
-    var C = hi ? { back: 'खर्च पर वापस', heroLabel: MFULL[META.cur] + ' 1–' + DAY, whereHead: 'कहाँ से', yourCall: 'आपकी मर्ज़ी', blindSpot: 'छिपा खर्च', notNow: 'अभी नहीं', undo: 'वापस लें', everyMonth: 'हाँ, हर महीने', justThis: 'सिर्फ़ इस बार', cashNote: 'Munim नियम बनाने से पहले पूछता है। आप इसे "आपके नियम" में कभी भी बदल सकते हैं।' }
+    var C = hi ? { back: 'खर्च पर वापस', heroLabel: MFULL[META.cur] + ' 1–' + DAY, whereHead: 'कहाँ से', yourCall: 'आपकी मर्ज़ी', blindSpot: 'छिपा खर्च', notNow: 'अभी नहीं', undo: 'वापस लें', everyMonth: 'हाँ, हर महीने', justThis: 'सिर्फ़ इस बार', cashNote: 'मुनीम नियम बनाने से पहले पूछता है। आप इसे "आपके नियम" में कभी भी बदल सकते हैं।' }
       : { back: 'Back to Spends', heroLabel: MFULL[META.cur] + ' 1–' + DAY, whereHead: 'Where from', yourCall: 'Your call', blindSpot: 'Blind spot', notNow: 'Not now', undo: 'Undo', everyMonth: 'Yes, every month', justThis: 'Just this time', cashNote: 'Munim asks before making a rule. You can change it any time in Your rules.' };
     var d = {
       title: hi ? (HI_CAT[cat] || cat) : cat, total: R(total), vsUsual: vsUsual, vsInk: vsInk,

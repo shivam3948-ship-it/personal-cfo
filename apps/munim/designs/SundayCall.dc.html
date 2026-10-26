@@ -34,7 +34,7 @@ button{font:inherit;color:inherit}
 @media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
 </style>
 </helmet>
-<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
+<div class="t-{{theme}}" lang="{{lang}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
   <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 190px; background: var(--band); overflow: hidden">
     <span style="position: absolute; right: -80px; top: -100px; width: 260px; height: 260px; border-radius: 50%; background: var(--band2)"></span>
     <span style="position: absolute; right: 36px; top: 104px; width: 56px; height: 56px; border-radius: 50%; background: var(--band3)"></span>
@@ -43,10 +43,10 @@ button{font:inherit;color:inherit}
   <div style="position: absolute; inset: 0; padding: 12px 16px 22px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
     <header style="flex: none; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; position: relative">
       <div style="display: grid; gap: 2px">
-        <span style="font-size: 14px; color: var(--muted)">Week of 9–15 Oct</span>
-        <h1 style="margin: 0; font-family: 'Noto Serif', 'Noto Serif Devanagari', serif; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em">Sunday Money Call</h1>
+        <span style="font-size: 14px; color: var(--muted)">{{c.week}}</span>
+        <h1 style="margin: 0; font-family: 'Noto Serif', 'Noto Serif Devanagari', serif; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em">{{c.title}}</h1>
       </div>
-      <a href="Main.dc.html" aria-label="End call" style="width: 44px; height: 44px; margin-right: -8px; border-radius: 50%; display: grid; place-items: center; text-decoration: none; color: var(--ink)">
+      <a href="Main.dc.html" aria-label="{{c.end}}" style="width: 44px; height: 44px; margin-right: -8px; border-radius: 50%; display: grid; place-items: center; text-decoration: none; color: var(--ink)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
       </a>
     </header>
@@ -78,88 +78,103 @@ button{font:inherit;color:inherit}
         <sc-if value="{{b.isDecision}}" hint-placeholder-val="{{ false }}">
           <div style="display: grid; margin-top: 6px">
             <sc-if value="{{notDecided}}" hint-placeholder-val="{{ true }}">
-              <button type="button" onClick="{{decide}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Review my 7 subscriptions</button>
-              <button type="button" onClick="{{decide}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Not this week</button>
+              <button type="button" onClick="{{decide}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">{{c.review}}</button>
+              <button type="button" onClick="{{decide}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">{{c.notNow}}</button>
             </sc-if>
             <sc-if value="{{decided}}" hint-placeholder-val="{{ false }}">
-              <span aria-live="polite" style="min-height: 52px; display: grid; place-items: center; border-radius: 999px; background: var(--tint2); color: var(--link); font-size: 15px; font-weight: 600">✓ Noted. See you next Sunday.</span>
+              <span aria-live="polite" style="min-height: 52px; display: grid; place-items: center; border-radius: 999px; background: var(--tint2); color: var(--link); font-size: 15px; font-weight: 600">{{c.noted}}</span>
             </sc-if>
           </div>
         </sc-if>
         <div style="display: flex; justify-content: space-between; margin-top: auto; padding-top: 6px">
-          <button type="button" onClick="{{back}}" aria-label="Previous part" style="min-height: 44px; padding: 0 10px; margin-left: -10px; border: 0; background: transparent; font-size: 14.5px; font-weight: 600; color: {{backInk}}; cursor: pointer">Back</button>
+          <button type="button" onClick="{{back}}" aria-label="{{c.prev}}" style="min-height: 44px; padding: 0 10px; margin-left: -10px; border: 0; background: transparent; font-size: 14.5px; font-weight: 600; color: {{backInk}}; cursor: pointer">{{c.back}}</button>
           <button type="button" onClick="{{next}}" style="min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--tint); color: var(--ink); font-size: 14.5px; font-weight: 600; cursor: pointer">{{nextLabel}}</button>
         </div>
       </section>
 
       <sc-if value="{{listening}}" hint-placeholder-val="{{ true }}">
         <div style="flex: none; border-left: 3px solid var(--link); padding: 2px 0 2px 12px; display: grid; gap: 4px; position: relative">
-          <span style="font-size: 12.5px; font-weight: 600; color: var(--link)">Munim is speaking · English</span>
+          <span style="font-size: 12.5px; font-weight: 600; color: var(--link)">{{c.speaking}}</span>
           <span style="font-size: 15.5px; line-height: 1.45; color: var(--ink2)">{{b.caption}}</span>
         </div>
       </sc-if>
     </sc-if>
 
     <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
-      <section aria-busy="true" aria-label="Preparing your call" style="flex: none; background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 12px; min-height: 340px; align-content: start; box-shadow: 0 0 0 1px var(--hair)">
+      <section aria-busy="true" aria-label="{{c.preparing}}" style="flex: none; background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 12px; min-height: 340px; align-content: start; box-shadow: 0 0 0 1px var(--hair)">
         <span class="skel" style="height: 14px; width: 38%"></span>
         <span class="skel" style="height: 32px; width: 75%"></span>
         <span class="skel" style="height: 14px; width: 90%"></span>
         <span class="skel" style="height: 14px; width: 60%"></span>
-        <span style="margin-top: 18px; font-size: 14px; color: var(--muted)">Preparing your call · adding up this week…</span>
+        <span style="margin-top: 18px; font-size: 14px; color: var(--muted)">{{c.loading}}</span>
       </section>
     </sc-if>
 
     <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
       <section role="alert" style="flex: none; background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 10px; min-height: 340px; align-content: start; box-shadow: 0 0 0 1px var(--hair)">
-        <span style="justify-self: start; font-size: 13px; font-weight: 600; background: var(--err-tint); color: var(--err-ink); border-radius: 999px; padding: 4px 10px">Couldn't connect</span>
-        <b style="font-family: 'Noto Serif', 'Noto Serif Devanagari', serif; font-size: 26px; line-height: 1.15; font-weight: 700">This week's call didn't load</b>
-        <span style="font-size: 15px; color: var(--ink2)">Your numbers are safe. Check your internet and try again; the call stays available until Tuesday.</span>
+        <span style="justify-self: start; font-size: 13px; font-weight: 600; background: var(--err-tint); color: var(--err-ink); border-radius: 999px; padding: 4px 10px">{{c.errTag}}</span>
+        <b style="font-family: 'Noto Serif', 'Noto Serif Devanagari', serif; font-size: 26px; line-height: 1.15; font-weight: 700">{{c.errTitle}}</b>
+        <span style="font-size: 15px; color: var(--ink2)">{{c.errBody}}</span>
         <div style="display: grid; margin-top: auto">
-          <button type="button" onClick="{{retry}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Try again</button>
-          <a href="Recaps.dc.html" style="min-height: 44px; display: grid; place-items: center; font-size: 14.5px; color: var(--muted); text-decoration: none">Read last week's instead</a>
+          <button type="button" onClick="{{retry}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">{{c.retry}}</button>
+          <a href="Recaps.dc.html" style="min-height: 44px; display: grid; place-items: center; font-size: 14.5px; color: var(--muted); text-decoration: none">{{c.lastWeek}}</a>
         </div>
       </section>
     </sc-if>
 
     <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
       <section style="flex: none; background: var(--card); border-radius: 24px; padding: 18px; display: grid; gap: 10px; min-height: 340px; align-content: start; box-shadow: 0 0 0 1px var(--hair)">
-        <span style="font-size: 13px; font-weight: 600; color: var(--muted)">Your first call</span>
-        <b style="font-family: 'Noto Serif', 'Noto Serif Devanagari', serif; font-size: 26px; line-height: 1.15; font-weight: 700">Ready next Sunday, 25 Oct at 9 am</b>
-        <span style="font-size: 15px; color: var(--ink2)">Munim needs one full week of your spending to tell you how it went. Daily check-ins until then make the first call sharper.</span>
+        <span style="font-size: 13px; font-weight: 600; color: var(--muted)">{{c.emptyKicker}}</span>
+        <b style="font-family: 'Noto Serif', 'Noto Serif Devanagari', serif; font-size: 26px; line-height: 1.15; font-weight: 700">{{c.emptyTitle}}</b>
+        <span style="font-size: 15px; color: var(--ink2)">{{c.emptyBody}}</span>
         <ol style="margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 0">
-          <li style="padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px">1 · Your win</li>
-          <li style="padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px">2 · Where money went</li>
-          <li style="padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px">3 · What's coming</li>
-          <li style="padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px">4 · Your investments</li>
-          <li style="padding: 10px 0; font-size: 14.5px">5 · One thing for next week</li>
+          <li style="padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px">{{c.step1}}</li>
+          <li style="padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px">{{c.step2}}</li>
+          <li style="padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px">{{c.step3}}</li>
+          <li style="padding: 10px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px">{{c.step4}}</li>
+          <li style="padding: 10px 0; font-size: 14.5px">{{c.step5}}</li>
         </ol>
-        <a href="Main.dc.html" style="margin-top: auto; min-height: 52px; display: grid; place-items: center; border-radius: 999px; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; text-decoration: none">Back to today's check-in</a>
+        <a href="Main.dc.html" style="margin-top: auto; min-height: 52px; display: grid; place-items: center; border-radius: 999px; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; text-decoration: none">{{c.emptyCta}}</a>
       </section>
     </sc-if>
 
     <sc-if value="{{showControls}}" hint-placeholder-val="{{ true }}">
       <div style="flex: none; margin-top: auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; position: relative">
         <button type="button" onClick="{{toggleMode}}" style="justify-self: start; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 0; box-shadow: inset 0 0 0 1px var(--hair2); background: transparent; color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer">{{modeLabel}}</button>
-        <button type="button" class="orb-teal" aria-label="Interrupt and ask Munim" style="position: relative; width: 76px; height: 76px; border-radius: 50%; border: 4px solid var(--bg); display: grid; place-items: center; cursor: pointer">
+        <button type="button" class="orb-teal" aria-label="{{c.interrupt}}" style="position: relative; width: 76px; height: 76px; border-radius: 50%; border: 4px solid var(--bg); display: grid; place-items: center; cursor: pointer">
           <sc-if value="{{listening}}" hint-placeholder-val="{{ true }}"><span class="ring"></span><span class="ring ring2"></span></sc-if>
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
         </button>
         <button type="button" style="justify-self: end; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 0; box-shadow: inset 0 0 0 1px var(--hair2); background: transparent; color: var(--ink); font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7h16v-7"></path><path d="M12 3v12M7 8l5-5 5 5"></path></svg>Voice note</button>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7h16v-7"></path><path d="M12 3v12M7 8l5-5 5 5"></path></svg>{{c.voiceNote}}</button>
       </div>
-      <span style="flex: none; text-align: center; font-size: 12.5px; color: var(--muted); position: relative">Tap the mic to interrupt and ask anything</span>
+      <span style="flex: none; text-align: center; font-size: 12.5px; color: var(--muted); position: relative">{{c.micHint}}</span>
     </sc-if>
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"variant":{"editor":"enum","options":["standard","bharat"],"default":"standard"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { beat: 0, mode: 'listen', decided: false, retried: false }; }
   renderVals() {
     var s = this.state, self = this;
     var st = s.retried ? 'ready' : (this.props.state ?? 'ready');
-    var beats = [
+    var hi = (this.props.variant ?? 'standard') === 'bharat';
+    var beats = hi ? [
+      { kicker: '5 में से 1 · आपकी जीत', title: 'ऑटोपे से ₹350 की बचत', size: '32px', sub: 'इस हफ़्ते 7 में से 7 दिन। 1 अक्टूबर से अब तक कुल ₹750।',
+        caption: 'नमस्ते रोहन! पहले एक अच्छी ख़बर: इस हफ़्ते ऑटोपे ने हर दिन बचत की, कुल ₹350।' },
+      { kicker: '5 में से 2 · पैसा कहाँ गया', title: 'इस हफ़्ते ₹17,163 खर्च', size: '30px', sub: 'आम हफ़्ते (₹9,290) से ₹7,873 ज़्यादा। ज़्यादातर पैसा इन तीन जगह गया:',
+        rows: [{ l: 'सब्सक्रिप्शन रिन्यू हुए', v: '₹5,267' }, { l: 'कैश निकासी', v: '₹5,000' }, { l: 'पेट्रोल', v: '₹2,200' }],
+        note: 'सिर्फ़ रोज़ का खर्च। आम हफ़्ता यानी पिछले 8 हफ़्तों का बीच वाला आँकड़ा।',
+        caption: 'इस हफ़्ते खर्च ज़्यादा रहा। सब्सक्रिप्शन रिन्यू हुए और एक बार ₹5,000 कैश निकाले, ज़्यादातर बढ़त इन्हीं से है।' },
+      { kicker: '5 में से 3 · अगले हफ़्ते', title: '7 दिन में ₹12,039 भरने हैं', size: '30px', sub: 'आपके बैंक बैलेंस से तीनों भर जाएँगे।',
+        rows: [{ l: 'ACT Fibernet · 16 अक्टूबर', v: '₹1,059' }, { l: 'Netflix · 18 अक्टूबर', v: '₹799' }, { l: 'Orbit Finserv EMI · 20 अक्टूबर', v: '₹10,181' }],
+        caption: 'तीन भुगतान आने वाले हैं। सबसे बड़ा 20 तारीख़ को Orbit Finserv की EMI है। इनके लिए पैसे पूरे हैं।' },
+      { kicker: '5 में से 4 · आपका निवेश', title: '₹12,78,285', size: '34px', sub: 'आपके ताज़ा स्टेटमेंट (15 अक्टूबर) के हिसाब से कीमत। अगला स्टेटमेंट आने पर हर हफ़्ते का उतार-चढ़ाव दिखेगा।',
+        caption: 'आपके निवेश की कीमत ₹12,78,285 है। अगला स्टेटमेंट आने के बाद मैं हर हफ़्ते बताऊँगा कि यह कितना ऊपर-नीचे हुआ।' },
+      { kicker: '5 में से 5 · अगले हफ़्ते का एक काम', title: 'सब्सक्रिप्शन एक बार देख लें?', size: '28px', sub: '7 सब्सक्रिप्शन पर साल में ₹45,078 जाते हैं। दो मिनट देखने से यह कम हो सकता है।',
+        decision: true, caption: 'अगले हफ़्ते का एक काम: आपके सात सब्सक्रिप्शन पर साल में ₹45,078 जाते हैं। साथ में एक बार देख लें?' }
+    ] : [
       { kicker: '1 of 5 · Your win', title: '₹350 saved on autopay', size: '32px', sub: '7 of 7 days this week. ₹750 since you started on 1 Oct.',
         caption: 'Good morning, Rohan! A quick win first: autopay put away ₹350 this week, every single day.' },
       { kicker: '2 of 5 · Where money went', title: '₹17,163 spent this week', size: '30px', sub: '₹7,873 more than a usual week (₹9,290). Most of it in three places:',
@@ -177,15 +192,40 @@ class Component extends DCLogic {
     var b = beats[s.beat];
     b.hasRows = !!b.rows; b.rows = b.rows || []; b.hasNote = !!b.note; b.isDecision = !!b.decision;
     var last = s.beat === beats.length - 1;
+    var C = hi ? {
+      week: '9–15 अक्टूबर का हफ़्ता', title: 'रविवार की मनी कॉल', end: 'बंद करें',
+      review: 'मेरे 7 सब्सक्रिप्शन देखें', notNow: 'इस हफ़्ते नहीं', noted: '✓ ठीक है। अगले रविवार मिलते हैं।',
+      prev: 'पिछला हिस्सा', back: 'पीछे', next: 'आगे', finish: 'ख़त्म करें', speaking: 'मुनीम बोल रहा है · हिंदी',
+      part: function (n) { return '5 में से हिस्सा ' + n; }, listen: 'सुनें', read: 'पढ़कर देखें',
+      preparing: 'आपका हिसाब तैयार हो रहा है', loading: 'हिसाब तैयार हो रहा है · इस हफ़्ते का जोड़ लग रहा है…',
+      errTag: 'कनेक्ट नहीं हो पाया', errTitle: 'इस हफ़्ते का हिसाब खुल नहीं पाया', errBody: 'आपके आँकड़े सुरक्षित हैं। इंटरनेट देखकर फिर कोशिश करें। यह हिसाब मंगलवार तक यहीं मिलेगा।',
+      retry: 'फिर कोशिश करें', lastWeek: 'पिछले हफ़्ते का हिसाब पढ़ें',
+      emptyKicker: 'आपका पहला हिसाब', emptyTitle: 'अगले रविवार, 25 अक्टूबर सुबह 9 बजे तैयार',
+      emptyBody: 'हफ़्ता कैसा रहा, यह बताने के लिए मुनीम को आपके पूरे एक हफ़्ते का खर्च चाहिए। तब तक रोज़ चेक-इन करेंगे तो पहला हिसाब और सटीक बनेगा।',
+      step1: '1 · आपकी जीत', step2: '2 · पैसा कहाँ गया', step3: '3 · आगे क्या आने वाला है', step4: '4 · आपका निवेश', step5: '5 · अगले हफ़्ते का एक काम',
+      emptyCta: 'आज के चेक-इन पर लौटें', interrupt: 'बीच में रोककर मुनीम से पूछें', voiceNote: 'वॉइस नोट', micHint: 'बीच में कुछ भी पूछना हो तो माइक दबाएँ'
+    } : {
+      week: 'Week of 9–15 Oct', title: 'Sunday Money Call', end: 'End call',
+      review: 'Review my 7 subscriptions', notNow: 'Not this week', noted: '✓ Noted. See you next Sunday.',
+      prev: 'Previous part', back: 'Back', next: 'Next', finish: 'Finish', speaking: 'Munim is speaking · English',
+      part: function (n) { return 'Part ' + n + ' of 5'; }, listen: 'Listen', read: 'Read instead',
+      preparing: 'Preparing your call', loading: 'Preparing your call · adding up this week…',
+      errTag: 'Couldn\'t connect', errTitle: 'This week\'s call didn\'t load', errBody: 'Your numbers are safe. Check your internet and try again; the call stays available until Tuesday.',
+      retry: 'Try again', lastWeek: 'Read last week\'s instead',
+      emptyKicker: 'Your first call', emptyTitle: 'Ready next Sunday, 25 Oct at 9 am',
+      emptyBody: 'Munim needs one full week of your spending to tell you how it went. Daily check-ins until then make the first call sharper.',
+      step1: '1 · Your win', step2: '2 · Where money went', step3: '3 · What\'s coming', step4: '4 · Your investments', step5: '5 · One thing for next week',
+      emptyCta: 'Back to today\'s check-in', interrupt: 'Interrupt and ask Munim', voiceNote: 'Voice note', micHint: 'Tap the mic to interrupt and ask anything'
+    };
     var ready = st === 'ready';
     return {
-      theme: this.props.theme ?? 'light',
+      theme: this.props.theme ?? 'light', c: C, lang: hi ? 'hi' : 'en',
       isReady: ready, isLoading: st === 'loading', isError: st === 'error', isEmpty: st === 'empty',
       showControls: ready || st === 'loading',
-      b: b, listening: ready && s.mode === 'listen', modeLabel: s.mode === 'listen' ? 'Read instead' : 'Listen',
+      b: b, listening: ready && s.mode === 'listen', modeLabel: s.mode === 'listen' ? C.read : C.listen,
       segs: beats.map(function (x, i) { return { bg: ready && i <= s.beat ? 'var(--link)' : 'var(--hair2)' }; }),
-      progressLabel: 'Part ' + (s.beat + 1) + ' of 5', beatNo: s.beat + 1,
-      nextLabel: last ? 'Finish' : 'Next', backInk: s.beat === 0 ? 'var(--hair2)' : 'var(--link)',
+      progressLabel: C.part(s.beat + 1), beatNo: s.beat + 1,
+      nextLabel: last ? C.finish : C.next, backInk: s.beat === 0 ? 'var(--hair2)' : 'var(--link)',
       decided: s.decided, notDecided: !s.decided,
       decide: function () { self.setState({ decided: true }); },
       next: function () { if (!last) self.setState({ beat: s.beat + 1 }); },

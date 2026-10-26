@@ -6,7 +6,7 @@ import { myDataset, loadStatements } from './statements';
 import { buildSpendsMain } from '@/lib/views/spendsMain';
 import { buildTransactions, buildCategory } from '@/lib/views/spends';
 import { buildToday } from '@/lib/views/today';
-import { buildTodayMine } from '@/lib/views/todayMine';
+import { buildTodayMine, dateLineHi } from '@/lib/views/todayMine';
 import { getProfile } from './profile';
 import { emptyDataset } from '@core/types';
 // Fold your on-phone CAS into the Invest and X-ray view models, in the browser, with the same code the server uses for the
@@ -55,5 +55,5 @@ export async function withMyToday(v: View): Promise<View> {
   const td = buildTodayMine(ds ?? mine);
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   if (td.bill && td.bill.dueIso < todayIso) td.bill = null; // its due date has passed on this phone's calendar
-  return { ...v, ...t, NAME: p?.name ?? '', TD: { ...td, inv: !!cas, dateLine: `${DAYS[now.getDay()]}, ${now.getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()]}` }, _mine: true };
+  return { ...v, ...t, NAME: p?.name ?? '', TD: { ...td, inv: !!cas, dateLine: `${DAYS[now.getDay()]}, ${now.getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()]}`, dateLineHi: dateLineHi(now) }, _mine: true };
 }

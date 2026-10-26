@@ -2,46 +2,85 @@
 // Pure and browser-safe: lib/local/patch.ts runs it in the browser; tests run it on the sample family's statements.
 // The check-in keeps its three cards: Save (money path, from ESS/EMG), the latest day in your statements, and one fix.
 import type { Dataset } from '@core/types';
-import { asOfDate, latestBankBalance, leaks, monthPictures, subscriptionsToConfirm } from '@core/finance/picture';
+import { asOfDate, categoryHi, latestBankBalance, leaks, monthPictures, subscriptionsToConfirm, type Leak } from '@core/finance/picture';
 import { inr } from '@core/money';
 import { bucketOf, buildSpendsMain } from './spendsMain';
 import { cleanMerchant } from './spends';
 
 const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const dm = (iso: string) => `${+iso.slice(8, 10)} ${MON3[+iso.slice(5, 7) - 1]}`;
+// Hindi twins (D-054, Hindi-first): every English line the screen shows has a `...Hi` sibling; the design picks by variant
+const MON_HI = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+const MON_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DAYS_HI = ['रविवार', 'सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'];
+const dmHi = (iso: string) => `${+iso.slice(8, 10)} ${MON_HI[+iso.slice(5, 7) - 1]}`;
+/** "14 Oct" → "14 अक्टूबर" (the day-month strings the Spends view builds). */
+const dmTextHi = (s: string) => s.replace(/\b(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/g, (_, d, m) => `${d} ${MON_HI[MON3.indexOf(m)]}`);
+/** Today's date on this phone, in Hindi ("गुरुवार, 15 अक्टूबर"); lib/local/patch.ts uses it too. */
+export const dateLineHi = (d: Date) => `${DAYS_HI[d.getDay()]}, ${d.getDate()} ${MON_HI[d.getMonth()]}`;
+
+/** The Hindi of a "What you can change" line from buildSpendsMain (its FIXES carry English only). Leak titles reuse the
+ *  engine's titleHi; the rest follow the shapes spendsMain writes. A FIX that already carries titleHi/subHi wins. */
+export function fixHi(f: { title: string; sub: string; titleHi?: string; subHi?: string }, lk: Leak[]): { titleHi: string; subHi: string } {
+  const T: [RegExp, (...m: string[]) => string][] = [
+    [/^(.+) up (\d+)% this month$/, (c, p) => `इस महीने ${categoryHi(c)} पर खर्च ${p}% ज़्यादा`],
+    [/^(.+) charged after you cancelled$/, (m) => `${m} ने रद्द करने के बाद भी पैसे काटे`],
+    [/^(.+) unused since (.+)$/, (m, mo) => `${m} ${MON_EN.includes(mo) ? MON_HI[MON_EN.indexOf(mo)] + ' से' : 'काफ़ी समय से'} इस्तेमाल नहीं हुआ`],
+    [/^(.+) charged twice$/, (m) => `${m} ने दो बार पैसे काटे`],
+    [/^(.+) trial became paid$/, (m) => `${m} का ट्रायल अब पेड हो गया`],
+    [/^Ask (.+) to match ([\d.]+)%$/, (l, r) => `${l} से ${r}% की दर माँगें`],
+  ];
+  const S: [RegExp, (...m: string[]) => string][] = [
+    [/^Skip 2 orders, save (₹[\d,]+)$/, (a) => `2 ऑर्डर कम करें, ${a} बचाएँ`],
+    [/^Spend a little less here, save (₹[\d,]+)$/, (a) => `यहाँ थोड़ा कम खर्च करें, ${a} बचाएँ`],
+    [/^Check it was cancelled; ask for it back$/, () => 'पक्का करें कि रद्द हुआ था; पैसे वापस माँगें'],
+    [/^(₹[\d,]+) each time · cancel it$/, (a) => `हर बार ${a} · इसे बंद करें`],
+    [/^Keep it, or turn off auto-renew first$/, () => 'रखें, या पहले ऑटो-रिन्यू बंद करें'],
+    [/^(₹[\d,]+) a month$/, (a) => `हर महीने ${a}`],
+    [/^(.*)ask for a refund$/, (d) => `${dmTextHi(d)}रिफ़ंड माँगें`],
+    [/^Cancel or ask for a refund$/, () => 'बंद करें या रिफ़ंड माँगें'],
+    [/^Taking (.+)’s offer loses (₹[\d,]+) after fees$/, (l, a) => `${l} का ऑफ़र लेने पर फ़ीस के बाद ${a} का नुकसान`],
+  ];
+  const by = (rules: typeof T, s: string) => { for (const [re, f] of rules) { const m = re.exec(s); if (m) return f(...m.slice(1)); } return s; };
+  return { titleHi: f.titleHi ?? lk.find((l) => l.title === f.title)?.titleHi ?? by(T, f.title), subHi: f.subHi ?? by(S, f.sub) };
+}
 const daysIn = (key: string) => new Date(Date.UTC(+key.slice(0, 4), +key.slice(5, 7), 0)).getUTCDate();
 
 export interface TodayMine {
   mine: true;
-  verdictSub: string;
-  dateLine: string;                // today's date on this phone (the patch sets it); the asOf date in tests
+  verdictSub: string; verdictSubHi: string;
+  dateLine: string; dateLineHi: string; // today's date on this phone (the patch sets it); the asOf date in tests
   inv: boolean;                    // a CAS is on this phone (the patch sets it)
-  bill: { amount: number; due: string; dueIso: string; covered: boolean | null } | null; // the latest card bill, and whether the latest bank balance covers it
-  day: { none?: boolean; date: string; label: string; spent: number; usual: number | null; top: [string, number][]; unsorted: number }; // whole rupees
-  fix: { title: string; sub: string; href: string } | null;
+  bill: { amount: number; due: string; dueHi: string; dueIso: string; covered: boolean | null } | null; // the latest card bill, and whether the latest bank balance covers it
+  day: { none?: boolean; date: string; label: string; labelHi: string; spent: number; usual: number | null; top: [string, number][]; unsorted: number }; // whole rupees
+  fix: { title: string; sub: string; titleHi: string; subHi: string; href: string } | null;
   /** The subscription card (D-052): a finding the statements prove, else one recurring charge to confirm. */
-  sub: { merchant: string; kind: 'still_charged' | 'unused' | 'renewal' | 'ask'; title: string; sub: string } | null;
+  sub: { merchant: string; kind: 'still_charged' | 'unused' | 'renewal' | 'ask'; title: string; sub: string; titleHi: string; subHi: string } | null;
 }
 
 /** Which subscription the "One fix" card asks about: proof first (charged after cancelling, a membership with no orders,
  *  a renewal within 30 days), then the most expensive recurring charge you haven't answered about. */
-export function subCard(ds: Dataset): TodayMine['sub'] {
-  const lk = leaks(ds);
+export function subCard(ds: Dataset): TodayMine['sub'] { return subCardFrom(leaks(ds), subscriptionsToConfirm(ds)); }
+export function subCardFrom(lk: Leak[], toConfirm: ReturnType<typeof subscriptionsToConfirm>): TodayMine['sub'] {
   const pick = (k: string) => lk.find((l) => l.kind === k);
   const still = pick('still_charged'), unused = pick('membership_unused'), renew = pick('renewal');
-  if (still) return { merchant: still.merchant, kind: 'still_charged', title: still.title, sub: `${inr(still.amount)} went out. Check the cancellation went through, and ask for it back.` };
-  if (unused) return { merchant: unused.merchant, kind: 'unused', title: unused.title, sub: `It costs ${inr(unused.amount)} a month, ${inr(unused.annualCost)} a year. Orders paid from an account you haven’t added won’t show here.` };
-  if (renew) return { merchant: renew.merchant, kind: 'renewal', title: renew.title, sub: 'Refunds after a renewal are often hard to get, so decide before.' };
-  const r = subscriptionsToConfirm(ds)[0];
+  if (still) return { merchant: still.merchant, kind: 'still_charged', title: still.title, sub: `${inr(still.amount)} went out. Check the cancellation went through, and ask for it back.`,
+    titleHi: still.titleHi, subHi: `${inr(still.amount)} कट गए। पक्का करें कि रद्द हुआ था, और पैसे वापस माँगें।` };
+  if (unused) return { merchant: unused.merchant, kind: 'unused', title: unused.title, sub: `It costs ${inr(unused.amount)} a month, ${inr(unused.annualCost)} a year. Orders paid from an account you haven’t added won’t show here.`,
+    titleHi: unused.titleHi, subHi: `इसका खर्च महीने में ${inr(unused.amount)}, साल में ${inr(unused.annualCost)} है। जो ऑर्डर ऐसे खाते से भरे जो आपने नहीं जोड़ा, वो यहाँ नहीं दिखेंगे।` };
+  if (renew) return { merchant: renew.merchant, kind: 'renewal', title: renew.title, sub: 'Refunds after a renewal are often hard to get, so decide before.',
+    titleHi: renew.titleHi, subHi: 'रिन्यू होने के बाद रिफ़ंड अक्सर मुश्किल से मिलता है, इसलिए पहले तय कर लें।' };
+  const r = toConfirm[0];
   if (!r) return null;
-  const per = r.cadence === 'yearly' ? 'a year' : 'a month';
-  return { merchant: r.merchant, kind: 'ask', title: `${inr(r.amount)} ${per} to ${r.merchant}. Still using it?`, sub: `Last charged ${dm(r.lastDate)}. Your bank statement can’t tell if you use it; you can.` };
+  const per = r.cadence === 'yearly' ? 'a year' : 'a month', perHi = r.cadence === 'yearly' ? 'हर साल' : 'हर महीने';
+  return { merchant: r.merchant, kind: 'ask', title: `${inr(r.amount)} ${per} to ${r.merchant}. Still using it?`, sub: `Last charged ${dm(r.lastDate)}. Your bank statement can’t tell if you use it; you can.`,
+    titleHi: `${r.merchant} को ${perHi} ${inr(r.amount)}। अभी भी इस्तेमाल करते हैं?`, subHi: `आख़िरी चार्ज ${dmHi(r.lastDate)} को। बैंक स्टेटमेंट से पता नहीं चलता कि आप इसे इस्तेमाल करते हैं या नहीं; यह आप बता सकते हैं।` };
 }
 
 export function buildTodayMine(ds: Dataset): TodayMine {
   const asOf = asOfDate(ds);
-  if (!ds.txns.length) return { mine: true, verdictSub: 'From your mutual fund statement', dateLine: '', inv: false, bill: null, fix: null, sub: null, // a CAS but no bank or card statement yet
-    day: { none: true, date: asOf, label: '', spent: 0, usual: null, top: [], unsorted: 0 } };
+  if (!ds.txns.length) return { mine: true, verdictSub: 'From your mutual fund statement', verdictSubHi: 'आपके म्यूचुअल फ़ंड स्टेटमेंट से', dateLine: '', dateLineHi: '', inv: false, bill: null, fix: null, sub: null, // a CAS but no bank or card statement yet
+    day: { none: true, date: asOf, label: '', labelHi: '', spent: 0, usual: null, top: [], unsorted: 0 } };
   // the most recent day with everyday spending (a day with only an SIP or a transfer says nothing about spending)
   const evDays = ds.txns.filter((t) => t.dir === 'debit' && bucketOf(t.category ?? 'Other', 'debit') === 'everyday').map((t) => t.date).sort();
   const day = evDays.at(-1) ?? asOf;
@@ -67,11 +106,11 @@ export function buildTodayMine(ds: Dataset): TodayMine {
   const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   return {
     mine: true,
-    dateLine: `${DAYS[new Date(asOf + 'T00:00:00Z').getUTCDay()]}, ${dm(asOf)}`, inv: false,
-    bill: st ? { amount: Math.round(st.totalDue / 100), due: dm(st.dueDate), dueIso: st.dueDate, covered: bank ? bank.balance >= st.totalDue : null } : null,
-    verdictSub: `From your statements, up to ${dm(asOf)}`,
-    day: { date: day, label: `Your last spending day, ${dm(day)}`, spent: Math.round(spent / 100), usual, top, unsorted: Math.round(unsorted / 100) },
-    fix: f ? { title: f.title, sub: f.sub, href: cat ? `/spends/category/${encodeURIComponent(cat)}` : '/spends' } : null,
+    dateLine: `${DAYS[new Date(asOf + 'T00:00:00Z').getUTCDay()]}, ${dm(asOf)}`, dateLineHi: `${DAYS_HI[new Date(asOf + 'T00:00:00Z').getUTCDay()]}, ${dmHi(asOf)}`, inv: false,
+    bill: st ? { amount: Math.round(st.totalDue / 100), due: dm(st.dueDate), dueHi: dmHi(st.dueDate), dueIso: st.dueDate, covered: bank ? bank.balance >= st.totalDue : null } : null,
+    verdictSub: `From your statements, up to ${dm(asOf)}`, verdictSubHi: `आपके स्टेटमेंट से, ${dmHi(asOf)} तक`,
+    day: { date: day, label: `Your last spending day, ${dm(day)}`, labelHi: `आपके खर्च का आख़िरी दिन, ${dmHi(day)}`, spent: Math.round(spent / 100), usual, top, unsorted: Math.round(unsorted / 100) },
+    fix: f ? { title: f.title, sub: f.sub, ...fixHi(f, leaks(ds)), href: cat ? `/spends/category/${encodeURIComponent(cat)}` : '/spends' } : null,
     sub: subCard(ds),
   };
 }

@@ -38,7 +38,7 @@ button{font:inherit;color:inherit}
 @media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
 </style>
 </helmet>
-<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums">
+<div class="t-{{theme}}" lang="{{lang}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums">
 
   <div aria-hidden="true" style="position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
     <div style="height: 120px; margin: -20px -16px 0; background: var(--band)"></div>
@@ -47,11 +47,11 @@ button{font:inherit;color:inherit}
   </div>
   <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--scrim)"></div>
 
-  <section role="dialog" aria-label="Ask Munim" style="position: absolute; left: 0; right: 0; bottom: 0; min-height: 580px; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 26px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+  <section role="dialog" aria-label="{{c.dialog}}" style="position: absolute; left: 0; right: 0; bottom: 0; min-height: 580px; background: var(--card); border-radius: 26px 26px 0 0; padding: 10px 20px 26px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
     <div aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); align-self: center"></div>
     <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
-      <span style="font-size: 13px; color: var(--muted)">Asking about <b style="color: var(--ink2); font-weight: 600">your money · Rohan</b></span>
-      <a href="Main.dc.html" aria-label="Close" style="width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; color: var(--ink2)">
+      <span style="font-size: 13px; color: var(--muted)">{{c.askPre}} <b style="color: var(--ink2); font-weight: 600">{{c.askWhat}}</b>{{c.askPost}}</span>
+      <a href="Main.dc.html" aria-label="{{c.close}}" style="width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; color: var(--ink2)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
       </a>
     </div>
@@ -59,19 +59,19 @@ button{font:inherit;color:inherit}
     <sc-if value="{{isIdle}}" hint-placeholder-val="{{ false }}">
       <div style="display: flex; flex-direction: column; gap: 16px; flex: 1">
         <div style="display: grid; gap: 6px">
-          <b class="serif" style="font-size: 26px; line-height: 1.15">Ask anything about your money</b>
-          <span style="font-size: 15px; color: var(--ink2)">Speak in Hindi or English. Every answer shows its math.</span>
+          <b class="serif" style="font-size: 26px; line-height: 1.15">{{c.idleTitle}}</b>
+          <span style="font-size: 15px; color: var(--ink2)">{{c.idleSub}}</span>
         </div>
         <div style="display: grid; gap: 8px">
-          <button type="button" class="chip" onClick="{{ask}}">Is my card bill covered?</button>
-          <button type="button" class="chip" onClick="{{ask}}">What is cult.fit costing me?</button>
-          <button type="button" class="chip" onClick="{{ask}}">मेरा पैसा कहाँ जा रहा है?</button>
+          <button type="button" class="chip" onClick="{{ask}}">{{c.chip1}}</button>
+          <button type="button" class="chip" onClick="{{ask}}">{{c.chip2}}</button>
+          <button type="button" class="chip" onClick="{{ask}}">{{c.chip3}}</button>
         </div>
         <div style="margin-top: auto; display: grid; justify-items: center; gap: 0">
-          <button type="button" class="orb orb-teal" aria-label="Tap to talk" onClick="{{listen}}">
+          <button type="button" class="orb orb-teal" aria-label="{{c.tapTalkAria}}" onClick="{{listen}}">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
           </button>
-          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">Tap to talk · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">Type instead</button></span>
+          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">{{c.tapTalk}} · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">{{c.type}}</button></span>
         </div>
       </div>
     </sc-if>
@@ -79,8 +79,8 @@ button{font:inherit;color:inherit}
     <sc-if value="{{isListening}}" hint-placeholder-val="{{ true }}">
       <div style="display: flex; flex-direction: column; gap: 18px; flex: 1">
         <div style="display: grid; gap: 6px">
-          <span style="font-size: 13px; font-weight: 600; color: var(--link)">Listening · Hindi or English</span>
-          <p class="serif" style="margin: 0; font-size: 24px; line-height: 1.25">Is the card bill covered?</p>
+          <span style="font-size: 13px; font-weight: 600; color: var(--link)">{{c.listening}}</span>
+          <p class="serif" style="margin: 0; font-size: 24px; line-height: 1.25">{{c.q}}</p>
         </div>
         <div aria-hidden="true" style="display: flex; align-items: center; justify-content: center; gap: 5px; height: 56px">
           <sc-for list="{{bars}}" as="bar" hint-placeholder-count="15">
@@ -88,20 +88,20 @@ button{font:inherit;color:inherit}
           </sc-for>
         </div>
         <div style="margin-top: auto; display: grid; justify-items: center; gap: 8px">
-          <button type="button" class="orb orb-teal" aria-label="Stop and get the answer" onClick="{{think}}">
+          <button type="button" class="orb orb-teal" aria-label="{{c.stopAria}}" onClick="{{think}}">
             <span class="ring"></span><span class="ring ring2"></span>
             <span style="width: 22px; height: 22px; border-radius: 5px; background: #FFFFFF"></span>
           </button>
-          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">Tap to stop · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">Type instead</button></span>
+          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">{{c.tapStop}} · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">{{c.type}}</button></span>
         </div>
       </div>
     </sc-if>
 
     <sc-if value="{{isThinking}}" hint-placeholder-val="{{ false }}">
       <div aria-busy="true" style="display: flex; flex-direction: column; gap: 14px; flex: 1">
-        <p style="margin: 0; align-self: flex-end; max-width: 80%; background: var(--tint); border-radius: 16px 16px 4px 16px; padding: 10px 14px; font-size: 14.5px">Is the card bill covered?</p>
+        <p style="margin: 0; align-self: flex-end; max-width: 80%; background: var(--tint); border-radius: 16px 16px 4px 16px; padding: 10px 14px; font-size: 14.5px">{{c.q}}</p>
         <div style="display: grid; gap: 10px; border-left: 3px solid var(--link); padding: 4px 0 4px 14px">
-          <span role="status" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted)"><span class="dot"></span><span class="dot dot2"></span><span class="dot dot3"></span>Checking your bank and bills…</span>
+          <span role="status" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted)"><span class="dot"></span><span class="dot dot2"></span><span class="dot dot3"></span>{{c.checking}}</span>
           <span class="skel" style="height: 14px; width: 92%"></span>
           <span class="skel" style="height: 14px; width: 80%"></span>
           <span class="skel" style="height: 14px; width: 55%"></span>
@@ -111,64 +111,90 @@ button{font:inherit;color:inherit}
 
     <sc-if value="{{isAnswer}}" hint-placeholder-val="{{ false }}">
       <div style="display: flex; flex-direction: column; gap: 14px; flex: 1">
-        <p style="margin: 0; align-self: flex-end; max-width: 80%; background: var(--tint); border-radius: 16px 16px 4px 16px; padding: 10px 14px; font-size: 14.5px">Is the card bill covered?</p>
+        <p style="margin: 0; align-self: flex-end; max-width: 80%; background: var(--tint); border-radius: 16px 16px 4px 16px; padding: 10px 14px; font-size: 14.5px">{{c.q}}</p>
         <div style="display: grid; gap: 8px; border-left: 3px solid var(--link); padding: 2px 0 2px 14px">
-          <p style="margin: 0; font-size: 16.5px; line-height: 1.5"><b>Yes.</b> The <b>₹36,343</b> card bill is due 24 Oct. Your bank has <b>₹1,41,764</b>. After every payment due before salary, <b>₹93,083</b> is left.</p>
+          <p style="margin: 0; font-size: 16.5px; line-height: 1.5"><b>{{c.yes}}</b> {{c.a1}}<b>₹36,343</b>{{c.a2}}<b>₹1,41,764</b>{{c.a3}}<b>₹93,083</b>{{c.a4}}</p>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
             <button type="button" onClick="{{toggleMath}}" aria-expanded="{{mathOpen}}" style="min-height: 44px; border: 0; background: transparent; padding: 0; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{mathLabel}}</button>
             <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16.5 8.5a5 5 0 0 1 0 7"></path></svg>Speaking
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16.5 8.5a5 5 0 0 1 0 7"></path></svg>{{c.speaking}}
             </span>
           </div>
           <sc-if value="{{mathOpen}}" hint-placeholder-val="{{ false }}">
             <div style="background: var(--tint); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; font-size: 13.5px; color: var(--ink2)">
-              <span>Bank balance − payments due before salary</span>
-              <div style="display: flex; justify-content: space-between"><span>Bank (SMS alerts, 15 Oct)</span><span>₹1,41,764</span></div>
-              <div style="display: flex; justify-content: space-between"><span>Left after all dues</span><span>₹93,083</span></div>
+              <span>{{c.mathHead}}</span>
+              <div style="display: flex; justify-content: space-between"><span>{{c.mathBank}}</span><span>₹1,41,764</span></div>
+              <div style="display: flex; justify-content: space-between"><span>{{c.mathLeft}}</span><span>₹93,083</span></div>
             </div>
           </sc-if>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap">
-          <button type="button" class="chip">Remind me on 22 Oct</button>
-          <button type="button" class="chip">See all bills</button>
+          <button type="button" class="chip">{{c.remind}}</button>
+          <button type="button" class="chip">{{c.allBills}}</button>
         </div>
         <div style="margin-top: auto; display: grid; justify-items: center; gap: 8px">
-          <button type="button" class="orb orb-teal" aria-label="Ask another question" onClick="{{listen}}">
+          <button type="button" class="orb orb-teal" aria-label="{{c.anotherAria}}" onClick="{{listen}}">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
           </button>
-          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">Ask another · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">Type instead</button></span>
+          <span style="display: inline-flex; align-items: center; font-size: 13px; color: var(--muted)">{{c.another}} · <button type="button" style="min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--link); font-size: 13px; font-weight: 600; cursor: pointer">{{c.type}}</button></span>
         </div>
       </div>
     </sc-if>
 
     <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
       <div role="alert" style="display: flex; flex-direction: column; gap: 12px; flex: 1">
-        <span style="align-self: flex-start; font-size: 13px; font-weight: 600; background: var(--err-tint); color: var(--err-ink); border-radius: 999px; padding: 4px 10px">Didn't catch that</span>
-        <b class="serif" style="font-size: 26px; line-height: 1.15">Munim couldn't hear you</b>
-        <span style="font-size: 15px; color: var(--ink2)">The connection dropped while you were speaking. Try again, or type your question instead.</span>
+        <span style="align-self: flex-start; font-size: 13px; font-weight: 600; background: var(--err-tint); color: var(--err-ink); border-radius: 999px; padding: 4px 10px">{{c.errTag}}</span>
+        <b class="serif" style="font-size: 26px; line-height: 1.15">{{c.errTitle}}</b>
+        <span style="font-size: 15px; color: var(--ink2)">{{c.errBody}}</span>
         <div style="margin-top: auto; display: grid">
-          <button type="button" onClick="{{listen}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">Try again</button>
-          <button type="button" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">Type instead</button>
+          <button type="button" onClick="{{listen}}" style="min-height: 52px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 16px; font-weight: 600; cursor: pointer">{{c.retry}}</button>
+          <button type="button" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">{{c.type}}</button>
         </div>
       </div>
     </sc-if>
   </section>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"state":{"editor":"enum","options":["ready","loading","error","empty"],"default":"ready"},"variant":{"editor":"enum","options":["standard","bharat"],"default":"standard"},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { step: null, mathOpen: false }; }
   renderVals() {
     var self = this;
+    var hi = (this.props.variant ?? 'standard') === 'bharat';
+    var C = hi ? {
+      dialog: 'मुनीम से पूछें', close: 'बंद करें', askPre: 'सवाल', askWhat: 'आपके पैसे · रोहन', askPost: ' के बारे में',
+      idleTitle: 'अपने पैसे के बारे में कुछ भी पूछें', idleSub: 'हिंदी या अंग्रेज़ी में बोलें। हर जवाब के साथ उसका हिसाब दिखता है।',
+      chip1: 'कार्ड का बिल भरने के पैसे हैं?', chip2: 'cult.fit पर कितना खर्च हो रहा है?', chip3: 'मेरा पैसा कहाँ जा रहा है?',
+      tapTalkAria: 'बोलने के लिए दबाएँ', tapTalk: 'बोलने के लिए दबाएँ', type: 'लिखकर पूछें',
+      listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', q: 'कार्ड का बिल भरने के पैसे हैं?', stopAria: 'रोकें और जवाब पाएँ', tapStop: 'रोकने के लिए दबाएँ',
+      checking: 'आपका बैंक और बिल देख रहा हूँ…',
+      yes: 'हाँ।', a1: '', a2: ' का कार्ड बिल 24 अक्टूबर को भरना है। आपके बैंक में ', a3: ' हैं। सैलरी से पहले के सारे भुगतान के बाद ', a4: ' बचेंगे।',
+      speaking: 'बोल रहा हूँ', show: 'हिसाब देखें', hide: 'हिसाब छिपाएँ',
+      mathHead: 'बैंक बैलेंस − सैलरी से पहले के भुगतान', mathBank: 'बैंक (SMS अलर्ट, 15 अक्टूबर)', mathLeft: 'सारे भुगतान के बाद बचे',
+      remind: '22 अक्टूबर को याद दिलाएँ', allBills: 'सारे बिल देखें', anotherAria: 'एक और सवाल पूछें', another: 'और पूछें',
+      errTag: 'सुनाई नहीं दिया', errTitle: 'मुनीम आपकी बात सुन नहीं पाया', errBody: 'आप बोल रहे थे तभी कनेक्शन टूट गया। फिर कोशिश करें, या अपना सवाल लिखकर पूछें।', retry: 'फिर कोशिश करें'
+    } : {
+      dialog: 'Ask Munim', close: 'Close', askPre: 'Asking about', askWhat: 'your money · Rohan', askPost: '',
+      idleTitle: 'Ask anything about your money', idleSub: 'Speak in Hindi or English. Every answer shows its math.',
+      chip1: 'Is my card bill covered?', chip2: 'What is cult.fit costing me?', chip3: 'मेरा पैसा कहाँ जा रहा है?',
+      tapTalkAria: 'Tap to talk', tapTalk: 'Tap to talk', type: 'Type instead',
+      listening: 'Listening · Hindi or English', q: 'Is the card bill covered?', stopAria: 'Stop and get the answer', tapStop: 'Tap to stop',
+      checking: 'Checking your bank and bills…',
+      yes: 'Yes.', a1: 'The ', a2: ' card bill is due 24 Oct. Your bank has ', a3: '. After every payment due before salary, ', a4: ' is left.',
+      speaking: 'Speaking', show: 'Show the math', hide: 'Hide the math',
+      mathHead: 'Bank balance − payments due before salary', mathBank: 'Bank (SMS alerts, 15 Oct)', mathLeft: 'Left after all dues',
+      remind: 'Remind me on 22 Oct', allBills: 'See all bills', anotherAria: 'Ask another question', another: 'Ask another',
+      errTag: 'Didn\'t catch that', errTitle: 'Munim couldn\'t hear you', errBody: 'The connection dropped while you were speaking. Try again, or type your question instead.', retry: 'Try again'
+    };
     var START = { ready: 'listening', loading: 'thinking', error: 'error', empty: 'idle' };
     var step = this.state.step || START[this.props.state ?? 'ready'];
     var heights = [10, 18, 30, 44, 26, 38, 52, 34, 22, 40, 28, 16, 24, 12, 8];
     return {
-      theme: this.props.theme ?? 'light',
+      theme: this.props.theme ?? 'light', c: C, lang: hi ? 'hi' : 'en',
       bars: heights.map(function (h) { return { h: h }; }),
       isIdle: step === 'idle', isListening: step === 'listening', isThinking: step === 'thinking', isAnswer: step === 'answer', isError: step === 'error',
       mathOpen: this.state.mathOpen,
-      mathLabel: this.state.mathOpen ? 'Hide the math' : 'Show the math',
+      mathLabel: this.state.mathOpen ? C.hide : C.show,
       ask: function () { self.setState({ step: 'thinking' }); setTimeout(function () { self.setState({ step: 'answer' }); }, 1200); },
       think: function () { self.setState({ step: 'thinking' }); setTimeout(function () { self.setState({ step: 'answer' }); }, 1200); },
       listen: function () { self.setState({ step: 'listening', mathOpen: false }); },
