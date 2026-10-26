@@ -1,5 +1,8 @@
 # Munim: a voice CFO (buildathon app)
 
+> **Frozen (26 Oct 2026, D-056).** This is the buildathon reference, still deployed on Netlify. Its engine is an old copy: don't fix bugs or add features here. The product is `apps/munim`, and the only engine is `packages/core`.
+
+
 Ask about your money out loud, in Hindi or English. Munim reads bank and card statements, SMS alerts, emails, loan papers, insurance policies and a credit report, connects them, finds what matters, and acts: email drafts, calendar reminders, a savings goal, a prepayment plan.
 
 Built for the Bachatt × Digia Voice AI × Finance Buildathon (17 Oct 2026). Runbook: [docs/17](../../docs/17-buildathon-runbook.md) · Voice stack decision: [docs/16](../../docs/16-voice-stack-decision.md) · Native roadmap: [docs/18](../../docs/18-expo-native-roadmap.md).
