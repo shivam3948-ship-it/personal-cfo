@@ -1,0 +1,31 @@
+// Usage event names, designed with each screen (D-031). Each comment lists the only props that event may carry.
+export const EVENTS = {
+  screen_viewed: 'screen_viewed',               // { screen }
+  view_load_failed: 'view_load_failed',         // { screen }
+  math_opened: 'math_opened',                   // { screen, figure }
+  home_top_item_tapped: 'home_top_item_tapped', // { reason, position }
+  home_call_started: 'home_call_started',       // {}
+  home_tile_tapped: 'home_tile_tapped',         // { tile }
+  credit_notify_tapped: 'credit_notify_tapped', // {} fake door: interest in the Credit tab
+  cas_add_opened: 'cas_add_opened',             // {}
+  cas_read: 'cas_read',                         // { result, funds } (never amounts or names)
+  cas_deleted: 'cas_deleted',
+  statement_read: 'statement_read',             // { format, ok, rows } (never amounts or descriptions)
+  statement_deleted: 'statement_deleted',                   // {}
+  ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
+  voice_started: 'voice_started',               // { ctx, mode }
+  answer_listened: 'answer_listened',           // { ctx, how: tap | auto }
+  onboarding_opened: 'onboarding_opened',       // { again } (D-049)
+  onboarding_lang: 'onboarding_lang',           // { lang }
+  onboarding_start: 'onboarding_start',         // { start: mine | sample }
+  onboarding_name: 'onboarding_name',           // { given } (never the name)
+  onboarding_add: 'onboarding_add',             // { kind: statement | cas }
+  onboarding_later: 'onboarding_later',         // {}
+  switched_to_sample: 'switched_to_sample',     // {}
+  sample_bar_add_tapped: 'sample_bar_add_tapped', // {}
+  sub_answered: 'sub_answered',                 // { answer } (never the merchant) (D-052)
+  ask_sent: 'ask_sent',                         // { ctx, turn, via } (never the question text)
+  sms_read: 'sms_read',                         // { messages, rows, added, otp, unreadable } (never text, amounts or names) (D-055)
+  sms_deleted: 'sms_deleted',                   // {}
+} as const;
+export type EventName = keyof typeof EVENTS;

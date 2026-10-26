@@ -96,7 +96,7 @@ describe('Ask Munim live sheet', () => {
     }
   });
   test('the Hindi UI strings carry no English words', () => {
-    const flat = (o: Record<string, unknown>) => Object.values(o).map((v) => (typeof v === 'function' ? '' : String(v))).join(' ');
+    const flat = (o: Record<string, unknown>): string => Object.values(o).map((v) => (typeof v === 'function' ? '' : v && typeof v === 'object' ? flat(v as Record<string, unknown>) : String(v))).join(' ');
     expect(english(flat(UI.hi))).toEqual([]);
     expect(UI.hi.checked(3, true)).toBe(' · 3 आँकड़े जाँचे गए');
     expect(UI.hi.from('बिल और भुगतान')).toBe('स्रोत: बिल और भुगतान');

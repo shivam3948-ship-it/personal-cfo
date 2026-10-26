@@ -21,7 +21,7 @@ The sections after this one are the **3 Oct target design** (FastAPI, Supabase, 
 ```
 
 - **Engine:** `packages/core` only: ingest (statement readers, CAS, SMS), finance (picture, leaks, loans, insurance, audit, advice), portfolio, privacy, agent guard. It runs in the browser for your data and on the server for the sample.
-- **No database yet.** Your data lives in this browser. Events stay in the browser until a store is configured (traces task, docs/39).
+- **No database for your data.** Your data lives in this browser. Usage counts and answer metadata (never text or amounts) go to `/api/events`, and into Supabase only when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set; otherwise they stay on the phone (D-057, docs/39 §As built).
 - **AI:** Claude through the relay when a key is set; otherwise the rule-based agent answers on the phone. The model never computes a number: every figure in an answer is checked against tool results (grounding check), and evals gate prompt changes (`npm run eval`).
 - **Frozen copies (do not change):** `apps/voice-cfo` (buildathon reference, still deployed on Netlify) and `apps/web` (first full app, still holds the `/research` pages for docs/26–27). Each has its own older copy of the engine. Fixes go to `packages/core` and `apps/munim` only.
 

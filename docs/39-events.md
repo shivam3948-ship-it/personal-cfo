@@ -1,6 +1,37 @@
 # 39 · Event names for the Munim v2 screens (19 Oct 2026)
 
-**Status:** names and properties are agreed now. The provider is wired last (D-031). Every event goes through `lib/analytics.ts` and is stored in the `events` table (tech/DATA_MODEL.md).
+## As built (26 Oct 2026, D-057)
+The tables below are the design. What ships today is a smaller set: `apps/munim/lib/eventNames.ts` (each name lists the only props it may carry) plus two trace events.
+
+**Path:** `track()` → `send()` (lib/telemetry.ts) → `safeProps()` → a queue in this browser → `POST /api/events` in batches of 50 → `cleanBatch()` again on the server → Supabase `events`, only if configured.
+
+| Event | Props | Notes |
+|---|---|---|
+| `answer` | `id, engine, model, prompt, tools, steps, ms, grounded, checked, unverified, lang, data (sample/mine), where (server/phone/phone+relay), fallback, repaired` | Every Ask answer, both paths. Never the question or answer. |
+| `feedback` | `id, vote (up/down), reason? (wrong_number/not_answered/hard_to_follow), data` | Thumbs under each answer. A down vote can be followed by a second event with the reason: take the latest per `id`. |
+
+**What is never sent:** question or answer text, amounts, names, merchants, account or phone numbers, emails or UPI ids. The guard drops any string over 80 characters, with 5+ digits in a row, an @, ₹ or Rs amount, or any non-ASCII text.
+
+**Sample family only:** `/api/ask` also writes `sample_traces` (the question, answer and tool inputs, each passed through `redact()`) so agent mistakes can be replayed. Your own data is answered on the phone and never reaches that route.
+
+**Choice:** Welcome tells people usage counts leave the phone and has a Turn off / Turn on switch. Off deletes this phone's rows on the server and starts a new random install id. A browser with Global Privacy Control or Do Not Track sends nothing.
+
+**Turning the store on (Supabase):**
+1. In the Supabase SQL editor, run `supabase/migrations/20261026_events.sql`. It creates `events` and `sample_traces` with row-level security on and no policies, so only the service-role key can read or write them.
+2. In Vercel → Project → Settings → Environment Variables, add `SUPABASE_URL` (the Project URL) and `SUPABASE_SERVICE_ROLE_KEY` (a secret key: the newer `sb_secret_…` key or the legacy `service_role` JWT; Munim handles both). Both are under Project Settings in the Supabase dashboard; menu names have changed over time, so check there. Server-only: never prefix them with `NEXT_PUBLIC_`.
+3. Redeploy. `POST /api/events` now returns 200 instead of 204 with `x-munim-store: none`.
+4. Optional: schedule the two retention deletes at the end of the migration with pg_cron (180 days for events, 90 for traces).
+5. Optional: `MUNIM_EVENTS_DAILY` caps events per day (default 20,000).
+
+Until then nothing changes for users: events wait on the phone (last 500) and the app works the same.
+
+**First queries once data arrives:**
+- Grounding rate on real use: share of `answer` with `grounded = true`, split by `data` and `engine`.
+- Helpfulness: up ÷ (up + down) per tool, and the top `reason` for down votes.
+- Latency: p50 and p90 of `ms` by `where`.
+- Fallback rate: `fallback = true` ÷ all answers with `engine = offline`.
+
+**Status (design, 19 Oct):** names and properties agreed. The provider is wired last (D-031); see As built above for what ships. Every event goes through `lib/analytics.ts` and is stored in the `events` table (tech/DATA_MODEL.md).
 - Autopay events: docs/37 §9. This doc only references them.
 - Mocks: the Munim v2 design canvas. Each screen's Tweaks switch `theme` and `state`.
 

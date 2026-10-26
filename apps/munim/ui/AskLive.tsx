@@ -4,6 +4,8 @@
 // Voice: mic → /api/stt (Sarvam) or the browser's speech recognition, after a one-time note on where the audio goes.
 import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
+import { send, usageOff } from '@/lib/telemetry';
+import { answerProps } from '@/lib/telemetryCore';
 import { askLocal } from '@/lib/local/askLocal';
 import { DISCLAIMER } from '@/lib/advice';
 import { getProfile } from '@/lib/local/profile';
@@ -11,7 +13,9 @@ import { redact } from '@core/privacy/redact';
 import { forSpeech } from '@core/agent/lang';
 import { record, browserListen, browserSttAvailable, browserSpeak, playBase64, stopSpeaking, unlockAudio, type RecorderHandle } from '@/ui/voice';
 
-type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string } };
+type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string; id?: string } };
+type Why = 'wrong_number' | 'not_answered' | 'hard_to_follow';
+const WHY: Why[] = ['wrong_number', 'not_answered', 'hard_to_follow'];
 type Ctx = 'xray' | 'invest' | 'spends' | 'credit' | 'today';
 
 export const CHIPS: Record<Ctx, { label: string; q: string[] }> = {
@@ -52,6 +56,8 @@ export const UI = {
     consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording.',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
     placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
+    helped: 'Did this help?', up: 'Yes, it helped', down: 'No, it didn’t help', whatWrong: 'What went wrong?', thanks: 'Thanks. This helps Munim get better.',
+    why: { wrong_number: 'A number looks wrong', not_answered: 'Didn’t answer my question', hard_to_follow: 'Hard to follow' } as Record<Why, string>,
   },
   hi: {
     dialog: 'मुनीम से पूछें', asking: (what: string) => <>सवाल <b style={{ color: 'var(--ink2)', fontWeight: 600 }}>{what}</b> के बारे में</>, test: 'टेस्ट मोड', close: 'बंद करें',
@@ -66,6 +72,8 @@ export const UI = {
     consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता।',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
     placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
+    helped: 'क्या इससे मदद मिली?', up: 'हाँ, मदद मिली', down: 'नहीं, मदद नहीं मिली', whatWrong: 'क्या गड़बड़ हुई?', thanks: 'धन्यवाद। इससे मुनीम बेहतर बनता है।',
+    why: { wrong_number: 'कोई आँकड़ा गलत लगता है', not_answered: 'मेरे सवाल का जवाब नहीं मिला', hard_to_follow: 'समझना मुश्किल था' } as Record<Why, string>,
   },
 };
 
@@ -107,6 +115,14 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const [sttMode, setSttMode] = useState<'server' | 'browser'>('server');
   const [note, setNote] = useState<string | null>(null); // neutral info (not an error)
   const [speaking, setSpeaking] = useState<number | null>(null); // which answer is being read aloud
+  // thumbs up or down per answer (D-057): only the vote, a reason from a fixed list and the answer's random id are sent
+  const [votes, setVotes] = useState<Record<number, { vote: 'up' | 'down'; why?: Why }>>({});
+  const [canVote, setCanVote] = useState(false);
+  useEffect(() => { setCanVote(!usageOff()); }, []);
+  function vote(i: number, id: string | undefined, v: 'up' | 'down', why?: Why) {
+    setVotes((cur) => ({ ...cur, [i]: { vote: v, why } }));
+    if (id) send('feedback', { id, vote: v, ...(why ? { reason: why } : {}), data: local ? 'mine' : 'sample' });
+  }
   const rec = useRef<RecorderHandle | { stop: () => void } | null>(null);
   const msgsRef = useRef(msgs); msgsRef.current = msgs;
   const busyRef = useRef(busy); busyRef.current = busy;
@@ -128,11 +144,14 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     track('ask_sent', { ctx, turn: next.filter((m) => m.role === 'user').length, via });
     try {
       const turns = next.map(({ role, content }) => ({ role, content }));
-      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean }; tools?: string[]; engine: string } = local ? await askLocal(turns) : await (async () => {
+      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean } = local ? await askLocal(turns) : await (async () => {
         const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns }) });
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
-      setMsgs([...next, { role: 'assistant', content: j.answer, spoken: j.spoken, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine } }]);
+      setMsgs([...next, { role: 'assistant', content: j.answer, spoken: j.spoken, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine, id: j.trace } }]);
+      // metadata only: which tools ran, how long, whether the numbers checked out. Never the question or the answer.
+      if (j.trace) send('answer', answerProps({ id: j.trace, engine: j.engine, model: j.model, prompt: j.prompt ?? 'unknown', tools: j.tools ?? [], ms: j.ms ?? 0,
+        check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified ?? [] }, lang: j.lang ?? (hi ? 'hi' : 'en'), data: local ? 'mine' : 'sample', where: j.where ?? 'server', fallback: j.fallback, repaired: j.repaired }));
       if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto'); // asked by voice → answered by voice; typed → stays quiet
     } catch (e) { setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
     finally { setBusy(false); input.current?.focus(); }
@@ -224,6 +243,18 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
                     {disc.test ? ` · ${m.meta.engine === 'claude' ? 'Claude' : t.rules}` : ''}
                   </span>
                 )}
+                {canVote && m.meta?.id && (votes[i]
+                  ? (votes[i].vote === 'down' && !votes[i].why
+                      ? <div role="group" aria-label={t.whatWrong} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                          <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>{t.whatWrong}</span>
+                          {WHY.map((w) => <button key={w} type="button" className="chip chip-sm" onClick={() => vote(i, m.meta!.id, 'down', w)}>{t.why[w]}</button>)}
+                        </div>
+                      : <span role="status" style={{ fontSize: 12.5, color: 'var(--muted)' }}>{t.thanks}</span>)
+                  : <div role="group" aria-label={t.helped} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <span style={{ fontSize: 12.5, color: 'var(--muted)', marginRight: 4 }}>{t.helped}</span>
+                      <button type="button" aria-label={t.up} onClick={() => vote(i, m.meta!.id, 'up')} style={S.thumb}><Thumb /></button>
+                      <button type="button" aria-label={t.down} onClick={() => vote(i, m.meta!.id, 'down')} style={S.thumb}><Thumb down /></button>
+                    </div>)}
               </div>
             ))}
           {busy && (
@@ -280,6 +311,11 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   );
 }
 
+function Thumb({ down = false }: { down?: boolean }) {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={down ? { transform: 'rotate(180deg)' } : undefined}>
+    <path d="M7 10v11H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h3zM7 10l4-8a3 3 0 0 1 3 3v4h5.5a2 2 0 0 1 2 2.3l-1.4 8A2 2 0 0 1 18.1 21H7" /></svg>;
+}
+
 const CSS = `.serif{font-family:'Noto Serif','Noto Serif Devanagari',serif;font-weight:700}
 .chip{min-height:44px;padding:0 14px;border-radius:999px;border:0;box-shadow:inset 0 0 0 1px var(--hair2);background:transparent;color:var(--ink);font:inherit;font-size:14px;cursor:pointer;text-align:left}
 .chip-sm{min-height:36px;font-size:13px;color:var(--ink2)}
@@ -306,5 +342,6 @@ const S: Record<string, React.CSSProperties> = {
   consent: { display: 'grid', gap: 10, background: 'var(--tint)', borderRadius: 18, padding: '12px 14px' },
   primary: { minHeight: 40, padding: '0 16px', borderRadius: 999, border: 0, background: 'var(--btn)', color: 'var(--on-btn)', fontSize: 14, fontWeight: 600, cursor: 'pointer' },
   ghost: { minHeight: 40, padding: '0 12px', borderRadius: 999, border: 0, background: 'transparent', color: 'var(--link)', fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  thumb: { width: 44, height: 44, display: 'grid', placeItems: 'center', border: 0, borderRadius: '50%', background: 'transparent', color: 'var(--ink2)', cursor: 'pointer' },
   sr: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' },
 };
