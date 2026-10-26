@@ -15,7 +15,7 @@ type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; meta?
 type Ctx = 'xray' | 'invest' | 'spends' | 'credit' | 'today';
 
 export const CHIPS: Record<Ctx, { label: string; q: string[] }> = {
-  xray: { label: 'your funds', q: ['Should I switch to direct plans?', 'How much can I book tax-free this year?', 'Are my funds beating an FD?'] },
+  xray: { label: 'your funds', q: ['What do regular plans cost me?', 'How much can I book tax-free this year?', 'Are my funds beating an FD?'] },
   invest: { label: 'your savings', q: ['How big is my safety net?', 'How are my funds doing?', 'Is my term cover enough?'] },
   spends: { label: 'your spending', q: ['Where is my money going?', 'Which subscriptions should I cut?', 'Anything unusual this month?'] },
   credit: { label: 'your credit', q: ['What changed in my credit score?', 'Can I get a better rate on my loan?', 'Should I prepay my car loan?'] },
@@ -24,7 +24,7 @@ export const CHIPS: Record<Ctx, { label: string; q: string[] }> = {
 // Hindi chips keep each English chip's intent (lib/agent/offline.ts INTENTS), so the offline answers route the same way.
 // Labels are oblique ("आपके पैसे") because they sit before "के बारे में".
 export const CHIPS_HI: Record<Ctx, { label: string; q: string[] }> = {
-  xray: { label: 'आपके फ़ंड', q: ['क्या मुझे डायरेक्ट प्लान में जाना चाहिए?', 'इस साल कितना मुनाफ़ा टैक्स-फ़्री मिल सकता है?', 'क्या मेरे फ़ंड FD से अच्छा कर रहे हैं?'] },
+  xray: { label: 'आपके फ़ंड', q: ['रेगुलर प्लान में मेरा कितना खर्च होता है?', 'इस साल कितना मुनाफ़ा टैक्स-फ़्री मिल सकता है?', 'क्या मेरे फ़ंड FD से अच्छा कर रहे हैं?'] },
   invest: { label: 'आपकी बचत', q: ['मेरा इमरजेंसी फ़ंड कितना बड़ा है?', 'मेरे फ़ंड कैसे चल रहे हैं?', 'क्या मेरा टर्म बीमा काफ़ी है?'] },
   spends: { label: 'आपके खर्च', q: ['मेरा पैसा कहाँ जा रहा है?', 'कौन से सब्सक्रिप्शन बंद करूँ?', 'इस महीने कुछ अजीब खर्च तो नहीं?'] },
   credit: { label: 'आपके क्रेडिट', q: ['मेरा क्रेडिट स्कोर क्यों बदला?', 'क्या मेरे लोन पर ब्याज कम हो सकता है?', 'क्या कार लोन पहले चुका दूँ?'] },

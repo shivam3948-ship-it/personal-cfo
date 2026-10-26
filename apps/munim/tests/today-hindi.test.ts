@@ -154,7 +154,7 @@ describe('Today in Hindi', async () => {
     for (const line of ['Rohan, your money’s okay today', 'Bills covered · spent below a usual day', "Today's check-in", 'Save ₹50 a day, automatically', 'Set up autopay', 'Your big picture · net worth', 'Card bill ₹36,343', 'due 24 Oct', 'Thursday, 15 Oct', 'Today', 'Ask Munim'])
       expect(t).toContain(line);
     expect(readable(got['off reasons'])).toContain("What's off about yesterday?");
-    expect(readable(got['why emergency'])).toContain('General guidance, not investment advice.');
+    expect(readable(got['why emergency'])).toContain('For education only, not investment advice.');
     expect(readable(got['mine: bank only '])).toContain('Asha, here’s your money today');
     expect(readable(got['mine: bank only '])).toContain('Step 2: Last day');
     expect(readable(got['mine: bank only '])).toContain('From your statements, up to 15 Oct');

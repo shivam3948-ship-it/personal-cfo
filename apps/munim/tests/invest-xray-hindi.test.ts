@@ -73,7 +73,7 @@ describe('Invest and X-ray in Hindi', () => {
     for (const mode of MODES) {
       const x = text(render(Xray, { open: 'details', history: 'preview', data: buildXray(ds, { adviceMode: mode }) }));
       for (const s of ['Portfolio x-ray', '5 things worth acting on', 'Your money earned', 'than a 7% FD on the same dates. No SIP paused or sold since Jan 2021.',
-        'Book ₹1,25,000 of gains tax-free by 31 Mar', 'Your money vs your funds', DISCLAIMER[mode].en]) expect(x).toContain(s);
+        '₹1,25,000 of this year’s tax-free gains limit is unused (lapses 31 Mar)', 'Your money vs your funds', DISCLAIMER[mode].en]) expect(x).toContain(s);
       expect(x).not.toMatch(/[ऀ-ॿ]/);
     }
   });

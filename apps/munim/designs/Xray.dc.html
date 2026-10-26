@@ -206,7 +206,7 @@ class Component extends DCLogic {
       'Liquid': 'लिक्विड', 'Hybrid': 'हाइब्रिड', 'Arbitrage': 'आर्बिट्राज', 'Gold / silver': 'सोना / चाँदी', 'Equity (other)': 'इक्विटी (अन्य)', 'Other': 'अन्य' };
     var HI_PLAN = { 'Regular': 'रेगुलर', 'Direct': 'डायरेक्ट' };
     var CC = hi ? {   // copy (C is the harvest combo below)
-      backAria: 'निवेश पर वापस', title: 'पोर्टफ़ोलियो एक्स-रे', saveAria: 'यह रिपोर्ट सेव या शेयर करें', taxTile: 'आगे कम टैक्स · 31 मार्च तक करें', feeTile: 'सालाना रेगुलर प्लान की फ़ीस',
+      backAria: 'निवेश पर वापस', title: 'पोर्टफ़ोलियो एक्स-रे', saveAria: 'यह रिपोर्ट सेव या शेयर करें', taxTile: 'आगे कम टैक्स · लिमिट 31 मार्च को खत्म', feeTile: 'सालाना रेगुलर प्लान की फ़ीस',
       e1: 'आपके पैसे ने', aYear: 'सालाना', e2: ' कमाया: उन्हीं तारीख़ों पर 7% FD से ', more: 'ज़्यादा', e3: '।',
       didHead: 'क्या फ़ायदा हुआ?', preview: 'झलक', noHist: 'अभी देखने को कुछ नहीं। नीचे किसी कार्ड पर कदम उठाएँ, फिर मुनीम हर महीने दिखाएगा कि आपको कितना बचा।',
       seePlan: 'प्लान देखें', vsHead: 'आपका पैसा बनाम आपके फ़ंड', fund: 'फ़ंड', you: 'आप',
@@ -218,7 +218,7 @@ class Component extends DCLogic {
       planNote: 'कदम उठाने से पहले जाँचें: ये यूनिट एक साल से पुरानी हैं, इसलिए एग्ज़िट लोड आम तौर पर नहीं लगता (हर फ़ंड के दस्तावेज़ में पक्का कर लें)। बेचकर वापस खरीदने में 1–3 कामकाजी दिन लगते हैं, तब तक आपका पैसा थोड़े समय बाज़ार से बाहर रहता है। नतीजा मुनीम “क्या फ़ायदा हुआ?” में दिखाता है।',
       walk: 'मुनीम के साथ कदम-दर-कदम समझें'
     } : {
-      backAria: 'Back to Invest', title: 'Portfolio x-ray', saveAria: 'Save or share this report', taxTile: 'less future tax · act by 31 Mar', feeTile: 'a year in regular-plan fees',
+      backAria: 'Back to Invest', title: 'Portfolio x-ray', saveAria: 'Save or share this report', taxTile: 'less future tax · limit lapses 31 Mar', feeTile: 'a year in regular-plan fees',
       e1: 'Your money earned', aYear: 'a year', e2: ': ', more: 'more', e3: ' than a 7% FD on the same dates.',
       didHead: 'Did it work?', preview: 'Preview', noHist: 'Nothing to track yet. Act on a card below and Munim shows what it saved you, month by month.',
       seePlan: 'See the plan', vsHead: 'Your money vs your funds', fund: 'Fund', you: 'You',
@@ -269,7 +269,7 @@ class Component extends DCLogic {
     var pairMax = 100, top = (O.pairs || []).filter(function (p) { return p[2] > 0; })[0] || null;
     // each card only when its data is there, numbered in order (same conditions as the Invest summary count)
     var specs = [];
-    if (H.harvest > 0) specs.push(['harvest', T('Tax', 'टैक्स'), T(H.daysLeft + ' days left', H.daysLeft + ' दिन बाकी'), 'deadline', T('Book ' + R(H.left) + ' of gains tax-free by 31 Mar', '31 मार्च तक ' + R(H.left) + ' का फ़ायदा टैक्स-फ़्री बुक करें'),
+    if (H.harvest > 0) specs.push(['harvest', T('Tax', 'टैक्स'), T(H.daysLeft + ' days left', H.daysLeft + ' दिन बाकी'), 'deadline', T(R(H.left) + ' of this year’s tax-free gains limit is unused (lapses 31 Mar)', 'इस साल की ' + R(H.left) + ' की टैक्स-फ़्री लिमिट अभी इस्तेमाल नहीं हुई (31 मार्च को खत्म होगी)'),
         named ? T('About ' + R(H.taxSavedLater) + ' less tax when you finally sell.', 'आख़िर में बेचते समय लगभग ' + R(H.taxSavedLater) + ' कम टैक्स।') + (G.feeTotal > 0 && C.lots ? T(' One move does it, together with card 2.', ' कार्ड 2 के साथ एक ही कदम में हो जाता है।') : '') : T('About ' + R(H.taxSavedLater) + ' less tax when you finally sell, if gains are booked before the limit lapses.', 'अगर लिमिट खत्म होने से पहले फ़ायदा बुक हो जाए, तो आख़िर में बेचते समय लगभग ' + R(H.taxSavedLater) + ' कम टैक्स लगेगा।'),
         { hasPlan: named && C.lots > 0, notes: [T('You have ' + R(H.ltGainAll) + ' of long-term gains and haven’t used this year’s limit. Selling and buying back resets your cost; the limit lapses on 31 Mar.', 'आपके पास ' + R(H.ltGainAll) + ' का लॉन्ग-टर्म फ़ायदा है और इस साल की लिमिट अभी इस्तेमाल नहीं हुई। बेचकर वापस खरीदने से आपकी लागत नई हो जाती है; लिमिट 31 मार्च को खत्म होती है।'), T('The saving assumes your gains are above the yearly limit when you finally sell.', 'यह बचत तभी है जब आख़िर में बेचते समय आपका फ़ायदा सालाना लिमिट से ज़्यादा हो।')] }]);
     if (G.feeTotal > 0) specs.push(['direct', T('Costs', 'फ़ीस'), T('Estimate', 'अनुमान'), 'est', T('Regular plans cost you about ' + R(G.feeTotal) + ' a year', 'रेगुलर प्लान में आपके लगभग ' + R(G.feeTotal) + ' सालाना जाते हैं'),
@@ -316,7 +316,7 @@ class Component extends DCLogic {
           aria: T(r.f[0] + ': fund ' + r.fund + '% a year, your money ' + r.you + '% a year', r.f[0] + ': फ़ंड ' + r.fund + '% सालाना, आपका पैसा ' + r.you + '% सालाना') }; }),
       mixLabel: T('Equity ' + Math.round(eq / PF.value * 100) + '% · debt ' + Math.round(dt / PF.value * 100) + '% · ' + PF.funds.length + ' funds · ' + R(PF.value), 'इक्विटी ' + Math.round(eq / PF.value * 100) + '% · डेट ' + Math.round(dt / PF.value * 100) + '% · ' + PF.funds.length + ' फ़ंड · ' + R(PF.value)),
       funds: PF.funds.map(function (f) { return { name: f[0], cat: hi ? (HI_FCAT[f[2]] || f[2]) : f[2], plan: hi ? (HI_PLAN[f[1]] || f[1]) : f[1], planInk: f[1] === 'Regular' ? 'var(--warn)' : 'var(--link)', value: R(f[4]) }; }),
-      asks: [top ? T('Do I need both ' + top[0] + ' and ' + top[1] + '?', 'क्या मुझे ' + top[0] + ' और ' + top[1] + ' दोनों चाहिए?') : T('Are my funds too similar?', 'क्या मेरे फ़ंड बहुत मिलते-जुलते हैं?'), T('Is ' + PF.xirr + '% a year good?', 'क्या ' + PF.xirr + '% सालाना अच्छा है?'), G.feeTotal > 0 ? T('How do I switch to direct?', 'डायरेक्ट में कैसे स्विच करूँ?') : T('What should I check next?', 'अब आगे क्या देखूँ?')],
+      asks: [top ? T('Do I need both ' + top[0] + ' and ' + top[1] + '?', 'क्या मुझे ' + top[0] + ' और ' + top[1] + ' दोनों चाहिए?') : T('Are my funds too similar?', 'क्या मेरे फ़ंड बहुत मिलते-जुलते हैं?'), T('Is ' + PF.xirr + '% a year good?', 'क्या ' + PF.xirr + '% सालाना अच्छा है?'), G.feeTotal > 0 ? T('What do regular plans cost me?', 'रेगुलर प्लान में मेरा कितना खर्च होता है?') : T('What should I check next?', 'अब आगे क्या देखूँ?')],
       steps: [
         { n: '1', t: T('Pick the oldest units', 'सबसे पुरानी यूनिट चुनें'), d: T(C.lots + ' SIP instalments in ' + C.funds.join(' and ') + ', worth ' + R(C.value) + ', with ' + R(C.gain) + ' of gains: just under the ' + R(H.exempt) + ' limit.', C.funds.join(' और ') + ' में ' + C.lots + ' SIP किस्तें, कीमत ' + R(C.value) + ', फ़ायदा ' + R(C.gain) + ': ' + R(H.exempt) + ' की लिमिट से थोड़ा कम।') },
         { n: '2', t: T('Switch them to the direct plan', 'इन्हें डायरेक्ट प्लान में स्विच करें'), d: T('Ask the fund house (or your app) for a switch from the regular to the direct plan of the same fund.', 'फ़ंड हाउस (या अपने app) से उसी फ़ंड के रेगुलर से डायरेक्ट प्लान में स्विच करने को कहें।') },

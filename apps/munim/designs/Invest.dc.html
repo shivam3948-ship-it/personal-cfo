@@ -235,7 +235,7 @@ button{font:inherit;color:inherit}
             <button type="button" onClick="{{unremind}}" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; font-size: 14px; font-weight: 600; color: var(--link); cursor: pointer">{{c.undo}}</button>
           </div>
         </sc-if>
-        <span style="font-size: 12.5px; color: var(--muted); padding-top: 6px">{{c.coverNote}}</span>
+        <span style="font-size: 12.5px; color: var(--muted); padding-top: 6px">{{c.coverNote}} {{disc}}</span>
         <a href="Voice.dc.html" style="margin-top: 6px; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--hair2); color: var(--ink); font-size: 15px; font-weight: 600; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>{{c.askCover}}</a>
       </section>
     </div>
@@ -362,7 +362,7 @@ class Component extends DCLogic {
     var ENDOW = { irrLo: 0.48, irrHi: 4.6 }, TERM_X = Math.round(TERM_COVER / (INCOME_M * 12) * 10) / 10;
     var termNeed = 10 * INCOME_M * 12, termGap = Math.max(0, termNeed - TERM_COVER);
     var SAVED_WITH_MUNIM = 0;
-    var DISC = 'Test build on sample data. For testing only, not investment advice.';   // the advice mode's disclaimer, from the server
+    var DISC = 'Test build on sample data. For education only, not investment advice.';   // the advice mode's disclaimer, from the server
     var CAS_SRC = 'sample';   // whose CAS: 'sample' (the demo family) or 'yours' (read on this phone)
     var XRS = { count: 5, taxSave: 1562500, feeYr: 834902, fdExtra: 23908946 };   // from the x-ray (xray_v2/v3_numbers.py): things to act on, tax saved later, regular-plan fees/yr, extra vs a 7% FD   // the savings pot: nothing saved through Munim yet in this scenario
     // ---- safety net (D-040) ----
