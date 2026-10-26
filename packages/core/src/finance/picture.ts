@@ -13,7 +13,9 @@ export interface MonthCoverage { key: string; from: string; to: string; complete
 /** Months covered by bank-side data (statement or SMS); a month is complete if data spans day 1..last day. */
 export function coverage(ds: Dataset): MonthCoverage[] {
   // bank-side data defines the months; with only card statements, the card rows do
-  const bankTx = ds.txns.some((t) => t.account.startsWith('bank:')) ? ds.txns.filter((t) => t.account.startsWith('bank:')) : ds.txns;
+  // (with bank SMS only (D-055) there's no statement to frame the month, so every row counts)
+  const fromStatements = ds.accounts.some((a) => a.kind === 'bank' && a.opening !== undefined);
+  const bankTx = fromStatements && ds.txns.some((t) => t.account.startsWith('bank:')) ? ds.txns.filter((t) => t.account.startsWith('bank:')) : ds.txns;
   if (!bankTx.length) return [];
   const dates = bankTx.map((t) => t.date).sort();
   const first = dates[0]; const last = dates[dates.length - 1];

@@ -61,6 +61,7 @@ class Component extends DCLogic {
       retry: 'Retry', errLine: 'Couldn’t refresh. Showing numbers from 7:40 am.', loading: 'Adding up your spending…',
       emptyTitle: 'Add your first bank statement', emptyBody: 'Munim reads it on your phone and shows where your money went, and what you can change.', emptyCta: 'Add bank statement', emptyAlt: 'Try with sample data', emptyNote: 'Supported now: HDFC, SBI and Canara accounts, HDFC and Axis credit cards.'
     };
+    if (META.sms) C.trust = hi ? 'SMS वाले लेन-देन अस्थायी हैं ·' : 'SMS rows are provisional ·';   // SMS have no totals to check (D-055)
     Object.assign(C, hi ? {
       backToNow: curFull + ' पर लौटें', reportSub: 'महीना बंद: क्या बदला, क्या रखें, आगे का प्लान', noReport: 'रिपोर्ट कार्ड सितंबर से शुरू होते हैं, जो मुनीम में बंद किया पहला महीना था। ये महीने आपके अपलोड किए स्टेटमेंट से हैं।',
       pastTxNote: 'इस महीने के रोज़ के खर्च के चार सबसे बड़े भुगतान।', sortNow: 'छाँटें', sortTitle: 'इन्हें छाँटने में मदद करें', rememberSub: 'अपने आप बंद रहता है। नियम बनाने से पहले मुनीम पूछता है।', skipForNow: 'अभी छोड़ें',
