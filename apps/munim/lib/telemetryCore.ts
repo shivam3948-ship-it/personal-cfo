@@ -2,7 +2,7 @@
 // Pure: the phone and the server both run it. Rule (D-057): for your own data, only metadata leaves the phone
 // (which tools ran, how long, whether the numbers checked out, thumbs up or down). Never the question, the answer,
 // amounts, names, merchants or identifiers. Full text is kept only for the sample family, and redacted even then.
-import { EVENTS } from './eventNames';
+import { EVENTS, PROPS } from './eventNames';
 
 export const TRACE_EVENTS = {
   answer: 'answer',     // answerProps(): { id, engine, model, prompt, tools, steps, ms, grounded, checked, unverified, lang, data, where, fallback, repaired }
@@ -36,6 +36,18 @@ export function safeProps(p: unknown): Props {
   return out;
 }
 
+const TOKEN = /^[a-z0-9][a-z0-9_,.:+-]{0,79}$/;
+/** safeProps, then only the props this event is allowed (lib/eventNames.ts PROPS), each of the allowed kind. */
+export function propsFor(name: TelemetryName, p: unknown): Props {
+  const spec = PROPS[name], out: Props = {};
+  for (const [k, v] of Object.entries(safeProps(p))) {
+    const kind = spec?.[k];
+    if (!kind) continue;
+    if (kind === 'num' ? typeof v === 'number' : kind === 'bool' ? typeof v === 'boolean' : kind === 'token' ? typeof v === 'string' && TOKEN.test(v) : typeof v === 'string' && kind.includes(v)) out[k] = v;
+  }
+  return out;
+}
+
 /** A batch from a phone, cleaned: known names only, safe props only, at most 50, timestamps within a day. */
 /** A random id for one answer, so a thumbs up or down can point at it. Letters only, so the digit-run guard keeps it. */
 export function traceId(): string {
@@ -43,7 +55,8 @@ export function traceId(): string {
   return hex.slice(0, 16).replace(/[0-9]/g, (d) => 'ghijklmnop'[+d]);
 }
 
-export const isInstallId = (v: unknown): v is string => typeof v === 'string' && /^[a-z0-9-]{8,40}$/.test(v);
+/** Install ids are random v4 UUIDs, made on the phone. Nothing else is accepted (not a phone number, not a name). */
+export const isInstallId = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(v);
 
 /** The metadata of one answer, the same shape from the phone and the server. Never the question or the answer. */
 export function answerProps(a: { id: string; engine: string; model?: string; prompt: string; tools: string[]; ms: number; check: { ok: boolean; checked: number; unverified: string[] }; lang: string; data: 'sample' | 'mine'; where: string; fallback?: boolean; repaired?: boolean }): Props {
@@ -57,7 +70,7 @@ export function cleanBatch(body: unknown, now = Date.now()): { install: string; 
   const events = b.events.slice(0, 50).flatMap((e: { name?: unknown; props?: unknown; at?: unknown }) => {
     if (!isTelemetryName(e?.name)) return [];
     const at = typeof e.at === 'number' && Math.abs(now - e.at) < 864e5 ? e.at : now;
-    return [{ name: e.name, props: safeProps(e.props), at }];
+    return [{ name: e.name, props: propsFor(e.name, e.props), at }];
   });
   return { install: b.install, events };
 }

@@ -3,7 +3,7 @@
 ## As built (26 Oct 2026, D-057)
 The tables below are the design. What ships today is a smaller set: `apps/munim/lib/eventNames.ts` (each name lists the only props it may carry) plus two trace events.
 
-**Path:** `track()` → `send()` (lib/telemetry.ts) → `safeProps()` → a queue in this browser → `POST /api/events` in batches of 50 → `cleanBatch()` again on the server → Supabase `events`, only if configured.
+**Path:** `track()` → `send()` (lib/telemetry.ts) → `propsFor()` (only the props `PROPS` in lib/eventNames.ts allows for that event) → a queue in this browser (held until the Welcome notice has been shown) → `POST /api/events` in batches of 50 → `cleanBatch()` again on the server → Supabase `events`, only if configured.
 
 | Event | Props | Notes |
 |---|---|---|
@@ -12,15 +12,15 @@ The tables below are the design. What ships today is a smaller set: `apps/munim/
 
 **What is never sent:** question or answer text, amounts, names, merchants, account or phone numbers, emails or UPI ids. The guard drops any string over 80 characters, with 5+ digits in a row, an @, ₹ or Rs amount, or any non-ASCII text.
 
-**Sample family only:** `/api/ask` also writes `sample_traces` (the question, answer and tool inputs, each passed through `redact()`) so agent mistakes can be replayed. Your own data is answered on the phone and never reaches that route.
+**Sample family only:** `/api/ask` also writes `sample_traces` (the question, answer and tool inputs, each passed through `redact()`, with the install id) so agent mistakes can be replayed. Only when usage counts are on and the browser sends no GPC/DNT; kept 90 days. Your statements are answered on the phone and never reach that route, but what someone types to the sample family can be about themselves, which is why Welcome says these are kept.
 
-**Choice:** Welcome tells people usage counts leave the phone and has a Turn off / Turn on switch. Off deletes this phone's rows on the server and starts a new random install id. A browser with Global Privacy Control or Do Not Track sends nothing.
+**Choice:** Welcome (first run, and later from Today's "You" button) says what is sent and has a Turn off / Turn on switch. Off deletes this phone's events and sample questions on the server (retried until it succeeds) and starts a new random install id. A browser with Global Privacy Control or Do Not Track sends nothing.
 
 **Turning the store on (Supabase):**
 1. In the Supabase SQL editor, run `supabase/migrations/20261026_events.sql`. It creates `events` and `sample_traces` with row-level security on and no policies, so only the service-role key can read or write them.
 2. In Vercel → Project → Settings → Environment Variables, add `SUPABASE_URL` (the Project URL) and `SUPABASE_SERVICE_ROLE_KEY` (a secret key: the newer `sb_secret_…` key or the legacy `service_role` JWT; Munim handles both). Both are under Project Settings in the Supabase dashboard; menu names have changed over time, so check there. Server-only: never prefix them with `NEXT_PUBLIC_`.
 3. Redeploy. `POST /api/events` now returns 200 instead of 204 with `x-munim-store: none`.
-4. Optional: schedule the two retention deletes at the end of the migration with pg_cron (180 days for events, 90 for traces).
+4. The migration schedules retention with pg_cron (180 days for events, 90 for traces). If it prints "pg_cron not available", enable pg_cron under Database → Extensions and run the migration again.
 5. Optional: `MUNIM_EVENTS_DAILY` caps events per day (default 20,000).
 
 Until then nothing changes for users: events wait on the phone (last 500) and the app works the same.

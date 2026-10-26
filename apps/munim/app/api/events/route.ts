@@ -9,14 +9,15 @@ import { limiter } from '@/lib/rateLimit';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 const allowEvents = limiter(60, 10 * 60_000, Number(process.env.MUNIM_EVENTS_DAILY ?? 20000));
+const allowDeletes = limiter(10, 10 * 60_000, 5000); // separate, so a busy events limit never blocks someone deleting theirs
 const NONE = { status: 204, headers: { 'x-munim-store': 'none' } };
 
 /** Only this site's own pages may write (a browser always sends Origin on a cross-site POST or DELETE). */
-function refuse(req: Request): NextResponse | null {
+function refuse(req: Request, allow = allowEvents): NextResponse | null {
   const origin = req.headers.get('origin'), host = req.headers.get('host');
   if (origin && host) { try { if (new URL(origin).host !== host) return NextResponse.json({ error: 'forbidden' }, { status: 403 }); } catch { return NextResponse.json({ error: 'forbidden' }, { status: 403 }); } }
   const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
-  return allowEvents(ip) ? null : NextResponse.json({ error: 'slow down' }, { status: 429 });
+  return allow(ip) ? null : NextResponse.json({ error: 'slow down' }, { status: 429 });
 }
 
 export async function POST(req: Request) {
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   if (!storeConfigured()) return new NextResponse(null, NONE);
-  const no = refuse(req); if (no) return no;
+  const no = refuse(req, allowDeletes); if (no) return no;
   const b = (await req.json().catch(() => null)) as { install?: unknown } | null;
   if (!isInstallId(b?.install)) return NextResponse.json({ error: 'bad id' }, { status: 400 });
   const ok = await deleteInstall(b.install);

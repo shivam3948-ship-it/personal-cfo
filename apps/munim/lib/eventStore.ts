@@ -27,15 +27,19 @@ export function storeEvents(install: string, events: TelemetryEvent[]) {
 }
 
 /** Sample family only: the redacted question and answer, and each tool call with its input, for debugging the agent. */
-export interface SampleTrace { id: string; question: string; answer: string; engine: string; model: string; prompt: string; lang: string; ms: number; grounded: boolean; unverified: number; calls: { tool: string; input: string; ms: number }[] }
+export interface SampleTrace { id: string; install: string; question: string; answer: string; engine: string; model: string; prompt: string; lang: string; ms: number; grounded: boolean; unverified: number; calls: { tool: string; input: string; ms: number }[] }
 export function storeSampleTrace(t: SampleTrace) { return insert('sample_traces', [t]); }
 
-/** Deletes every event one phone sent (when its owner turns usage counts off). */
+/** Deletes everything one phone sent, events and saved sample questions (when its owner turns usage counts off). */
 export async function deleteInstall(install: string): Promise<boolean> {
   if (!storeConfigured()) return false;
-  try {
-    const r = await fetch(`${url()}/rest/v1/events?install=eq.${encodeURIComponent(install)}`, { method: 'DELETE', headers: { ...auth(), Prefer: 'return=minimal' } });
-    if (!r.ok) console.error('[events] delete refused', r.status);
-    return r.ok;
-  } catch { console.error('[events] store unreachable'); return false; }
+  const del = async (table: string) => {
+    try {
+      const r = await fetch(`${url()}/rest/v1/${table}?install=eq.${encodeURIComponent(install)}`, { method: 'DELETE', headers: { ...auth(), Prefer: 'return=minimal' } });
+      if (!r.ok) console.error('[events] delete refused', table, r.status);
+      return r.ok;
+    } catch { console.error('[events] store unreachable', table); return false; }
+  };
+  const [a, b] = await Promise.all([del('events'), del('sample_traces')]);
+  return a && b;
 }

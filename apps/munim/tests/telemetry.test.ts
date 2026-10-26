@@ -1,7 +1,7 @@
 // Usage events and answer traces (D-057): what may leave the phone, what the server stores, and that nothing is sent
 // or stored when no store is configured.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { answerProps, cleanBatch, safeProps, safeValue, traceId } from '@/lib/telemetryCore';
+import { answerProps, cleanBatch, isInstallId, propsFor, safeProps, safeValue, traceId } from '@/lib/telemetryCore';
 
 vi.mock('next/server', async (orig) => ({ ...(await orig<typeof import('next/server')>()), after: (fn: () => unknown) => { void fn(); } }));
 
@@ -36,6 +36,19 @@ describe('answer ids and answer metadata', () => {
       check: { ok: false, checked: 4, unverified: ['₹12,400'] }, lang: 'hi', data: 'mine', where: 'phone+relay' });
     expect(p).toMatchObject({ engine: 'claude', model: 'claude-sonnet-4-5', prompt: 'munim-v4', tools: 'money_overview,unusual_spending', steps: 3, ms: 2400, grounded: false, checked: 4, unverified: 1, lang: 'hi', data: 'mine', fallback: false });
     expect(JSON.stringify(p)).not.toMatch(/₹|12,400/);
+  });
+});
+
+describe('propsFor: only the props each event is allowed (lib/eventNames.ts)', () => {
+  it('drops unknown keys, values outside the enum and non-token words', () => {
+    expect(propsFor('feedback', { id: 'abcdefghijklmnop', vote: 'up', reason: 'because Ramesh', merchant: 'swiggy' })).toEqual({ id: 'abcdefghijklmnop', vote: 'up' });
+    expect(propsFor('screen_viewed', { screen: 'Swiggy Order' })).toEqual({});
+    expect(propsFor('ask_sent', { ctx: 'today', turn: 2, via: 'voice', text: 'hi' })).toEqual({ ctx: 'today', turn: 2, via: 'voice' });
+    expect(propsFor('statement_read', { format: 'hdfc_savings', ok: 'yes', rows: 40 })).toEqual({ format: 'hdfc_savings', rows: 40 });
+  });
+  it('install ids must be v4 UUIDs', () => {
+    expect(isInstallId('b6f1c2d4-1a2b-4c3d-9e8f-123456789abc')).toBe(true);
+    for (const bad of ['9876543210', 'rohan-sharma-01', 'B6F1C2D4-1A2B-4C3D-9E8F-123456789ABC', '']) expect(isInstallId(bad)).toBe(false);
   });
 });
 
@@ -87,22 +100,35 @@ describe('/api/events and /api/ask with and without a store', () => {
     expect((await POST(post({ install, events: [] }, { origin: 'https://evil.example' }))).status).toBe(403);
     const del = await DELETE(new Request('https://munim.test/api/events', { method: 'DELETE', headers: { host: 'munim.test' }, body: JSON.stringify({ install }) }));
     expect(del.status).toBe(200);
-    expect(calls.at(-1)!.url).toBe(`https://proj.supabase.test/rest/v1/events?install=eq.${install}`); expect(calls.at(-1)!.init.method).toBe('DELETE');
+    const dels = calls.filter((c) => c.init.method === 'DELETE').map((c) => c.url).sort();
+    expect(dels).toEqual([`https://proj.supabase.test/rest/v1/events?install=eq.${install}`, `https://proj.supabase.test/rest/v1/sample_traces?install=eq.${install}`]);
     expect((await DELETE(new Request('https://munim.test/api/events', { method: 'DELETE', headers: { host: 'munim.test' }, body: JSON.stringify({ install: 'x' }) }))).status).toBe(400);
   });
 
-  it('/api/ask returns a trace id and, with a store, keeps the sample-family trace redacted', async () => {
-    process.env.SUPABASE_URL = 'https://proj.supabase.test'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
+  const ask = async (body: Record<string, unknown>, headers: Record<string, string> = {}) => {
     const { POST } = await import('@/app/api/ask/route');
+    return POST(new Request('https://munim.test/api/ask', { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify({ messages: [{ role: 'user', content: 'Where is my money going?' }], offline: true, ...body }) }));
+  };
+  it('/api/ask keeps no trace without an install id (usage off) or with a browser privacy signal', async () => {
+    process.env.SUPABASE_URL = 'https://proj.supabase.test'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
+    expect((await ask({})).status).toBe(200);
+    expect((await ask({ install }, { 'sec-gpc': '1' })).status).toBe(200);
+    expect((await ask({ install: '9876543210' })).status).toBe(200);
+    await new Promise((res) => setTimeout(res, 0));
+    expect(calls.filter((c) => c.url.includes('sample_traces'))).toEqual([]);
+  });
+
+  it('/api/ask returns a trace id and, with a store and usage on, keeps the sample-family trace redacted', async () => {
+    process.env.SUPABASE_URL = 'https://proj.supabase.test'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
     const q = 'My PAN is ABCDE1234F and my UPI is rohan@okhdfc. Where is my money going?';
-    const r = await POST(new Request('https://munim.test/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'user', content: q }], offline: true }) }));
+    const r = await ask({ messages: [{ role: 'user', content: q }], install });
     const j = await r.json();
     expect(r.status).toBe(200); expect(j.trace).toMatch(/^[a-p]{16}$/); expect(j.prompt).toMatch(/^munim-v\d+$/);
     await new Promise((res) => setTimeout(res, 0));
     const saved = calls.find((c) => c.url.endsWith('/rest/v1/sample_traces'));
     expect(saved).toBeTruthy();
     const row = JSON.parse(String(saved!.init.body))[0];
-    expect(row.id).toBe(j.trace); expect(row.question).toContain('Where is my money going?');
+    expect(row.id).toBe(j.trace); expect(row.install).toBe(install); expect(row.question).toContain('Where is my money going?');
     expect(JSON.stringify(row)).not.toMatch(/ABCDE1234F|rohan@okhdfc/);
   });
 });
