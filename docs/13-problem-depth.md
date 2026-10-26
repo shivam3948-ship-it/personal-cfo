@@ -186,3 +186,47 @@ How we'll know: Monthly Verified Actions and 30-day re-upload (docs/05), with pr
     1. **Data in:** Munim reads statement PDFs, and first-time savers rarely download them. Reading SMS and UPI on Android (docs/40) is the likely path.
     2. **Language:** Today, Invest, X-ray, Sunday and Ask aren't in Hindi yet.
 - **How we'll know:** week-4 check-in retention, the share who save in week 1, and saves kept for 90 days. Targets get set after the first 10 interviews.
+
+## 9. Problem brief for the tier-2/3 first-time saver (26 Oct 2026, D-054)
+Replaces §6 as the brief for the primary user; §6 stays for the investor stage.
+
+**1. The true problem, not the symptom.**
+- *Symptoms:* little saved, money leaking unseen, savings stuck in low-return or hard-to-exit products, and fear the moment an app holds their money.
+- *Underlying problem:* small savers decide about money with **no trusted, complete view of their own money, in their language**. So saving stays "whatever is left", and trust in any app breaks at the first surprise: a charge, a delay, a withdrawal.
+- *The missing loop:* nobody shows them "what I did" → "what it did to my money".
+
+**2. Who faces it.** Users and payers differ:
+
+| | Users | Likely payer (hypothesis) |
+|---|---|---|
+| Primary | First-time saver in tier-2/3 cities (Ramesh, Sunita) | Probably not the user at first: someone saving ₹10 a day is unlikely to pay a subscription (our judgement) |
+| Channel | The same user inside a savings or payments app | The host app, to cut withdrawal complaints and support load and to keep savers (docs/23, docs/26) |
+| Later stages | Saver who becomes an investor; time-poor investor (Rohan); family proxy (Priya) | The user: a share of verified savings, then an RIA or PMS fee once licensed (docs/20 §1.3) |
+| Never | — | Merchants paying for placement (D-038) |
+
+**3. How we know it's real.**
+- *Strong at market level:* only 9.5% of households invest. Non-investors cite complexity (74%) and trust (51%), and 94% prefer Hindi or regional languages (SEBI survey 2025). 27% of adults meet the OECD literacy bar (NCFE 2019).
+- *Revealed behaviour:* people want small, regular saving. Bachatt shows 4.6★ from 1.77 lakh ratings, and its happy users praise the daily habit. But trust breaks at withdrawal: 53.5% of low-rated savings-app reviews are about it, and 25.6% call the app a fraud (docs/26, docs/27).
+- *Funded players are moving:* Bachatt's Saathi voice agent, and ChatGPT Finances in the US (docs/02, the 24 Oct report).
+- **Not yet proven:** that our saver feels the leak enough to act, and whether they'd add data. No interviews have been done (docs/35). Until they are, this is evidence about the market, not about our user.
+
+**4. Value created.**
+- *For the saver* (rupees and safety, not returns):
+    - A safety net that grows: ₹10 a day is ₹3,650 a year, ₹50 a day is ₹18,250 (computed, before any return).
+    - Leaks caught in rupees: unused subscriptions, duplicate charges, fees, a bill about to bounce (D-052, docs/41).
+    - Trust: every number shown from their own records, rules explained before money goes in, and a person one step away.
+    - Time: a 2-minute check-in by voice, in Hindi.
+- *For the business:*
+    1. **Distribution through host apps:** fewer withdrawal complaints and support calls, and better retention for the app that embeds Munim (docs/26, docs/27). This is the most likely early revenue (our judgement).
+    2. **Graduation:** today's saver is tomorrow's investor. The relationship carries into advice or a low-cost managed plan once licensed (docs/20).
+    3. **Outcome data:** what savers did and what it did to their money, which deposit-led apps don't measure.
+    4. For Shivam: a working AI-PM portfolio piece.
+- ⚠ *Tension to resolve:* first-time savers start tiny, and the no-commission stance (D-007) rules out the usual distribution revenue. Revenue per saver is small, so the model depends on scale or B2B. We make no market-size claim until it's sized.
+
+**5. Why now.**
+1. **Indian-language voice is cheap:** about ₹1 per voice turn at listed Sarvam prices (docs/16; ⚠ re-verify). A Hindi answer for a ₹10 saver is finally affordable.
+2. **LLMs can explain someone's own numbers in plain words,** grounded in code, and evals make that measurable.
+3. **Daily saving is proven but trust isn't:** incumbents built the habit and are losing trust at withdrawal. The trusted layer is open now, before they fix it.
+4. **The privacy bar is rising:** DPDP obligations start May 2027. On-device reading and minimal data become a selling point (docs/20).
+5. **The licence path is easier:** RIA registration since Dec 2024, and the PMS 2026 mutual-fund-only route, give the graduation step a legal home (docs/20).
+- *If we wait:* funded players add voice and AI to existing saver bases, and the "trusted guide" position goes to whoever fixes withdrawal trust first (our judgement).
