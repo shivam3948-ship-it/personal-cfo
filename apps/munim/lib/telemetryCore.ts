@@ -6,6 +6,7 @@ import { EVENTS, PROPS } from './eventNames';
 
 export const TRACE_EVENTS = {
   answer: 'answer',     // answerProps(): { id, engine, model, prompt, tools, steps, ms, grounded, checked, unverified, lang, data, where, fallback, repaired }
+  voice_turn: 'voice_turn', // { id, stt, stt_ms?, agent_ms, speak_ms, total_ms, voice: sarvam|browser|none, pieces, lang, data } (D-058)
   feedback: 'feedback', // { id, vote: up|down, reason?: wrong_number|not_answered|hard_to_follow, data }
 } as const;
 export type TelemetryName = keyof typeof EVENTS | keyof typeof TRACE_EVENTS;

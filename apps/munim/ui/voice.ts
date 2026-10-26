@@ -55,6 +55,7 @@ export function browserListen(lang: 'hi' | 'en', onInterim: (t: string) => void,
 }
 
 let current: HTMLAudioElement | null = null;
+let gen = 0; // bumped by stopSpeaking(): a piece-by-piece answer checks it before each piece
 
 /** Phones only let a page play sound after a tap. Call this inside the mic tap so the spoken answer that arrives
  *  seconds later is allowed to play (a silent clip for <audio>, an empty utterance for the browser voice). */
@@ -62,28 +63,55 @@ export function unlockAudio() {
   try { const a = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA='); a.volume = 0; a.play().catch(() => {}); } catch { /* ignore */ }
   try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch { /* ignore */ }
 }
-export function stopSpeaking() {
+function halt() {
   if (current) { current.pause(); current = null; }
   if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
 }
+export function stopSpeaking() { gen++; halt(); }
 
-export function playBase64(b64: string, mime: string): Promise<void> {
-  stopSpeaking();
+export function playBase64(b64: string, mime: string, onStart?: () => void): Promise<void> {
+  halt();
   return new Promise((resolve) => {
     const a = new Audio(`data:${mime};base64,${b64}`); current = a;
+    a.onplaying = () => { onStart?.(); onStart = undefined; };
     a.onended = () => { current = null; resolve(); }; a.onerror = () => { current = null; resolve(); };
     a.play().catch(() => resolve());
   });
 }
 
-export function browserSpeak(text: string, lang: 'hi' | 'en'): Promise<void> {
-  stopSpeaking();
+export function browserSpeak(text: string, lang: 'hi' | 'en', onStart?: () => void): Promise<void> {
+  halt();
   return new Promise((resolve) => {
-    if (typeof speechSynthesis === 'undefined') return resolve();
+    if (typeof speechSynthesis === 'undefined') { onStart?.(); return resolve(); }
     const u = new SpeechSynthesisUtterance(text); u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN'; u.rate = 1;
     const v = speechSynthesis.getVoices().find((x) => x.lang.toLowerCase().startsWith(lang === 'hi' ? 'hi' : 'en-in')) ?? speechSynthesis.getVoices().find((x) => x.lang.toLowerCase().startsWith(lang));
     if (v) u.voice = v;
+    u.onstart = () => onStart?.();
     u.onend = () => resolve(); u.onerror = () => resolve();
     speechSynthesis.speak(u);
   });
+}
+
+export type Audio64 = { audioBase64: string; mime: string };
+export interface SpokenRun { pieces: number; voice: 'sarvam' | 'browser' | 'none'; firstMs: number | null; stopped: boolean }
+
+/** Speaks an answer piece by piece (D-058): piece 1 is turned into speech and starts playing while piece 2 is being
+ *  made, and so on, so the first words come out after one short request instead of one long one. If the voice service
+ *  fails, the rest is read by the browser's voice. `firstMs` is from the call to the first sound. Stop cancels it all. */
+export async function speakPieces(pieces: string[], lang: 'hi' | 'en', tts: (piece: string) => Promise<Audio64 | null>, browserText: (piece: string) => string): Promise<SpokenRun> {
+  stopSpeaking();
+  const my = gen, t0 = performance.now();
+  const run: SpokenRun = { pieces: pieces.length, voice: 'none', firstMs: null, stopped: false };
+  const started = (v: 'sarvam' | 'browser') => () => { if (run.firstMs === null) { run.firstMs = Math.round(performance.now() - t0); run.voice = v; } };
+  let useBrowser = false;
+  let next: Promise<Audio64 | null> | null = pieces.length ? tts(pieces[0]).catch(() => null) : null;
+  for (let i = 0; i < pieces.length; i++) {
+    const audio = useBrowser ? null : await next;
+    if (gen !== my) { run.stopped = true; return run; }
+    next = !useBrowser && audio && i + 1 < pieces.length ? tts(pieces[i + 1]).catch(() => null) : null;
+    if (audio) await playBase64(audio.audioBase64, audio.mime, started('sarvam'));
+    else { useBrowser = true; await browserSpeak(browserText(pieces[i]), lang, started('browser')); }
+    if (gen !== my) { run.stopped = true; return run; }
+  }
+  return run;
 }
