@@ -24,6 +24,34 @@ export function parseAmountRupees(text: string): number | null {
   return n >= 100 ? Math.round(n) : null;
 }
 
+/** An answer cut into pieces for voice, so the first sentence can play while the rest is turned into speech (D-058).
+ *  Splits after . ? ! । followed by a space (so 1.5 and ₹1,25,000.50 stay whole, and Rs. / e.g. / vs. / No. don't end a
+ *  sentence). The first piece is one sentence (merged with the next if it's under `minFirst` characters); later pieces
+ *  gather sentences up to `max` characters. Joining the pieces with spaces gives back the text, whitespace aside. */
+export function splitForSpeech(text: string, opts: { minFirst?: number; max?: number } = {}): string[] {
+  const minFirst = opts.minFirst ?? 25, max = opts.max ?? 320;
+  const raw = text.replace(/\s+/g, ' ').trim();
+  if (!raw) return [];
+  const parts = raw.split(/(?<=[.?!।])\s+/);
+  const sentences: string[] = [];
+  for (const p of parts) {
+    const prev = sentences.at(-1);
+    if (prev && /(?:^|\s)(?:rs|e\.g|i\.e|vs|no|approx|mr|mrs|dr)\.$/i.test(prev)) sentences[sentences.length - 1] = `${prev} ${p}`;
+    else sentences.push(p);
+  }
+  const out: string[] = [];
+  let i = 0, first = sentences[i++];
+  while (first.length < minFirst && i < sentences.length) first = `${first} ${sentences[i++]}`;
+  out.push(first);
+  let cur = '';
+  for (; i < sentences.length; i++) {
+    const s = sentences[i];
+    if (cur && cur.length + 1 + s.length > max) { out.push(cur); cur = s; } else cur = cur ? `${cur} ${s}` : s;
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+
 /** Make text TTS-friendly: rupee symbol, ISO dates, percentages, stray markdown. */
 export function forSpeech(text: string, lang: Lang): string {
   let s = text.replace(/[*_#`>|]/g, '').replace(/\s*\n+\s*/g, ' ');

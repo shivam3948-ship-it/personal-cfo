@@ -67,3 +67,8 @@ A faster model for latency (e.g. Haiku) is a one-line env change (`ANTHROPIC_MOD
 - **Revisit** if smoke-test latency is over 6 s per turn (try `bulbul:v4-flash`, a faster Claude model, or streaming), if Hinglish STT misses amounts in rehearsal (try `saaras:v3` + `SARVAM_STT_MODE=codemix`), or after Saturday for Phase 1.5 (cost at scale, data residency under DPDP).
 
 Sources: Sarvam API reference pages for [speech-to-text](https://docs.sarvam.ai/api-reference-docs/speech-to-text/transcribe) and [text-to-speech](https://docs.sarvam.ai/api-reference-docs/text-to-speech/convert), read 2026-10-15. Prices are from Sarvam's pricing page as read earlier in this project; re-verify them.
+
+## Update 26 Oct 2026 (D-058): piece-by-piece speech and stage timings
+- Answers are checked whole (the number check), then spoken a sentence at a time: the first sentence plays while the next is synthesised (`splitForSpeech` in packages/core, `speakPieces` in apps/munim/ui/voice.ts). Not token streaming, so no unchecked figure is ever spoken.
+- Every voice turn records three stages as a `voice_turn` event (D-057, metadata only): hearing (server STT), answering, and speaking (answer back to first sound). Test mode shows them under each answer.
+- As of 26 Oct the live site has no `SARVAM_API_KEY` (TTS returns 501, so the browser voice reads answers) and no `ANTHROPIC_API_KEY` (the rules engine answers). Real latency numbers need both keys set on Vercel.

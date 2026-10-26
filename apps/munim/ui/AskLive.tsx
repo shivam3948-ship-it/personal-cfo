@@ -10,10 +10,14 @@ import { askLocal } from '@/lib/local/askLocal';
 import { DISCLAIMER } from '@/lib/advice';
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
-import { forSpeech } from '@core/agent/lang';
-import { record, browserListen, browserSttAvailable, browserSpeak, playBase64, stopSpeaking, unlockAudio, type RecorderHandle } from '@/ui/voice';
+import { forSpeech, splitForSpeech } from '@core/agent/lang';
+import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, type Audio64, type RecorderHandle } from '@/ui/voice';
 
-type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string; id?: string } };
+type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string; id?: string }; lat?: Lat };
+/** Seconds-level timings of one voice turn (D-058): hearing (speech to text), answering, and until the first word is heard. */
+type Lat = { stt?: number; agent: number; speak?: number };
+type SttTiming = { mode: 'server' | 'browser'; ms?: number };
+const sec = (ms: number, hi = false) => `${(ms / 1000).toFixed(1)} ${hi ? 'सेकंड' : 's'}`;
 type Why = 'wrong_number' | 'not_answered' | 'hard_to_follow';
 const WHY: Why[] = ['wrong_number', 'not_answered', 'hard_to_follow'];
 type Ctx = 'xray' | 'invest' | 'spends' | 'credit' | 'today';
@@ -56,6 +60,7 @@ export const UI = {
     consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording.',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
     placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
+    lat: (l: Lat) => `Voice: ${[l.stt !== undefined ? `hearing ${sec(l.stt)}` : '', `answer ${sec(l.agent)}`, l.speak !== undefined ? `first word ${sec(l.speak)}` : ''].filter(Boolean).join(' · ')}`,
     helped: 'Did this help?', up: 'Yes, it helped', down: 'No, it didn’t help', whatWrong: 'What went wrong?', thanks: 'Thanks. This helps Munim get better.',
     why: { wrong_number: 'A number looks wrong', not_answered: 'Didn’t answer my question', hard_to_follow: 'Hard to follow' } as Record<Why, string>,
   },
@@ -72,6 +77,7 @@ export const UI = {
     consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता।',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
     placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
+    lat: (l: Lat) => `आवाज़: ${[l.stt !== undefined ? `सुनना ${sec(l.stt, true)}` : '', `जवाब ${sec(l.agent, true)}`, l.speak !== undefined ? `पहला शब्द ${sec(l.speak, true)}` : ''].filter(Boolean).join(' · ')}`,
     helped: 'क्या इससे मदद मिली?', up: 'हाँ, मदद मिली', down: 'नहीं, मदद नहीं मिली', whatWrong: 'क्या गड़बड़ हुई?', thanks: 'धन्यवाद। इससे मुनीम बेहतर बनता है।',
     why: { wrong_number: 'कोई आँकड़ा गलत लगता है', not_answered: 'मेरे सवाल का जवाब नहीं मिला', hard_to_follow: 'समझना मुश्किल था' } as Record<Why, string>,
   },
@@ -136,23 +142,26 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   useEffect(() => { fetch('/api/stt', { cache: 'no-store' }).then((r) => r.json()).then((j) => { if (!j.configured && browserSttAvailable()) setSttMode('browser'); }).catch(() => {}); }, []);
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [msgs, busy]);
 
-  async function ask(q: string, via: 'text' | 'voice' = 'text') {
+  const ttsOff = useRef(false); // after one 501 (no voice key) this visit uses the browser's voice
+  async function ask(q: string, via: 'text' | 'voice' = 'text', stt?: SttTiming) {
     q = q.trim(); if (!q || busyRef.current) return;
     const next: Msg[] = [...msgsRef.current, { role: 'user', content: q }];
     stopSpeaking(); setSpeaking(null);
     setMsgs(next); setText(''); setBusy(true); setErr(null);
     track('ask_sent', { ctx, turn: next.filter((m) => m.role === 'user').length, via });
     try {
+      const t0 = performance.now();
       const turns = next.map(({ role, content }) => ({ role, content }));
       const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean } = local ? await askLocal(turns) : await (async () => {
         const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined }) });
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
-      setMsgs([...next, { role: 'assistant', content: j.answer, spoken: j.spoken, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine, id: j.trace } }]);
+      const agentMs = Math.round(performance.now() - t0);
+      setMsgs([...next, { role: 'assistant', content: j.answer, spoken: j.spoken, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine, id: j.trace }, ...(via === 'voice' ? { lat: { stt: stt?.ms, agent: agentMs } } : {}) }]);
       // metadata only: which tools ran, how long, whether the numbers checked out. Never the question or the answer.
       if (j.trace) send('answer', answerProps({ id: j.trace, engine: j.engine, model: j.model, prompt: j.prompt ?? 'unknown', tools: j.tools ?? [], ms: j.ms ?? 0,
         check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified ?? [] }, lang: j.lang ?? (hi ? 'hi' : 'en'), data: local ? 'mine' : 'sample', where: j.where ?? 'server', fallback: j.fallback, repaired: j.repaired }));
-      if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto'); // asked by voice → answered by voice; typed → stays quiet
+      if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang }); // asked by voice → answered by voice; typed → stays quiet
     } catch (e) { setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
     finally { setBusy(false); input.current?.focus(); }
   }
@@ -168,7 +177,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     const tt = t;
     if (sttMode === 'browser') {
       setVoice('listening');
-      rec.current = browserListen(hiLast ? 'hi' : 'en', (t) => setHeard(t), (t) => { setVoice('idle'); rec.current = null; if (t) ask(t, 'voice'); else setErr(tt.notCaught); },
+      rec.current = browserListen(hiLast ? 'hi' : 'en', (t) => setHeard(t), (t) => { setVoice('idle'); rec.current = null; if (t) ask(t, 'voice', { mode: 'browser' }); else setErr(tt.notCaught); },
         (e) => { setVoice('idle'); rec.current = null;
           setErr(/not-allowed|service-not-allowed|audio-capture/.test(e) ? tt.noMic : e === 'no-speech' ? tt.notCaught : tt.noBrowserVoice); });
       return;
@@ -179,30 +188,41 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
         rec.current = null;
         if (!r) { setVoice('idle'); return; }
         setVoice('hearing');
+        const tEnd = performance.now(); // speech ended: hearing time runs from here to the transcript
         try {
           const form = new FormData(); form.append('file', r.blob, 'speech.webm'); form.append('lang', 'auto');
           const res = await fetch('/api/stt', { method: 'POST', body: form }); const j = await res.json();
-          if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice'); return; }
+          if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice', { mode: 'server', ms: Math.round(performance.now() - tEnd) }); return; }
           if (j.fallback === 'browser' && browserSttAvailable()) { setSttMode('browser'); setVoice('idle'); setNote(t.sttBusy); return; }
           setVoice('idle'); setErr(hi ? t.notCaught : j.error ?? t.notCaught);
         } catch { setVoice('idle'); setErr(t.notCaught); }
       } });
     } catch { setVoice('idle'); setErr(t.noMic); }
   }
-  async function listen(textToSay: string, idx: number, how: 'tap' | 'auto' = 'tap') {
+  async function tts(piece: string, lang: 'hi' | 'en'): Promise<Audio64 | null> {
+    if (ttsOff.current) return null;
+    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: piece, lang }) });
+    if (r.status === 501) { ttsOff.current = true; return null; }
+    const j = await r.json().catch(() => ({}));
+    return r.ok && j.audioBase64 ? { audioBase64: j.audioBase64, mime: j.mime } : null;
+  }
+  async function listen(textToSay: string, idx: number, how: 'tap' | 'auto' = 'tap', turn?: { stt?: SttTiming; agentMs: number; id?: string; lang?: string }) {
     if (speaking === idx) { stopSpeaking(); setSpeaking(null); return; } // second tap stops it
     const lang = /[\u0900-\u097F]/.test(textToSay) ? 'hi' : 'en';
-    track('answer_listened', { ctx, how });
     stopSpeaking(); setSpeaking(idx);
     try {
-      // on your own data the spoken text leaves the phone for the voice service: same identifier scrub as the AI path (D-050)
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net
       const spoken = local ? redact(textToSay) : textToSay;
-      const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: spoken, lang }) });
-      const j = await r.json();
-      if (r.ok && j.audioBase64) { await playBase64(j.audioBase64, j.mime); return; }
-      await browserSpeak(forSpeech(textToSay, lang), lang);
-    } catch { await browserSpeak(forSpeech(textToSay, lang), lang); }
+      // piece by piece (D-058): the first sentence plays while the next is being made
+      const run = await speakPieces(splitForSpeech(spoken), lang, (p) => tts(p, lang), (p) => forSpeech(p, lang));
+      track('answer_listened', { ctx, how, pieces: run.pieces, voice: run.voice, ...(run.firstMs !== null ? { first_ms: run.firstMs } : {}) });
+      if (turn && run.firstMs !== null) {
+        const speak = run.firstMs, stt = turn.stt?.ms;
+        setMsgs((cur) => cur.map((m, i) => (i === idx ? { ...m, lat: { stt, agent: turn.agentMs, speak } } : m)));
+        if (turn.id) send('voice_turn', { id: turn.id, stt: turn.stt?.mode ?? 'none', ...(stt !== undefined ? { stt_ms: stt } : {}), agent_ms: turn.agentMs, speak_ms: speak,
+          total_ms: (stt ?? 0) + turn.agentMs + speak, voice: run.voice, pieces: run.pieces, lang: turn.lang ?? lang, data: local ? 'mine' : 'sample' });
+      }
+    } catch { /* playback failed: the answer is still on screen */ }
     finally { setSpeaking((cur) => (cur === idx ? null : cur)); }
   }
 
@@ -243,6 +263,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
                     {disc.test ? ` · ${m.meta.engine === 'claude' ? 'Claude' : t.rules}` : ''}
                   </span>
                 )}
+                {disc.test && m.lat && <span style={{ fontSize: 12, color: 'var(--muted)' }}>{t.lat(m.lat)}</span>}
                 {canVote && m.meta?.id && (votes[i]
                   ? (votes[i].vote === 'down' && !votes[i].why
                       ? <div role="group" aria-label={t.whatWrong} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
