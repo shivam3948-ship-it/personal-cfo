@@ -1,6 +1,8 @@
 # 11 · Segments & Personas
 
 **Status:** v0.1 · **Last updated:** 2026-10-03 · **Decision:** D-015 (supersedes D-003)
+
+> **Update 26 Oct 2026 (D-054):** the primary user is now the **first-time saver in tier-2 and tier-3 cities** (Persona 3 below, no longer parked). Rohan (primary below) and Priya (secondary) are later stages. Problem depth for the saver: docs/13 §8.
 Personas are **proto-personas**: hypotheses built from secondary research (docs/08) and founder knowledge. Quotes are illustrative, not research data. Every persona gets confirmed, edited or killed by the T-3 interviews.
 
 ## 1. Segmentation model
