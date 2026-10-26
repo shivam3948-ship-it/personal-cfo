@@ -92,3 +92,43 @@ The segments above are kept for history. For Munim v2 they collapse into **stage
 - **Tie-break:** when stages want different things (card 1, Invest's default view, amounts, tone), design for the earlier stage.
 - **The tier-2/3 version** (docs/40) is mostly stage 1 in Hindi with smaller amounts.
 - **Current goal:** a full working product to demo. Research starts once it's live.
+
+
+## 7. Primary user from 26 Oct 2026 (D-054): user, problem, jobs, solutions
+Proto-persona: built from secondary research (SEBI survey 2025, 15,530 Bachatt reviews, docs/26–27) and our judgement. **Not interviewed yet** (docs/35).
+
+### Who the user is
+- **Sunita or Ramesh, a first-time saver in a tier-2 or tier-3 city** (illustrative): self-employed, daily or weekly earnings, or a small salary. Uses UPI daily on a budget Android phone. Hindi first; voice notes over typing.
+- **Money today:** cash at home, a bank account, an FD or RD, post office schemes, gold, an LIC policy, sometimes a chit. No mutual funds yet.
+- **Stage 1 of D-035:** a saver who may later become an investor.
+
+### Problem statement
+First-time savers in tier-2/3 India save whatever is left at month-end, which is usually nothing. They can't see all their money in one place or in their language, and they don't trust apps that hold their money: trust breaks at the first unexplained charge or slow withdrawal. (Depth: docs/13 §8–9.)
+
+### Jobs to be done
+**Main job:** "When money comes in, help me put a little aside first and watch it grow, without being cheated, in my language."
+
+| When… | I want to… | So I can… |
+|---|---|---|
+| money comes in (a UPI credit, payday) | save ₹10–50 first, in one tap or one sentence | build a safety net without thinking about it |
+| the month ends short | see where the money went, in plain words | cut one thing next month |
+| a bill or EMI is due | be warned before it bounces | avoid the charge, and the shame of a bounce |
+| I want my money back | know how much I'll get, and when | plan, and trust the app |
+| money goes out that I didn't expect | have it explained or get it back | not feel cheated |
+| my safety net is ready | learn what to do with the rest, simply (education only, D-051) | grow beyond the FD |
+
+- **Emotional jobs:** feel in control, not judged; never feel cheated.
+- **Social jobs:** look responsible to family; not have to ask relatives for money in an emergency (our judgement).
+
+### Solutions: options per job, Munim's choice, and what exists
+| Job | Options | Munim's choice | Status (26 Oct) |
+|---|---|---|---|
+| Save first | Autopay daily save via a partner · a one-tap reminder · round-ups | Save step first in the check-in, ₹10 steps, autopay preferred, a one-time save always offered (docs/37) | Designed. No real money moves: needs a regulated partner |
+| See where it went | The bank app's list · Spends from statements · SMS/UPI read automatically | Spends buckets plus one leak card (D-038, D-039) | Built for statement PDFs. **SMS/UPI not built** (docs/40) |
+| Bill before it bounces | Calendar reminders · bill cards from statements | Card-bill card on Today | Built for card bills; other recurring charges ("in N days") not yet |
+| Money back | Read the app's terms · ask support · a tracker that knows the rules | Explain the rule before saving; track the payout | Prototype in the host-app demo (docs/26–27), not in Munim v2 |
+| Unexpected debits | Check statements by hand · bank complaint | Unused subscriptions, duplicates, fees, "Still using it?" (D-052) | Built |
+| What next | Ask family or an agent · a bank RM | Money path: safety net → cover → invest, categories only (D-037, D-040, D-051) | Built (English) |
+| In my language | English UI · translated text · voice | Hindi and Hinglish voice (Sarvam) and the Bharat copy pack (docs/40) | Voice in Ask built; **Today, Invest, X-ray, Sunday and Ask screens not in Hindi yet** |
+
+**Open:** standalone app, or the voice layer inside a host savings app (docs/23)? For this user, the host app may be the realistic way in. Decide with the first interviews and one host-app conversation.
