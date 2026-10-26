@@ -62,13 +62,15 @@ const RULES: Rule[] = [
   { cat: 'Food delivery', re: /\bswiggy\b|\bzomato\b|\beatsure\b/i },
   { cat: 'Quick commerce', re: /\bblinkit\b|\bzepto\b|\binstamart\b|\bbigbasket now\b/i },
   { cat: 'Groceries', re: /\bdmart\b|\bbigbasket\b|\bjiomart\b|\bnature'?s basket\b|\bgrocer/i },
+  // local shops a first-time saver pays by UPI (D-055): words in the shop's name, not chains
+  { cat: 'Groceries', re: /\bkirana\b|\bgeneral stores?\b|\bprovisions?( stores?)?\b|\bsuper ?market\b|\bvegetables?\b|\bsabzi\b|\bsabji\b|\bdairy\b|\bmilk\b|\bfruits?\b|\bration\b/i, dir: 'debit' },
   { cat: 'Cabs', re: /\buber\b|\bola(cabs)?\b|\brapido\b|\bblusmart\b/i },
   { cat: 'Fuel', re: /\bhpcl\b|\biocl\b|\bbpcl\b|\bfuel\b|\bpetrol\b|\bshell\b/i },
-  { cat: 'Mobile & internet', re: /\bairtel\b|\bjio\b|\bvodafone\b|\bvi postpaid\b|\bact fibernet\b|\bbroadband\b|\bpostpaid\b/i },
+  { cat: 'Mobile & internet', re: /\bmobile recharge\b|\bprepaid recharge\b|\bairtel\b|\bjio\b|\bvodafone\b|\bvi postpaid\b|\bact fibernet\b|\bbroadband\b|\bpostpaid\b/i },
   { cat: 'Utilities', re: /\belectricity\b|\bdhbvn\b|\bbescom\b|\btata power\b|\bwater\b|\bgas\b|\bigl\b/i },
   { cat: 'Electronics', re: /\bcroma\b|\breliance digital\b|\bvijay sales\b|\bapple store\b/i },
   { cat: 'Travel', re: /\bmakemytrip\b|\bgoibibo\b|\bindigo\b|\birctc\b|\bresort\b|\bhotel\b|\boyo\b|\bairbnb\b|\bcleartrip\b/i },
-  { cat: 'Dining', re: /\bcafe\b|\brestaurant\b|\bbiryani\b|\bsocial\b|\bchaayos\b|\bstarbucks\b|\bdominos\b|\bpos\b/i },
+  { cat: 'Dining', re: /\btea\b|\bchai\b|\bbakery\b|\bbakers\b|\bsweets?\b|\bmithai\b|\bdhaba\b|\bcafe\b|\brestaurant\b|\bbiryani\b|\bsocial\b|\bchaayos\b|\bstarbucks\b|\bdominos\b|\bpos\b/i },
   { cat: 'Shopping', re: /\bamazon\b|\bflipkart\b|\bmyntra\b|\bajio\b|\bnykaa\b|\bmeesho\b/i },
   { cat: 'Education', re: /\bcoursera\b|\budemy\b|\bschool\b|\bcollege\b|\btuition\b/i },
 ];

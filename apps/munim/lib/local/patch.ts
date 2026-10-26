@@ -37,7 +37,10 @@ export async function withMyStatementsSpends(v: View): Promise<View> {
   const files = (await loadStatements()).sort((a, b) => (a.period?.from ?? '').localeCompare(b.period?.from ?? '')).map((s) => ({
     name: `${s.account.label} · ${dmy(s.period?.from)}–${dmy(s.period?.to)}`, what: `${s.txns.length} transactions`,
     check: s.account.kind === 'bank' ? '✓ Balance matches on every line · opening + credits − debits = closing' : '✓ The bill’s total due matches' }));
-  return { ...v, ...built, META: { ...built.META, files }, _mine: true };
+  // bank SMS rows (D-055): listed with the files, and the trust line stops claiming that everything balances
+  const sms = ds.txns.filter((t) => t.source === 'sms').length;
+  if (sms) files.push({ name: `Bank SMS · ${sms} payments`, what: 'Provisional: SMS have no totals to check', check: 'Replaced when a statement covers the same dates' });
+  return { ...v, ...built, META: { ...built.META, files, sms }, _mine: true };
 }
 export async function withMyStatementsTx(v: View): Promise<View> { const ds = await myDataset(); return ds ? { ...v, ...buildTransactions(ds), RULES0: 0, _mine: true } : v; }
 export async function withMyStatementsCat(v: View): Promise<View> { const ds = await myDataset(); return ds ? { ...v, ...buildCategory(ds), _mine: true } : v; }

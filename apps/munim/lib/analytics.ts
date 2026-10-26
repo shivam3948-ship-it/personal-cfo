@@ -25,7 +25,9 @@ export const EVENTS = {
   switched_to_sample: 'switched_to_sample',     // {}
   sample_bar_add_tapped: 'sample_bar_add_tapped', // {}
   sub_answered: 'sub_answered',                 // { answer } (never the merchant) (D-052)
-  ask_sent: 'ask_sent',                         // { ctx, turn } (never the question text)
+  ask_sent: 'ask_sent',
+  sms_read: 'sms_read',                         // { messages, rows, added, otp, unreadable } (never text, amounts or names) (D-055)
+  sms_deleted: 'sms_deleted',                   // {}                         // { ctx, turn } (never the question text)
 } as const;
 export type EventName = keyof typeof EVENTS;
 type Props = Record<string, string | number | boolean>;
