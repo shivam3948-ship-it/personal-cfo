@@ -32,7 +32,7 @@
 | Hindi/code-mix quality unmeasured | Speech eval set: recorded clips with noise, scored for word errors and intent accuracy |
 
 ## Structural debt
-- **Engine duplicated** in `apps/voice-cfo` and `apps/web` (D-024): extract `packages/core` after Saturday.
+- **Engine duplicated** in `apps/voice-cfo` and `apps/web` (D-024): extract `packages/core` after Saturday. **Done:** `packages/core` is the engine for `apps/munim`; the two old copies are frozen (D-056, 26 Oct).
 - **Docs ahead of code:** tech/ARCHITECTURE.md describes a FastAPI service that does not exist (D-024 chose a Next.js monolith); update the doc.
 - **State per serverless instance** (in-memory caches): fine for a demo, needs a store (Redis/Postgres) for pending actions and sessions at scale.
 

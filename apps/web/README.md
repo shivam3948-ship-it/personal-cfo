@@ -1,5 +1,8 @@
 # Munim: personal CFO app (`apps/web`)
 
+> **Frozen (26 Oct 2026, D-056).** This is the first full app; kept for the /research pages (docs/26, docs/27). Its engine is an old copy: don't fix bugs or add features here. The product is `apps/munim`, and the only engine is `packages/core`.
+
+
 Mobile-first Next.js app: mutual funds (CAS read on your device), bank and cards, subscriptions, loans, insurance, credit and a foundation-first plan, plus a voice agent (Hindi/English) over all of it. Signed out: the sample family. Signed in (phone OTP): your own data under row-level security.
 Build spec, journey and screens: [docs/21](../../docs/21-munim-app-build.md) · Decisions D-024 to D-028 in [DECISIONS.md](../../DECISIONS.md). `apps/voice-cfo` is the frozen buildathon version.
 

@@ -15,7 +15,7 @@ Munim: an AI personal CFO for India. **Primary user: the first-time saver in tie
 8. **Evals gate merges.** Any change to prompts, models or the output checker must run `evals/` and pass all gates in `tech/AI_EVALS.md`.
 
 ## Layout
-`apps/web` (Next.js) · `apps/voice-cfo` (Munim voice CFO, buildathon; self-contained Next.js app with its own tests; **exception to rule 5:** its upload endpoint parses mock-data PDFs server-side, so it must never receive real statements, see D-020) · `packages/cas-parser` (TS, on-device) · `services/api` (FastAPI: holdings, engine, insights, advice, ai, authz, guards, observability, privacy) · `jobs` (AMFI ingestion) · `evals` · `supabase` (migrations, RLS) · `docs`, `tech`
+`apps/munim` (**the product**: Next.js on Vercel; your data is read and kept on the phone, see tech/ARCHITECTURE.md §0) · `packages/core` (**the only engine**, TypeScript, used by the phone and the server) · frozen, don't change (D-056): `apps/web` (first full app, keeps the /research pages) and `apps/voice-cfo` (buildathon; self-contained Next.js app with its own tests; **exception to rule 5:** its upload endpoint parses mock-data PDFs server-side, so it must never receive real statements, see D-020) · `packages/cas-parser` (TS, on-device) · `services/api` (FastAPI: holdings, engine, insights, advice, ai, authz, guards, observability, privacy) · `jobs` (AMFI ingestion) · `evals` · `supabase` (migrations, RLS) · `docs`, `tech`
 
 ## Conventions
 - Python 3.12, ruff, pytest, type hints; TypeScript strict; Conventional Commits (`feat(engine): …`)
