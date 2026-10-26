@@ -222,7 +222,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
         if (turn.id) send('voice_turn', { id: turn.id, stt: turn.stt?.mode ?? 'none', ...(stt !== undefined ? { stt_ms: stt } : {}), agent_ms: turn.agentMs, speak_ms: speak,
           total_ms: (stt ?? 0) + turn.agentMs + speak, voice: run.voice, pieces: run.pieces, lang: turn.lang ?? lang, data: local ? 'mine' : 'sample' });
       }
-    } finally { setSpeaking((cur) => (cur === idx ? null : cur)); }
+    } catch { /* playback failed: the answer is still on screen */ }
+    finally { setSpeaking((cur) => (cur === idx ? null : cur)); }
   }
 
   return (

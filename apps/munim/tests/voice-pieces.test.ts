@@ -13,7 +13,9 @@ class FakeAudio {
 }
 const audio = (p: string): Audio64 => ({ audioBase64: btoa(p), mime: 'audio/mpeg' });
 
-beforeEach(() => { log = []; vi.stubGlobal('Audio', FakeAudio); });
+class FakeUtterance { onstart: (() => void) | null = null; onend: (() => void) | null = null; onerror: (() => void) | null = null; lang = ''; rate = 1; voice: unknown = null; constructor(public text: string) {} }
+const fakeSynth = { getVoices: () => [], cancel: () => {}, speak: (u: FakeUtterance) => { log.push(`say:${u.text}`); setTimeout(() => u.onstart?.(), 1); setTimeout(() => u.onend?.(), 5); } };
+beforeEach(() => { log = []; vi.stubGlobal('Audio', FakeAudio); vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance); vi.stubGlobal('speechSynthesis', fakeSynth); });
 afterEach(() => { vi.unstubAllGlobals(); });
 
 describe('speakPieces', () => {
@@ -32,6 +34,20 @@ describe('speakPieces', () => {
     const said: string[] = [];
     const run = await speakPieces(['एक।', 'दो।'], 'hi', tts, (p) => { said.push(p); return p; });
     expect(run.voice).toBe('browser'); expect(tts).toHaveBeenCalledTimes(1); expect(said).toEqual(['एक।', 'दो।']);
+  });
+
+  it('a clip that fails to play is read by the browser voice, not skipped', async () => {
+    class Broken extends FakeAudio { play() { setTimeout(() => this.onerror?.(), 1); return Promise.resolve(); } }
+    vi.stubGlobal('Audio', Broken);
+    const said: string[] = [];
+    const run = await speakPieces(['one.', 'For education only, not investment advice.'], 'en', async (p) => audio(p), (p) => { said.push(p); return p; });
+    expect(said).toEqual(['one.', 'For education only, not investment advice.']); expect(run.voice).toBe('browser'); expect(log.filter((l) => l.startsWith('say:'))).toHaveLength(2);
+  });
+
+  it('with no voice at all, no first-word time is reported', async () => {
+    vi.stubGlobal('speechSynthesis', undefined);
+    const run = await speakPieces(['one.'], 'en', async () => null, (p) => p);
+    expect(run).toMatchObject({ voice: 'none', firstMs: null });
   });
 
   it('Stop ends the whole answer and nothing more is fetched', async () => {

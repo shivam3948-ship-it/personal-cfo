@@ -69,20 +69,22 @@ function halt() {
 }
 export function stopSpeaking() { gen++; halt(); }
 
-export function playBase64(b64: string, mime: string, onStart?: () => void): Promise<void> {
+/** Plays one clip; resolves true once it has played (or was stopped mid-way), false if it never started. */
+export function playBase64(b64: string, mime: string, onStart?: () => void): Promise<boolean> {
   halt();
   return new Promise((resolve) => {
+    let began = false;
     const a = new Audio(`data:${mime};base64,${b64}`); current = a;
-    a.onplaying = () => { onStart?.(); onStart = undefined; };
-    a.onended = () => { current = null; resolve(); }; a.onerror = () => { current = null; resolve(); };
-    a.play().catch(() => resolve());
+    a.onplaying = () => { began = true; onStart?.(); onStart = undefined; };
+    a.onended = () => { current = null; resolve(true); }; a.onerror = () => { current = null; resolve(began); };
+    a.play().catch(() => resolve(false));
   });
 }
 
 export function browserSpeak(text: string, lang: 'hi' | 'en', onStart?: () => void): Promise<void> {
   halt();
   return new Promise((resolve) => {
-    if (typeof speechSynthesis === 'undefined') { onStart?.(); return resolve(); }
+    if (typeof speechSynthesis === 'undefined') return resolve(); // nothing can play: no first-word time
     const u = new SpeechSynthesisUtterance(text); u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN'; u.rate = 1;
     const v = speechSynthesis.getVoices().find((x) => x.lang.toLowerCase().startsWith(lang === 'hi' ? 'hi' : 'en-in')) ?? speechSynthesis.getVoices().find((x) => x.lang.toLowerCase().startsWith(lang));
     if (v) u.voice = v;
@@ -109,8 +111,9 @@ export async function speakPieces(pieces: string[], lang: 'hi' | 'en', tts: (pie
     const audio = useBrowser ? null : await next;
     if (gen !== my) { run.stopped = true; return run; }
     next = !useBrowser && audio && i + 1 < pieces.length ? tts(pieces[i + 1]).catch(() => null) : null;
-    if (audio) await playBase64(audio.audioBase64, audio.mime, started('sarvam'));
-    else { useBrowser = true; await browserSpeak(browserText(pieces[i]), lang, started('browser')); }
+    const played = audio ? await playBase64(audio.audioBase64, audio.mime, started('sarvam')) : false;
+    if (gen !== my) { run.stopped = true; return run; }
+    if (!played) { useBrowser = true; next = null; await browserSpeak(browserText(pieces[i]), lang, started('browser')); } // same piece, never skipped
     if (gen !== my) { run.stopped = true; return run; }
   }
   return run;
