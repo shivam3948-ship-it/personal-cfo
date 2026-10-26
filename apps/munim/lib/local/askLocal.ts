@@ -23,6 +23,8 @@ import { myDataset } from './statements';
 import { loadCas } from './cas';
 import { getProfile } from './profile';
 import { idbGet, idbPut } from './idb';
+import { PROMPT_VERSION } from '@/lib/agent/prompt';
+import { traceId } from '@/lib/telemetryCore';
 
 /** Your statements and CAS as one dataset, or null when nothing has been added on this phone. */
 export async function myData(): Promise<Dataset | null> {
@@ -58,7 +60,8 @@ function relayClient(lang: 'hi' | 'en', asOf: string): LlmClient {
 class NoKey extends Error { constructor() { super('no_key'); } }
 let noKey = false; // after one 503, this visit stays on the phone's engine (no pointless calls)
 
-export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay' }
+export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay';
+  trace: string; model?: string; prompt: string; ms: number; repaired: boolean; fallback: boolean }
 
 /** On your own data the advice mode is 'guided' (no fund picks, the SEBI line), whatever the public test switch says:
  *  'demo' never reads real data, and 'internal' needs a server-side allow-list we don't have yet (compliance review, D-050). */
@@ -71,9 +74,11 @@ export async function askLocal(history: Turn[]): Promise<LocalReply> {
   const adviceMode: AdviceMode = 'guided';
   const names = [...(p?.name ? [p.name] : []), ...counterpartyNames(ds.txns)]; // your name and every payee/sender your statements name
   const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names };
-  let r: AgentReply; let where: LocalReply['where'] = 'phone+relay';
+  let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;
+  const t0 = Date.now();
   try { if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds))); }
-  catch { r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
+  catch (e) { fallback = !(e instanceof NoKey); r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
   const spoken = redact(r.answer, { names }).replace(/\b(UPI|NEFT|IMPS)[-/][^\s,.।]+/gi, 'a payment'); // what may go to the voice service
-  return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where };
+  return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where,
+    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback };
 }

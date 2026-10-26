@@ -1,5 +1,5 @@
 // Strip identifiers before any text goes to an LLM or a log. Mock data only at the buildathon, but the habit is the product.
-const PAN = /\b[A-Z]{3}[PCHFATBLJG][A-Z]\d{4}[A-Z]\b/g;
+const PAN = /\b[A-Z]{5}\d{4}[A-Z]\b/gi; // any PAN shape, typos included: over-redacting costs nothing
 const EMAIL = /\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g;
 const PHONE = /(?<!\d)(?:\+91[\s-]?)?[6-9]\d{9}(?!\d)/g;
 const LONG_DIGITS = /(?<![\d,.])\d{9,18}(?![\d,.])/g; // account / card / folio numbers
