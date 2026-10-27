@@ -5,6 +5,7 @@
 import type { Txn } from '@core/types';
 import { readBankSms, smsFromBackupXml, splitPasted, type SmsRead } from '@core/ingest/sms';
 import { idbDel, idbGet, idbPut } from './idb';
+import { switchToMyData } from './profile';
 
 const KEY = 'sms_txns';
 
@@ -18,7 +19,7 @@ export async function readSmsText(text: string, file = 'pasted SMS'): Promise<Sm
   const old = await loadSms();
   const have = new Set(old.map((t) => t.id));
   const fresh = r.txns.filter((t) => !have.has(t.id));
-  if (fresh.length) await idbPut(KEY, [...old, ...fresh]);
+  if (fresh.length) { await idbPut(KEY, [...old, ...fresh]); switchToMyData(); }
   return { ...r, added: fresh.length };
 }
 

@@ -10,6 +10,7 @@ import { readCasLines, type ReadResult } from './cas';
 import { idbGet, idbPut, idbDel } from './idb';
 import { loadSubAnswers } from './subAnswers';
 import { loadSms, mergeSms, readSmsText } from './sms';
+import { switchToMyData } from './profile';
 
 export { PdfPasswordError };
 export interface SavedStatement { key: string; format: BankRead['format']; account: BankRead['account']; period?: { from: string; to: string }; txns: Txn[]; stmt?: BankRead['stmt']; checks: BankRead['checks']; addedAt: string }
@@ -38,6 +39,7 @@ export async function readAny(file: File, password?: string): Promise<AnyRead> {
       const key = `${read.account.id}:${read.period?.from ?? read.txns[0]?.date}:${read.period?.to ?? read.txns.at(-1)?.date}`;
       const s: SavedStatement = { key, format: read.format, account: read.account, period: read.period, txns: read.txns, stmt: read.stmt, checks: read.checks, addedAt: new Date().toISOString() };
       await store([...(await loadStatements()).filter((x) => x.key !== key), s]); // same account and period: the newer copy replaces it
+      switchToMyData();
     }
     return { type: 'bank', read, ok, saved: ok };
   }

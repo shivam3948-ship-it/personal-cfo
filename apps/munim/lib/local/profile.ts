@@ -16,6 +16,8 @@ export function saveProfile(p: Profile) {
   try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* memory only */ }
 }
 export function updateProfile(patch: Partial<Profile>) { const p = getProfile(); if (p) saveProfile({ ...p, ...patch }); }
+/** Adding your own statement, CAS or SMS means you want to see your data: leave the sample family. */
+export function switchToMyData() { if (getProfile()?.start === 'sample') updateProfile({ start: 'mine' }); }
 export function clearProfile() { memory = null; try { localStorage.removeItem(KEY); } catch { /* nothing to clear */ } }
 
 /** A first name as typed, trimmed to something safe to show: letters (any script), spaces, dot, hyphen, apostrophe; max 24. */

@@ -5,13 +5,14 @@ import { parseCas, type CasResult, type Holding } from '@core/portfolio/cas';
 import { pdfLines, PdfPasswordError } from '@core/ingest/pdfLines';
 import type { Portfolio } from '@/lib/views/portfolioBlocks';
 import { idbGet, idbPut, idbDel } from './idb';
+import { switchToMyData } from './profile';
 
 export { PdfPasswordError };
 export interface LocalCas extends Portfolio { checks: CasResult['checks']; addedAt: string; skipped: string[] }
 
 const KEY = 'cas';
 export async function loadCas(): Promise<LocalCas | null> { return (await idbGet<LocalCas>(KEY)) ?? null; }
-export async function saveCas(c: LocalCas) { await idbPut(KEY, c); }
+export async function saveCas(c: LocalCas) { await idbPut(KEY, c); switchToMyData(); }
 export async function deleteCas() { await idbDel(KEY); }
 
 /** Only fields the engine needs; AMC kept only when it looks like a fund house (the line it comes from sits near the investor's name). */

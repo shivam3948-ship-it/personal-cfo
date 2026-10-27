@@ -35,7 +35,8 @@ export function Screen({ C, view, props = {}, check, patch, sample = false }: { 
     let live = true;
     fetch(`/api/view/${view}`, { cache: 'no-store' }).then(async (r) => {
       const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'Could not load this screen.');
-      const v = patch ? await patch(j.view).catch(() => j.view) : j.view;
+      // the sample family stays the sample family even when this phone also holds your statements (they stay saved)
+      const v = patch && getProfile()?.start !== 'sample' ? await patch(j.view).catch(() => j.view) : j.view;
       if (live) { setData(v); setErr(null); track('screen_viewed', { screen: view }); }
     }).catch((e) => { if (live) { setErr((e as Error).message); track('view_load_failed', { screen: view }); } });
     return () => { live = false; };
