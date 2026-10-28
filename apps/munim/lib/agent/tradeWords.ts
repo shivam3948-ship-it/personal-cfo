@@ -25,7 +25,7 @@ const EXIT_VERB = String.raw`(?:sell(?:ing|s)?|redeem(?:ing|s)?|exit(?:ing|s)?(?
 const MOVE = String.raw`\b(?:move|moving|shift|shifting|transfer|transferring|put|take|taking|withdraw|withdrawing)\b${W}{0,40}?\b(?:out\s+of|from)\s+(?:(?:your|the|my|this|that|all|of|these|those)\s+){0,3}`;
 // the holding as the object: "Shift your small cap fund to large cap", "Replace X with an index fund", "Move the ₹50,000 in
 // your small cap fund to a liquid fund", "Reduce your small cap fund to ₹20,000"
-const OBJ = String.raw`\b(?:move|shift|transfer|switch|swap|replace|put|reduce|cut|lower)\s+(?:(?:your|the|my|this|that|all|of)\s+){0,2}(?:₹?[\d,.]+\s*(?:lakh|crore|k)?\s+(?:in\s+(?:your|the|my)\s+)?)?(?:[\w&-]+\s+){0,3}?`;
+const OBJ = String.raw`\b(?:move|shift|transfer|switch|swap|replace|put|reduce|cut|lower)\s+(?:(?:your|the|my|this|that|all|of)\s+){0,2}(?:₹?[\d,.]+\s*(?:lakh|crore|k)?\s+(?:in\s+(?:your|the|my)\s+)?)?(?:(?!(?:to|into|in|a|an|by|for|with|from|of)\b)[\w&-]+\s+){0,3}?`; // the holding is the verb's OWN object: "Put the bonus into a liquid fund for…" moves the bonus, not the fund (review 4)
 const OBJ_END = String.raw`(?:\s+(?:money|units|investment|holdings?))?\s+(?:to|into|for|with|in|by)\b`;
 // stop/pause/close/cut a SIP or premiums: the SIP must be the verb's own object, a few words away, no verb in between
 // ("Stop checking your portfolio", "Pause before you change your SIP" are not SIP calls)

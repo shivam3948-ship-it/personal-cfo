@@ -61,6 +61,9 @@ describe('the guard on the sample family', async () => {
     'Switching from regular to direct of the same fund counts as a sale for tax.', 'If you book ₹1.25 lakh of gains this year, you pay no tax on them.',
     'Surrendering a policy in the first 3 years usually returns very little.', "You've been investing in Banyan Nifty 50 Index Fund since 2021.",
     'You started investing in Monsoon Small Cap Fund in 2020.', 'Buying Kestrel Flexi Cap Fund in 2022 has cost you ₹3,100 in fees.',
+    // review 4: new money into a category, with words after the fund
+    'Put the ₹15,000 bonus into a liquid fund for the safety net.', 'Put the surplus in an index fund for your 10-year goal.', 'Transfer ₹5,000 to a liquid fund by the 5th.',
+    'Put ₹2,000 in an index fund by SIP.', 'Move the bonus to a liquid fund in your name.', 'Put it into a liquid fund with instant withdrawal.',
     "Don't sell in a panic.", 'SIP बंद मत कीजिए, बाज़ार गिरने पर भी चलने दीजिए।', 'Agar paise chahiye to bhi SIP band mat karo.',
   ];
   it('removes every instruction', () => { for (const a of INSTRUCTIONS) expect(tellsToExit(a, held), a).toBe(true); });
