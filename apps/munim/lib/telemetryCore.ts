@@ -60,9 +60,9 @@ export function traceId(): string {
 export const isInstallId = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(v);
 
 /** The metadata of one answer, the same shape from the phone and the server. Never the question or the answer. */
-export function answerProps(a: { id: string; engine: string; model?: string; prompt: string; tools: string[]; ms: number; check: { ok: boolean; checked: number; unverified: string[] }; lang: string; data: 'sample' | 'mine'; where: string; fallback?: boolean; repaired?: boolean }): Props {
+export function answerProps(a: { id: string; engine: string; model?: string; prompt: string; tools: string[]; ms: number; check: { ok: boolean; checked: number; unverified: string[] }; lang: string; data: 'sample' | 'mine'; where: string; fallback?: boolean; repaired?: boolean; guard?: string; guardMs?: number }): Props {
   return safeProps({ id: a.id, engine: a.engine, model: (a.model ?? 'none').replace(/-\d{8}$/, ''), prompt: a.prompt, tools: [...new Set(a.tools)].join(',').slice(0, 80), steps: a.tools.length,
-    ms: a.ms, grounded: a.check.ok, checked: a.check.checked, unverified: a.check.unverified.length, lang: a.lang, data: a.data, where: a.where, fallback: !!a.fallback, repaired: !!a.repaired });
+    ms: a.ms, grounded: a.check.ok, checked: a.check.checked, unverified: a.check.unverified.length, lang: a.lang, data: a.data, where: a.where, fallback: !!a.fallback, repaired: !!a.repaired, guard: a.guard ?? 'none', guard_ms: a.guardMs ?? 0 });
 }
 
 export function cleanBatch(body: unknown, now = Date.now()): { install: string; events: TelemetryEvent[] } | null {

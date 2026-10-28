@@ -14,6 +14,7 @@ import { moneyAudit, sipValue, type AuditScope } from '@core/finance/audit';
 import { safetyNet } from '@core/finance/essentials';
 import { DISCLAIMER, namesFunds, type AdviceMode } from '@/lib/advice';
 import { NO_PICKS, type Pick, type Picks } from '@/lib/advicePicks';
+import type { JudgeInput, Verdict } from './judge';
 import { portfolioView } from '@core/portfolio/engine';
 import { xrayInsights, fdComparison } from '@core/portfolio/insights';
 import { gcalLink, type Action } from '@/lib/actionsCore';
@@ -27,6 +28,9 @@ export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMo
   sanitize?: (r: Record<string, unknown>) => Record<string, unknown>;
   /** Advice mode only (D-066): the owner's picks, from the server module on the server or /api/advice/picks on the phone. */
   picks?: () => Promise<Picks>;
+  /** The AI check on answers that touch investments (D-069): the server calls the model itself, the phone goes through
+   *  /api/ask/judge. Absent, or returning null, means the word-pattern guard decides. */
+  judge?: (input: JudgeInput) => Promise<Verdict | null>;
   /** Names to scrub from the user's own words before they leave (e.g. the first name given at onboarding). */
   names?: string[] }
 export interface ToolOutput { result: Record<string, unknown>; action?: Action }

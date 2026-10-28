@@ -25,8 +25,13 @@ const EXIT_VERB = String.raw`(?:sell(?:ing|s)?|redeem(?:ing|s)?|exit(?:ing|s)?(?
 const MOVE = String.raw`\b(?:move|moving|shift|shifting|transfer|transferring|put|take|taking|withdraw|withdrawing)\b${W}{0,40}?\b(?:out\s+of|from)\s+(?:(?:your|the|my|this|that|all|of|these|those)\s+){0,3}`;
 // the holding as the object: "Shift your small cap fund to large cap", "Replace X with an index fund", "Move the ₹50,000 in
 // your small cap fund to a liquid fund", "Reduce your small cap fund to ₹20,000"
-const OBJ = String.raw`\b(?:move|shift|transfer|switch|swap|replace|put|reduce|cut|lower)\s+(?:(?:your|the|my|this|that|all|of)\s+){0,2}(?:₹?[\d,.]+\s*(?:lakh|crore|k)?\s+(?:in\s+(?:your|the|my)\s+)?)?(?:(?!(?:to|into|in|a|an|by|for|with|from|of)\b)[\w&-]+\s+){0,3}?`; // the holding is the verb's OWN object: "Put the bonus into a liquid fund for…" moves the bonus, not the fund (review 4)
+const OBJ = String.raw`\b(?:move|shift|transfer|switch|swap|replace|put|reduce|cut|lower)\s+(?:(?:your|the|my|this|that|all|of)\s+){0,2}(?:₹?[\d,.]+\s*(?:lakh|crore|k)?\s+(?:in\s+(?:your|the|my)\s+)?)?(?:(?!(?:to|into|in|a|an|by|for|with|from|of|towards?|across|through)\b)[\w&-]+\s+){0,3}?`; // the holding is the verb's OWN object: "Put the bonus into a liquid fund for…" moves the bonus, not the fund (review 4)
 const OBJ_END = String.raw`(?:\s+(?:money|units|investment|holdings?))?\s+(?:to|into|for|with|in|by)\b`;
+// part of a holding moved somewhere else (review 5): "Move ₹50,000 of Monsoon Small Cap to a liquid fund", "Shift half of your
+// small cap fund to large cap", "Move your money in the ELSS to a liquid fund". The source must be the user's ("your/the/my"
+// or a held name) and a destination must follow, so "Put the bonus in index funds for retirement" stays new money.
+const PART = String.raw`\b(?:move|moving|shift|shifting|transfer|transferring|switch|swap|replace|put|reduce|cut|lower)\s+(?:(?!(?:to|into|towards?)\b)[\w₹,.&-]+\s+){0,5}?(?:of|in|from)\s+`;
+const PART_END = String.raw`(?:\s+(?:fund|money|units))?\s+(?:to|into|with|for\s+an?)\b`;
 // stop/pause/close/cut a SIP or premiums: the SIP must be the verb's own object, a few words away, no verb in between
 // ("Stop checking your portfolio", "Pause before you change your SIP" are not SIP calls)
 const STOP = String.raw`\b(?:stop(?:ping)?|paus(?:e|ing)|cancel(?:ling|ing)?|halt|discontinu(?:e|ing)|close|end|cut|lower|reduce)\s+(?:(?:your|the|my|this|that|all|these|those|regular[- ]plan|monthly|paying)\s+){0,3}(?:(?![\w-]+ing\b)(?!before\b|after\b|about\b)[\w&-]+\s+){0,4}?`;
@@ -66,7 +71,9 @@ const clauses = (s: string) => s.split(/,(?!\d)\s*|\s+(?:and|then|but|aur|phir|p
 const unwrap = (s: string) => s.replace(/,\s*(?:honestly|frankly|really|ideally|basically|actually|in my view|I think|I'd say|now|perhaps|maybe|please|if possible)\s*,/gi, ' ')
   .replace(/\b(sell|redeem|exit|switch|surrender|offload|dump)\s+(?:and|&)\s+(?=[a-z]+\s)/gi, '$1 ');
 
-const cache = new Map<string, { exit: RegExp; move: RegExp; obj: RegExp; stop: RegExp; buy: RegExp | null; target: RegExp; hiTarget: RegExp }>();
+const cache = new Map<string, { exit: RegExp; move: RegExp; obj: RegExp; part: RegExp; putHeld: RegExp | null; hiSource: RegExp; stop: RegExp; buy: RegExp | null; target: RegExp; hiTarget: RegExp }>();
+// Hindi and Hinglish moves: a holding as the source ("small cap ka paisa…", "…fund ko…") and a move verb in the clause
+const HI_MOVE = /(?:daa?l)\s*(?:do|dijiye|dein|de)\b|डाल\s*(?:दो|दें|दीजिए|दीजिये|दे)|\b(?:shift|transfer|replace|switch)\s*kar\s*(?:do|dijiye|dein|lo)\b|(?:शिफ्ट|ट्रांसफर|रिप्लेस|स्विच)\s*कर\s*(?:दो|दें|दीजिए|दीजिये)/i;
 function patterns(held: string[]) {
   const key = held.join('\u0001'); const hit = cache.get(key); if (hit) return hit;
   const names = [...new Set(held.filter((n) => n.length > 3))].sort((x, y) => y.length - x.length).map(esc);
@@ -76,6 +83,9 @@ function patterns(held: string[]) {
     exit: new RegExp(String.raw`\b${EXIT_VERB}\b${W}{0,60}?${TARGET}`, 'giu'),
     move: new RegExp(`${MOVE}${TARGET}`, 'giu'),
     obj: new RegExp(`${OBJ}${TARGET}${OBJ_END}`, 'giu'),
+    part: new RegExp(`${PART}(?:${HELD ? `${HELD}|` : ''}(?:your|the|my|this|that)\\s+(?:[\\w&-]+\\s+){0,2}?${TARGET_BASE})${PART_END}`, 'giu'),
+    putHeld: HELD ? new RegExp(String.raw`\bput\b${W}{0,40}?\b(?:in|into)\s+(?:the\s+)?${HELD}`, 'giu') : null,
+    hiSource: new RegExp(`(?:${HELD ? `${HELD}|` : ''}${HI_TARGET})(?:\\s+wala\\s+fund)?\\s+(?:ka|ki|ke|ko|का|की|के|को)\\s`, 'iu'),
     stop: new RegExp(String.raw`${STOP}(?:\bSIPs?\b|\bpremiums?\b|${TARGET})`, 'giu'),
     buy: HELD ? new RegExp(`${BUY_HELD}${HELD}`, 'giu') : null,
     target: new RegExp(TARGET, 'iu'),
@@ -95,10 +105,10 @@ function flags(a: string, held: string[]): { s: string; hit: boolean }[] {
     // "That small cap fund? Sell it.": the pronoun points back to the sentence before
     if (PRONOUN_CALL.test(raw) && !p.target.test(raw) && i > 0 && p.target.test(all[i - 1]) && !refused(raw, PRONOUN_CALL.exec(raw)?.index)) return true;
     const s = unwrap(raw);
-    return anyUnrefused(p.exit, s) || anyUnrefused(p.move, s) || anyUnrefused(p.obj, s) || anyUnrefused(p.stop, s) || anyUnrefused(p.buy, s)
+    return anyUnrefused(p.exit, s) || anyUnrefused(p.move, s) || anyUnrefused(p.obj, s) || anyUnrefused(p.part, s) || anyUnrefused(p.putHeld, s) || anyUnrefused(p.stop, s) || anyUnrefused(p.buy, s)
       || (BOOK.test(s) && !refused(s, BOOK.exec(s)?.index))
       || (PRONOUN_CALL.test(s) && p.target.test(s) && !refused(s, PRONOUN_CALL.exec(s)?.index))
-      || clauses(s).some((c) => HI_SELL.test(c) && p.hiTarget.test(c.replace(HI_POT, '')) && !HI_REFUSAL.test(c));
+      || clauses(s).some((c) => !HI_REFUSAL.test(c) && ((HI_SELL.test(c) && p.hiTarget.test(c.replace(HI_POT, ''))) || (HI_MOVE.test(c) && p.hiSource.test(c.replace(HI_POT, '')))));
   })() }));
 }
 export const tellsToExit = (a: string, held: string[] = []): boolean => flags(a, held).some((f) => f.hit);

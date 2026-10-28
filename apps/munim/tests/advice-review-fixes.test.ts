@@ -59,7 +59,7 @@ describe('B3: the trade guard', () => {
     const ds = await loadDemo(); const seen: string[] = [];
     const client = { messages: { create: async (b: Anthropic.MessageCreateParamsNonStreaming) => { seen.push(JSON.stringify(b.messages.at(-1))); return textReply('Redeem your small cap fund before March.'); } } };
     const r = await runClaude([{ role: 'user', content: 'Should I exit?' }], { ds, sid: 't', lang: 'en', adviceMode: 'guided', addAction: (() => ({})) as never }, client);
-    expect(seen).toHaveLength(2); expect(seen[1]).toContain('sell, switch, exit, redeem or stop');
+    expect(seen).toHaveLength(2); expect(seen[1]).toContain('tells the user to act on something they hold');
     expect(r.answer).toBe(NO_TRADE.en);
   });
 });

@@ -27,7 +27,7 @@ describe('fund names: facts yes, trade instructions no (D-051, D-066)', async ()
     const seen: string[] = [];
     const client = { messages: { create: async (b: Anthropic.MessageCreateParamsNonStreaming) => { seen.push(JSON.stringify(b.messages.at(-1))); return textReply(`Sell ${name} now.`); } } };
     const r = await runClaude([{ role: 'user', content: 'What should I do with my funds?' }], { ds, sid: 't', lang: 'en', adviceMode: 'demo', addAction: (() => ({})) as never }, client);
-    expect(seen).toHaveLength(2); expect(seen[1]).toContain('It tells the user to trade');
+    expect(seen).toHaveLength(2); expect(seen[1]).toContain('tells the user to act on something they hold');
     expect(r.answer).toBe(NO_TRADE.en); // the name is swapped, then the sell instruction itself goes (D-066 review, B3)
   });
   it('a factual answer with names costs one model call and is left alone', async () => {
