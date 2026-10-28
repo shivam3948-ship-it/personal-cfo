@@ -68,5 +68,9 @@ export const ADVICE_THAT_STAYS: string[] = [
     // review 6: new money into a fund, said with "the" or as a Hinglish/Hindi destination
     'Put the bonus in the liquid fund to build your safety net.', 'Put ₹2,000 a month in the index fund with a SIP.', 'Put ₹5,000 of your bonus in the index fund for an emergency.',
     'SIP ke liye ₹500 daal do.', 'Har mahine ₹500 index fund ke liye daal do.', 'Index fund ki SIP mein ₹500 daal do.', 'इंडेक्स फ़ंड की SIP में ₹500 डाल दीजिए।',
+    // review 7: subscription plans, government schemes, SIP dates, a lock-in fact
+    'Switch to the Netflix Basic Plan to save ₹300 a month.', 'Consider the Jio Annual Plan instead of monthly recharges.', 'Switch to Amazon Prime Lite Plan.', 'Netflix Basic Plan le lo.',
+    'Public Provident Fund is a good choice for 15-year money.', 'Switch your SIP date to the 5th, after your salary.', 'Shift your SIP to the 5th.', 'SIP ki date salary ke baad shift kar do.',
+    "Selling your ELSS before March 2027 isn't possible because of the lock-in.",
     "Don't sell in a panic.", 'SIP बंद मत कीजिए, बाज़ार गिरने पर भी चलने दीजिए।', 'Agar paise chahiye to bhi SIP band mat karo.',
 ];

@@ -15,8 +15,14 @@ import { TOUCHES_INVESTMENTS, judgeSentences, type JudgeInput, type Verdict } fr
 export { enforceNoTrade, fundLabels, namedFunds, scrubFunds };
 
 const ACTION_TOOLS = new Set(['create_reminder', 'draft_email', 'create_savings_goal', 'save_prepayment_plan']);
-/** The user asked for an action or agreed to one (English, Hindi, Hinglish). */
-export const USER_ASKS = /remind|reminder|yaad|याद|draft|e-?mail|\bmail\b|likh|लिख|\bgoal|लक्ष्य|\bplan\b|प्लान|\bsave\b|सेव|set\s+(?:up|a)|\bbana|बना|\byes\b|\byeah\b|\bhaa?n\b|हाँ|हां|\bha\b|\bok(?:ay)?\b|theek|ठीक|kar\s*do|कर\s*दो|kar\s*dijiye|कर\s*दीजिए|please|\bsure\b|do it|go ahead|chalo|चलो|bilkul|बिल्कुल|\bji\b|जी/i;
+/** The user's own message asks for an action outright (English, Hindi, Hinglish). */
+export const ASKS_ACTION = /\bremind|reminder|yaad\s*dila|याद\s*दिला|\bdraft|(?:e-?mail|mail)\s+(?:likh|bana|draft|bhej)|likh\s*(?:do|dijiye)|लिख\s*(?:दो|दीजिए)|\bset\s+(?:up\s+)?(?:a\s+)?(?:goal|reminder)|goal\s+bana|लक्ष्य\s+बना|save\s+(?:the\s+|a\s+|this\s+)?plan|plan\s+save|prepayment\s+plan|calendar|कैलेंडर/i;
+/** A yes to an offer (review 7: the primary user says "thik hai", "ज़रूर", "अच्छा", "chalega"). */
+export const AGREES = /\b(?:yes|yeah|yep|yup|ya|haa?n?|ha|ji|ok(?:ay|k)?|sure|of course|absolutely|definitely|please(?: do)?|do (?:it|that)|go ahead|go for it|sounds good|done|fine|theek|thik|thee?k hai|zaroor|jaroor|acha|accha|achha|sahi|chalega|bilkul|kar(?:\s*(?:do|lo|dijiye|dein))|kardo|ho\s*jaye|ho\s*jaaye|chalo)\b|हाँ|हां|हा\b|जी|ठीक|ज़रूर|जरूर|अच्छा|सही|चलेगा|बिल्कुल|कर\s*(?:दो|दीजिए|लो)|हो\s*जाए|चलो|👍|✅/i;
+export const REFUSES = /\b(?:no|nope|nah|nahi|nahin|mat|not now|later|baad\s*mein|rehne\s*do|cancel(?:\s+it)?|don'?t|stop)\b|नहीं|मत|रहने\s*दो|बाद\s*में/i;
+/** Actions run only when the user's own last message asks for one, or says yes to an offer Munim made in its last answer
+ *  (an order that slipped in through data can't create one; prompt-injection review, 29 Oct). */
+export const userAllowsAction = (last: string, prevAssistant: string) => ASKS_ACTION.test(last) || (/\?\s*$|\?/.test(prevAssistant) && AGREES.test(last) && !REFUSES.test(last));
 export interface Turn { role: 'user' | 'assistant'; content: string }
 export interface TraceStep { tool: string; input: Record<string, unknown>; result: Record<string, unknown>; ms: number }
 export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceStep[]; actions: Action[]; check: NumberCheck; engine: 'claude' | 'offline'; model?: string; ms: number; repaired?: boolean;
@@ -34,6 +40,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: t.role === 'user' ? redact(t.content, { names }) : t.content }));
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   const lastUser = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
+  const prevAssistant = history.slice(0, -1).filter((t) => t.role === 'assistant').at(-1)?.content ?? '';
   let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0;
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
   for (let step = 0; step < 7; step++) {
@@ -74,7 +81,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       let out: Awaited<ReturnType<typeof runTool>>;
       // Actions (a reminder, an email draft, a goal, a prepayment plan) only when the user's own last message asks for one or
       // says yes to an offer: an order that slipped in through data can't create one (prompt-injection review, 29 Oct).
-      if (ACTION_TOOLS.has(u.name) && !USER_ASKS.test(lastUser)) out = { result: { error: 'Actions run only when the user asks for one or says yes to your offer. Offer it in one sentence instead.' } };
+      if (ACTION_TOOLS.has(u.name) && !userAllowsAction(lastUser, prevAssistant)) out = { result: { error: 'Actions run only when the user asks for one or says yes to your offer. Offer it in one sentence instead.' } };
       else try { out = await runTool(u.name, (u.input ?? {}) as Record<string, unknown>, ctx); }
       catch (e) { out = { result: { error: (e as Error).message } }; }
       trace.push({ tool: u.name, input: (u.input ?? {}) as Record<string, unknown>, result: out.result, ms: Date.now() - s });
@@ -131,9 +138,15 @@ export async function checkAdvice(answer: string, ctx: Pick<ToolCtx, 'adviceMode
 }
 /** Remove the flagged sentences (by position) and say once why something is missing (no-licence line, or no pick set up). */
 export function removeFlagged(answer: string, flagged: Flag[], mode: AdviceMode, lang: 'hi' | 'en', funds: ReturnType<typeof fundLabels>) {
+  // cut each flagged sentence out of the ORIGINAL text by its position, so line breaks and lists elsewhere stay (review 7)
   const drop = new Set(flagged.map((f) => f.i));
-  const kept = judgeSentences(answer).filter((_, i) => !drop.has(i)).join(' ');
-  const a = scrubFunds(kept.replace(/[ \t]{2,}/g, ' ').trim(), namesFunds(mode) ? [] : funds);
+  let out = '', at = 0;
+  judgeSentences(answer).forEach((sent, i) => {
+    const k = answer.indexOf(sent, at); if (k < 0) return;
+    out += answer.slice(at, k); if (!drop.has(i)) out += sent; at = k + sent.length;
+  });
+  out += answer.slice(at);
+  const a = scrubFunds(out.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').replace(/^\s*\d+\.\s*$/gm, '').trim(), namesFunds(mode) ? [] : funds);
   const lines = [...new Set(flagged.map((f) => (f.why === 'trade' ? NO_TRADE[lang] : namesFunds(mode) ? NO_PICK[lang] : NO_PRODUCT[lang])))];
   return [a, ...lines].filter(Boolean).join(' ');
 }

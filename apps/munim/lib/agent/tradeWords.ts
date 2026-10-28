@@ -17,7 +17,7 @@ const W = String.raw`(?:(?!\s(?:and|then|but|aur|phir|or else)\s|\s(?:और|फ
 // fund"), and not "fund" used as a verb ("sell the bike to fund the card payoff").
 const POT = String.raw`(?<!\b(?:emergency|safety|rainy[- ]day|sinking|contingency|buffer|wedding|travel|goal)\s)`;
 const CATS = String.raw`(?:small|mid|large|flexi|multi|large\s*&\s*mid)[- ]?caps?|ELSS|index(?:\s+funds?)?|bluechip|nifty|sensex|liquid\s+funds?|debt\s+funds?|hybrid\s+funds?|gold\s+funds?|equity(?:\s+funds?)?|equities|ULIPs?|endowment|NPS`;
-const TARGET_BASE = String.raw`${POT}(?<!\bto\s)\b(?:funds?|schemes?|polic(?:y|ies)|SIPs?|units|holdings?|investments?|mutual\s+funds?|MFs?|portfolio|stocks?|shares|${CATS})\b`;
+const TARGET_BASE = String.raw`${POT}(?<!\bto\s)\b(?:funds?|schemes?|polic(?:y|ies)|SIPs?(?!\s+(?:date|day|debit|mandate)\b)|units|holdings?|investments?|mutual\s+funds?|MFs?|portfolio|stocks?|shares|${CATS})\b`;
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const EXIT_VERB = String.raw`(?:sell(?:ing|s)?|redeem(?:ing|s)?|exit(?:ing|s)?(?!\s+load)|switch(?:ing|es)?(?:\s+(?:out\s+of|from))?|surrender(?:ing|s)?(?!\s+(?:value|and\s+paid|charges?|penalty))|withdraw(?:ing)?|get(?:ting)?\s+(?:out\s+of|rid\s+of)|let(?:ting)?\s+go\s+of|offload(?:ing)?|pull(?:ing)?\s+(?:\S+\s+){0,3}out\s+of|cash(?:ing)?\s+out|close\s+out|wind\s+down|liquidat(?:e|ing)|dump(?:ing)?|trim(?:ming)?|reduc(?:e|ing)\s+(?:your\s+)?(?:exposure|allocation|holding)s?\s+(?:to|in)|stop(?:ping)?\s+investing\s+in|discontinu(?:e|ing))`;
@@ -26,7 +26,7 @@ const MOVE = String.raw`\b(?:move|moving|shift|shifting|transfer|transferring|pu
 // the holding as the object: "Shift your small cap fund to large cap", "Replace X with an index fund", "Move the ₹50,000 in
 // your small cap fund to a liquid fund", "Reduce your small cap fund to ₹20,000"
 const OBJ = String.raw`\b(?:move|shift|transfer|switch|swap|replace|put|reduce|cut|lower)\s+(?:(?:your|the|my|this|that|all|of)\s+){0,2}(?:₹?[\d,.]+\s*(?:lakh|crore|k)?\s+(?:in\s+(?:your|the|my)\s+)?)?(?:(?!(?:to|into|in|a|an|by|for|with|from|of|towards?|across|through)\b)[\w&-]+\s+){0,3}?`; // the holding is the verb's OWN object: "Put the bonus into a liquid fund for…" moves the bonus, not the fund (review 4)
-const OBJ_END = String.raw`(?:\s+(?:money|units|investment|holdings?))?\s+(?:to|into|for|with|in|by)\b`;
+const OBJ_END = String.raw`(?:\s+(?:money|units|investment|holdings?))?\s+(?:to|into|for|with|in|by)\b(?!\s+(?:the\s+)?\d)`; // "Shift your SIP to the 5th": a date
 // part of a holding moved somewhere else (review 5): "Move ₹50,000 of Monsoon Small Cap to a liquid fund", "Shift half of your
 // small cap fund to large cap", "Move your money in the ELSS to a liquid fund". The source must be the user's ("your/the/my"
 // or a held name) and a destination must follow, so "Put the bonus in index funds for retirement" stays new money.
@@ -50,7 +50,7 @@ const PRONOUN_CALL = /\b(?:sell|redeem|exit|switch|dump|offload|surrender|ditch)
 const REFUSING = /\b(?:can[’']?t|cannot|won[’']?t|will not|(?:am )?not able to|unable to)\s+(?:tell|advise|recommend|suggest|say|ask)\s+(?:you\s+)?(?:to|whether|which|if)\b(?:(?!\bbut\b|\bhowever\b)(?:[^.!?;:,—–\n-]|,(?=\s+(?:or\s+)?(?:sell|switch|exit|redeem|stop|buy|surrender|move|pause)\b)|(?<=\b(?:sell|switch|exit|redeem|stop|buy|surrender|move|pause)),(?=\s*$))){0,60}$|\b(?:don[’']?t|do not|doesn[’']?t|does not)\s+(?:need|have)\s+to\s+$|\bno need to\s+$|\b(?:never|not|don[’']?t|do not|doesn[’']?t)\s+(?:to\s+|ever\s+|just\s+)?$|^\s*(?:if|when|once|whenever|before|after|unless)\s+(?:you\s+|they\s+|one\s+)?(?:ever\s+)?$/i; // a condition only when it opens the sentence: "You can't go wrong if you sell this fund" is still a call
 const refused = (a: string, at: number | undefined) => { const from = Math.max(0, (at ?? 0) - 90); return REFUSING.test((from ? '\u0001' : '') + a.slice(from, at)); }; // cut mid-sentence: "^" can't match // a verb list ("sell, switch or stop") stays refused
 // a sentence about what an action does, with the action as its subject: "Switching … counts as a sale", "Surrendering … returns little"
-const GERUND_FACT = /^\s*(?:Selling|Switching|Surrendering|Redeeming|Exiting|Stopping|Booking|Withdrawing)\b(?![^.!?]*\b(?:best|better|should|recommend|right move|good idea|wise)\b)[^.!?]*\b(?:counts|is|are|returns|means|costs|attracts|triggers|will|would|can|may|usually|often|gives)\b/i;
+const GERUND_FACT = /^\s*(?:Selling|Switching|Surrendering|Redeeming|Exiting|Stopping|Booking|Withdrawing)\b(?![^.!?]*\b(?:best|better|should|recommend|right move|good idea|wise)\b)[^.!?]*\b(?:counts|is|are|isn[’']?t|aren[’']?t|returns|means|costs|attracts|triggers|will|would|can|cannot|can[’']?t|won[’']?t|may|usually|often|gives)\b/i;
 
 // Hindi and Hinglish (the primary user, D-054): commands, in the same clause as a fund, SIP, policy, category or held fund.
 // Word order is usually object first ("small cap fund sell kar do"), so these are matched by clause, not by reach.
@@ -89,7 +89,7 @@ function patterns(held: string[]) {
     part: new RegExp(`${PART}(?:${SOURCE_WORDS}${TARGET_BASE}${HELD ? `|(?:of|in|from)\\s+(?:the\\s+)?${HELD}` : ''})${PART_END}`, 'giu'),
     putHeld: HELD ? new RegExp(String.raw`\bput\b${W}{0,40}?\b(?:in|into)\s+(?:the\s+)?${HELD}`, 'giu') : null,
     // "…fund ka paisa" is a source; "…fund ke liye", "…fund ki SIP mein" is where new money goes (review 6)
-    hiSource: new RegExp(`(?:${HELD ? `${HELD}|` : ''}${HI_TARGET})(?:\\s+wala\\s+fund)?\\s+(?:ka|ki|ke|ko|का|की|के|को)\\s+(?!(?:liye|लिए|SIP|sip|एसआईपी|mein|में)(?:\\s|$))`, 'iu'),
+    hiSource: new RegExp(`(?:${HELD ? `${HELD}|` : ''}${HI_TARGET})(?:\\s+wala\\s+fund)?\\s+(?:ka|ki|ke|ko|का|की|के|को)\\s+(?!(?:liye|लिए|SIP|sip|एसआईपी|mein|में|date|tareekh|tarikh|तारीख|din|दिन)(?:\\s|$))`, 'iu'),
     stop: new RegExp(String.raw`${STOP}(?:\bSIPs?\b|\bpremiums?\b|${TARGET})`, 'giu'),
     buy: HELD ? new RegExp(`${BUY_HELD}${HELD}`, 'giu') : null,
     target: new RegExp(TARGET, 'iu'),

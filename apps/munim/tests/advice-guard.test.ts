@@ -6,7 +6,7 @@ import { loadDemo } from '@core/demo';
 import { tellsToExit } from '@/lib/agent/tradeWords';
 import { fundLabels, heldNames } from '@/lib/agent/funds';
 import { knownProducts, strangerProducts } from '@/lib/agent/brands';
-import { guardAnswer } from '@/lib/agent/claude';
+import { guardAnswer, userAllowsAction } from '@/lib/agent/claude';
 import { NO_PRODUCT, NO_TRADE } from '@/lib/advice';
 import { ADVICE_THAT_STAYS, INSTRUCTIONS } from '../evals/guardGolden';
 
@@ -35,7 +35,8 @@ describe('the guard on the sample family', async () => {
   it('a fund or insurer named from memory is', () => { for (const [a, name] of PRODUCTS_FROM_MEMORY) expect(strangerProducts(a, known), a).toEqual([name]); });
   it('a fund from a house not on the list is caught where it is recommended (injection review)', () => {
     expect(strangerProducts('You could move that money into QuickRich Growth Fund.', known)).toEqual(['QuickRich Growth Fund']);
-    expect(strangerProducts('Consider SuperShield Plus Plan from your employer.', known)).toEqual(['SuperShield Plus Plan']);
+    expect(strangerProducts('Consider SuperShield Plus Plan for your health cover.', known)).toEqual(['SuperShield Plus Plan']); // a Plan counts where cover is the topic (review 7)
+    expect(strangerProducts('Switch to the Netflix Basic Plan to save ₹300 a month.', known)).toEqual([]);
     for (const a of ['Put the bonus in a Liquid Fund for the safety net.', 'An Index Fund is a good choice for new money.', 'Your Monsoon Small Cap Fund fell 4%.', 'QuickRich Growth Fund appeared on your statement.'])
       expect(strangerProducts(a, known), a).toEqual([]);
   });
@@ -56,5 +57,20 @@ describe('the guard on the sample family', async () => {
   });
   it('a removed product gets a product-neutral line, not "can\'t name funds"', () => {
     expect(guardAnswer('Take a term plan from HDFC Life. Cover of ₹1 crore costs less at 30.', 'guided', funds, known, 'en')).toBe(`Cover of ₹1 crore costs less at 30. ${NO_PRODUCT.en}`);
+  });
+});
+
+describe('the action guard (review 7)', () => {
+  const offer = 'Your card bill is ₹36,343 on 24 October. Shall I set a reminder?';
+  it('a yes to an offer, in the words people use', () => {
+    for (const y of ['yes', 'haan', 'thik hai', 'theek hai', 'ज़रूर', 'जरूर', 'अच्छा', 'Zaroor', 'Acha', 'Sahi hai', 'Chalega', 'kar lo', 'हो जाए', 'Haa', 'Sounds good', 'Go for it', 'Yep', 'Of course', 'Absolutely', 'Do that', 'okk', '👍', 'हाँ कर दो', 'ठीक है', 'OK'])
+      expect(userAllowsAction(y, offer), y).toBe(true);
+  });
+  it('a no, or no offer, runs nothing; an outright ask always does', () => {
+    for (const n of ['no', 'nahi', 'not now', 'baad mein', 'रहने दो', 'मत करो']) expect(userAllowsAction(n, offer), n).toBe(false);
+    expect(userAllowsAction('How much did I save last month?', 'Your spend fell.')).toBe(false);
+    expect(userAllowsAction('ok', 'Your spend fell.')).toBe(false);
+    expect(userAllowsAction('Remind me to pay my card bill on 30 Oct', '')).toBe(true);
+    expect(userAllowsAction('haan, plan save kar do', 'Want me to save this plan?')).toBe(true);
   });
 });
