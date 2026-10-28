@@ -71,7 +71,8 @@ export async function askLocal(history: Turn[]): Promise<LocalReply> {
   const p = getProfile();
   const last = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
   const lang = detectLang(last, 'auto');
-  const adviceMode: AdviceMode = 'guided';
+  // guided on your own data, unless the owner switched advice on for this browser (D-066; the server checks the key)
+  const adviceMode: AdviceMode = (await fetch('/api/advice', { cache: 'no-store' }).then((r) => r.json()).catch(() => ({}))).advice === true ? 'private' : 'guided';
   const names = [...(p?.name ? [p.name] : []), ...counterpartyNames(ds.txns)]; // your name and every payee/sender your statements name
   const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;

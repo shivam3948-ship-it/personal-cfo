@@ -362,6 +362,8 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
     }
   }
   pendingBySid.set(ctx.sid, next);
+  // advice switched on (D-066): every answer carries the honest not-registered line, not just the recommendations
+  if (ctx.adviceMode === 'private' && !answer.includes(DISCLAIMER.private[ctx.lang])) answer = `${answer} ${DISCLAIMER.private[ctx.lang]}`;
   return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'offline', ms: Date.now() - t0 };
 }
 

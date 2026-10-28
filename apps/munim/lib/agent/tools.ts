@@ -12,7 +12,7 @@ import { foundationPlan } from '@core/finance/advice';
 import { moneyAudit, sipValue, type AuditScope } from '@core/finance/audit';
 import { safetyNet } from '@core/finance/essentials';
 import { DISCLAIMER, namesFunds, type AdviceMode } from '@/lib/advice';
-import { fundLabels, labelFor } from './funds';
+import { PICKS, type Pick } from '@/lib/advicePicks';
 import { portfolioView } from '@core/portfolio/engine';
 import { xrayInsights, fdComparison } from '@core/portfolio/insights';
 import { gcalLink, type Action } from '@/lib/actionsCore';
@@ -45,6 +45,7 @@ export const TOOLS: Anthropic.Tool[] = [
   { name: 'simulate_prepayment', description: 'Part-prepay a loan now: interest saved, charges, months saved, and what it does to the bank balance and emergency buffer.', input_schema: obj({ loan: S('Loan type or lender, e.g. "car", "personal", "Orbit"'), amount_rupees: N('Prepayment amount in rupees'), mode: S('reduce_tenure (default) or reduce_emi', { enum: ['reduce_tenure', 'reduce_emi'] }) }, ['loan', 'amount_rupees']) },
   { name: 'loan_negotiation', description: 'Compare switching a loan to a competing offer (with processing fee, foreclosure charge and lock-in) vs. asking the current lender to match the rate.', input_schema: obj({ loan: S('Loan type or lender; omit for the highest-rate loan') }) },
   { name: 'insurance_overview', description: 'Policies, cover, yearly premiums, share of income, term cover as a multiple of income, and the projected return of savings-type policies from their own illustration.', input_schema: obj({}) },
+  { name: 'advice_picks', description: 'Private advice mode only: the specific funds and insurance products the owner has chosen for each need (liquid, short-term debt, multi-asset, index, flexi cap, ELSS; term, health), with why and when each was checked. The ONLY source for naming something to buy.', input_schema: obj({ need: S('Optional: liquid, short_term_debt, hybrid_multi_asset, index_large_cap, flexi_cap, elss, term or health') }) },
   { name: 'claim_helper', description: 'For a hospitalisation: is the member covered, waiting periods, room-rent cap, co-pay, intimation deadline, TPA contact, documents.', input_schema: obj({ member: S('self, mother, father, spouse...'), condition: S('Illness or procedure, e.g. "cataract surgery", "dengue"'), admission: S('planned or emergency', { enum: ['planned', 'emergency'] }), admit_date: S('YYYY-MM-DD; omit for today') }, ['member', 'condition']) },
   { name: 'credit_health', description: 'Credit score and change, utilisation, recent enquiries, late payments, and practical steps.', input_schema: obj({}) },
   { name: 'emergency_fund', description: 'Safety net: bank balance plus debt/liquid funds vs 6 months of essentials (D-040), months covered and the gap.', input_schema: obj({}) },
@@ -181,6 +182,14 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
         boundary: 'Diagnosis only: describe what each policy costs and returns per its own documents. Do not tell the user to buy, surrender or switch a policy.',
       } };
     }
+    case 'advice_picks': {
+      if (ctx.adviceMode !== 'private' && ctx.adviceMode !== 'advised') return { result: { error: 'Picks are only available when the owner has switched advice on. Give the category instead.' } };
+      const need = typeof input.need === 'string' ? input.need : '';
+      const all = { ...PICKS.funds, ...PICKS.insurance } as Record<string, Pick[]>;
+      const picks = need ? { [need]: all[need] ?? [] } : all;
+      const empty = Object.entries(picks).filter(([, v]) => !v.length).map(([k]) => k);
+      return { result: { picks, ...(empty.length ? { no_pick_yet: empty, note: 'No pick is set up for these needs: give the category and say so.' } : {}), disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang] } };
+    }
     case 'claim_helper': {
       const p = ds.policies.find((x) => x.kind === 'health');
       if (!p) return { result: { error: 'No health policy uploaded' } };
@@ -202,7 +211,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const p = ds.portfolio; const named = namesFunds(ctx.adviceMode);
       if (!p) return { result: { error: 'No mutual fund statement (CAS) added yet.' } };
       const v = portfolioView(p.holdings, p.asOf); const x = xrayInsights(p.holdings, p.asOf); const fd = fdComparison(p.holdings, p.asOf);
-      const fname = named ? (n: string) => n : labelFor(fundLabels(p.holdings, ctx.lang), ctx.lang); // before the licence the AI only sees categories (D-051)
+      const fname = (n: string) => n; // the user's own fund names, as facts (D-066); the answer guard stops a name next to a trade instruction
       return { result: {
         as_of: p.asOf, value: R(v.value), invested: R(v.cost), your_return_per_year_pct: v.xirrPct, fd_rate_pct: fd.rate, more_than_7pct_fd_before_tax: R(fd.extra),
         tax_free_gains: { limit_left_this_year: R(x.harvest.left), deadline: x.harvest.deadline, days_left: x.harvest.daysLeft, long_term_gains_available: R(x.harvest.ltGainAll), future_tax_saved_if_booked: R(x.harvest.taxSavedLater),
@@ -212,7 +221,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
         elss_out_of_lock_in: x.elss ? { fund: fname(x.elss.fund), free_value: R(x.elss.freeValue), free_gain: R(x.elss.freeGain) } : null,
         vs_plain_index_fund_same_dates: Object.fromEntries(Object.entries(x.vsIndex).map(([k, z]) => [fname(k), { invested: R(z.invested), fund_value: R(z.fundValue), index_fund_value: R(z.indexValue), difference: R(z.diff) }])),
         guidance: named
-          ? 'Sample data (demo): you may walk through the plan above (which units, how much, by when). Never name a new fund to buy, and never tell the user to exit a fund.'
+          ? 'Advice is on for this person (not SEBI-registered): you may say which units to move, sell or exit, how much and by when, from the figures above. To name a new fund to buy, use advice_picks only, never memory.'
           : 'Facts and categories only: what regular-plan fees cost, that direct plans of the same fund cost less, the tax-free limit and deadline. Do not tell the user which fund to move, sell or buy, how much, or when. Suggest they decide with the facts; Munim doesn\'t have an investment adviser licence yet.',
       } };
     }

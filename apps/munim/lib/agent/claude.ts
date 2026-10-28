@@ -17,12 +17,10 @@ export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceSte
 export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient | null = getClient()): Promise<AgentReply> {
   if (!client) throw new Error('No ANTHROPIC_API_KEY');
   const t0 = Date.now();
-  const system = systemPrompt({ asOf: asOfDate(ctx.ds), lang: ctx.lang, dataLabel: ctx.ds.label, sources: ctx.ds.log.filter((l) => l.file !== '(all documents)').map((l) => `${l.file} (${l.kind})`), testMode: ctx.adviceMode === 'demo' || ctx.adviceMode === 'internal', disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang] });
+  const system = systemPrompt({ asOf: asOfDate(ctx.ds), lang: ctx.lang, dataLabel: ctx.ds.label, sources: ctx.ds.log.filter((l) => l.file !== '(all documents)').map((l) => `${l.file} (${l.kind})`), testMode: ctx.adviceMode === 'demo' || ctx.adviceMode === 'internal', disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang], adviceMode: ctx.adviceMode });
   // The user's own words can carry PII too ("my PAN is…"): scrub them like document text before they reach the model.
   const names = [...holderNames(ctx.ds.docs.map((d) => d.text)), ...(ctx.names ?? [])];
-  // fund names the user typed, or an earlier answer used, are swapped for categories before Claude sees them (D-051)
-  const preFunds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
-  const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: scrubFunds(t.role === 'user' ? redact(t.content, { names }) : t.content, preFunds) }));
+  const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: t.role === 'user' ? redact(t.content, { names }) : t.content }));
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   let repaired = false, fundsRepaired = false;
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
@@ -44,7 +42,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       if (named.length && !fundsRepaired) {
         fundsRepaired = true;
         messages.push({ role: 'assistant', content: res.content });
-        messages.push({ role: 'user', content: `[system check] Munim has no investment adviser licence, so answers never name a fund. Rewrite without these names: ${named.join(', ')}. Name the category instead (for example "${funds[0]?.label ?? 'your small cap fund'}"). Reply with the corrected spoken answer only.` });
+        messages.push({ role: 'user', content: `[system check] Munim has no investment adviser licence, so it never tells the user to buy, sell, switch or exit a named fund. Rewrite the sentence that does this with ${named.join(', ')}: state the facts only, or name the category instead (for example "${funds[0]?.label ?? 'your small cap fund'}"). Reply with the corrected spoken answer only.` });
         continue;
       }
       return { answer: named.length ? scrubFunds(answer, funds) : answer, lang: ctx.lang, trace, actions, check, engine: 'claude', model: MODEL, ms: Date.now() - t0, repaired: repaired || fundsRepaired };

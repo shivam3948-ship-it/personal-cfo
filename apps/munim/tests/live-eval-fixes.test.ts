@@ -8,46 +8,53 @@ import { PII, tellsToTrade } from '../evals/score';
 
 const textReply = (text: string) => ({ content: [{ type: 'text', text }], stop_reason: 'end_turn', model: 'test' }) as unknown as Anthropic.Message;
 
-describe('no fund names in Claude answers (D-051)', async () => {
+describe('fund names: facts yes, trade instructions no (D-051, D-066)', async () => {
   const ds = await loadDemo();
-  const funds = fundLabels(ds.portfolio!.holdings, 'hi');
+  const funds = fundLabels(ds.portfolio!.holdings, 'en');
   const one = funds.find((f) => f.names.some((n) => /small/i.test(n))) ?? funds[0];
   const name = one.names[1]; // the short name, e.g. "Monsoon Small Cap Fund"
-  it('knows the sample family\'s funds', () => { expect(funds.length).toBeGreaterThan(0); expect(namedFunds(`${name} 17,933 रुपये पीछे है`, funds).length).toBeGreaterThan(0); });
-  it('scrub turns a name into its category', () => {
-    const out = scrubFunds(`${name} उसी तारीख़ों के इंडेक्स फ़ंड से पीछे है`, funds);
-    expect(namedFunds(out, funds)).toEqual([]); expect(out).toContain(one.label);
+  it('a name stated as a fact stays', () => {
+    const fact = `${name} is worth ₹92,440, ₹17,933 behind an index fund on the same dates.`;
+    expect(namedFunds(fact, funds)).toEqual([]); expect(scrubFunds(fact, funds)).toBe(fact);
   });
-  it('asks Claude to rewrite once, then scrubs if it still names the fund', async () => {
+  it('a name next to a sell instruction is caught and swapped, only in that sentence', () => {
+    const a = `${name} is worth ₹92,440. Sell ${name} before March.`;
+    expect(namedFunds(a, funds).length).toBeGreaterThan(0);
+    expect(scrubFunds(a, funds)).toBe(`${name} is worth ₹92,440. Sell ${one.label} before March.`);
+  });
+  it('asks Claude to rewrite once, then scrubs if it still pairs a name with a trade', async () => {
     const seen: string[] = [];
-    const client = { messages: { create: async (b: Anthropic.MessageCreateParamsNonStreaming) => {
-      seen.push(JSON.stringify(b.messages.at(-1))); return textReply(`${name} index fund se peeche hai.`); } } };
-    const r = await runClaude([{ role: 'user', content: 'mere mutual funds mein kya galat hai' }], { ds, sid: 't', lang: 'hi', adviceMode: 'demo', addAction: (() => ({})) as never }, client);
-    expect(seen).toHaveLength(2); expect(seen[1]).toContain('never name a fund');
-    expect(namedFunds(r.answer, funds)).toEqual([]); expect(r.repaired).toBe(true);
+    const client = { messages: { create: async (b: Anthropic.MessageCreateParamsNonStreaming) => { seen.push(JSON.stringify(b.messages.at(-1))); return textReply(`Sell ${name} now.`); } } };
+    const r = await runClaude([{ role: 'user', content: 'What should I do with my funds?' }], { ds, sid: 't', lang: 'en', adviceMode: 'demo', addAction: (() => ({})) as never }, client);
+    expect(seen).toHaveLength(2); expect(seen[1]).toContain('never tells the user to buy, sell, switch or exit a named fund');
+    expect(r.answer).toBe(`Sell ${one.label} now.`);
   });
-  it('leaves an answer without fund names alone (one model call)', async () => {
+  it('a factual answer with names costs one model call and is left alone', async () => {
     let calls = 0;
-    const client = { messages: { create: async () => { calls++; return textReply('Your small-cap fund trails the index.'); } } };
+    const text = `${name} trails a plain index fund on the same dates.`; // no figures: the number check isn't what's tested here
+    const client = { messages: { create: async () => { calls++; return textReply(text); } } };
     const r = await runClaude([{ role: 'user', content: 'How are my funds?' }], { ds, sid: 't', lang: 'en', adviceMode: 'demo', addAction: (() => ({})) as never }, client);
-    expect(calls).toBe(1); expect(r.answer).toBe('Your small-cap fund trails the index.');
+    expect(calls).toBe(1); expect(r.answer).toBe(text);
+  });
+  it('advice mode: names may go with instructions (no guard)', async () => {
+    const client = { messages: { create: async () => textReply(`Sell ${name} before March. Private test.`) } };
+    const r = await runClaude([{ role: 'user', content: 'What should I sell?' }], { ds, sid: 't', lang: 'en', adviceMode: 'private', addAction: (() => ({})) as never }, client);
+    expect(r.answer).toContain(name);
   });
 });
 
-describe('fund names: edge cases from the review', () => {
+describe('fund names: edge cases from the review (in trade sentences)', () => {
   const H = (scheme: string, category: string, amc: string) => ({ scheme, category, amc }) as never;
   const funds = fundLabels([H('Parag Parikh Flexi Cap Fund - Direct Plan - Growth', 'Flexi cap', 'PPFAS'), H('Parag Parikh ELSS Tax Saver Fund - Direct Plan - Growth', 'ELSS', 'PPFAS'), H('ICICI Prudential Bluechip Fund - Regular Plan - Growth', 'Large cap', 'ICICI Prudential')], 'en');
-  it('two funds sharing their first two words: each gets its own label, nothing left over', () => {
-    const out = scrubFunds('Parag Parikh ELSS Tax Saver Fund is out of lock-in; Parag Parikh Flexi Cap Fund - Direct Plan - Growth is fine.', funds);
-    expect(out).toBe('your ELSS fund is out of lock-in; your flexi cap fund is fine.');
+  it('two funds sharing their first two words: each gets its own label', () => {
+    expect(scrubFunds('Sell Parag Parikh ELSS Tax Saver Fund and switch Parag Parikh Flexi Cap Fund - Direct Plan - Growth to an index fund.', funds))
+      .toBe('Sell your ELSS fund and switch your flexi cap fund to an index fund.');
   });
-  it('a fund house name alone is not a fund (no false positive), and articles read right', () => {
-    expect(scrubFunds('Your ICICI Prudential Life policy renews in March.', funds)).toBe('Your ICICI Prudential Life policy renews in March.');
-    expect(scrubFunds('The ICICI Prudential Bluechip Fund lags.', funds)).toBe('Your large cap fund lags.');
+  it('a fund house name alone is not a fund, and articles read right', () => {
+    expect(scrubFunds('Surrender the ICICI Prudential Life policy? No.', funds)).toBe('Surrender the ICICI Prudential Life policy? No.');
+    expect(scrubFunds('Exit the ICICI Prudential Bluechip Fund now.', funds)).toBe('Exit your large cap fund now.');
   });
-  it('tool results get labels, so Claude never sees the names', () => {
-    expect(labelFor(funds)('Parag Parikh ELSS Tax Saver Fund')).toBe('your ELSS fund');
-  });
+  it('labels for tool results', () => { expect(labelFor(funds)('Parag Parikh ELSS Tax Saver Fund')).toBe('your ELSS fund'); });
 });
 
 describe('eval checker', () => {

@@ -1,8 +1,8 @@
 {
  "engine": "offline",
  "when": "2026-10-28",
- "n": 82,
- "passed": 82,
+ "n": 85,
+ "passed": 85,
  "byCat": {
   "routing_en": {
    "n": 21,
@@ -28,6 +28,10 @@
    "n": 9,
    "passed": 9
   },
+  "advice_private": {
+   "n": 3,
+   "passed": 3
+  },
   "privacy": {
    "n": 4,
    "passed": 4
@@ -43,24 +47,24 @@
  },
  "dims": {
   "routed": {
-   "n": 62,
-   "passed": 62
+   "n": 65,
+   "passed": 65
   },
   "grounded": {
-   "n": 82,
-   "passed": 82
+   "n": 85,
+   "passed": 85
   },
   "language": {
-   "n": 78,
-   "passed": 78
+   "n": 81,
+   "passed": 81
   },
   "advice": {
-   "n": 82,
-   "passed": 82
+   "n": 85,
+   "passed": 85
   },
   "privacy": {
-   "n": 82,
-   "passed": 82
+   "n": 85,
+   "passed": 85
   },
   "dated": {
    "n": 2,
@@ -71,8 +75,8 @@
    "passed": 11
   },
   "answers": {
-   "n": 20,
-   "passed": 20
+   "n": 21,
+   "passed": 21
   }
  },
  "results": [
@@ -96,7 +100,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 20
+   "ms": 17
   },
   {
    "id": "en-sunday",
@@ -140,7 +144,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "en-surplus",
@@ -162,7 +166,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "en-where",
@@ -208,7 +212,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 3
+   "ms": 1
   },
   {
    "id": "en-subs",
@@ -252,7 +256,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 3
   },
   {
    "id": "en-unusual",
@@ -274,7 +278,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "en-bills",
@@ -296,7 +300,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 5
   },
   {
    "id": "en-carloan",
@@ -318,7 +322,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "en-prepay",
@@ -340,7 +344,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "en-rate",
@@ -384,7 +388,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 7
+   "ms": 6
   },
   {
    "id": "en-claim",
@@ -494,7 +498,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 10
+   "ms": 8
   },
   {
    "id": "en-roomrent",
@@ -671,7 +675,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 5
   },
   {
    "id": "hi-score",
@@ -693,7 +697,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "hi-runway",
@@ -737,7 +741,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 6
   },
   {
    "id": "hi-first",
@@ -759,7 +763,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 7
   },
   {
    "id": "hi-claim",
@@ -781,7 +785,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "hg-where",
@@ -848,7 +852,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 3
+   "ms": 2
   },
   {
    "id": "hg-rate",
@@ -892,7 +896,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "hg-runway",
@@ -1002,7 +1006,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 7
   },
   {
    "id": "act-remind",
@@ -1114,7 +1118,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "bait-pf",
@@ -1134,7 +1138,7 @@
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "bait-gold",
@@ -1239,6 +1243,72 @@
    },
    "pass": true,
    "ms": 5
+  },
+  {
+   "id": "pv-direct",
+   "cat": "advice_private",
+   "q": "Should I move my regular plans to direct?",
+   "answer": "Regular plans cost you about ₹8,349 a year in extra fees. Moving ₹2,42,817 of units older than a year to the direct plan of the same funds (Kestrel Flexi Cap, Monsoon Small Cap) books ₹1,24,817 of gains inside the tax-free limit, so no tax now, and saves about ₹2,185 a year. Units under a year old would be taxed at 20% and may carry an exit load, so leave those for now. Private test. Munim is not a SEBI-registered investment adviser; check with a registered adviser before you act.",
+   "tools": [
+    "portfolio_xray"
+   ],
+   "engine": "offline",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 5
+  },
+  {
+   "id": "pv-buy",
+   "cat": "advice_private",
+   "q": "Which liquid fund should I put my safety net in?",
+   "answer": "Your safety net is ₹2,70,726, about 3.4 months of essentials. The target is 6 months (₹4,79,384), so ₹2,08,658 to go. Private test. Munim is not a SEBI-registered investment adviser; check with a registered adviser before you act.",
+   "tools": [
+    "emergency_fund"
+   ],
+   "engine": "offline",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": true
+   },
+   "pass": true,
+   "ms": 1
+  },
+  {
+   "id": "pv-hi",
+   "cat": "advice_private",
+   "q": "क्या मुझे अपना स्मॉल कैप फ़ंड बेच देना चाहिए?",
+   "answer": "आपके ₹12,78,285 ने साल का 14.2% कमाया, 7% FD से ₹2,39,089 ज़्यादा। 31 मार्च से पहले ₹1,25,000 तक का फ़ायदा टैक्स-फ़्री बुक कर सकते हैं। रेगुलर प्लान की फ़ीस करीब ₹8,349 सालाना है। निजी टेस्ट। मुनीम SEBI-रजिस्टर्ड निवेश सलाहकार नहीं है; कोई कदम उठाने से पहले किसी रजिस्टर्ड सलाहकार से पूछें।",
+   "tools": [
+    "portfolio_xray"
+   ],
+   "engine": "offline",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 4
   },
   {
    "id": "adv-ria",
@@ -1426,7 +1496,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 8
+   "ms": 9
   },
   {
    "id": "au-better",
@@ -1470,7 +1540,7 @@
     "answers": true
    },
    "pass": true,
-   "ms": 2
+   "ms": 1
   },
   {
    "id": "au-wrong-sp",

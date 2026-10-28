@@ -1,8 +1,9 @@
-// Fund names in Ask (D-051): before the adviser licence an answer never names a fund, not even the user's own. Tools label
-// funds by category before Claude sees them (the root fix), and the answer is checked and scrubbed after (the backstop).
-// Found by the first live-Claude eval (28 Oct): a Hinglish answer named a holding the X-ray tool had passed through.
+// Fund names in Ask. The user's own funds may be named as facts (D-066); what must never happen outside advice mode is a
+// fund name next to an instruction to buy, sell, switch, exit or redeem it (D-051). Found by the first live-Claude eval
+// (28 Oct): a Hinglish answer paired a holding with a judgement. The guard finds such sentences and swaps the name there.
 import { shortName } from '@core/portfolio/engine';
 import type { Dataset } from '@core/types';
+import { tradeSentences } from './tradeWords';
 
 type Holding = NonNullable<Dataset['portfolio']>['holdings'][number];
 export interface FundLabel { names: string[]; label: string }
@@ -35,10 +36,12 @@ function patterns(funds: FundLabel[]) {
   return funds.flatMap((f) => f.names.map((name) => ({ name, label: f.label }))).sort((a, b) => b.name.length - a.name.length)
     .map(({ name, label }) => ({ re: new RegExp(`(?<![\\p{L}\\p{N}])${esc(name)}(?:\\s+Fund)?(?![\\p{L}\\p{N}])`, 'giu'), name, label }));
 }
-export const namedFunds = (answer: string, funds: FundLabel[]) => patterns(funds).filter((p) => p.re.test(answer)).map((p) => p.name);
+/** Fund names that appear in a sentence telling the user to trade (names stated as facts elsewhere are fine). */
+export const namedFunds = (answer: string, funds: FundLabel[]) => { const ts = tradeSentences(answer).join(' '); return patterns(funds).filter((p) => p.re.test(ts)).map((p) => p.name); };
+/** In those sentences only, a name becomes its category ("your small cap fund"). */
 export function scrubFunds(answer: string, funds: FundLabel[]) {
   let a = answer;
-  for (const p of patterns(funds)) a = a.replace(p.re, p.label);
+  for (const t of tradeSentences(answer)) { let u = t; for (const p of patterns(funds)) u = u.replace(p.re, p.label); a = a.replace(t, u); }
   return a.replace(/\b(The|A|An)\s+(your|one of your)\b/g, (_, __, w: string) => w[0].toUpperCase() + w.slice(1)).replace(/\b(the|a|an)\s+(your|one of your)\b/g, '$2');
 }
 /** For tool results: a fund's name → its label (unknown names come back unchanged). */

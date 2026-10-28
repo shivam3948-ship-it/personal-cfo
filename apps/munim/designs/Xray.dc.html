@@ -245,7 +245,7 @@ class Component extends DCLogic {
     var maxV = Math.max.apply(null, rows.map(function (r) { return Math.max(r.fund, r.you); }));
     var ahead = rows.filter(function (r) { return r.you - r.fund >= 0.5; }).length, behind = rows.filter(function (r) { return r.fund - r.you >= 0.5; }).length, even = rows.length - ahead - behind;
     var eq = sum(PF.funds.filter(function (f) { return f[3] === 'equity'; }).map(function (f) { return f[4]; })), dt = PF.value - eq;
-    var named = MODE === 'advised'; // D-051: no fund is named for a move or switch until there's an adviser licence, test builds included
+    var named = MODE === 'advised' || MODE === 'private'; // D-066: advice switched on by the owner for this browser // D-051: no fund is named for a move or switch until there's an adviser licence, test builds included
     var H = XR.harvest, G = XR.regular, E = XR.elss, C = H.combo, O = X3.overlap, FD = X3.fd, DID = X3.did;
     // the fund compared with an index fund: whichever one has index prices for all its dates (data-driven, any CAS)
     var vk = Object.keys(XR.vsIndex || {})[0] || null, M = vk ? XR.vsIndex[vk] : null;
