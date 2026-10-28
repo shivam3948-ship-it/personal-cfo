@@ -14,7 +14,9 @@ import { forLlm } from '@core/privacy/forLlm';
 import { counterpartyNames } from '@core/privacy/counterparties';
 import { redact } from '@core/privacy/redact';
 import { emptyDataset, type Dataset } from '@core/types';
-import { runClaude, type AgentReply, type Turn } from '@/lib/agent/claude';
+import { fundLabels, guardAnswer, runClaude, type AgentReply, type Turn } from '@/lib/agent/claude';
+import { knownProducts } from '@/lib/agent/brands';
+import type { Picks } from '@/lib/advicePicks';
 import { runOffline } from '@/lib/agent/offline';
 import type { ToolCtx } from '@/lib/agent/tools';
 import { actionKey, toIcs, type Action } from '@/lib/actionsCore';
@@ -49,11 +51,12 @@ function addLocal(_sid: string, a: Omit<Action, 'id' | 'createdAt'>): Action & {
 const icsUrl = (a: Action) => { try { return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(toIcs(a)); } catch { return ''; } };
 
 /** A stand-in LLM client: forwards only the messages (question + filtered tool results) to the relay. */
-function relayClient(lang: 'hi' | 'en', asOf: string): LlmClient {
+function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode }): LlmClient {
   return { messages: { create: async (body) => {
     const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf }) });
     if (r.status === 503) { noKey = true; throw new NoKey(); }
     const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'relay failed');
+    if (j.mode === 'guided' || seen.mode === 'guided') seen.mode = 'guided'; else if (j.mode) seen.mode = j.mode; // the strictest mode the server used
     return { content: j.content, stop_reason: j.stop_reason, model: j.model } as Anthropic.Message;
   } } };
 }
@@ -74,11 +77,18 @@ export async function askLocal(history: Turn[]): Promise<LocalReply> {
   // guided on your own data, unless the owner switched advice on for this browser (D-066; the server checks the key)
   const adviceMode: AdviceMode = (await fetch('/api/advice', { cache: 'no-store' }).then((r) => r.json()).catch(() => ({}))).advice === true ? 'private' : 'guided';
   const names = [...(p?.name ? [p.name] : []), ...counterpartyNames(ds.txns)]; // your name and every payee/sender your statements name
-  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names };
+  const picks = adviceMode === 'private' ? async () => { const r = await fetch('/api/advice/picks', { cache: 'no-store' }); if (!r.ok) throw new Error('no picks'); return r.json() as Promise<Picks>; } : undefined;
+  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, ...(picks ? { picks } : {}) };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;
   const t0 = Date.now();
   if (/(?:^|;\s*)munim_ai=off(?:;|$)/.test(document.cookie)) noKey = true; // ?ai=off (D-062): don't even ask the relay
-  try { if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds))); }
+  const seen: { mode?: AdviceMode } = {};
+  try {
+    if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds), seen));
+    // the server decides the mode (D-066 review, #5): if the relay answered in guided mode (the advice cookie expired, or advice
+    // was switched off) while this phone thought advice was on, apply the guided guard to what the model said
+    if (seen.mode === 'guided' && adviceMode !== 'guided') r = { ...r, answer: guardAnswer(r.answer, 'guided', fundLabels(ds.portfolio?.holdings ?? [], lang), knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? []), lang) };
+  }
   catch (e) { fallback = !(e instanceof NoKey); r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
   const spoken = redact(r.answer, { names }).replace(/\b(UPI|NEFT|IMPS)[-/][^\s,.।]+/gi, 'a payment'); // what may go to the voice service
   return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where,

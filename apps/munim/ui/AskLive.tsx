@@ -139,7 +139,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
 
   useEffect(() => { const c = ctxOf(); setCtx(c); track('ask_opened', { ctx: c.ctx }); }, []);
   // on your own data it's guided whatever the test switch says (no fund picks, the SEBI line): AGENTS.md rule 1, D-050
-  useEffect(() => { if (local) { setDisc({ ...DISCLAIMER.guided, test: false }); return; } fetch('/api/ask', { cache: 'no-store' }).then((r) => r.json()).then((j) => j.disclaimer && setDisc({ ...j.disclaimer, test: !!j.testMode })).catch(() => {}); }, [local]);
+  useEffect(() => { if (local) { setDisc({ ...DISCLAIMER.guided, test: false }); fetch('/api/advice', { cache: 'no-store' }).then((r) => r.json()).then((j) => { if (j.advice === true) setDisc({ ...DISCLAIMER.private, test: false }); }).catch(() => {}); return; } // own data: advice mode only if the server says this browser is unlocked (D-066)
+    fetch('/api/ask', { cache: 'no-store' }).then((r) => r.json()).then((j) => j.disclaimer && setDisc({ ...j.disclaimer, test: !!j.testMode })).catch(() => {}); }, [local]);
   const hiLast = [...msgs].reverse().find((m) => m.role === 'assistant' && /[\u0900-\u097F]/.test(m.content));
   useEffect(() => { fetch('/api/stt', { cache: 'no-store' }).then((r) => r.json()).then((j) => { if (!j.configured && browserSttAvailable()) setSttMode('browser'); }).catch(() => {}); }, []);
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [msgs, busy]);

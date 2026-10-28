@@ -21,7 +21,7 @@ When two goals conflict, the higher one wins: e.g. a second tap is accepted (mot
 | Honest fake doors | A feature that isn't built says "Coming soon", records the intent, and says plainly what doesn't work yet ("Munim doesn't move your money yet") | docs/37, D-063 |
 | Sample data is always labelled | A banner says "Sample data · a made-up family" on every screen that shows it | D-049 |
 | Design for the earlier stage | One user grows from saver to investor; when needs conflict, the first-time saver wins | D-035, D-054 |
-| Education, not advice, before the licence | Categories, never fund names; "For education only, not investment advice." | D-051 |
+| Education, not advice, before the licence | Your own funds named as facts; never told to buy, sell, switch or stop one; new money by category; "For education only, not investment advice." | D-051, D-066 |
 | Clean and familiar over stylish | WhatsApp-like plainness for tier-2/3 users; no glassmorphism | Shivam, 22 Oct |
 | Hindi-first, voice-first | Every screen in Hindi; the check-in can be done by voice | D-054, docs/40 |
 | Check consequences before acting | Reversible and harmless: try it; otherwise confirm first | Shivam, 22 Oct |
@@ -75,7 +75,7 @@ When two goals conflict, the higher one wins: e.g. a second tap is accepted (mot
 | D-062 | 28 Oct | One version or two? | AI on and AI off from one config | User and builder control |
 | D-063 | 28 Oct | What happens on a coming-soon button? | A "Coming soon" sheet, "Tell me when it's ready", intent recorded | Honest fake doors; commitment |
 | D-064 | 28 Oct | Should people see whether AI answered? | Always: 'AI (Claude)' or 'rules, no AI' on every answer | Trust through transparency (AI disclosure); visual load (one word on an existing line) |
-| D-066 | 28 Oct | Advice for some people, not all? | A private unlock key per browser; picks from an owner-curated list; an honest not-registered disclaimer | User and builder control; trust through transparency (say what it is) |
+| D-066 | 28 Oct | Advice for some people, not all? | A private unlock key per browser; picks from an owner-curated list; an honest not-registered disclaimer (adviser and distributor); outside it, a removed instruction is replaced by a plain no-licence line, not silence | User and builder control; trust through transparency (say what it is, and say why something was left out) |
 
 ## 6. Open design questions
 - Do people miss the Ask orb because it shares the teal of the button above it? If tests say yes, go back to indigo (docs/38).

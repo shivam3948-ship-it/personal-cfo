@@ -3,7 +3,8 @@
 // (28 Oct): a Hinglish answer paired a holding with a judgement. The guard finds such sentences and swaps the name there.
 import { shortName } from '@core/portfolio/engine';
 import type { Dataset } from '@core/types';
-import { tradeSentences } from './tradeWords';
+import { exitSentences, tellsToExit, tradeSentences } from './tradeWords';
+import { NO_TRADE } from '@/lib/advice';
 
 type Holding = NonNullable<Dataset['portfolio']>['holdings'][number];
 export interface FundLabel { names: string[]; label: string }
@@ -47,4 +48,15 @@ export function scrubFunds(answer: string, funds: FundLabel[]) {
 /** For tool results: a fund's name → its label (unknown names come back unchanged). */
 export function labelFor(funds: FundLabel[], lang: 'hi' | 'en' = 'en') {
   return (name: string) => funds.find((f) => f.names.some((n) => n.toLowerCase() === name.toLowerCase()))?.label ?? (lang === 'hi' ? 'आपका एक फ़ंड' : 'one of your funds');
+}
+
+/** Outside advice mode, the last line of defence after one repair round (D-066 review, B3): names in trade sentences become
+ *  their category, then any sentence still telling the user to sell, switch, exit or stop a fund, SIP or policy is removed
+ *  and the no-licence line said once instead. */
+export function enforceNoTrade(answer: string, funds: FundLabel[], lang: 'hi' | 'en') {
+  let a = scrubFunds(answer, funds);
+  if (!tellsToExit(a)) return a;
+  for (const s of exitSentences(a)) a = a.replace(s, '');
+  a = a.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  return a ? `${a} ${NO_TRADE[lang]}` : NO_TRADE[lang];
 }

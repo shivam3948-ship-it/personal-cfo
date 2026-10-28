@@ -5,6 +5,7 @@ import { loadDemo } from '@core/demo';
 import { runClaude } from '@/lib/agent/claude';
 import { fundLabels, labelFor, namedFunds, scrubFunds } from '@/lib/agent/funds';
 import { PII, tellsToTrade } from '../evals/score';
+import { NO_TRADE } from '@/lib/advice';
 
 const textReply = (text: string) => ({ content: [{ type: 'text', text }], stop_reason: 'end_turn', model: 'test' }) as unknown as Anthropic.Message;
 
@@ -26,8 +27,8 @@ describe('fund names: facts yes, trade instructions no (D-051, D-066)', async ()
     const seen: string[] = [];
     const client = { messages: { create: async (b: Anthropic.MessageCreateParamsNonStreaming) => { seen.push(JSON.stringify(b.messages.at(-1))); return textReply(`Sell ${name} now.`); } } };
     const r = await runClaude([{ role: 'user', content: 'What should I do with my funds?' }], { ds, sid: 't', lang: 'en', adviceMode: 'demo', addAction: (() => ({})) as never }, client);
-    expect(seen).toHaveLength(2); expect(seen[1]).toContain('never tells the user to buy, sell, switch or exit a named fund');
-    expect(r.answer).toBe(`Sell ${one.label} now.`);
+    expect(seen).toHaveLength(2); expect(seen[1]).toContain('It tells the user to trade');
+    expect(r.answer).toBe(NO_TRADE.en); // the name is swapped, then the sell instruction itself goes (D-066 review, B3)
   });
   it('a factual answer with names costs one model call and is left alone', async () => {
     let calls = 0;

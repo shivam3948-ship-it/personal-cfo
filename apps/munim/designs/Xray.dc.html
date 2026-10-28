@@ -200,7 +200,8 @@ class Component extends DCLogic {
     var monHi = function (x) { var p = String(x).split(' '), i = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(p[0]); return i < 0 ? x : [MONHI[i]].concat(p.slice(1)).join(' '); };
     // the mode's disclaimer comes from the server in English; its Hindi twin, word for word as lib/advice.ts DISCLAIMER[mode].hi
     var discHi = function (en) { var EDU = 'सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं।';
-      return /SEBI-registered/.test(en) ? 'SEBI-रजिस्टर्ड सलाहकार की निवेश सलाह।' : /^Test build on sample data/.test(en) ? 'टेस्ट वर्ज़न, सैंपल डेटा पर। ' + EDU : /^Test build/.test(en) ? 'टेस्ट वर्ज़न। ' + EDU : EDU; };
+      // order matters: the advice-mode line mentions SEBI too, and must never become "from a SEBI-registered adviser" (D-066)
+      return /^Private test/.test(en) ? 'निजी टेस्ट। मुनीम न SEBI-रजिस्टर्ड निवेश सलाहकार है, न AMFI-रजिस्टर्ड म्यूचुअल फ़ंड डिस्ट्रीब्यूटर; कोई कदम उठाने से पहले किसी रजिस्टर्ड सलाहकार से पूछें।' : /^Investment advice from a SEBI-registered adviser/.test(en) ? 'SEBI-रजिस्टर्ड सलाहकार की निवेश सलाह।' : /^Test build on sample data/.test(en) ? 'टेस्ट वर्ज़न, सैंपल डेटा पर। ' + EDU : /^Test build/.test(en) ? 'टेस्ट वर्ज़न। ' + EDU : EDU; };
     // fund categories and plans come from the engine in English (packages/core classify())
     var HI_FCAT = { 'Flexi cap': 'फ़्लेक्सी कैप', 'ELSS': 'ELSS', 'Index': 'इंडेक्स', 'Debt': 'डेट', 'Small cap': 'स्मॉल कैप', 'Mid cap': 'मिड कैप', 'Large cap': 'लार्ज कैप', 'Large & mid cap': 'लार्ज और मिड कैप',
       'Liquid': 'लिक्विड', 'Hybrid': 'हाइब्रिड', 'Arbitrage': 'आर्बिट्राज', 'Gold / silver': 'सोना / चाँदी', 'Equity (other)': 'इक्विटी (अन्य)', 'Other': 'अन्य' };

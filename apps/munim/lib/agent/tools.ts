@@ -12,7 +12,7 @@ import { foundationPlan } from '@core/finance/advice';
 import { moneyAudit, sipValue, type AuditScope } from '@core/finance/audit';
 import { safetyNet } from '@core/finance/essentials';
 import { DISCLAIMER, namesFunds, type AdviceMode } from '@/lib/advice';
-import { PICKS, type Pick } from '@/lib/advicePicks';
+import { NO_PICKS, type Pick, type Picks } from '@/lib/advicePicks';
 import { portfolioView } from '@core/portfolio/engine';
 import { xrayInsights, fdComparison } from '@core/portfolio/insights';
 import { gcalLink, type Action } from '@/lib/actionsCore';
@@ -24,6 +24,8 @@ import { holderNames, redact } from '@core/privacy/redact';
 export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMode: AdviceMode; addAction: (sid: string, a: Omit<Action, 'id' | 'createdAt'>) => Action & { duplicate?: boolean }; icsUrl?: (a: Action) => string;
   /** On the phone (D-050): every tool result passes through this before the AI sees it, and the number check uses the same filtered result. */
   sanitize?: (r: Record<string, unknown>) => Record<string, unknown>;
+  /** Advice mode only (D-066): the owner's picks, from the server module on the server or /api/advice/picks on the phone. */
+  picks?: () => Promise<Picks>;
   /** Names to scrub from the user's own words before they leave (e.g. the first name given at onboarding). */
   names?: string[] }
 export interface ToolOutput { result: Record<string, unknown>; action?: Action }
@@ -185,7 +187,8 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
     case 'advice_picks': {
       if (ctx.adviceMode !== 'private' && ctx.adviceMode !== 'advised') return { result: { error: 'Picks are only available when the owner has switched advice on. Give the category instead.' } };
       const need = typeof input.need === 'string' ? input.need : '';
-      const all = { ...PICKS.funds, ...PICKS.insurance } as Record<string, Pick[]>;
+      const p = (await ctx.picks?.().catch(() => null)) ?? NO_PICKS;
+      const all = { ...p.funds, ...p.insurance } as Record<string, Pick[]>;
       const picks = need ? { [need]: all[need] ?? [] } : all;
       const empty = Object.entries(picks).filter(([, v]) => !v.length).map(([k]) => k);
       return { result: { picks, ...(empty.length ? { no_pick_yet: empty, note: 'No pick is set up for these needs: give the category and say so.' } : {}), disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang] } };
