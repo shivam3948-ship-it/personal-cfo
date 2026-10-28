@@ -4,7 +4,7 @@
 import { pdfLines, PdfPasswordError } from '@core/ingest/pdfLines';
 import { readBank, detectFormat, type BankRead } from '@core/ingest/banks';
 import { parseCas } from '@core/portfolio/cas';
-import { categorizeAll } from '@core/finance/categorize';
+import { finalise } from '@core/ingest/finalise';
 import { emptyDataset, type Dataset, type Txn } from '@core/types';
 import { readCasLines, type ReadResult } from './cas';
 import { idbGet, idbPut, idbDel } from './idb';
@@ -69,8 +69,7 @@ export async function myDataset(): Promise<Dataset | null> {
     ds.accounts.push({ id, kind, last4, label: `${kind === 'bank' ? 'Bank account' : 'Card'} ••${last4} (from SMS)` });
   }
   ds.txns.push(...extra);
-  ds.txns = categorizeAll(ds.txns.map((t) => ({ ...t, category: undefined, merchant: undefined })));
-  ds.txns.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id, undefined, { numeric: true }));
+  finalise(ds); // categories, then the cross-document checks: a bank debit that paid a card bill stops counting as spend
   ds.subAnswers = await loadSubAnswers(); // "Still using it?" answers (D-052)
   { const n = new Date(); ds.today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; }
   return ds;

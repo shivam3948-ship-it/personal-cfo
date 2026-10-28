@@ -40,6 +40,14 @@ export async function withMyStatementsSpends(v: View): Promise<View> {
   // bank SMS rows (D-055): listed with the files, and the trust line stops claiming that everything balances
   const sms = ds.txns.filter((t) => t.source === 'sms').length;
   if (sms) files.push({ name: `Bank SMS · ${sms} payments`, what: 'Provisional: SMS have no totals to check', check: 'Replaced when a statement covers the same dates' });
+  // checks across statements (card bill paid from the bank ↔ card statement): what passed, and anything re-labelled
+  const cross = ds.log.find((l) => l.kind === 'cross-check');
+  if (cross?.checks?.length) {
+    const relabelled = ds.txns.filter((t) => t.matched === 'card_payment').length;
+    const bad = cross.checks.filter((c) => !c.ok);
+    files.push({ name: 'Across your statements', what: cross.summary,
+      check: bad.length ? `⚠ ${bad.map((c) => `${c.label}: ${c.detail}`).join(' · ')}` : `✓ Card bills paid from your bank match the card statements${relabelled ? ` · ${relabelled} payment${relabelled > 1 ? 's' : ''} not counted as spending` : ''}` });
+  }
   return { ...v, ...built, META: { ...built.META, files, sms }, _mine: true };
 }
 export async function withMyStatementsTx(v: View): Promise<View> { const ds = await myDataset(); return ds ? { ...v, ...buildTransactions(ds), RULES0: 0, _mine: true } : v; }

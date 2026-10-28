@@ -43,7 +43,7 @@ interface Rule { cat: string; re: RegExp; dir?: 'debit' | 'credit' }
 
 // Priority-ordered; first match wins. Word boundaries, not substrings (\blic\b would not match "licious").
 const RULES: Rule[] = [
-  { cat: 'Card bill payment', re: /\b(billpay|bill ?pay|payment)\b.*\bcredit card\b|\bcc bill\b|\bcard bill\b/i, dir: 'debit' },
+  { cat: 'Card bill payment', re: /\b(billpay|bill ?pay|payment)\b.*\bcredit card\b|\bcc bill\b|\bcard bill\b|\bcc\b|\bcredit ?card\b|\bcreditcard\b/i, dir: 'debit' }, // "UPI/…/CC/…" too (real HDFC narration, 28 Oct)
   { cat: 'Card bill payment', re: /\bpayment received\b/i, dir: 'credit' }, // card-side receipt of the bill payment
   { cat: 'Cashback', re: /\bcashback\b/i, dir: 'credit' },
   { cat: 'Refund', re: /\brefund\b|\breversal\b/i, dir: 'credit' },

@@ -6,11 +6,9 @@ import { bankTextToTxns, cardTextToStatement, classify, creditFromText, emailToN
 import { jsonToTxns } from './json';
 import { llmExtract, type Extracted } from './llmExtract';
 import { categorizeAll, categorize, merchantOf } from '../finance/categorize';
-import { loanStatus } from '../finance/loans';
-import { annualPremium } from '../finance/insurance';
 import { pdfToText } from './pdf';
-import { daysBetween } from '../dates';
 import { inr } from '../money';
+import { finalise } from './finalise';
 
 export interface InFile { name: string; bytes: Uint8Array }
 
@@ -152,55 +150,7 @@ function smsContinuity(ds: Dataset, sms: Txn[]): Check[] {
   return checks;
 }
 
-/** Categorise, learn categories for terse SMS narrations from history, and run cross-document checks. */
-export function finalise(ds: Dataset) {
-  ds.txns = categorizeAll(ds.txns.map((t) => ({ ...t, category: undefined, merchant: undefined })));
-  // "UPI/RAJESH KUMAR" in an SMS: inherit the category of an earlier statement row with the same amount whose narration contains that counterparty.
-  for (const t of ds.txns) {
-    if (t.source !== 'sms' || !['Other', 'Other income'].includes(t.category ?? '')) continue;
-    const token = t.desc.split('/').pop()?.trim().toLowerCase() ?? '';
-    if (token.length < 4) continue;
-    const prior = ds.txns.find((p) => p !== t && p.source !== 'sms' && p.amount === t.amount && p.dir === t.dir && p.desc.toLowerCase().includes(token));
-    if (prior) { t.category = prior.category; t.merchant = prior.merchant; }
-  }
-  ds.txns.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id, undefined, { numeric: true }));
-  crossChecks(ds);
-}
-
-function crossChecks(ds: Dataset) {
-  const checks: Check[] = [];
-  const asOf = ds.txns.map((t) => t.date).sort().at(-1) ?? '';
-  // 1. Card bill paid from the bank = payment received on the card statement (±3 days).
-  for (const s of ds.cardStatements) {
-    const cardPay = ds.txns.filter((t) => t.account === s.account && t.category === 'Card bill payment' && t.dir === 'credit' && t.date >= s.periodStart && t.date <= s.periodEnd);
-    for (const p of cardPay) {
-      const bankSide = ds.txns.find((t) => t.account.startsWith('bank:') && t.category === 'Card bill payment' && t.dir === 'debit' && t.amount === p.amount && Math.abs(daysBetween(t.date, p.date)) <= 3);
-      const bankCovers = ds.txns.some((t) => t.account.startsWith('bank:') && t.date <= p.date) && ds.txns.some((t) => t.account.startsWith('bank:') && t.date >= p.date && t.source === 'bank_statement');
-      if (bankCovers) checks.push({ id: 'card_payment_match', label: `Card payment ${p.date} matches a bank debit`, ok: !!bankSide, detail: bankSide ? `${inr(p.amount)} on ${bankSide.date}` : `no bank debit of ${inr(p.amount)} near ${p.date}` });
-    }
-  }
-  // 2. Loans: stated EMI matches the terms; bank EMI debits equal the stated EMI.
-  for (const l of ds.loans) {
-    const st = loanStatus(l, asOf);
-    checks.push({ id: 'emi_terms', label: `${l.lender}: stated EMI matches principal, rate and tenure`, ok: st.emiMatchesTerms, detail: `stated ${inr(l.emi, 'auto')}` });
-    const key = l.lender.split(' ')[0].toLowerCase();
-    const debits = ds.txns.filter((t) => t.dir === 'debit' && t.category === 'Loan EMI' && t.desc.toLowerCase().includes(key));
-    if (debits.length) checks.push({ id: 'emi_debits', label: `${l.lender}: ${debits.length} EMI debits in the bank data equal the stated EMI`, ok: debits.every((t) => t.amount === l.emi), detail: debits.filter((t) => t.amount !== l.emi).map((t) => `${t.date} ${inr(t.amount, 'auto')}`).join(', ') || 'all match' });
-    // 3. Credit report balance vs computed outstanding (±1%).
-    const rep = ds.credit?.accounts.find((a) => a.lender && l.lender.toLowerCase().includes(a.lender.toLowerCase().split(' ')[0]) && a.balance !== undefined);
-    if (rep && ds.credit) {
-      const comp = loanStatus(l, ds.credit.asOf).outstanding;
-      checks.push({ id: 'bureau_balance', label: `${l.lender}: credit report balance vs amortisation`, ok: Math.abs(comp - rep.balance!) <= comp * 0.01, detail: `report ${inr(rep.balance!)} vs computed ${inr(comp)}` });
-    }
-  }
-  // 4. Policy premiums seen in the bank data equal the policy's premium.
-  for (const p of ds.policies) {
-    const key = p.insurer.split(' ')[0].toLowerCase();
-    const debits = ds.txns.filter((t) => t.dir === 'debit' && t.category === 'Insurance' && t.desc.toLowerCase().includes(key));
-    if (debits.length) checks.push({ id: 'premium_debits', label: `${p.insurer}: premium debits equal the policy premium`, ok: debits.every((t) => t.amount === p.premium), detail: `${debits.length} debit(s); policy ${inr(p.premium)} (${inr(annualPremium(p))}/yr)` });
-  }
-  if (checks.length) ds.log.push({ file: '(all documents)', kind: 'cross-check', parser: 'rule', ok: checks.every((c) => c.ok), summary: `${checks.filter((c) => c.ok).length}/${checks.length} cross-document checks pass`, checks });
-}
+export { finalise } from './finalise';
 
 // Re-exports used by the UI/tests.
 export { categorize, merchantOf };

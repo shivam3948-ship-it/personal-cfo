@@ -16,6 +16,7 @@ export interface Txn {
   sourceFile: string;
   category?: string;
   merchant?: string;
+  matched?: 'card_payment'; // re-labelled by a cross-check: this bank debit paid a card bill (ingest/finalise.ts)
 }
 
 export interface Account {
