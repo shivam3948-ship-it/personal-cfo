@@ -29,6 +29,17 @@ describe('the guard on the sample family', async () => {
     'Book ₹1.25 lakh of gains in Kestrel Flexi Cap before 31 March.', 'Trim your small cap fund.',
     // N6: topping up a held fund
     'Then buy more Banyan Nifty 50 Index Fund.',
+    // review 3: object first, synonyms, moves without "from", SIP and policy forms, asides and verb pairs
+    'Your small cap fund is overvalued, so sell it.', 'That small cap fund? Sell it.', 'The small cap fund should be sold before March.',
+    'Get rid of your small cap fund.', 'Offload your small cap fund.', 'Let go of your small cap fund.', 'Replace your small cap fund with an index fund.',
+    'Swap Kestrel Flexi Cap for an index fund.', 'Take your money out of the small cap fund.', 'Withdraw ₹50,000 from Monsoon Small Cap Fund.',
+    'Reduce your small cap fund to ₹20,000.', 'Sell 50% of your equity.', 'Move the ₹50,000 in your small cap fund to a liquid fund.',
+    'Shift your small cap fund to large cap.', 'Put your small cap money into an index fund instead.', 'Close your SIP in the small cap fund.',
+    'End the SIP in Monsoon Small Cap.', 'Cut your small cap SIP to ₹2,000.', 'Lower the SIP in Monsoon Small Cap to ₹1,000.',
+    'Make it paid-up: stop the premiums on Bharosa Jeevan Nidhi.', 'You should sell, honestly, your small cap fund.', 'Redeem and reinvest your small cap fund.',
+    'Apna small cap fund sell kar do.', 'Small cap fund ko redeem karna chahiye.', 'Small cap fund switch karna chahiye.', 'Kestrel wala fund bech ke index fund le lo.',
+    'Monsoon Small Cap ka SIP band karo.', 'अपने स्मॉल कैप फ़ंड से पूरा पैसा निकाल लीजिए।', 'स्मॉल कैप फ़ंड को बेचकर इंडेक्स फ़ंड में डालें।', 'स्मॉल कैप फ़ंड बेच देना बेहतर होगा।',
+    'स्मॉल कैप फ़ंड को रिडीम करना चाहिए।', 'इस फ़ंड से स्विच करना चाहिए।', 'स्मॉल कैप की SIP रोकनी चाहिए।', 'इस फ़ंड से बाहर निकलिए।', 'एंडोमेंट पॉलिसी सरेंडर कर देनी चाहिए।',
   ];
   const ADVICE_THAT_STAYS = [
     // the money path (N2): new money by category, subscriptions → SIP, the surrender-value check, savings pots
@@ -43,6 +54,14 @@ describe('the guard on the sample family', async () => {
     'उसी फ़ंड का डायरेक्ट प्लान सस्ता होता है; बदलने का मतलब बेचना और फिर खरीदना, इसलिए टैक्स लगता है।', 'Sell the old bike first; your fund stays as it is.',
     'You also have ₹1,25,000 of tax-free gains you can book before 31 March.', 'मौजूदा SIP चलने दीजिए, और अगला खाली पैसा इमरजेंसी फ़ंड में डालिए।',
     'LingoPro का पेड प्लान बन गया, बंद करें या रिफ़ंड माँगें।', 'I cannot recommend whether to redeem a fund; a licensed adviser can.',
+    // review 3: "fund" as a verb, behaviour and reassurance, tax facts, facts about held funds
+    'Sell the old bike to fund the card payoff.', 'Trim the food delivery spend to fund your SIP.', 'Stop checking your portfolio every day.',
+    'Stop worrying about the dip in your funds.', 'Pause before you make any changes to your SIP.', "Don't stop your SIP when markets fall.",
+    'When you sell units held over a year, gains above ₹1.25 lakh are taxed at 12.5%.', 'If you sell shares within a year, short-term gains are taxed at 20%.',
+    'Switching from regular to direct of the same fund counts as a sale for tax.', 'If you book ₹1.25 lakh of gains this year, you pay no tax on them.',
+    'Surrendering a policy in the first 3 years usually returns very little.', "You've been investing in Banyan Nifty 50 Index Fund since 2021.",
+    'You started investing in Monsoon Small Cap Fund in 2020.', 'Buying Kestrel Flexi Cap Fund in 2022 has cost you ₹3,100 in fees.',
+    "Don't sell in a panic.", 'SIP बंद मत कीजिए, बाज़ार गिरने पर भी चलने दीजिए।', 'Agar paise chahiye to bhi SIP band mat karo.',
   ];
   it('removes every instruction', () => { for (const a of INSTRUCTIONS) expect(tellsToExit(a, held), a).toBe(true); });
   it('keeps every piece of money-path advice and every fact', () => { for (const a of ADVICE_THAT_STAYS) expect(tellsToExit(a, held), a).toBe(false); });
@@ -62,8 +81,20 @@ describe('the guard on the sample family', async () => {
     ['Take a term plan from HDFC Life.', 'HDFC Life'], ['Buy a Star Health family floater.', 'Star Health'], ['Jio BlackRock Flexi Cap is new.', 'Jio BlackRock Flexi Cap']] as const;
   it('banks, cards, loans and the user\'s own cover are not products from memory', () => { for (const a of BANKS_AND_OWN_COVER) expect(strangerProducts(a, known), a).toEqual([]); });
   it('a fund or insurer named from memory is', () => { for (const [a, name] of PRODUCTS_FROM_MEMORY) expect(strangerProducts(a, known), a).toEqual([name]); });
-  it('a product the user named themselves may be discussed', () => {
-    expect(strangerProducts('Star Health covers day-care procedures.', knownProducts([], [], [], ['Is Star Health any good?']))).toEqual([]);
+  it('a product the user named may be discussed as a fact, never recommended back (review 3)', () => {
+    const asked = (q: string, picks: string[] = []) => knownProducts(ds.portfolio!.holdings, ds.policies, picks, [q]);
+    expect(strangerProducts('Star Health covers day-care procedures.', asked('Is Star Health any good?'))).toEqual([]);
+    expect(strangerProducts('Parag Parikh Flexi Cap Fund has a 5-year lock-in? No, only ELSS funds do.', asked('Does Parag Parikh Flexi Cap Fund have a lock-in?'))).toEqual([]);
+    expect(strangerProducts('Yes, buy Parag Parikh Flexi Cap Fund for the long term.', asked('Should I buy Parag Parikh Flexi Cap Fund?'))).toEqual(['Parag Parikh Flexi Cap Fund']);
+    expect(strangerProducts('Yes, buy Quant Small Cap Fund.', asked('Should I buy Quant Small Cap Fund?', ['Monsoon Liquid Fund']))).toEqual(['Quant Small Cap Fund']); // private: only picks
+    expect(strangerProducts('Yes, go with Star Health for your family.', asked('Star Health or Niva Bupa?'))).toEqual(['Star Health']);
+  });
+  it('an insurer with a plan name counts whatever the verb; "your" plan is the user\'s own (review 3)', () => {
+    for (const [a, name] of [['HDFC Life Click 2 Protect is a good term plan.', 'HDFC Life Click 2 Protect'], ['Star Health is the best option for your parents.', 'Star Health'],
+      ['ICICI Prudential Life iProtect Smart is a good term plan.', 'ICICI Prudential Life'], ['Consider HDFC Life Click 2 Protect for term cover; the premium is low.', 'HDFC Life Click 2 Protect']] as const)
+      expect(strangerProducts(a, known), a).toEqual([name]);
+    for (const a of ['Your LIC Jeevan Anand premium is due on Friday.', 'Aapki LIC Jeevan Anand policy ka premium ₹12,000 hai.'])
+      expect(strangerProducts(a, known), a).toEqual([]);
   });
   it('a removed product gets a product-neutral line, not "can\'t name funds"', () => {
     expect(guardAnswer('Take a term plan from HDFC Life. Cover of ₹1 crore costs less at 30.', 'guided', funds, known, 'en')).toBe(`Cover of ₹1 crore costs less at 30. ${NO_PRODUCT.en}`);

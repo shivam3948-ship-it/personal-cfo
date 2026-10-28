@@ -19,14 +19,16 @@ const NOT_FUND = String.raw`(?:Bank|Card|Cards|Credit|Debit|Loan|Loans|EMI|Accou
 const ci = (src: string) => src.replace(/(?<!\\)[a-zA-Z]/g, (c) => `[${c.toLowerCase()}${c.toUpperCase()}]`); // fund words in any case
 const NAMEWORD = (extra = '') => String.raw`[ \t]+(?!${NOT_FUND}\b)[A-Z0-9][\w${extra}'’+-]*`;
 const AMC_PRODUCT = new RegExp(String.raw`(?<![\p{L}\p{N}])(?:${AMC.join('|')})(?:${NAMEWORD('&')}){0,4}?[ \t]+${ci(FUND_END)}(?:${NAMEWORD()}){0,3}(?![\p{L}\p{N}])`, 'gu');
-const INSURER_NAME = new RegExp(String.raw`(?<![\p{L}\p{N}])(?:${INSURER.join('|')})(?:[ \t]+[A-Z][\w'’+-]*){0,4}(?![\p{L}\p{N}])`, 'gu');
+const INSURER_NAME = new RegExp(String.raw`(?<![\p{L}\p{N}])(?:${INSURER.join('|')})(?:[ \t]+[A-Z0-9][\w'’+-]*){0,4}(?![\p{L}\p{N}])`, 'gu');
 const BUY_COVER = /\b(?:buy|take|get|choose|pick|go\s+(?:with|for)|consider|opt\s+for|switch\s+to|port\s+(?:it\s+)?to|purchase|apply\s+for|sign\s+up\s+(?:for|with)|recommend|suggest)\b[^.!?\n]{0,80}\b(?:plan|policy|cover|insurance|term|health)\b|\b(?:plan|policy|cover|insurance)\b[^.!?\n]{0,40}\b(?:from|with|by)\s+[A-Z]/i;
 const OWN_COVER = /\b(?:surrender|paid[- ]up)\s+value|\bpremium\b|\brenew|\bclaim|\bdue\b|\byour\s+(?:existing\s+)?(?:\w+\s+)?(?:policy|cover|plan)\b/i;
 const STRONG_BUY = /\b(?:buy|choose|switch\s+to|port\s+(?:it\s+)?to|purchase|sign\s+up|go\s+(?:with|for)|opt\s+for)\b/i;
 // "your HDFC fund", "your LIC policy": a fund house or insurer plus a generic word only, fine when the user holds one
 const GENERIC = /^(?:\S+(?:\s+\S+){0,3}?)\s+(?:mutual\s+)?(?:fund|funds|policy|policies|plan|premium|MF)$/i;
 
-export interface Known { names: string[]; houses: string[] }
+export interface Known { names: string[]; houses: string[]; said: string[] }
+// a sentence that recommends something (review 3): a product the user named may be discussed, never recommended back
+const RECOMMEND = /\b(?:buy|invest(?:ing)?\s+in|go\s+(?:with|for)|choose|pick|consider|opt\s+for|switch\s+to|port\s+(?:it\s+)?to|recommend|suggest|purchase|take|get|start\s+(?:a\s+)?SIP|put\s+(?:\S+\s+){0,4}(?:in|into))\b|\bis\s+(?:a\s+|the\s+)?(?:good|great|best|better|solid|safe|top|ideal|right|smart)\b|^\s*(?:yes|haan?|ji)\b|\bshould\b|अच्छा|बेहतर|खरीद|ले\s*लो|\ble\s*lo\b|\bkharid/i;
 const norm = (s: string) => s.toLowerCase().replace(/[-–—]+/g, ' ').replace(/\s+/g, ' ').trim();
 
 /** Every name the answer may use: the user's own funds and policies, (advice mode) the owner's picks, and any fund or
@@ -35,25 +37,38 @@ export function knownProducts(holdings: { scheme: string; amc?: string }[], poli
   const short = (s: string) => s.replace(/\s*[-–(].*$/, '').replace(/\s+(?:Fund|Plan)$/i, '');
   const theirs = said.flatMap((t) => [...t.matchAll(AMC_PRODUCT), ...t.matchAll(INSURER_NAME)].map((m) => m[0]));
   return {
-    names: [...holdings.flatMap((h) => [h.scheme, short(h.scheme)]), ...policies.flatMap((p) => [p.name, `${p.insurer} ${p.name}`, short(p.name)]), ...picks, ...picks.map(short), ...theirs]
+    names: [...holdings.flatMap((h) => [h.scheme, short(h.scheme)]), ...policies.flatMap((p) => [p.name, `${p.insurer} ${p.name}`, short(p.name)]), ...picks, ...picks.map(short)]
       .filter((n) => n.length > 2).map(norm),
+    said: theirs.map(norm),
     houses: [...holdings.map((h) => h.amc ?? ''), ...holdings.map((h) => h.scheme.split(/\s+/).slice(0, 2).join(' ')), ...policies.map((p) => p.insurer)].filter(Boolean).map(norm),
   };
 }
 
-/** Product names in the answer that are neither held, picked nor named by the user. */
+/** Product names in the answer that are neither held nor picked. A product the user named themselves may be discussed in a
+ *  fact sentence, never recommended back (review 3: "Should I buy X?" → "Yes, buy X" is a pick from memory). A fund from a
+ *  fund house anywhere; an insurer with a product name anywhere ("HDFC Life Click 2 Protect is a good term plan"), unless it
+ *  is "your …"; an insurer alone only where cover is recommended. */
 export function strangerProducts(answer: string, known: Known): string[] {
   const out = new Set<string>();
-  const ok = (name: string) => { const n = norm(name); return known.names.some((k) => k.includes(n) || n.includes(k)); };
+  const has = (list: string[], name: string) => { const n = norm(name); return list.some((k) => k.includes(n) || n.includes(k)); };
   const ownHouse = (name: string) => { const n = norm(name.split(/\s+(?:mutual\s+)?(?:fund|funds|policy|policies|plan|premium|MF)$/i)[0]); return known.houses.some((h) => h.startsWith(n) || n.startsWith(h)); };
-  for (const m of answer.matchAll(AMC_PRODUCT)) {
-    const name = m[0].trim();
-    if (ok(name) || (GENERIC.test(name) && ownHouse(name))) continue;
-    out.add(name);
-  }
   for (const s of answer.split(/(?<=[.!?।\n])\s+/)) {
-    if (!BUY_COVER.test(s) || (OWN_COVER.test(s) && !STRONG_BUY.test(s))) continue;
-    for (const m of s.matchAll(INSURER_NAME)) { const name = m[0].trim(); if (!ok(name) && !ownHouse(name)) out.add(name); }
+    const rec = RECOMMEND.test(s);
+    const allowed = (name: string) => has(known.names, name) || (!rec && has(known.said, name));
+    for (const m of s.matchAll(AMC_PRODUCT)) {
+      const name = m[0].trim();
+      if (allowed(name) || (GENERIC.test(name) && ownHouse(name) && !rec)) continue;
+      out.add(name);
+    }
+    for (const m of s.matchAll(INSURER_NAME)) {
+      const name = m[0].trim(), product = /\s[A-Z0-9]/.test(name.replace(new RegExp(`^(?:${INSURER.join('|')})`), ''));
+      const own = /\b(?:your|my|aapki|aapka|apni|apna)\s+$/i.test(s.slice(Math.max(0, (m.index ?? 0) - 12), m.index)) || /(?:आपकी|आपका|अपनी|अपना)\s*$/.test(s.slice(0, m.index));
+      if (allowed(name) || own) continue;
+      if (product) { out.add(name); continue; } // a named plan, whatever the verb
+      if (!(BUY_COVER.test(s) || rec) || (OWN_COVER.test(s) && !STRONG_BUY.test(s))) continue;
+      if (ownHouse(name) && !rec) continue;
+      out.add(name);
+    }
   }
   return [...out];
 }
