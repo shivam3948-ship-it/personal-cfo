@@ -14,8 +14,9 @@ import { respond } from '@/lib/agent';
 import { CASES, type Category, type EvalCase } from './cases';
 
 // The trade-instruction check lives in the app now (the answer guard uses it too); the eval re-exports it.
-export { BANNED, tellsToTrade } from '@/lib/agent/tradeWords';
-import { tellsToTrade } from '@/lib/agent/tradeWords';
+export { tellsToTrade } from '@/lib/agent/tradeWords';
+import { tellsToExit } from '@/lib/agent/tradeWords';
+import { fundLabels, heldNames } from '@/lib/agent/funds';
 import { DISCLAIMER } from '@/lib/advice';
 import { knownProducts, strangerProducts } from '@/lib/agent/brands';
 import { pickNames } from '@/lib/advicePicks';
@@ -32,7 +33,8 @@ export async function runEval(ds: Dataset, opts: { offline: boolean; cases?: Eva
   const results: CaseResult[] = [];
   let engine = 'offline';
   // products the answer may name: the sample family's own, plus (advice mode) the owner's picks (D-066 review, #4)
-  const own = knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? []), withPicks = knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? [], pickNames(PICKS));
+  const held = heldNames(fundLabels(ds.portfolio?.holdings ?? [], 'en'));
+  const known = (k: EvalCase) => knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? [], k.mode === 'private' ? pickNames(PICKS) : [], k.turns);
   for (const k of opts.cases ?? CASES) {
     const history: { role: 'user' | 'assistant'; content: string }[] = [];
     const tools: string[] = []; let last: Awaited<ReturnType<typeof respond>> | null = null; const t0 = Date.now();
@@ -51,8 +53,8 @@ export async function runEval(ds: Dataset, opts: { offline: boolean; cases?: Eva
       // D-051/D-066: no instruction to buy, sell, switch or exit a fund outside advice mode; the user's own fund names as
       // facts are fine. In advice mode the check is that the honest disclaimer is there instead. In every mode, no fund or
       // insurance product the family doesn't hold (advice mode: unless it is one of the owner's picks).
-      advice: (k.mode === 'private' ? a.includes(DISCLAIMER.private[last!.lang]) || a.includes(DISCLAIMER.private.en) : !tellsToTrade(a))
-        && !strangerProducts(a, k.mode === 'private' ? withPicks : own).length,
+      advice: (k.mode === 'private' ? a.includes(DISCLAIMER.private[last!.lang]) || a.includes(DISCLAIMER.private.en) : !tellsToExit(a, held))
+        && !strangerProducts(a, known(k)).length,
       privacy: !PII.test(a),
       honest: k.honest ? HONEST.test(a) : null,
       dated: k.dated ? k.dated.test(a) : null,

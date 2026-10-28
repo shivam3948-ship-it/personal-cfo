@@ -21,5 +21,7 @@ export const DISCLAIMER: Record<AdviceMode, { en: string; hi: string }> = {
 export const NO_LICENCE = { en: 'Munim doesn’t have an investment adviser licence yet, so it can’t name funds.', hi: 'मुनीम के पास अभी निवेश सलाहकार का लाइसेंस नहीं है, इसलिए वह फ़ंड का नाम नहीं बता सकता।' };
 /** Said in place of a sell/switch/exit instruction the guard removed (D-066 review, B3). */
 export const NO_TRADE = { en: 'Munim doesn’t have an investment adviser licence yet, so it can’t tell you to sell, switch or stop a fund or policy; a SEBI-registered adviser can.', hi: 'मुनीम के पास अभी निवेश सलाहकार का लाइसेंस नहीं है, इसलिए वह किसी फ़ंड या पॉलिसी को बेचने, बदलने या रोकने को नहीं कह सकता; SEBI-रजिस्टर्ड सलाहकार बता सकते हैं।' };
+/** Outside advice mode, when the answer named a fund or insurance plan the user doesn't hold (review 2, N3: product-neutral). */
+export const NO_PRODUCT = { en: 'Munim doesn’t have an investment adviser licence yet, so it doesn’t name specific funds or insurance plans; it tells you the type to look for.', hi: 'मुनीम के पास अभी निवेश सलाहकार का लाइसेंस नहीं है, इसलिए वह किसी ख़ास फ़ंड या बीमा प्लान का नाम नहीं बताता; वह बताता है कि किस तरह का प्लान देखें।' };
 /** Advice mode, when the answer named a product that is neither held nor one of the owner's picks (D-066 review, #4). */
 export const NO_PICK = { en: 'No specific pick is set up for this yet, so Munim gives the category only.', hi: 'इसके लिए अभी कोई ख़ास पसंद तय नहीं है, इसलिए मुनीम सिर्फ़ कैटेगरी बता रहा है।' };

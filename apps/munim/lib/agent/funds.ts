@@ -3,7 +3,7 @@
 // (28 Oct): a Hinglish answer paired a holding with a judgement. The guard finds such sentences and swaps the name there.
 import { shortName } from '@core/portfolio/engine';
 import type { Dataset } from '@core/types';
-import { exitSentences, tellsToExit, tradeSentences } from './tradeWords';
+import { exitSentences, tellsToExit } from './tradeWords';
 import { NO_TRADE } from '@/lib/advice';
 
 type Holding = NonNullable<Dataset['portfolio']>['holdings'][number];
@@ -38,11 +38,13 @@ function patterns(funds: FundLabel[]) {
     .map(({ name, label }) => ({ re: new RegExp(`(?<![\\p{L}\\p{N}])${esc(name)}(?:\\s+Fund)?(?![\\p{L}\\p{N}])`, 'giu'), name, label }));
 }
 /** Fund names that appear in a sentence telling the user to trade (names stated as facts elsewhere are fine). */
-export const namedFunds = (answer: string, funds: FundLabel[]) => { const ts = tradeSentences(answer).join(' '); return patterns(funds).filter((p) => p.re.test(ts)).map((p) => p.name); };
+/** Every spelling of every holding, for the trade check: a held fund named without the word "fund" is still a target. */
+export const heldNames = (funds: FundLabel[]) => funds.flatMap((f) => f.names);
+export const namedFunds = (answer: string, funds: FundLabel[]) => { const ts = exitSentences(answer, heldNames(funds)).join(' '); return patterns(funds).filter((p) => { p.re.lastIndex = 0; return p.re.test(ts); }).map((p) => p.name); };
 /** In those sentences only, a name becomes its category ("your small cap fund"). */
 export function scrubFunds(answer: string, funds: FundLabel[]) {
   let a = answer;
-  for (const t of tradeSentences(answer)) { let u = t; for (const p of patterns(funds)) u = u.replace(p.re, p.label); a = a.replace(t, u); }
+  for (const t of exitSentences(answer, heldNames(funds))) { let u = t; for (const p of patterns(funds)) u = u.replace(p.re, p.label); a = a.replace(t, u); }
   return a.replace(/\b(The|A|An)\s+(your|one of your)\b/g, (_, __, w: string) => w[0].toUpperCase() + w.slice(1)).replace(/\b(the|a|an)\s+(your|one of your)\b/g, '$2');
 }
 /** For tool results: a fund's name → its label (unknown names come back unchanged). */
@@ -50,13 +52,14 @@ export function labelFor(funds: FundLabel[], lang: 'hi' | 'en' = 'en') {
   return (name: string) => funds.find((f) => f.names.some((n) => n.toLowerCase() === name.toLowerCase()))?.label ?? (lang === 'hi' ? 'आपका एक फ़ंड' : 'one of your funds');
 }
 
-/** Outside advice mode, the last line of defence after one repair round (D-066 review, B3): names in trade sentences become
- *  their category, then any sentence still telling the user to sell, switch, exit or stop a fund, SIP or policy is removed
- *  and the no-licence line said once instead. */
+/** Outside advice mode, the last line of defence after one repair round (D-066 reviews): every sentence telling the user to
+ *  sell, switch, exit, stop or top up something they hold (named or by category) is removed, and the no-licence line is said
+ *  once instead. Removed, not renamed: "Sell your small cap fund" is the same call as "Sell Monsoon Small Cap Fund". */
 export function enforceNoTrade(answer: string, funds: FundLabel[], lang: 'hi' | 'en') {
-  let a = scrubFunds(answer, funds);
-  if (!tellsToExit(a)) return a;
-  for (const s of exitSentences(a)) a = a.replace(s, '');
+  const held = heldNames(funds);
+  if (!tellsToExit(answer, held)) return answer;
+  let a = answer;
+  for (const s of exitSentences(answer, held)) a = a.replace(s, '');
   a = a.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
   return a ? `${a} ${NO_TRADE[lang]}` : NO_TRADE[lang];
 }

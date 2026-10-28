@@ -64,7 +64,9 @@ class NoKey extends Error { constructor() { super('no_key'); } }
 let noKey = false; // after one 503, this visit stays on the phone's engine (no pointless calls)
 
 export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay';
-  trace: string; model?: string; prompt: string; ms: number; repaired: boolean; fallback: boolean }
+  trace: string; model?: string; prompt: string; ms: number; repaired: boolean; fallback: boolean;
+  /** The advice mode this answer was given in (the server's, when the relay answered): the footer follows it (review 2, N9). */
+  mode: AdviceMode }
 
 /** On your own data the advice mode is 'guided' (no fund picks, the SEBI line), whatever the public test switch says:
  *  'demo' never reads real data, and 'internal' needs a server-side allow-list we don't have yet (compliance review, D-050). */
@@ -87,10 +89,10 @@ export async function askLocal(history: Turn[]): Promise<LocalReply> {
     if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds), seen));
     // the server decides the mode (D-066 review, #5): if the relay answered in guided mode (the advice cookie expired, or advice
     // was switched off) while this phone thought advice was on, apply the guided guard to what the model said
-    if (seen.mode === 'guided' && adviceMode !== 'guided') r = { ...r, answer: guardAnswer(r.answer, 'guided', fundLabels(ds.portfolio?.holdings ?? [], lang), knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? []), lang) };
+    if (seen.mode === 'guided' && adviceMode !== 'guided') r = { ...r, answer: guardAnswer(r.answer, 'guided', fundLabels(ds.portfolio?.holdings ?? [], lang), knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? [], [], history.filter((t) => t.role === 'user').map((t) => t.content)), lang) };
   }
   catch (e) { fallback = !(e instanceof NoKey); r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
   const spoken = redact(r.answer, { names }).replace(/\b(UPI|NEFT|IMPS)[-/][^\s,.।]+/gi, 'a payment'); // what may go to the voice service
   return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where,
-    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback };
+    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback, mode: seen.mode === 'guided' ? 'guided' : adviceMode };
 }

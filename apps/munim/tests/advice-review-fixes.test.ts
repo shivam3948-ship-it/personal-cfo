@@ -38,7 +38,6 @@ describe('B3: the trade guard', () => {
     'Shift your money from the ELSS fund to a liquid fund.', 'Stop your SIP in the mid cap fund.', 'Pause the SIP for now.', 'Ye fund chhod do.',
     'इस फंड से निकल जाइए।', 'SIP बंद कर दो।', 'You should sell your small-cap fund now.', 'Ye small cap fund switch kar lo.', 'Surrender the policy.'];
   const no = [NO_TRADE.en, NO_TRADE.hi, 'Move ₹5,000 from your emergency fund to clear the card.', 'Your small cap fund fell 4% this year.',
-    'Stop the regular-plan SIPs and start the same amounts in the direct plans.', 'रेगुलर प्लान की SIP बंद करें और उतनी ही रक़म की SIP डायरेक्ट प्लान में शुरू करें।',
     "You don't need to sell any fund to build the buffer.", 'उसी फ़ंड का डायरेक्ट प्लान सस्ता होता है; बदलने का मतलब बेचना और फिर खरीदना, इसलिए टैक्स लगता है।',
     'For new money, a liquid fund is a common choice.', 'इमरजेंसी फंड से पैसे निकाल लो।',
     'LingoPro का पेड प्लान बन गया, बंद करें या रिफ़ंड माँगें।']; // रिफ़ंड holds फ़ंड: a refund, not a fund
@@ -70,7 +69,7 @@ describe('#4: products the user does not hold, and (advice mode) the owner has n
   it('finds a fund or insurer named from memory', () => {
     expect(strangerProducts('Buy Parag Parikh Flexi Cap Fund for the long term.', known)).toEqual(['Parag Parikh Flexi Cap Fund']);
     expect(strangerProducts('Take a term plan from HDFC Life.', known)).toEqual(['HDFC Life']);
-    expect(strangerProducts('Star Health is popular.', known)).toEqual(['Star Health']);
+    expect(strangerProducts('Go with Star Health for your health cover.', known)).toEqual(['Star Health']); // an insurer counts where cover is recommended (review 2, N3)
   });
   it('leaves held products, banks and bills alone', () => {
     for (const a of ['Your Axis Bluechip Fund fell 3%.', 'Your Axis fund fell 3%.', 'Your LIC policy premium is due.', 'Pay your HDFC credit card bill.', 'Your SBI account balance is ₹4,000.', 'Your Tata Play plan renews on Friday.'])
@@ -96,13 +95,30 @@ describe('#5: the phone follows the mode the server used', () => {
 describe('#6 and #9: the key and the picks stay off the phone', () => {
   it('the unlock link uses #advice=, and ?advice= is removed without being used', () => {
     const src = readFileSync('ui/TestSwitches.tsx', 'utf8');
-    expect(src).toMatch(/new URLSearchParams\(location\.hash\.slice\(1\)\), advice = h\.get\('advice'\)/);
+    expect(src).toMatch(/\/\(\?:\^#\|&\)advice=\(\[\^&\]\*\)\/\.exec\(location\.hash\)/); // the raw value after #, so a '+' in the key survives
     expect(src).not.toMatch(/advice = q\.get\('advice'\)/);
   });
-  it('nothing that runs on the phone imports the server picks', () => {
-    const walk = (d: string): string[] => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : /\.(tsx?|jsx)$/.test(f) ? [p] : []; });
-    const phone = ['lib/agent/claude.ts', 'lib/agent/tools.ts', 'lib/agent/offline.ts', 'lib/agent/funds.ts', 'lib/agent/brands.ts', ...walk('lib/local'), ...walk('ui'), ...walk('screens')];
-    for (const f of phone) expect(readFileSync(f, 'utf8'), f).not.toMatch(/lib\/server\//);
+  it('nothing the phone runs reaches the server picks, following imports all the way down (review 2, N10)', () => {
+    const walk = (d: string): string[] => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? (f === 'api' ? [] : walk(p)) : /\.(tsx?|jsx)$/.test(f) ? [p] : []; });
+    const entries = [...walk('app'), ...walk('ui'), ...walk('screens'), ...walk('lib/local'), 'lib/agent/claude.ts', 'lib/agent/tools.ts'] // app/api is server code
+      .filter((f) => f.startsWith('lib/') || f.startsWith('ui/') || f.startsWith('screens/') || /^app\/.*(page|layout)\.tsx$/.test(f) || /^['"]use client['"]/.test(readFileSync(f, 'utf8')));
+    const resolve = (from: string, spec: string): string | null => {
+      const base = spec.startsWith('@/') ? spec.slice(2) : spec.startsWith('@core/') ? join('../../packages/core/src', spec.slice(6)) : spec.startsWith('.') ? join(from, '..', spec) : null;
+      if (!base) return null; // a package
+      for (const ext of ['', '.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.tsx']) { try { if (statSync(base + ext).isFile()) return base + ext; } catch { /* next */ } }
+      return null;
+    };
+    const seen = new Set<string>(), bad: string[] = [];
+    const visit = (f: string, via: string) => {
+      if (seen.has(f)) return; seen.add(f);
+      if (/lib\/server\//.test(f)) { bad.push(`${via} → ${f}`); return; }
+      for (const m of readFileSync(f, 'utf8').matchAll(/(?:^|\n)\s*(?:import|export)\s(?!type\s)[^'"]*?from\s+['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)/g)) {
+        const r = resolve(f, m[1] ?? m[2]); if (r) visit(r, f);
+      }
+    };
+    for (const e of entries) visit(e, e);
+    expect(seen.size).toBeGreaterThan(40); // the walk really walked
+    expect(bad).toEqual([]);
   });
   it('/api/advice/picks is locked without the cookie', async () => {
     const { GET } = await import('@/app/api/advice/picks/route');

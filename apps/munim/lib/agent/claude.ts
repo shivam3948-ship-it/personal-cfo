@@ -1,13 +1,13 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { MODEL, getClient, type LlmClient } from '@core/llm';
 import { systemPrompt } from './prompt';
-import { DISCLAIMER, NO_LICENCE, NO_PICK, namesFunds, type AdviceMode } from '@/lib/advice';
+import { DISCLAIMER, NO_PICK, NO_PRODUCT, namesFunds, type AdviceMode } from '@/lib/advice';
 import { TOOLS, runTool, type ToolCtx } from './tools';
 import { checkNumbers, type NumberCheck } from '@core/agent/guard';
 import type { Action } from '@/lib/actionsCore';
 import { asOfDate } from '@core/finance/picture';
 import { holderNames, redact } from '@core/privacy/redact';
-import { enforceNoTrade, fundLabels, namedFunds, scrubFunds } from './funds';
+import { enforceNoTrade, fundLabels, heldNames, namedFunds, scrubFunds } from './funds';
 import { sentences, tellsToExit } from './tradeWords';
 import { knownProducts, strangerProducts, type Known } from './brands';
 import { NO_PICKS, pickNames } from '@/lib/advicePicks';
@@ -43,7 +43,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       // One more repair round (D-051, D-066 review B3 and #4), then the hard guard, so none of these is ever shown or spoken:
       //   · outside advice mode, a held fund named in a trade sentence, or any sell/switch/exit/stop instruction;
       //   · in any mode, a fund or insurance product the user doesn't hold and (advice mode) the owner hasn't picked.
-      if (!known) known = knownProducts(ctx.ds.portfolio?.holdings ?? [], ctx.ds.policies ?? [], namesFunds(ctx.adviceMode) && ctx.picks ? pickNames(await ctx.picks().catch(() => NO_PICKS)) : []);
+      if (!known) known = knownProducts(ctx.ds.portfolio?.holdings ?? [], ctx.ds.policies ?? [], namesFunds(ctx.adviceMode) && ctx.picks ? pickNames(await ctx.picks().catch(() => NO_PICKS)) : [], history.filter((t) => t.role === 'user').map((t) => t.content));
       const v = violations(answer, ctx.adviceMode, funds, known);
       if ((v.named.length || v.exits || v.strangers.length) && !fundsRepaired) {
         fundsRepaired = true;
@@ -80,7 +80,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
 /** What the guard objects to in an answer (D-051, D-066). */
 export function violations(answer: string, mode: AdviceMode, funds: ReturnType<typeof fundLabels>, known: Known) {
   const guarded = !namesFunds(mode);
-  return { named: guarded ? namedFunds(answer, funds) : [], exits: guarded && tellsToExit(answer), strangers: strangerProducts(answer, known) };
+  return { named: guarded ? namedFunds(answer, funds) : [], exits: guarded && tellsToExit(answer, heldNames(funds)), strangers: strangerProducts(answer, known) };
 }
 /** The hard guard, after the repair round: also used on the phone when the relay answered in a stricter mode than the
  *  phone asked for (D-066 review, #5). Outside advice mode, trade sentences lose their fund names and exit instructions are
@@ -91,7 +91,7 @@ export function guardAnswer(answer: string, mode: AdviceMode, funds: ReturnType<
   if (v.strangers.length) {
     for (const st of sentences(a).filter((x) => strangerProducts(x, known).length)) a = a.replace(st, '');
     a = a.replace(/[ \t]{2,}/g, ' ').trim();
-    const line = namesFunds(mode) ? NO_PICK[lang] : NO_LICENCE[lang];
+    const line = namesFunds(mode) ? NO_PICK[lang] : NO_PRODUCT[lang];
     a = a ? `${a} ${line}` : line;
   }
   if (!namesFunds(mode) && (v.named.length || v.exits)) a = enforceNoTrade(a, funds, lang);

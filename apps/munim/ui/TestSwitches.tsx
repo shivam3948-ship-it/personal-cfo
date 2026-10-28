@@ -16,7 +16,9 @@ export function TestSwitches() {
   useLayoutEffect(() => {
     const q = new URLSearchParams(location.search);
     const theme = q.get('theme'), mode = q.get('mode'), sample = q.get('sample'), lang = q.get('lang'), ai = q.get('ai');
-    const h = new URLSearchParams(location.hash.slice(1)), advice = h.get('advice');
+    const h = new URLSearchParams(location.hash.slice(1));
+    // read the raw value: URLSearchParams would turn a '+' in the key into a space (review 2, N11)
+    const raw = /(?:^#|&)advice=([^&]*)/.exec(location.hash)?.[1]; let advice: string | null = null; try { advice = raw ? decodeURIComponent(raw) : null; } catch { advice = null; }
     try {
       if (theme === 'dark' || theme === 'light') sessionStorage.setItem('munim_theme', theme);
       else if (theme === 'auto') sessionStorage.removeItem('munim_theme');

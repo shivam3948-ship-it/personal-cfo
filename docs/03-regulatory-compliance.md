@@ -24,6 +24,8 @@
 ## 2a. Advice modes (D-016, refined by D-021)
 **Update 2026-10-15 (D-021):** pre-licence users now get **guidance with a disclaimer** (`guided` mode: invite-only, free, no marketing, category-level, no product picks). **GTM (public launch, marketing, fees) only after the RIA licence.** A disclaimer does not by itself take advice outside the IA Regulations; no fee, no public offer and no holding out do. L-8 now also covers `guided`. Insurance product recommendations stay out (IRDAI, L-9).
 
+**Update 2026-10-28 (D-066): `private` mode.** The owner can switch on specific advice (fund and insurance names to buy, only from an owner-curated, dated picks list on the server; sell/switch/exit calls with amounts and dates) for browsers holding a private key: never public, never marketed, no fee. Its disclaimer says plainly that Munim is **not a SEBI-registered investment adviser or an AMFI-registered mutual fund distributor**. Munim holds neither registration. A disclaimer doesn't take this outside the IA Regulations; what keeps the risk small is no fee, no public offer, no holding out and a handful of people the owner knows. **L-8 must cover `private` mode before anyone outside the owner's circle uses it.** Outside `private`, the user's own funds may now be named as facts ("Monsoon Small Cap Fund trails an index fund by ₹17,933"), never next to an instruction.
+
 Advice is built now but shown only in `internal` (founder + consenting family, no fee) and `demo` (synthetic portfolios) modes; pilot users stay in `diagnosis`. The IA definition turns on **consideration, being in the business, and holding out**; Regulation 4 has no relatives exemption. Full reasoning and guardrails: [12-advice-engine.md](12-advice-engine.md). Task **L-8**: counsel to confirm both modes and any public wording.
 
 ## 3. The advice boundary (`diagnosis` mode, enforced in code)
@@ -37,6 +39,8 @@ The LLM guardrail, the copy and the test suite all use this table.
 | "This fund lagged its benchmark over 3 and 5 years." | "Replace it with fund C." |
 | Explaining what LTCG is | "Book ₹1.25L of gains before 31 March." |
 | Generic: "Many investors review overlapping funds; here are the questions to ask." | Any personalised fund, amount or timing recommendation |
+
+**In code (D-066, 28 Oct):** outside `private`, the answer guard (apps/munim/lib/agent/tradeWords.ts, brands.ts) asks the model to rewrite once and then removes any sentence that tells the user to sell, switch, exit, redeem, surrender, stop, book gains on or top up something they hold, named or by category, and any fund or insurer the user doesn't hold, replacing it with the no-licence line. New money by category ("a liquid fund for the safety net") stays allowed. The regular → direct switch above stays gated as an imperative until L-1; Munim states it as a fact (the direct plan of the same fund costs ₹X less). The hand-written list in apps/munim/tests/advice-guard.test.ts is the reference for what must go and what must stay.
 
 **Implementation:** (1) the system prompt and policy, (2) an output classifier that rewrites or blocks recommendation-shaped answers, (3) a red-team eval set (see tech/AI_EVALS.md) that must pass before every release, (4) a standing disclaimer *plus* the AI-use disclosure.
 

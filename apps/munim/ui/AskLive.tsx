@@ -155,11 +155,12 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     try {
       const t0 = performance.now();
       const turns = next.map(({ role, content }) => ({ role, content }));
-      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean } = local ? await askLocal(turns) : await (async () => {
+      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string } = local ? await askLocal(turns) : await (async () => {
         const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined }) });
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
       const agentMs = Math.round(performance.now() - t0);
+      if (local && j.mode) setDisc({ ...(j.mode === 'private' ? DISCLAIMER.private : DISCLAIMER.guided), test: false }); // the line matches the mode the answer was given in
       setMsgs([...next, { role: 'assistant', content: j.answer, spoken: j.spoken, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine, id: j.trace }, ...(via === 'voice' ? { lat: { stt: stt?.ms, agent: agentMs } } : {}) }]);
       // metadata only: which tools ran, how long, whether the numbers checked out. Never the question or the answer.
       if (j.trace) send('answer', answerProps({ id: j.trace, engine: j.engine, model: j.model, prompt: j.prompt ?? 'unknown', tools: j.tools ?? [], ms: j.ms ?? 0,
