@@ -8,7 +8,7 @@ import type { Action } from '@/lib/actionsCore';
 import { asOfDate } from '@core/finance/picture';
 import { holderNames, redact } from '@core/privacy/redact';
 import { enforceNoTrade, fundLabels, heldNames, namedFunds, scrubFunds } from './funds';
-import { exitSentences, sentences, tellsToExit } from './tradeWords';
+import { exitIndices, sentences, tellsToExit } from './tradeWords';
 import { knownProducts, strangerProducts, type Known } from './brands';
 import { NO_PICKS, pickNames } from '@/lib/advicePicks';
 import { TOUCHES_INVESTMENTS, judgeSentences, type JudgeInput, type Verdict } from './judge';
@@ -54,7 +54,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       // user doesn't hold (advice mode: that the owner hasn't picked). The AI check decides when it can run; the word patterns
       // decide when it can't (no key, AI off, a timeout).
       if (!known) known = knownProducts(ctx.ds.portfolio?.holdings ?? [], ctx.ds.policies ?? [], namesFunds(ctx.adviceMode) && ctx.picks ? pickNames(await ctx.picks().catch(() => NO_PICKS)) : [], history.filter((t) => t.role === 'user').map((t) => t.content));
-      const said = history.filter((t) => t.role === 'user').map((t) => redact(t.content, { names }));
+      const said = known.said; // product names the user mentioned, not their raw words (review 6: their words can carry orders to the check)
       const g = await checkAdvice(answer, ctx, funds, known, said);
       guard = g.by; guardMs += g.ms;
       if (g.flagged.length && !fundsRepaired) {
@@ -109,27 +109,31 @@ export function guardAnswer(answer: string, mode: AdviceMode, funds: ReturnType<
   return a;
 }
 
-type Flag = { s: string; why: 'trade' | 'product'; name?: boolean };
-/** Which sentences break the advice rules, and who decided: the AI check when it runs, else the word patterns. */
+type Flag = { i: number; s: string; why: 'trade' | 'product'; name?: boolean };
+/** Which sentences break the advice rules (D-051, D-066, D-069). The word patterns and the product check ALWAYS run; the AI
+ *  check, when it is on and can run, may only ADD sentences (review 6: a missed sell call without a licence is a regulatory
+ *  event, a false alarm is a stiffer sentence, and the AI check hasn't been measured yet). Positions, not text, so a
+ *  repeated sentence loses the right copy. */
 export async function checkAdvice(answer: string, ctx: Pick<ToolCtx, 'adviceMode' | 'lang' | 'judge'>, funds: ReturnType<typeof fundLabels>, known: Known, said: string[]): Promise<{ flagged: Flag[]; by: 'ai' | 'rules' | 'none'; ms: number }> {
-  if (!TOUCHES_INVESTMENTS.test(answer)) return { flagged: [], by: 'none', ms: 0 };
-  const list = judgeSentences(answer);
-  const input: JudgeInput = { sentences: list, held: [...new Set([...known.names, ...funds.flatMap((f) => f.names)])].slice(0, 40), picks: [], said: said.slice(-5), lang: ctx.lang, advice: namesFunds(ctx.adviceMode) };
   const t0 = Date.now();
-  const v: Verdict | null = ctx.judge ? await ctx.judge(input).catch(() => null) : null;
-  if (v) return { flagged: v.remove.map((r) => ({ s: list[r.i], why: r.why })), by: 'ai', ms: Date.now() - t0 };
-  // fallback: the word patterns, sentence by sentence
-  const flagged: Flag[] = [];
+  const list = judgeSentences(answer);
   const held = heldNames(funds), guarded = !namesFunds(ctx.adviceMode);
-  for (const s of exitSentences(answer, held)) if (guarded) flagged.push({ s, why: 'trade', name: namedFunds(s, funds).length > 0 });
-  for (const s of list) if (strangerProducts(s, known).length && !flagged.some((f) => f.s === s)) flagged.push({ s, why: 'product' });
-  return { flagged, by: 'rules', ms: Date.now() - t0 };
+  const flagged: Flag[] = [];
+  if (guarded) for (const i of exitIndices(answer, held)) flagged.push({ i, s: list[i], why: 'trade', name: namedFunds(list[i], funds).length > 0 });
+  list.forEach((s, i) => { if (!flagged.some((f) => f.i === i) && strangerProducts(s, known).length) flagged.push({ i, s, why: 'product' }); });
+  const heldMentioned = held.some((n) => answer.toLowerCase().includes(n.toLowerCase()));
+  if (!ctx.judge || !(TOUCHES_INVESTMENTS.test(answer) || flagged.length || heldMentioned)) return { flagged, by: flagged.length ? 'rules' : 'none', ms: Date.now() - t0 };
+  const input: JudgeInput = { sentences: list, held: [...new Set([...known.names, ...held])].slice(0, 40), picks: [], said: said.slice(0, 5), lang: ctx.lang, advice: namesFunds(ctx.adviceMode) };
+  const v: Verdict | null = await ctx.judge(input).catch(() => null);
+  if (!v) return { flagged, by: 'rules', ms: Date.now() - t0 };
+  for (const r of v.remove) if (!flagged.some((f) => f.i === r.i)) flagged.push({ i: r.i, s: list[r.i], why: r.why });
+  return { flagged, by: 'ai', ms: Date.now() - t0 };
 }
-/** Remove the flagged sentences and say once why something is missing (no-licence line, or no pick set up). */
+/** Remove the flagged sentences (by position) and say once why something is missing (no-licence line, or no pick set up). */
 export function removeFlagged(answer: string, flagged: Flag[], mode: AdviceMode, lang: 'hi' | 'en', funds: ReturnType<typeof fundLabels>) {
-  let a = answer;
-  for (const f of flagged) a = a.replace(f.s, '');
-  a = scrubFunds(a.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim(), namesFunds(mode) ? [] : funds);
+  const drop = new Set(flagged.map((f) => f.i));
+  const kept = judgeSentences(answer).filter((_, i) => !drop.has(i)).join(' ');
+  const a = scrubFunds(kept.replace(/[ \t]{2,}/g, ' ').trim(), namesFunds(mode) ? [] : funds);
   const lines = [...new Set(flagged.map((f) => (f.why === 'trade' ? NO_TRADE[lang] : namesFunds(mode) ? NO_PICK[lang] : NO_PRODUCT[lang])))];
   return [a, ...lines].filter(Boolean).join(' ');
 }

@@ -63,6 +63,7 @@ function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode 
 }
 class NoKey extends Error { constructor() { super('no_key'); } }
 let noKey = false; // after one 503, this visit stays on the phone's engine (no pointless calls)
+let judgeOff = false; // the AI check said 503 (off or no key): the word patterns alone this visit
 
 export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay';
   trace: string; model?: string; prompt: string; ms: number; repaired: boolean; fallback: boolean;
@@ -83,9 +84,11 @@ export async function askLocal(history: Turn[]): Promise<LocalReply> {
   const picks = adviceMode === 'private' ? async () => { const r = await fetch('/api/advice/picks', { cache: 'no-store' }); if (!r.ok) throw new Error('no picks'); return r.json() as Promise<Picks>; } : undefined;
   // the AI check (D-069) runs on the server: the phone sends only the answer's sentences and names, already redacted
   const judge = async (input: JudgeInput): Promise<Verdict | null> => {
-    if (noKey) return null;
-    const r = await fetch('/api/ask/judge', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentences: input.sentences, held: input.held, said: input.said, lang: input.lang }) }).catch(() => null);
-    return r && r.ok ? (r.json() as Promise<Verdict>) : null; // any failure: the word patterns decide
+    if (noKey || judgeOff) return null;
+    const r = await fetch('/api/ask/judge', { method: 'POST', headers: { 'content-type': 'application/json' }, signal: AbortSignal.timeout(5_000),
+      body: JSON.stringify({ sentences: input.sentences.map((x) => redact(x, { names })), held: input.held, said: input.said, lang: input.lang, mode: adviceMode }) }).catch(() => null);
+    if (r?.status === 503) judgeOff = true; // switched off or no key: don't ask again this visit
+    return r && r.ok ? (r.json() as Promise<Verdict>) : null; // any failure: the word patterns decide (they always run)
   };
   const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, ...(picks ? { picks } : {}) };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;

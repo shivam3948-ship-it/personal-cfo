@@ -5,7 +5,7 @@ export const EXTRACT_MODEL = process.env.ANTHROPIC_EXTRACT_MODEL || MODEL;
 
 /** Minimal surface we use, so tests can inject a fake. */
 export interface LlmClient {
-  messages: { create: (body: Anthropic.MessageCreateParamsNonStreaming) => Promise<Anthropic.Message> };
+  messages: { create: (body: Anthropic.MessageCreateParamsNonStreaming, options?: { signal?: AbortSignal }) => Promise<Anthropic.Message> };
 }
 
 let cached: LlmClient | null = null;

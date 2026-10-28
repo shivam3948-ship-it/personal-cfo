@@ -30,7 +30,10 @@ const OBJ_END = String.raw`(?:\s+(?:money|units|investment|holdings?))?\s+(?:to|
 // part of a holding moved somewhere else (review 5): "Move ₹50,000 of Monsoon Small Cap to a liquid fund", "Shift half of your
 // small cap fund to large cap", "Move your money in the ELSS to a liquid fund". The source must be the user's ("your/the/my"
 // or a held name) and a destination must follow, so "Put the bonus in index funds for retirement" stays new money.
-const PART = String.raw`\b(?:move|moving|shift|shifting|transfer|transferring|switch|swap|replace|put|reduce|cut|lower)\s+(?:(?!(?:to|into|towards?)\b)[\w₹,.&-]+\s+){0,5}?(?:of|in|from)\s+`;
+const PART = String.raw`\b(?:move|moving|shift|shifting|transfer|transferring|switch|swap|replace|put|reduce|cut|lower)\s+(?:(?!(?:to|into|towards?)\b)[\w₹,.&-]+\s+){0,5}?`;
+// the holding as the SOURCE (review 6: "Put the bonus in the liquid fund to build…" is a destination, not a source):
+//   "of/from your|the X" ("half of the ELSS"), "money/units/₹ in your|the X" ("your money in the ELSS"), or a held name
+const SOURCE_WORDS = String.raw`(?:(?:of|from)\s+(?:your|the|my|this|that)|(?:money|units|investment|amount|corpus|savings|₹[\d,.]+(?:\s*(?:lakh|crore|k))?)\s+(?:sitting\s+|lying\s+|parked\s+)?in\s+(?:your|the|my))\s+(?:[\w&-]+\s+){0,2}?`;
 const PART_END = String.raw`(?:\s+(?:fund|money|units))?\s+(?:to|into|with|for\s+an?)\b`;
 // stop/pause/close/cut a SIP or premiums: the SIP must be the verb's own object, a few words away, no verb in between
 // ("Stop checking your portfolio", "Pause before you change your SIP" are not SIP calls)
@@ -83,9 +86,10 @@ function patterns(held: string[]) {
     exit: new RegExp(String.raw`\b${EXIT_VERB}\b${W}{0,60}?${TARGET}`, 'giu'),
     move: new RegExp(`${MOVE}${TARGET}`, 'giu'),
     obj: new RegExp(`${OBJ}${TARGET}${OBJ_END}`, 'giu'),
-    part: new RegExp(`${PART}(?:${HELD ? `${HELD}|` : ''}(?:your|the|my|this|that)\\s+(?:[\\w&-]+\\s+){0,2}?${TARGET_BASE})${PART_END}`, 'giu'),
+    part: new RegExp(`${PART}(?:${SOURCE_WORDS}${TARGET_BASE}${HELD ? `|(?:of|in|from)\\s+(?:the\\s+)?${HELD}` : ''})${PART_END}`, 'giu'),
     putHeld: HELD ? new RegExp(String.raw`\bput\b${W}{0,40}?\b(?:in|into)\s+(?:the\s+)?${HELD}`, 'giu') : null,
-    hiSource: new RegExp(`(?:${HELD ? `${HELD}|` : ''}${HI_TARGET})(?:\\s+wala\\s+fund)?\\s+(?:ka|ki|ke|ko|का|की|के|को)\\s`, 'iu'),
+    // "…fund ka paisa" is a source; "…fund ke liye", "…fund ki SIP mein" is where new money goes (review 6)
+    hiSource: new RegExp(`(?:${HELD ? `${HELD}|` : ''}${HI_TARGET})(?:\\s+wala\\s+fund)?\\s+(?:ka|ki|ke|ko|का|की|के|को)\\s+(?!(?:liye|लिए|SIP|sip|एसआईपी|mein|में)(?:\\s|$))`, 'iu'),
     stop: new RegExp(String.raw`${STOP}(?:\bSIPs?\b|\bpremiums?\b|${TARGET})`, 'giu'),
     buy: HELD ? new RegExp(`${BUY_HELD}${HELD}`, 'giu') : null,
     target: new RegExp(TARGET, 'iu'),
@@ -112,6 +116,9 @@ function flags(a: string, held: string[]): { s: string; hit: boolean }[] {
   })() }));
 }
 export const tellsToExit = (a: string, held: string[] = []): boolean => flags(a, held).some((f) => f.hit);
+/** Positions (in `sentences(a)`) of the sentences that carry an instruction: removal goes by position, so a repeated
+ *  sentence ("Sell it?" twice) loses the right copy (review 6). */
+export const exitIndices = (a: string, held: string[] = []): number[] => flags(a, held).flatMap((f, i) => (f.hit ? [i] : []));
 /** Kept for the eval and older callers: the same check. */
 export const tellsToTrade = tellsToExit;
 
