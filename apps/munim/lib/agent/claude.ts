@@ -18,7 +18,7 @@ const ACTION_TOOLS = new Set(['create_reminder', 'draft_email', 'create_savings_
 /** The user's own message asks for an action outright (English, Hindi, Hinglish). */
 export const ASKS_ACTION = /\bremind|reminder|yaad\s*dila|याद\s*दिला|\bdraft|(?:e-?mail|mail)\s+(?:likh|bana|draft|bhej)|likh\s*(?:do|dijiye)|लिख\s*(?:दो|दीजिए)|\bset\s+(?:up\s+)?(?:a\s+)?(?:goal|reminder)|goal\s+bana|लक्ष्य\s+बना|save\s+(?:the\s+|a\s+|this\s+)?plan|plan\s+save|prepayment\s+plan|calendar|कैलेंडर/i;
 /** A yes to an offer (review 7: the primary user says "thik hai", "ज़रूर", "अच्छा", "chalega"). */
-export const AGREES = /\b(?:yes|yeah|yep|yup|ya|haa?n?|ha|ji|ok(?:ay|k)?|sure|of course|absolutely|definitely|please(?: do)?|do (?:it|that)|go ahead|go for it|sounds good|done|fine|theek|thik|thee?k hai|zaroor|jaroor|acha|accha|achha|sahi|chalega|bilkul|kar(?:\s*(?:do|lo|dijiye|dein))|kardo|ho\s*jaye|ho\s*jaaye|chalo)\b|हाँ|हां|हा\b|जी|ठीक|ज़रूर|जरूर|अच्छा|सही|चलेगा|बिल्कुल|कर\s*(?:दो|दीजिए|लो)|हो\s*जाए|चलो|👍|✅/i;
+export const AGREES = /\b(?:yes|yeah|yep|yup|ya|haa?n?|ha|ji|ok(?:ay|k)?|sure|of course|absolutely|definitely|please(?: do)?|do (?:it|that)|go ahead|go for it|sounds good|done|fine|theek|thik|thee?k hai|zaroor|jaroor|acha|accha|achha|sahi|chalega|bilkul|kar(?:\s*(?:do|lo|dijiye|dein))|kardo|ho\s*jaye|ho\s*jaaye|chalo|bana\s*do|bana\s*dijiye|bhej\s*do)\b|हाँ|हां|हा(?![\u0900-\u097F])|जी|ठीक|ज़रूर|जरूर|अच्छा|सही|चलेगा|बिल्कुल|कर\s*(?:दो|दीजिए|लो)|हो\s*जाए|चलो|👍|✅/i;
 // a refusal OPENS the reply or is all of it ("no", "nahi", "baad mein"); "Yes, cancel it", "haan kyun nahi", "no problem, go
 // ahead" are yeses (final review, 29 Oct)
 export const REFUSES = /^\s*(?:no|nope|nah|nahi|nahin|not now|not yet|later|baad\s*mein|rehne\s*do|mat|नहीं|मत|रहने\s*दो|बाद\s*में)(?![\w\u0900-\u097F])(?!\s*(?:problem|worries|issue|dikkat))/i;
@@ -27,7 +27,23 @@ const YES_IDIOM = /kyu?n\s*nahi|क्यों\s*नहीं|no\s*(?:problem|w
 const OFFERED = /\?|\bif you (?:like|want)\b|\b(?:shall|should|can) I\b|\bwant me to\b|\bI can (?:set|draft|save|create|make)\b|क्या मैं|kar doon|bana doon|likh doon/i;
 /** Actions run only when the user's own last message asks for one, or says yes to an offer Munim made in its last answer
  *  (an order that slipped in through data can't create one; prompt-injection review, 29 Oct). */
-export const userAllowsAction = (last: string, prevAssistant: string) => ASKS_ACTION.test(last) || (OFFERED.test(prevAssistant) && (AGREES.test(last) || YES_IDIOM.test(last)) && (!REFUSES.test(last) || YES_IDIOM.test(last)));
+// which action a message or an offer is about: only that one may run (live eval 28 Oct: asked to save a plan, Claude also drafted an email)
+const KINDS: [string, RegExp][] = [
+  ['create_reminder', /remind|reminder|yaad|याद|calendar|कैलेंडर|alert/i],
+  ['draft_email', /draft|e-?mail|\bmail\b|likh|लिख|ईमेल|letter|message/i],
+  ['create_savings_goal', /\bgoal|लक्ष्य|target|gol\b/i],
+  ['save_prepayment_plan', /prepay|pre-pay|plan\s+save|save\s+(?:the\s+|this\s+|a\s+)?plan|प्रीपेमेंट|प्लान/i],
+];
+const kindsIn = (t: string) => KINDS.filter(([, re]) => re.test(t)).map(([k]) => k);
+/** The actions the user allows now: those their own message asks for, or (a yes to an offer) those the offer named; any of
+ *  them when the offer names none. Empty: none. A message that opens with a refusal allows nothing ("No, don't remind me"). */
+export function allowedActions(last: string, prevAssistant: string): string[] {
+  if (REFUSES.test(last) && !YES_IDIOM.test(last)) return [];
+  if (ASKS_ACTION.test(last)) { const k = kindsIn(last); return k.length ? k : [...ACTION_TOOLS]; }
+  if (OFFERED.test(prevAssistant) && (AGREES.test(last) || YES_IDIOM.test(last))) { const k = kindsIn(prevAssistant.split(/(?<=[.!?।])\s+/).filter((x) => OFFERED.test(x)).join(' ') || prevAssistant); return k.length ? k : [...ACTION_TOOLS]; }
+  return [];
+}
+export const userAllowsAction = (last: string, prevAssistant: string) => allowedActions(last, prevAssistant).length > 0;
 export interface Turn { role: 'user' | 'assistant'; content: string }
 export interface TraceStep { tool: string; input: Record<string, unknown>; result: Record<string, unknown>; ms: number }
 export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceStep[]; actions: Action[]; check: NumberCheck; engine: 'claude' | 'offline'; model?: string; ms: number; repaired?: boolean;
@@ -46,6 +62,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   const lastUser = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
   const prevAssistant = history.slice(0, -1).filter((t) => t.role === 'assistant').at(-1)?.content ?? '';
+  let emptyRetried = false;
   let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0;
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
   for (let step = 0; step < 7; step++) {
@@ -53,6 +70,15 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
     const uses = res.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
     if (res.stop_reason !== 'tool_use' || !uses.length) {
       const answer = res.content.filter((b): b is Anthropic.TextBlock => b.type === 'text').map((b) => b.text).join(' ').trim();
+      // An empty reply (cut off at the token limit, or the model ended after its tools): ask once for the answer, then let the
+      // rules engine answer rather than show nothing (live eval 28 Oct, sa-elss).
+      if (!answer) {
+        if (emptyRetried) throw new Error('empty answer');
+        emptyRetried = true;
+        messages.push({ role: 'assistant', content: [{ type: 'text', text: '…' }] }); // a cut-off tool call can't be replayed: keep the turn order only
+        messages.push({ role: 'user', content: '[system check] Your reply had no answer. Answer the user\'s last question now in 2 to 4 short sentences, using the tool results you already have.' });
+        continue;
+      }
       const check = checkNumbers(answer, results);
       // One repair round: if a spoken figure is not in any tool result, ask the model to fix it before anyone hears it.
       if (!check.ok && !repaired) {
@@ -68,7 +94,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       if (!known) known = knownProducts(ctx.ds.portfolio?.holdings ?? [], ctx.ds.policies ?? [], namesFunds(ctx.adviceMode) && ctx.picks ? pickNames(await ctx.picks().catch(() => NO_PICKS)) : [], history.filter((t) => t.role === 'user').map((t) => t.content));
       const said = known.said; // product names the user mentioned, not their raw words (review 6: their words can carry orders to the check)
       const g = await checkAdvice(answer, ctx, funds, known, said);
-      guard = g.by; guardMs += g.ms;
+      guard = g.by === 'none' ? 'rules' : g.by; guardMs += g.ms; // the word patterns always run, so 'none' only means nothing touched investments
       if (g.flagged.length && !fundsRepaired) {
         fundsRepaired = true;
         messages.push({ role: 'assistant', content: res.content });
@@ -86,7 +112,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       let out: Awaited<ReturnType<typeof runTool>>;
       // Actions (a reminder, an email draft, a goal, a prepayment plan) only when the user's own last message asks for one or
       // says yes to an offer: an order that slipped in through data can't create one (prompt-injection review, 29 Oct).
-      if (ACTION_TOOLS.has(u.name) && !userAllowsAction(lastUser, prevAssistant)) out = { result: { error: 'Actions run only when the user asks for one or says yes to your offer. Offer it in one sentence instead.' } };
+      if (ACTION_TOOLS.has(u.name) && !allowedActions(lastUser, prevAssistant).includes(u.name)) out = { result: { error: 'Actions run only when the user asks for one or says yes to your offer. Offer it in one sentence instead.' } };
       else try { out = await runTool(u.name, (u.input ?? {}) as Record<string, unknown>, ctx); }
       catch (e) { out = { result: { error: (e as Error).message } }; }
       trace.push({ tool: u.name, input: (u.input ?? {}) as Record<string, unknown>, result: out.result, ms: Date.now() - s });

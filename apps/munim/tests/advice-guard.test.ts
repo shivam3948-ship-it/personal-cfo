@@ -6,7 +6,7 @@ import { loadDemo } from '@core/demo';
 import { tellsToExit } from '@/lib/agent/tradeWords';
 import { fundLabels, heldNames } from '@/lib/agent/funds';
 import { knownProducts, strangerProducts } from '@/lib/agent/brands';
-import { guardAnswer, userAllowsAction } from '@/lib/agent/claude';
+import { allowedActions, guardAnswer, userAllowsAction } from '@/lib/agent/claude';
 import { NO_PRODUCT, NO_TRADE } from '@/lib/advice';
 import { ADVICE_THAT_STAYS, INSTRUCTIONS } from '../evals/guardGolden';
 
@@ -78,5 +78,20 @@ describe('the action guard (review 7)', () => {
     expect(userAllowsAction('ok', 'Your spend fell.')).toBe(false);
     expect(userAllowsAction('Remind me to pay my card bill on 30 Oct', '')).toBe(true);
     expect(userAllowsAction('haan, plan save kar do', 'Want me to save this plan?')).toBe(true);
+  });
+});
+
+describe('only the action asked for (live eval 28 Oct, act-prepay)', () => {
+  it('a yes allows the action the offer named, and only that one', () => {
+    expect(allowedActions('haan, plan save kar do', 'Want me to save this prepayment plan?')).toEqual(['save_prepayment_plan']);
+    expect(allowedActions('yes', 'Shall I set a reminder for the card bill?')).toEqual(['create_reminder']);
+    expect(allowedActions('ok', 'Should I draft the email to cult.fit?')).toEqual(['draft_email']);
+    expect(allowedActions('Remind me to pay my card bill on 30 Oct', '')).toEqual(['create_reminder']);
+  });
+  it('an opening no allows nothing, even with the action word in it; "bana do" and "हा" are yeses', () => {
+    expect(allowedActions("No, don't remind me", 'Shall I set a reminder?')).toEqual([]);
+    expect(allowedActions('Bana do', 'Shall I set up a goal for the trip?')).toEqual(['create_savings_goal']);
+    expect(allowedActions('हा', 'Shall I set a reminder?')).toEqual(['create_reminder']);
+    expect(userAllowsAction('Yes, cancel it', 'Want me to draft an email to cancel cult.fit?')).toBe(true);
   });
 });

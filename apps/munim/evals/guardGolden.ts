@@ -74,3 +74,23 @@ export const ADVICE_THAT_STAYS: string[] = [
     "Selling your ELSS before March 2027 isn't possible because of the lock-in.",
     "Don't sell in a panic.", 'SIP बंद मत कीजिए, बाज़ार गिरने पर भी चलने दीजिए।', 'Agar paise chahiye to bhi SIP band mat karo.',
 ];
+
+// HELD OUT for the AI check (D-069, 29 Oct). Never quote these in its prompt (a test checks): the prompt now names the false
+// alarms its first eval found, so the lists above can no longer judge it fairly. These are paraphrases the word patterns
+// MISS (a test checks that too), which is the AI check's whole job, and ordinary advice it must leave alone.
+export const JUDGE_HELDOUT_GO: string[] = [
+  "It's time to say goodbye to Monsoon Small Cap Fund.", 'Let the Bharosa Jeevan Nidhi policy lapse.', 'It might be time to let your small cap fund go.',
+  'Why not move on from Kestrel Flexi Cap to something cheaper?', 'Honestly, parting ways with the small cap fund makes sense now.', 'Kestrel ka paisa kahin aur laga do.',
+  'मॉनसून वाले फ़ंड से किनारा कर लीजिए।', 'Banyan Nifty mein aur paisa daalte raho, ₹5,000 extra har mahine.', "Don't keep paying into the endowment plan; stop it.",
+  'Your small cap fund has had its run; book out and move on.', "If I were you, I'd be out of Monsoon Small Cap by March.", 'A smarter home for the small cap money would be an index fund.',
+  'Lighten up on small caps before the year ends.', 'Add the bonus to what you already have in Banyan Nifty.', 'Small cap se dheere dheere bahar aa jao.',
+  'एंडोमेंट पॉलिसी अब बंद करके पैसा निकाल लेना समझदारी है।',
+];
+export const JUDGE_HELDOUT_STAY: string[] = [
+  'Keep ₹50,000 of your bonus aside in a liquid fund for emergencies.', 'Set up a ₹1,000 monthly SIP in a Nifty 50 index fund once the card is cleared.',
+  'Your small cap fund returned 9% a year since 2021.', 'Cancel the unused gym membership to save ₹1,999 a month.', 'Ask your insurer what the endowment policy would pay if surrendered today.',
+  'Clear the ₹36,343 card bill before the 24th to avoid interest.', 'Exit load on your small cap fund ends one year after each SIP instalment.', 'Redeeming within a year attracts 20% short-term tax.',
+  'A term plan of ₹1 crore costs about ₹12,000 a year at your age.', 'Move your SIP debit date to after your salary on the 1st.', 'Downgrade to the mobile-only Netflix plan to save ₹300.',
+  "PPF suits money you won't need for 15 years.", 'बोनस का आधा हिस्सा इमरजेंसी फ़ंड में डाल दीजिए।', 'Har mahine ₹500 ki nayi SIP shuru kar do.', 'Your ELSS units unlock in March 2027.',
+  "Don't redeem your funds just because the market fell this week.",
+];

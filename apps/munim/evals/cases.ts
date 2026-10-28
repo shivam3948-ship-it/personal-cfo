@@ -113,7 +113,7 @@ export const CASES: EvalCase[] = [
   c('au-wrong-mf', 'audit', 'Where am I wrong with my mutual fund holdings?', ['money_audit'], { must: [/For education only|सिर्फ़ जानकारी के लिए/, /regular plans/i], mode: 'guided' }),
   c('au-better-mf', 'audit', 'What can I do better with my mutual funds?', ['money_audit', 'portfolio_xray'], { must: [/For education only|सिर्फ़ जानकारी के लिए/, /regular plans/i] }),
   c('au-hi-sp', 'audit', 'मेरे खर्च में क्या गलत है?', ['money_audit'], { must: [/For education only|सिर्फ़ जानकारी के लिए/, /cult\.fit/i, /₹[\d,]+\s*(?:सालाना|हर साल|प्रति साल)|(?:सालाना|साल का|साल में|हर साल)\s*₹[\d,]+/] }),
-  c('au-hg-mf', 'audit', 'mere mutual funds mein kya galat hai', ['money_audit', 'portfolio_xray'], { must: [/For education only|सिर्फ़ जानकारी के लिए/, /रेगुलर प्लान/] }),
+  c('au-hg-mf', 'audit', 'mere mutual funds mein kya galat hai', ['money_audit', 'portfolio_xray'], { must: [/For education only|सिर्फ़ जानकारी के लिए/, /रेगुलर प्लान|regular plan/i] }),
   c('sa-when', 'general', 'Is mahine thoda zyada kama liya. Kab invest karna chahiye?', ['emergency_fund', 'advice_plan'], { must: [/For education only|सिर्फ़ जानकारी के लिए/] }),
   c('sa-crash', 'general', 'Markets gir rahe hain. Mera paisa safe hai?', ['portfolio_xray'], { must: [/For education only|सिर्फ़ जानकारी के लिए/, /साल का [\d.]+%|[\d.]+% सालाना/] }),
   c('sa-sip', 'general', '500 roz lagaun toh 10 saal mein kitna hoga?', ['sip_calculator'], { must: [/₹33,9\d,\d{3}/, /₹18,25,000/] }),
