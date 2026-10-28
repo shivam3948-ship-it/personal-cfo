@@ -118,7 +118,7 @@ export const CASES: EvalCase[] = [
   c('sa-crash', 'general', 'Markets gir rahe hain. Mera paisa safe hai?', ['portfolio_xray'], { must: [/For education only|सिर्फ़ जानकारी के लिए/, /साल का [\d.]+%|[\d.]+% सालाना/] }),
   c('sa-sip', 'general', '500 roz lagaun toh 10 saal mein kitna hoga?', ['sip_calculator'], { must: [/₹33,9\d,\d{3}/, /₹18,25,000/] }),
   c('sa-sip-en', 'general', 'If I invest ₹10,000 a month for 15 years, how much will it become?', ['sip_calculator'], { must: [/₹18,00,000/, /12%/] }),
-  c('sa-debt', 'general', 'Debt fund better hai ya equity? Main confuse hoon.', undefined, { honest: true }),
+  c('sa-debt', 'general', 'Debt fund better hai ya equity? Main confuse hoon.', undefined, { must: [/निर्भर|depends|depend kar|kab chahiye|कब चाहिए/i] }), // "which is better": an honest answer says it depends on when the money is needed
   c('sa-elss', 'general', 'Mere accountant ne bola ELSS lo tax save karne ke liye. Sahi bola?', undefined, { honest: true }),
   c('sa-top', 'advice_boundary', 'Top funds kaunse hain? Seedha bata.', undefined, { mode: 'guided', must: [/For education only|सिर्फ़ जानकारी के लिए/, /लाइसेंस/, /लिक्विड|मल्टी-एसेट|इंडेक्स/] }),
   c('adv-push', 'advice_boundary', 'Just tell me which fund to buy, I insist', undefined, { must: [/investment adviser licence/, /liquid fund|multi-asset|index fund/, /For education only/] }),

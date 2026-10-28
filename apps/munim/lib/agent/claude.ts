@@ -27,28 +27,21 @@ const YES_IDIOM = /kyu?n\s*nahi|क्यों\s*नहीं|no\s*(?:problem|w
 const OFFERED = /\?|\bif you (?:like|want)\b|\b(?:shall|should|can) I\b|\bwant me to\b|\bI can (?:set|draft|save|create|make)\b|क्या मैं|kar doon|bana doon|likh doon/i;
 /** Actions run only when the user's own last message asks for one, or says yes to an offer Munim made in its last answer
  *  (an order that slipped in through data can't create one; prompt-injection review, 29 Oct). */
-// which action a message or an offer is about: only that one may run (live eval 28 Oct: asked to save a plan, Claude also drafted an email)
-const KINDS: [string, RegExp][] = [
-  ['create_reminder', /remind|reminder|yaad|याद|calendar|कैलेंडर|alert/i],
-  ['draft_email', /draft|e-?mail|\bmail\b|likh|लिख|ईमेल|letter|message/i],
-  ['create_savings_goal', /\bgoal|लक्ष्य|target|gol\b/i],
-  ['save_prepayment_plan', /prepay|pre-pay|plan\s+save|save\s+(?:the\s+|this\s+|a\s+)?plan|प्रीपेमेंट|प्लान/i],
-];
-const kindsIn = (t: string) => KINDS.filter(([, re]) => re.test(t)).map(([k]) => k);
-/** The actions the user allows now: those their own message asks for, or (a yes to an offer) those the offer named; any of
- *  them when the offer names none. Empty: none. A message that opens with a refusal allows nothing ("No, don't remind me"). */
+/** The actions the user allows now: any, when their own message asks for one or says yes to an offer in Munim's last answer;
+ *  none otherwise. A reply that opens with a no allows nothing, unless it asks for an action itself ("No, remind me on 1 Nov
+ *  instead"). Which action is NOT guessed from keywords: that guess failed on Hindi and paraphrased offers (review, 29 Oct). */
 export function allowedActions(last: string, prevAssistant: string): string[] {
+  const asks = ASKS_ACTION.test(last) && !/\b(?:don[’']?t|do not|mat|never)\b|मत|न\s/i.test(last);
+  if (asks) return [...ACTION_TOOLS];
   if (REFUSES.test(last) && !YES_IDIOM.test(last)) return [];
-  if (ASKS_ACTION.test(last)) { const k = kindsIn(last); return k.length ? k : [...ACTION_TOOLS]; }
-  if (OFFERED.test(prevAssistant) && (AGREES.test(last) || YES_IDIOM.test(last))) { const k = kindsIn(prevAssistant.split(/(?<=[.!?।])\s+/).filter((x) => OFFERED.test(x)).join(' ') || prevAssistant); return k.length ? k : [...ACTION_TOOLS]; }
-  return [];
+  return OFFERED.test(prevAssistant) && (AGREES.test(last) || YES_IDIOM.test(last)) ? [...ACTION_TOOLS] : [];
 }
 export const userAllowsAction = (last: string, prevAssistant: string) => allowedActions(last, prevAssistant).length > 0;
 export interface Turn { role: 'user' | 'assistant'; content: string }
 export interface TraceStep { tool: string; input: Record<string, unknown>; result: Record<string, unknown>; ms: number }
 export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceStep[]; actions: Action[]; check: NumberCheck; engine: 'claude' | 'offline'; model?: string; ms: number; repaired?: boolean;
   /** Which advice check ran on the answer (D-069): the AI check, the word patterns (its fallback), or none (no investment talk). */
-  guard?: 'ai' | 'rules' | 'none'; guardMs?: number;
+  guard?: 'ai' | 'rules' | 'rules_fallback' | 'none'; guardMs?: number;
   /** The advice check found something (and forced a rewrite or removed it). On an ordinary question this is a false alarm. */
   adviceFired?: boolean }
 
@@ -152,7 +145,7 @@ type Flag = { i: number; s: string; why: 'trade' | 'product'; name?: boolean };
  *  check, when it is on and can run, may only ADD sentences (review 6: a missed sell call without a licence is a regulatory
  *  event, a false alarm is a stiffer sentence, and the AI check hasn't been measured yet). Positions, not text, so a
  *  repeated sentence loses the right copy. */
-export async function checkAdvice(answer: string, ctx: Pick<ToolCtx, 'adviceMode' | 'lang' | 'judge'>, funds: ReturnType<typeof fundLabels>, known: Known, said: string[]): Promise<{ flagged: Flag[]; by: 'ai' | 'rules' | 'none'; ms: number }> {
+export async function checkAdvice(answer: string, ctx: Pick<ToolCtx, 'adviceMode' | 'lang' | 'judge'>, funds: ReturnType<typeof fundLabels>, known: Known, said: string[]): Promise<{ flagged: Flag[]; by: 'ai' | 'rules' | 'rules_fallback' | 'none'; ms: number }> {
   const t0 = Date.now();
   const list = judgeSentences(answer);
   const held = heldNames(funds), guarded = !namesFunds(ctx.adviceMode);
@@ -163,7 +156,7 @@ export async function checkAdvice(answer: string, ctx: Pick<ToolCtx, 'adviceMode
   if (!ctx.judge || !(TOUCHES_INVESTMENTS.test(answer) || flagged.length || heldMentioned)) return { flagged, by: flagged.length ? 'rules' : 'none', ms: Date.now() - t0 };
   const input: JudgeInput = { sentences: list, held: [...new Set([...known.names, ...held])].slice(0, 40), picks: [], said: said.slice(0, 5), lang: ctx.lang, advice: namesFunds(ctx.adviceMode) };
   const v: Verdict | null = await ctx.judge(input).catch(() => null);
-  if (!v) return { flagged, by: 'rules', ms: Date.now() - t0 };
+  if (!v) return { flagged, by: 'rules_fallback', ms: Date.now() - t0 }; // the AI check was asked and couldn't answer: measurable once it is on
   for (const r of v.remove) if (!flagged.some((f) => f.i === r.i)) flagged.push({ i: r.i, s: list[r.i], why: r.why });
   return { flagged, by: 'ai', ms: Date.now() - t0 };
 }

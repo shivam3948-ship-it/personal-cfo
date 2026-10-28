@@ -81,17 +81,17 @@ describe('the action guard (review 7)', () => {
   });
 });
 
-describe('only the action asked for (live eval 28 Oct, act-prepay)', () => {
-  it('a yes allows the action the offer named, and only that one', () => {
-    expect(allowedActions('haan, plan save kar do', 'Want me to save this prepayment plan?')).toEqual(['save_prepayment_plan']);
-    expect(allowedActions('yes', 'Shall I set a reminder for the card bill?')).toEqual(['create_reminder']);
-    expect(allowedActions('ok', 'Should I draft the email to cult.fit?')).toEqual(['draft_email']);
-    expect(allowedActions('Remind me to pay my card bill on 30 Oct', '')).toEqual(['create_reminder']);
+describe('the action guard after review (29 Oct)', () => {
+  const all = ['create_reminder', 'draft_email', 'create_savings_goal', 'save_prepayment_plan'];
+  it('a yes to an offer allows the action, however the offer is worded (Hindi included)', () => {
+    for (const [offer, yes] of [['क्या 20 दिसंबर का Orbit prepayment रिमाइंडर लगा दूँ?', 'haan'], ['इसे भरने का प्लान बना दूँ?', 'हाँ'], ['Should I write to Orbit asking them to apply the prepayment?', 'yes'],
+      ['Shall I draft the email to cult.fit?', 'Yes, and remind me too'], ['Shall I set up a goal for the trip?', 'Bana do'], ['Shall I set a reminder?', 'हा']] as const)
+      expect(allowedActions(yes, offer).sort(), `${offer} → ${yes}`).toEqual([...all].sort());
   });
-  it('an opening no allows nothing, even with the action word in it; "bana do" and "हा" are yeses', () => {
+  it('an opening no allows nothing; a correction that asks for an action still does', () => {
     expect(allowedActions("No, don't remind me", 'Shall I set a reminder?')).toEqual([]);
-    expect(allowedActions('Bana do', 'Shall I set up a goal for the trip?')).toEqual(['create_savings_goal']);
-    expect(allowedActions('हा', 'Shall I set a reminder?')).toEqual(['create_reminder']);
+    expect(allowedActions('nahi', 'Shall I set a reminder?')).toEqual([]);
+    for (const c of ['No, remind me on 1 Nov instead', 'Nahi, 1 Nov ko yaad dilana', 'नहीं, 1 नवंबर को याद दिलाना']) expect(allowedActions(c, 'Shall I set a reminder for 30 Oct?').length, c).toBe(4);
     expect(userAllowsAction('Yes, cancel it', 'Want me to draft an email to cancel cult.fit?')).toBe(true);
   });
 });

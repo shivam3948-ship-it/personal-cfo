@@ -170,7 +170,9 @@ describe('the AI check is graded on sentences it never saw', async () => {
   const held = heldNames(fundLabels((await loadDemo()).portfolio!.holdings, 'en'));
   it('no held-out sentence appears in its prompt', () => {
     const prompt = judgeSystem(false) + judgeSystem(true);
-    for (const x of [...JUDGE_HELDOUT_GO, ...JUDGE_HELDOUT_STAY]) expect(prompt.includes(x.slice(0, 30)), x).toBe(false);
+    const norm = (t: string) => t.toLowerCase().replace(/[^\p{L}\p{N}₹]+/gu, ' ').trim();
+    const p = norm(prompt);
+    for (const x of [...JUDGE_HELDOUT_GO, ...JUDGE_HELDOUT_STAY]) { const w = norm(x).split(' '); for (let i = 0; i + 5 <= w.length; i++) expect(p.includes(w.slice(i, i + 5).join(' ')), `${x}: "${w.slice(i, i + 5).join(' ')}"`).toBe(false); } // any 5-word run, not just the opening (4 words hits plain phrases like "your small cap fund")
   });
   it('the held-out instructions are ones the word patterns miss (the check\'s whole job), and the must-stay ones pass them', () => {
     for (const x of JUDGE_HELDOUT_GO) expect(tellsToExit(x, held), x).toBe(false);
