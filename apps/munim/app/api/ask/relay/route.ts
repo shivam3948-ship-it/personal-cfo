@@ -10,6 +10,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { MODEL, getClient } from '@core/llm';
 import { redact } from '@core/privacy/redact';
 import { forLlm } from '@core/privacy/forLlm';
+import { defang } from '@core/privacy/injection';
 import { DISCLAIMER } from '@/lib/session';
 import { systemPrompt } from '@/lib/agent/prompt';
 import { TOOLS } from '@/lib/agent/tools';
@@ -40,7 +41,7 @@ function clean(messages: unknown): Anthropic.MessageParam[] | null {
       if (b?.type === 'text' && typeof b.text === 'string') blocks.push({ type: 'text', text: redact(b.text.slice(0, m.role === 'user' ? 2000 : 4000)) });
       else if (b?.type === 'tool_use' && m.role === 'assistant' && typeof b.id === 'string' && typeof b.name === 'string' && TOOL_NAMES.has(b.name)) { issued.add(b.id); blocks.push({ type: 'tool_use', id: b.id, name: b.name, input: redactJson(b.input) }); }
       else if (b?.type === 'tool_result' && m.role === 'user' && typeof b.tool_use_id === 'string' && issued.has(b.tool_use_id)) {
-        let content: unknown = b.content; try { content = JSON.stringify(forLlm(JSON.parse(String(b.content)))); } catch { content = redact(String(b.content ?? '').slice(0, 8000)); }
+        let content: unknown = b.content; try { content = JSON.stringify(forLlm(JSON.parse(String(b.content)))); } catch { content = defang(redact(String(b.content ?? '').slice(0, 8000))); } // not JSON: still filtered for injection
         blocks.push({ type: 'tool_result', tool_use_id: b.tool_use_id, content: String(content), is_error: !!b.is_error });
       } else return null;
     }

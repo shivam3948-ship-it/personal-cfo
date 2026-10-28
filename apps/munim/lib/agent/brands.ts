@@ -27,8 +27,12 @@ const STRONG_BUY = /\b(?:buy|choose|switch\s+to|port\s+(?:it\s+)?to|purchase|sig
 const GENERIC = /^(?:\S+(?:\s+\S+){0,3}?)\s+(?:mutual\s+)?(?:fund|funds|policy|policies|plan|premium|MF)$/i;
 
 export interface Known { names: string[]; houses: string[]; said: string[] }
+// Any capitalised product name ending in Fund/Scheme/Plan, for houses not on the list ("QuickRich Growth Fund"): counted only
+// where the sentence recommends it, and not when every word is a category word ("a Liquid Fund", "an Index Fund").
+const ANY_FUND = /(?<![\p{L}\p{N}])(?:[A-Z][\w&'’-]*\s+){1,4}(?:Fund|Scheme|Plan)\b/gu;
+const CATEGORY_WORD = /^(?:a|an|the|your|my|this|that|liquid|index|debt|hybrid|multi|asset|allocation|flexi|cap|small|mid|large|term|health|mutual|equity|low|cost|low-cost|short|duration|gold|arbitrage|balanced|advantage|elss|tax|saver|overnight|money|market|nifty|50|sensex|emergency|safety|new|regular|direct|growth|good|well|rated|well-rated|family|floater|retirement|pension|sip|savings|corporate|bond|dynamic|conservative|aggressive|value|dividend|fund|funds|scheme|plan)$/i;
 // a sentence that recommends something (review 3): a product the user named may be discussed, never recommended back
-const RECOMMEND = /\b(?:buy|invest(?:ing)?\s+in|go\s+(?:with|for)|choose|pick|consider|opt\s+for|switch\s+to|port\s+(?:it\s+)?to|recommend|suggest|purchase|take|get|start\s+(?:a\s+)?SIP|put\s+(?:\S+\s+){0,4}(?:in|into))\b|\bis\s+(?:a\s+|the\s+)?(?:good|great|best|better|solid|safe|top|ideal|right|smart)\b|^\s*(?:yes|haan?|ji)\b|\bshould\b|अच्छा|बेहतर|खरीद|ले\s*लो|\ble\s*lo\b|\bkharid/i;
+const RECOMMEND = /\b(?:buy|invest(?:ing)?\s+in|go\s+(?:with|for)|choose|pick|consider|opt\s+for|switch\s+to|port\s+(?:it\s+)?to|recommend|suggest|purchase|take|get|start\s+(?:a\s+)?SIP|put\s+(?:\S+\s+){0,4}(?:in|into))\b|\bis\s+(?:a\s+|the\s+)?(?:good|great|best|better|solid|safe|top|ideal|right|smart)\b|^\s*(?:yes|haan?|ji)\b|\b(?:should|could|might|try)\b|\b(?:move|shift|transfer|park|invest|switch)\b[^.!?]{0,40}\b(?:in|into|to)\b|अच्छा|बेहतर|खरीद|ले\s*लो|\ble\s*lo\b|\bkharid/i;
 const norm = (s: string) => s.toLowerCase().replace(/[-–—]+/g, ' ').replace(/\s+/g, ' ').trim();
 
 /** Every name the answer may use: the user's own funds and policies, (advice mode) the owner's picks, and any fund or
@@ -58,6 +62,14 @@ export function strangerProducts(answer: string, known: Known): string[] {
     for (const m of s.matchAll(AMC_PRODUCT)) {
       const name = m[0].trim();
       if (allowed(name) || (GENERIC.test(name) && ownHouse(name) && !rec)) continue;
+      out.add(name);
+    }
+    if (rec) for (const m of s.matchAll(ANY_FUND)) {
+      const name = m[0].trim().replace(/^(?:(?:Consider|Buy|Try|Choose|Pick|Take|Get|Go|Switch|Move|Put|Invest|Start|Use|Opt|Yes|So|Then|Also|Maybe|Perhaps)\s+)+/, ''); // a sentence-opening verb is not part of the name
+      if (!/\s/.test(name)) continue;
+      if (name.split(/\s+/).every((w) => CATEGORY_WORD.test(w)) || allowed(name) || [...out].some((o) => o.includes(name) || name.includes(o))) continue;
+      if (INSURER_NAME.test(name)) { INSURER_NAME.lastIndex = 0; continue; } // insurers are judged below
+      INSURER_NAME.lastIndex = 0;
       out.add(name);
     }
     for (const m of s.matchAll(INSURER_NAME)) {

@@ -15,6 +15,8 @@ export interface EvalCase {
   must?: RegExp[];                       // "answered the question": every one must appear in the answer
   mustNot?: RegExp[];                    // …and none of these (e.g. a claim the data can't support)
   forbidTools?: string[];                // none of these may run (red team: an action nobody asked for)
+  mustLive?: RegExp[];                   // like must, but only when Claude answered (the rules engine routes this question elsewhere)
+  quietGuard?: boolean;                  // red team false alarms: the advice check must not fire or force a rewrite (live only)
 }
 
 const c = (id: string, cat: Category, q: string | string[], tools?: string[], extra: Partial<EvalCase> = {}): EvalCase =>

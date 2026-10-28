@@ -14,11 +14,16 @@ import { NO_PICKS, pickNames } from '@/lib/advicePicks';
 import { TOUCHES_INVESTMENTS, judgeSentences, type JudgeInput, type Verdict } from './judge';
 export { enforceNoTrade, fundLabels, namedFunds, scrubFunds };
 
+const ACTION_TOOLS = new Set(['create_reminder', 'draft_email', 'create_savings_goal', 'save_prepayment_plan']);
+/** The user asked for an action or agreed to one (English, Hindi, Hinglish). */
+export const USER_ASKS = /remind|reminder|yaad|याद|draft|e-?mail|\bmail\b|likh|लिख|\bgoal|लक्ष्य|\bplan\b|प्लान|\bsave\b|सेव|set\s+(?:up|a)|\bbana|बना|\byes\b|\byeah\b|\bhaa?n\b|हाँ|हां|\bha\b|\bok(?:ay)?\b|theek|ठीक|kar\s*do|कर\s*दो|kar\s*dijiye|कर\s*दीजिए|please|\bsure\b|do it|go ahead|chalo|चलो|bilkul|बिल्कुल|\bji\b|जी/i;
 export interface Turn { role: 'user' | 'assistant'; content: string }
 export interface TraceStep { tool: string; input: Record<string, unknown>; result: Record<string, unknown>; ms: number }
 export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceStep[]; actions: Action[]; check: NumberCheck; engine: 'claude' | 'offline'; model?: string; ms: number; repaired?: boolean;
   /** Which advice check ran on the answer (D-069): the AI check, the word patterns (its fallback), or none (no investment talk). */
-  guard?: 'ai' | 'rules' | 'none'; guardMs?: number }
+  guard?: 'ai' | 'rules' | 'none'; guardMs?: number;
+  /** The advice check found something (and forced a rewrite or removed it). On an ordinary question this is a false alarm. */
+  adviceFired?: boolean }
 
 export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient | null = getClient()): Promise<AgentReply> {
   if (!client) throw new Error('No ANTHROPIC_API_KEY');
@@ -28,6 +33,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const names = [...holderNames(ctx.ds.docs.map((d) => d.text)), ...(ctx.names ?? [])];
   const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: t.role === 'user' ? redact(t.content, { names }) : t.content }));
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
+  const lastUser = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
   let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0;
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
   for (let step = 0; step < 7; step++) {
@@ -59,14 +65,17 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
         continue;
       }
       const final = g.flagged.length ? removeFlagged(answer, g.flagged, ctx.adviceMode, ctx.lang, funds) : answer;
-      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: MODEL, ms: Date.now() - t0, repaired: repaired || fundsRepaired, guard, guardMs };
+      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: MODEL, ms: Date.now() - t0, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
     }
     messages.push({ role: 'assistant', content: res.content });
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
     for (const u of uses) {
       const s = Date.now();
       let out: Awaited<ReturnType<typeof runTool>>;
-      try { out = await runTool(u.name, (u.input ?? {}) as Record<string, unknown>, ctx); }
+      // Actions (a reminder, an email draft, a goal, a prepayment plan) only when the user's own last message asks for one or
+      // says yes to an offer: an order that slipped in through data can't create one (prompt-injection review, 29 Oct).
+      if (ACTION_TOOLS.has(u.name) && !USER_ASKS.test(lastUser)) out = { result: { error: 'Actions run only when the user asks for one or says yes to your offer. Offer it in one sentence instead.' } };
+      else try { out = await runTool(u.name, (u.input ?? {}) as Record<string, unknown>, ctx); }
       catch (e) { out = { result: { error: (e as Error).message } }; }
       trace.push({ tool: u.name, input: (u.input ?? {}) as Record<string, unknown>, result: out.result, ms: Date.now() - s });
       const shown = ctx.sanitize ? ctx.sanitize(out.result) : out.result; // what the AI sees is what the number check trusts

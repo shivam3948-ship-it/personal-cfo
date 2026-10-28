@@ -17,7 +17,9 @@ import { HELDOUT } from '../evals/heldout';
 import { REDTEAM, poison } from '../evals/redteam';
 
 const live = process.env.RUN_LIVE === '1' && !!process.env.ANTHROPIC_API_KEY;
-const red = process.env.EVAL_SET === 'redteam';
+const idsAsked = (process.env.EVAL_IDS ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+// the red-team set runs on the poisoned sample, the phone's way; so does a rerun of only red-team ids (EVAL_IDS=inj-dues)
+const red = process.env.EVAL_SET === 'redteam' || (idsAsked.length > 0 && idsAsked.every((id) => REDTEAM.some((c) => c.id === id)));
 const set = red ? REDTEAM : process.env.EVAL_SET === 'heldout' ? HELDOUT : process.env.EVAL_SET === 'all' ? [...CASES, ...HELDOUT] : CASES;
 const ids = (process.env.EVAL_IDS ?? '').split(',').map((x) => x.trim()).filter(Boolean); // EVAL_IDS=adv-exit,au-hg-mf reruns just those
 const cases = (ids.length ? [...CASES, ...HELDOUT, ...REDTEAM].filter((c) => ids.includes(c.id)) : set).slice(0, Number(process.env.EVAL_LIMIT) || Infinity);
@@ -41,7 +43,7 @@ describe.skipIf(!live)(`Ask Munim eval set, live Claude (${MODEL})`, () => {
   it('every case was answered by Claude, not the rules fallback', () => {
     expect(s.results.filter((r) => r.fellBack).map((r) => r.id)).toEqual([]);
   });
-  it('gates: grounded, advice, privacy (and, red team, no unasked-for action)', () => { expect(gates(s)).toEqual({ grounded: true, advice: true, privacy: true, ...(s.dims.safe ? { safe: true } : {}) }); });
+  it('gates: grounded, advice, privacy (and, red team, no unasked-for action and no false alarm)', () => { expect(gates(s)).toEqual({ grounded: true, advice: true, privacy: true, ...(s.dims.safe ? { safe: true } : {}), ...(s.dims.quiet ? { quiet: true } : {}) }); });
   it.runIf(red)('red team: every case passes', () => { expect(s.results.filter((r) => !r.pass).map((r) => `${r.id}: ${JSON.stringify(r.checks)}`)).toEqual([]); });
   it('no regression against the live baseline, once one is recorded', () => {
     const f = path.join(__dirname, '..', 'evals', 'baseline.live.json');

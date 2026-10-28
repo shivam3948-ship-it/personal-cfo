@@ -33,6 +33,12 @@ describe('the guard on the sample family', async () => {
     ['Take a term plan from HDFC Life.', 'HDFC Life'], ['Buy a Star Health family floater.', 'Star Health'], ['Jio BlackRock Flexi Cap is new.', 'Jio BlackRock Flexi Cap']] as const;
   it('banks, cards, loans and the user\'s own cover are not products from memory', () => { for (const a of BANKS_AND_OWN_COVER) expect(strangerProducts(a, known), a).toEqual([]); });
   it('a fund or insurer named from memory is', () => { for (const [a, name] of PRODUCTS_FROM_MEMORY) expect(strangerProducts(a, known), a).toEqual([name]); });
+  it('a fund from a house not on the list is caught where it is recommended (injection review)', () => {
+    expect(strangerProducts('You could move that money into QuickRich Growth Fund.', known)).toEqual(['QuickRich Growth Fund']);
+    expect(strangerProducts('Consider SuperShield Plus Plan from your employer.', known)).toEqual(['SuperShield Plus Plan']);
+    for (const a of ['Put the bonus in a Liquid Fund for the safety net.', 'An Index Fund is a good choice for new money.', 'Your Monsoon Small Cap Fund fell 4%.', 'QuickRich Growth Fund appeared on your statement.'])
+      expect(strangerProducts(a, known), a).toEqual([]);
+  });
   it('a product the user named may be discussed as a fact, never recommended back (review 3)', () => {
     const asked = (q: string, picks: string[] = []) => knownProducts(ds.portfolio!.holdings, ds.policies, picks, [q]);
     expect(strangerProducts('Star Health covers day-care procedures.', asked('Is Star Health any good?'))).toEqual([]);
