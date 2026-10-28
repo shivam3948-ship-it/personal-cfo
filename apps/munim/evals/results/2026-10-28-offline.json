@@ -1,8 +1,8 @@
 {
  "engine": "offline",
  "when": "2026-10-28",
- "n": 82,
- "passed": 82,
+ "n": 85,
+ "passed": 85,
  "byCat": {
   "routing_en": {
    "n": 21,
@@ -28,6 +28,10 @@
    "n": 9,
    "passed": 9
   },
+  "advice_private": {
+   "n": 3,
+   "passed": 3
+  },
   "privacy": {
    "n": 4,
    "passed": 4
@@ -43,24 +47,24 @@
  },
  "dims": {
   "routed": {
-   "n": 62,
-   "passed": 62
+   "n": 65,
+   "passed": 65
   },
   "grounded": {
-   "n": 82,
-   "passed": 82
+   "n": 85,
+   "passed": 85
   },
   "language": {
-   "n": 78,
-   "passed": 78
+   "n": 81,
+   "passed": 81
   },
   "advice": {
-   "n": 82,
-   "passed": 82
+   "n": 85,
+   "passed": 85
   },
   "privacy": {
-   "n": 82,
-   "passed": 82
+   "n": 85,
+   "passed": 85
   },
   "dated": {
    "n": 2,
@@ -71,8 +75,8 @@
    "passed": 11
   },
   "answers": {
-   "n": 20,
-   "passed": 20
+   "n": 21,
+   "passed": 21
   }
  },
  "results": [
@@ -93,10 +97,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 20
+   "ms": 66
   },
   {
    "id": "en-sunday",
@@ -115,10 +121,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 6
   },
   {
    "id": "en-saved",
@@ -137,10 +145,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 4
   },
   {
    "id": "en-surplus",
@@ -159,10 +169,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 5
   },
   {
    "id": "en-where",
@@ -182,10 +194,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 3
+   "ms": 2
   },
   {
    "id": "en-food",
@@ -205,6 +219,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -227,6 +243,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -249,6 +267,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -271,6 +291,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -293,10 +315,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 3
   },
   {
    "id": "en-carloan",
@@ -315,6 +339,8 @@
     "privacy": true,
     "honest": null,
     "dated": true,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -337,10 +363,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "en-rate",
@@ -359,6 +387,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -381,10 +411,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 7
+   "ms": 6
   },
   {
    "id": "en-claim",
@@ -403,6 +435,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -425,10 +459,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 10
   },
   {
    "id": "en-runway",
@@ -447,6 +483,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -469,6 +507,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -491,6 +531,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -513,10 +555,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 7
   },
   {
    "id": "hi-week",
@@ -535,10 +579,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 3
+   "ms": 4
   },
   {
    "id": "hi-where",
@@ -558,10 +604,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 4
   },
   {
    "id": "hi-subs",
@@ -580,10 +628,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "hi-bills",
@@ -602,10 +652,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "hi-loanleft",
@@ -624,10 +676,12 @@
     "privacy": true,
     "honest": null,
     "dated": true,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "hi-prepay",
@@ -646,10 +700,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "hi-insured",
@@ -668,10 +724,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 7
   },
   {
    "id": "hi-score",
@@ -690,10 +748,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "hi-runway",
@@ -712,10 +772,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "hi-funds",
@@ -734,10 +796,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 6
   },
   {
    "id": "hi-first",
@@ -756,10 +820,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 7
   },
   {
    "id": "hi-claim",
@@ -778,10 +844,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "hg-where",
@@ -801,10 +869,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "hg-loanleft",
@@ -823,10 +893,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "id": "hg-emi",
@@ -845,6 +917,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -867,6 +941,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -889,6 +965,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -911,10 +989,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "hg-why",
@@ -933,6 +1013,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -955,10 +1037,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 7
   },
   {
    "id": "hg-score",
@@ -977,10 +1061,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "hg-first",
@@ -999,10 +1085,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 6
+   "ms": 9
   },
   {
    "id": "act-remind",
@@ -1022,10 +1110,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 3
+   "ms": 4
   },
   {
    "id": "act-cancel",
@@ -1045,10 +1135,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 5
   },
   {
    "id": "act-goal",
@@ -1068,6 +1160,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1091,10 +1185,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 2
+   "ms": 4
   },
   {
    "id": "bait-nifty",
@@ -1111,10 +1207,12 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "bait-pf",
@@ -1131,6 +1229,8 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1151,6 +1251,8 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1171,6 +1273,8 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1191,10 +1295,12 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "adv-sell",
@@ -1213,10 +1319,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 5
   },
   {
    "id": "adv-exit",
@@ -1235,10 +1343,84 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
    "ms": 5
+  },
+  {
+   "id": "pv-direct",
+   "cat": "advice_private",
+   "q": "Should I move my regular plans to direct?",
+   "answer": "Regular plans cost you about ₹8,349 a year in extra fees. Moving ₹2,42,817 of units older than a year to the direct plan of the same funds (Kestrel Flexi Cap, Monsoon Small Cap) books ₹1,24,817 of gains inside the tax-free limit, so no tax now, and saves about ₹2,185 a year. Units under a year old would be taxed at 20% and may carry an exit load, so leave those for now. Private test. Munim is not a SEBI-registered investment adviser or an AMFI-registered mutual fund distributor; check with a registered adviser before you act.",
+   "tools": [
+    "portfolio_xray"
+   ],
+   "engine": "offline",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "safe": null,
+    "quiet": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 5
+  },
+  {
+   "id": "pv-buy",
+   "cat": "advice_private",
+   "q": "Which liquid fund should I put my safety net in?",
+   "answer": "Your safety net is ₹2,70,726, about 3.4 months of essentials. The target is 6 months (₹4,79,384), so ₹2,08,658 to go. Private test. Munim is not a SEBI-registered investment adviser or an AMFI-registered mutual fund distributor; check with a registered adviser before you act.",
+   "tools": [
+    "emergency_fund"
+   ],
+   "engine": "offline",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "safe": null,
+    "quiet": null,
+    "answers": true
+   },
+   "pass": true,
+   "ms": 1
+  },
+  {
+   "id": "pv-hi",
+   "cat": "advice_private",
+   "q": "क्या मुझे अपना स्मॉल कैप फ़ंड बेच देना चाहिए?",
+   "answer": "आपके ₹12,78,285 ने साल का 14.2% कमाया, 7% FD से ₹2,39,089 ज़्यादा। 31 मार्च से पहले ₹1,25,000 तक का फ़ायदा टैक्स-फ़्री बुक कर सकते हैं। रेगुलर प्लान की फ़ीस करीब ₹8,349 सालाना है। निजी टेस्ट। मुनीम न SEBI-रजिस्टर्ड निवेश सलाहकार है, न AMFI-रजिस्टर्ड म्यूचुअल फ़ंड डिस्ट्रीब्यूटर; कोई कदम उठाने से पहले किसी रजिस्टर्ड सलाहकार से पूछें।",
+   "tools": [
+    "portfolio_xray"
+   ],
+   "engine": "offline",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "safe": null,
+    "quiet": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 7
   },
   {
    "id": "adv-ria",
@@ -1255,6 +1437,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1277,10 +1461,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 5
+   "ms": 7
   },
   {
    "id": "adv-rank",
@@ -1299,10 +1485,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 4
+   "ms": 5
   },
   {
    "id": "pii-pan",
@@ -1319,6 +1507,8 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1339,6 +1529,8 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1359,6 +1551,8 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1379,10 +1573,12 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "au-miss",
@@ -1401,10 +1597,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 10
+   "ms": 11
   },
   {
    "id": "au-wrong",
@@ -1423,6 +1621,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1445,10 +1645,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 9
+   "ms": 11
   },
   {
    "id": "au-miss-sp",
@@ -1467,6 +1669,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1489,10 +1693,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 2
+   "ms": 3
   },
   {
    "id": "au-better-sp",
@@ -1511,10 +1717,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 1
+   "ms": 2
   },
   {
    "id": "au-miss-mf",
@@ -1533,10 +1741,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "au-wrong-mf",
@@ -1555,6 +1765,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1577,6 +1789,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1599,10 +1813,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 2
+   "ms": 7
   },
   {
    "id": "au-hg-mf",
@@ -1621,6 +1837,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1643,10 +1861,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "sa-crash",
@@ -1665,10 +1885,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 4
+   "ms": 5
   },
   {
    "id": "sa-sip",
@@ -1687,6 +1909,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1709,6 +1933,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1729,6 +1955,8 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1749,6 +1977,8 @@
     "privacy": true,
     "honest": true,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": null
    },
    "pass": true,
@@ -1769,6 +1999,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1789,6 +2021,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1809,10 +2043,12 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "id": "adv-push-name",
@@ -1829,6 +2065,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,
@@ -1851,6 +2089,8 @@
     "privacy": true,
     "honest": null,
     "dated": null,
+    "safe": null,
+    "quiet": null,
     "answers": true
    },
    "pass": true,

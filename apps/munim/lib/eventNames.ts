@@ -11,6 +11,7 @@ export const EVENTS = {
   cas_read: 'cas_read',                         // { result, funds } (never amounts or names)
   cas_deleted: 'cas_deleted',
   statement_read: 'statement_read',             // { format, ok, rows } (never amounts or descriptions)
+  files_added: 'files_added',                   // { files, bank, cas, sms, unknown, skipped } one upload of several files (counts only)
   statement_deleted: 'statement_deleted',                   // {}
   ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
   voice_started: 'voice_started',               // { ctx, mode }
@@ -41,8 +42,9 @@ const FEATURES = ['autopay', 'save_once', 'topup', 'save_now', 'bill_pay', 'card
 export const PROPS: Record<EventName | 'answer' | 'feedback' | 'voice_turn', Record<string, PropKind>> = {
   screen_viewed: { screen: 'token' }, view_load_failed: { screen: 'token' }, math_opened: { screen: 'token', figure: 'token' },
   home_top_item_tapped: { reason: 'token', position: 'num' }, home_call_started: {}, home_tile_tapped: { tile: 'token' }, credit_notify_tapped: {},
-  cas_add_opened: {}, cas_read: { result: ['summary', 'partial', 'unknown', 'mismatch', 'done', 'unreadable', 'unrecognised', 'wrong_password', 'needs_password'], funds: 'num' }, cas_deleted: {},
+  cas_add_opened: {}, cas_read: { result: ['summary', 'partial', 'unknown', 'mismatch', 'done', 'unreadable', 'unrecognised', 'wrong_password', 'needs_password', 'older'], funds: 'num' }, cas_deleted: {},
   statement_read: { format: 'token', ok: 'bool', rows: 'num' }, statement_deleted: {},
+  files_added: { files: 'num', bank: 'num', cas: 'num', sms: 'num', unknown: 'num', skipped: 'num' },
   ask_opened: { ctx: CTX }, voice_started: { ctx: CTX, mode: ['server', 'browser'] },
   answer_listened: { ctx: CTX, how: ['tap', 'auto'], pieces: 'num', voice: ['sarvam', 'browser', 'none'], first_ms: 'num' },
   onboarding_opened: { again: 'bool' }, onboarding_lang: { lang: ['hi', 'en'] }, onboarding_start: { start: ['mine', 'sample'] }, onboarding_name: { given: 'bool' },
@@ -51,7 +53,8 @@ export const PROPS: Record<EventName | 'answer' | 'feedback' | 'voice_turn', Rec
   sms_read: { messages: 'num', rows: 'num', added: 'num', otp: 'num', unreadable: 'num' }, sms_deleted: {},
   fake_door_shown: { feature: FEATURES, first: 'bool' }, fake_door_notify_tapped: { feature: FEATURES },
   answer: { id: 'token', engine: ['claude', 'offline'], model: 'token', prompt: 'token', tools: 'token', steps: 'num', ms: 'num', grounded: 'bool', checked: 'num', unverified: 'num',
-    lang: ['hi', 'en'], data: ['sample', 'mine'], where: ['server', 'phone', 'phone+relay'], fallback: 'bool', repaired: 'bool' },
+    lang: ['hi', 'en'], data: ['sample', 'mine'], where: ['server', 'phone', 'phone+relay'], fallback: 'bool', repaired: 'bool',
+    guard: ['ai', 'rules', 'none'], guard_ms: 'num' }, // which advice check ran (D-069) and how long it took
   feedback: { id: 'token', vote: ['up', 'down'], reason: ['wrong_number', 'not_answered', 'hard_to_follow'], data: ['sample', 'mine'] },
   voice_turn: { id: 'token', stt: ['server', 'browser', 'none'], stt_ms: 'num', agent_ms: 'num', speak_ms: 'num', total_ms: 'num', voice: ['sarvam', 'browser', 'none'], pieces: 'num', lang: ['hi', 'en'], data: ['sample', 'mine'] },
 };

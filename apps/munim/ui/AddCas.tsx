@@ -1,6 +1,9 @@
 'use client';
-// Add your CAS (mock: Upload.dc.html, confirmed 22 Oct). Everything here runs on the phone: the PDF is read in the browser,
-// the password is used once and dropped, and only scheme/units/NAV/value/dated flows are saved in this browser.
+// Add your statements (mock: Upload.dc.html, confirmed 22 Oct). Everything here runs on the phone: the PDF is read in the
+// browser, the password is used once and dropped, and only what reconciles is saved in this browser.
+// One button for every kind of file (D-068): bank and card statements, the mutual fund CAS and SMS backups. Munim works out
+// which is which (lib/local/statements.ts readAny), so the user never has to sort them. Several files at once: each is read
+// in turn, a locked one asks for its own password (or can be skipped), and every file gets its own result line.
 import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
 import { saveCas, loadCas, deleteCas, PdfPasswordError, type LocalCas, type ReadResult } from '@/lib/local/cas';
@@ -29,7 +32,11 @@ const SMS_T = {
     spends: 'अपना खर्च देखें', more: 'और SMS डालें', saved: (n: number) => `इस फ़ोन पर SMS से ${n} लेन-देन`, del: 'SMS का डेटा मिटाएँ', back: 'वापस' },
 };
 
-type Step = 'paste' | 'sms' | 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'partial' | 'mismatch' | 'unknown' | 'bank';
+// a file Munim can't read yet: say what it can read, and offer SMS (D-068)
+const CANT = { en: 'Can’t read this one yet. Munim reads HDFC, SBI and Canara savings, HDFC and Axis cards, and the CAMS or KFintech CAS.', hi: 'इसे अभी नहीं पढ़ सकते। मुनीम HDFC, SBI और Canara सेविंग्स, HDFC और Axis कार्ड, और CAMS या KFintech का CAS पढ़ता है।' };
+type Step = 'paste' | 'sms' | 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'partial' | 'mismatch' | 'unknown' | 'bank' | 'batch';
+/** One file's result when several were chosen together. */
+interface Item { name: string; kind: 'bank' | 'cas' | 'sms' | 'unknown' | 'skipped'; ok: boolean; title: string; detail: string }
 const R = (p: number) => '₹' + Math.round(p / 100).toLocaleString('en-IN');
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = (iso: string) => (iso ? `${+iso.slice(8, 10)} ${MON[+iso.slice(5, 7) - 1]} ${iso.slice(0, 4)}` : '');
@@ -56,6 +63,14 @@ export default function AddCas() {
   const [stmts, setStmts] = useState<SavedStatement[]>([]);
   const [diag, setDiag] = useState('');
   const picker = useRef<HTMLInputElement>(null);
+  const queue = useRef<File[]>([]); // several files chosen together, read one after another
+  const [batch, setBatch] = useState<Item[] | null>(null);
+  const done = useRef<Item[]>([]); // the batch's results so far (state for the screen, this for the count)
+  // a batch is running: state, so the screen never flickers back to the single-file password step between files (review)
+  const [batchOn, setBatchOn] = useState(false);
+  const run = useRef(0); // each new pick (or leaving the screen) starts a new run; an older run stops where it is
+  const batchHead = useRef<HTMLElement>(null);
+  useEffect(() => () => { run.current++; }, []); // leaving the screen stops a batch that is still reading
   const [smsText, setSmsText] = useState('');
   const [smsRes, setSmsRes] = useState<Awaited<ReturnType<typeof readSmsText>> | null>(null);
   const [smsCount, setSmsCount] = useState(0);
@@ -98,7 +113,79 @@ export default function AddCas() {
       else { setErr(getProfile()?.lang === 'hi' ? 'यह फ़ाइल नहीं पढ़ी जा सकी। क्या यह CAS है, या HDFC, SBI, Canara या Axis का स्टेटमेंट?' : 'Couldn’t read this file. Is it a CAS, or a statement from HDFC, SBI, Canara or Axis?'); setStep('intro'); track('cas_read', { result: 'unreadable' }); }
     } finally { clearInterval(tick); }
   }
-  const onPick = (f?: File) => { if (!f) return; setFile(f); setPw(''); setWrong(false); read(f); }; // try without a password first
+  /** Read one file of a batch: save what reconciles (as the single-file path does) and describe the result in one line. */
+  async function readOne(f: File, password?: string): Promise<Item> {
+    const any = await readAny(f, password);
+    if (any.type === 'bank') {
+      const a = any.read, period = a.period ? `${day(a.period.from)} – ${day(a.period.to)} · ` : '';
+      track('statement_read', { format: a.format, ok: any.ok, rows: a.txns.length });
+      return { name: f.name, kind: 'bank', ok: any.ok, title: a.account.label, detail: any.ok ? `${period}${a.txns.length} ${L('transactions, balances to the paisa', 'लेन-देन, पैसे-पैसे तक मिलता है')}` : L('Didn’t add up, so not saved. Try the PDF straight from your bank’s site.', 'हिसाब नहीं मिला, इसलिए सेव नहीं किया। बैंक की वेबसाइट से सीधे PDF लेकर आज़माएँ।') };
+    }
+    if (any.type === 'sms') {
+      track('sms_read', { messages: any.sms.messages, rows: any.sms.txns.length, added: any.sms.added, otp: any.sms.skipped.otp, unreadable: any.sms.skipped.unreadable });
+      return { name: f.name, kind: 'sms', ok: any.sms.txns.length > 0, title: L('Bank SMS', 'बैंक SMS'), detail: any.sms.txns.length ? T.got(any.sms.txns.length) + ' ' + T.from(any.sms.messages) : T.none };
+    }
+    if (any.type === 'cas') {
+      const r = any.cas;
+      // two CAS in one batch (or an older one than saved): keep the newest, never let an older one replace it (review)
+      const have = await loadCas().catch(() => null);
+      if (r.cas && have && have.asOf > r.cas.asOf) {
+        track('cas_read', { result: 'older', funds: r.cas.holdings.length });
+        return { name: f.name, kind: 'cas', ok: false, title: L('Mutual fund CAS (older)', 'म्यूचुअल फ़ंड CAS (पुराना)'), detail: lang === 'hi' ? `${day(have.asOf)} का नया CAS पहले से है, इसलिए यह पुराना वाला नहीं लिया।` : `A newer CAS (${day(have.asOf)}) is already here, so this older one wasn't used.` };
+      }
+      if (r.cas) { await saveCas(r.cas); setSaved(r.cas); }
+      track('cas_read', { result: r.kind === 'summary' ? 'summary' : r.kind === 'partial' ? 'partial' : !r.cas ? 'unknown' : r.cas.skipped.length ? 'mismatch' : 'done', funds: r.cas?.holdings.length ?? 0 });
+      const n = r.cas?.holdings.length ?? 0;
+      return r.kind === 'summary' ? { name: f.name, kind: 'cas', ok: false, title: L('Mutual fund CAS (summary)', 'म्यूचुअल फ़ंड CAS (समरी)'), detail: L('No transactions in it. Ask CAMS for the Detailed CAS.', 'इसमें लेन-देन नहीं हैं। CAMS से Detailed CAS माँगें।') }
+        : r.kind === 'partial' ? { name: f.name, kind: 'cas', ok: false, title: L('Mutual fund CAS (part of your history)', 'म्यूचुअल फ़ंड CAS (आधा इतिहास)'), detail: L('Ask for a Detailed CAS from your first investment to today.', 'पहले निवेश से आज तक का Detailed CAS माँगें।') }
+        : r.cas ? { name: f.name, kind: 'cas', ok: true, title: L('Mutual fund CAS', 'म्यूचुअल फ़ंड CAS'), detail: (lang === 'hi' ? `${n} फ़ंड, हर आँकड़ा जाँचा गया` : `${n} fund${n === 1 ? '' : 's'}, every number checked`) + (r.cas.skipped.length ? L(` (${r.cas.skipped.length} left out: didn’t add up)`, ` (${r.cas.skipped.length} बाहर रखे: हिसाब नहीं मिला)`) : '') }
+        : { name: f.name, kind: 'unknown', ok: false, title: f.name, detail: L('No funds found in it.', 'इसमें कोई फ़ंड नहीं मिला।') };
+    }
+    track('cas_read', { result: 'unrecognised' });
+    return { name: f.name, kind: 'unknown', ok: false, title: f.name, detail: CANT[lang] };
+  }
+  /** Work through the chosen files one by one; a locked file stops here for its password (or a skip). */
+  async function nextInBatch(id: number, password?: string) {
+    if (id !== run.current) return; // a newer pick, or the screen was left
+    const f = queue.current[0];
+    if (!f) {
+      setStep('reading'); // never sit on the password step while the batch is closing
+      const all = done.current, n = (k: Item['kind']) => all.filter((x) => x.kind === k).length;
+      const list = await loadStatements();
+      if (id !== run.current) return;
+      track('files_added', { files: all.length, bank: n('bank'), cas: n('cas'), sms: n('sms'), unknown: n('unknown'), skipped: n('skipped') });
+      setStmts(list); setBatch([...all]); setBatchOn(false); setStep('batch'); setTimeout(() => batchHead.current?.focus(), 0); return;
+    }
+    setFile(f); setStep('reading'); setProgress(1); setErr(null); setWrong(false);
+    let item: Item;
+    try { item = await readOne(f, password); }
+    catch (e) {
+      if (id !== run.current) return;
+      if (e instanceof PdfPasswordError) { // wait for this file's password, with the same events as one file
+        track('cas_read', { result: e.reason === 'wrong' && password ? 'wrong_password' : 'needs_password' });
+        setWrong(e.reason === 'wrong' && !!password); setPw(''); setStep('password'); return;
+      }
+      track('cas_read', { result: 'unreadable' });
+      item = { name: f.name, kind: 'unknown', ok: false, title: f.name, detail: L('Couldn’t read this file. If it is from a bank Munim reads, try the PDF straight from the bank’s site.', 'यह फ़ाइल नहीं पढ़ी जा सकी। अगर यह उन बैंकों में से है जिन्हें मुनीम पढ़ता है, तो बैंक की वेबसाइट से सीधे PDF लेकर आज़माएँ।') };
+    }
+    if (id !== run.current) return;
+    setPw(''); // used once, never kept
+    queue.current.shift(); done.current.push(item); setBatch([...done.current]);
+    await nextInBatch(id);
+  }
+  const skipping = useRef(false);
+  const skipFile = async () => {
+    if (skipping.current) return; skipping.current = true; // a double tap skips one file, not two
+    try { const f = queue.current.shift(); if (f) { done.current.push({ name: f.name, kind: 'skipped', ok: false, title: f.name, detail: L('Skipped: it needs a password.', 'छोड़ा: इसके लिए पासवर्ड चाहिए।') }); setBatch([...done.current]); } setPw(''); await nextInBatch(run.current); }
+    finally { skipping.current = false; }
+  };
+  const inBatch = () => batchOn;
+  const onPick = (list?: FileList | null) => {
+    const files = [...(list ?? [])]; if (!files.length) return;
+    setPw(''); setWrong(false); const id = ++run.current;
+    if (files.length === 1) { queue.current = []; setBatch(null); setBatchOn(false); setFile(files[0]); read(files[0]); return; } // one file: the detailed result screens
+    queue.current = files; done.current = []; setBatch([]); setBatchOn(true); void nextInBatch(id); // try each without a password first
+  };
   const del = async () => { await deleteCas(); setSaved(null); setRes(null); setFile(null); setStep('intro'); track('cas_deleted'); };
   const copyDiag = async () => { const t = res?.diagnostics || diag; if (!t) return; try { await navigator.clipboard.writeText(t); setCopied(true); } catch { setCopied(false); } };
   const delStmt = async (key: string) => { await deleteStatement(key); setStmts(await loadStatements()); track('statement_deleted'); };
@@ -112,7 +199,7 @@ export default function AddCas() {
   return (
     <div style={S.page}>
       <style>{CSS}</style>
-      <input ref={picker} type="file" accept="application/pdf,.pdf,.txt,.xml,text/plain,text/xml" hidden onChange={(e) => { onPick(e.target.files?.[0]); e.target.value = ''; }} />
+      <input ref={picker} type="file" multiple accept="application/pdf,.pdf,.txt,.xml,text/plain,text/xml" hidden onChange={(e) => { onPick(e.target.files); e.target.value = ''; }} />
       <div style={S.scroll}>
         <header style={S.head}>
           <a href="/invest" aria-label={L('Back', 'वापस')} style={S.back}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg></a>
@@ -123,17 +210,11 @@ export default function AddCas() {
 
         {step === 'intro' && <>
           <section style={S.card}>
-            <span style={S.kicker}>{T.kicker}</span>
-            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{T.title}</b>
-            <span style={S.sub}>{T.sub}</span>
-            <button type="button" onClick={() => setStep('paste')} style={S.primary}>{T.cta}</button>
-            {smsCount > 0 && <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--muted)' }}>{T.saved(smsCount)}<button type="button" onClick={delSms} style={{ ...S.inlineLink, padding: 0, color: 'var(--err-ink)' }}>{T.del}</button></span>}
-          </section>
-          <section style={S.card}>
-            <span style={S.kicker}>{L('Mutual funds', 'म्यूचुअल फ़ंड')}</span>
-            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{L('Add your CAS to see your own X-ray', 'अपना CAS जोड़ें और अपना X-ray देखें')}</b>
-            <span style={S.sub}>{L('The detailed CAS from CAMS or KFintech lists every fund and transaction. Munim reads it and checks every number against the statement itself.', 'CAMS या KFintech के डिटेल्ड CAS में हर फ़ंड और हर लेन-देन होता है। मुनीम उसे पढ़ता है और हर आँकड़ा स्टेटमेंट से मिलाता है।')}</span>
-            <button type="button" onClick={choose} style={S.primary}>{L('Choose CAS PDF', 'CAS PDF चुनें')}</button>
+            <span style={S.kicker}>{L('Statements', 'स्टेटमेंट')}</span>
+            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{L('Bank, card and mutual fund statements, all at once', 'बैंक, कार्ड और म्यूचुअल फ़ंड स्टेटमेंट, सब एक साथ')}</b>
+            <span style={S.sub}>{L('Bank and card statements, and your mutual fund CAS. Choose one or several PDFs together: Munim works out which is which, and checks each against its own totals before using it.', 'बैंक और कार्ड के स्टेटमेंट, और आपका म्यूचुअल फ़ंड CAS। एक या कई PDF एक साथ चुनें: मुनीम ख़ुद पहचान लेता है कि कौन क्या है, और हर एक को इस्तेमाल करने से पहले उसके अपने टोटल से मिलाता है।')}</span>
+            <button type="button" onClick={choose} style={S.primary}>{L('Choose files', 'फ़ाइलें चुनें')}</button>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{L('Reads today: HDFC, SBI and Canara savings · HDFC and Axis credit cards · the detailed CAS from CAMS or KFintech. ICICI and other banks: coming next.', 'अभी पढ़ता है: HDFC, SBI और Canara सेविंग्स · HDFC और Axis क्रेडिट कार्ड · CAMS या KFintech का डिटेल्ड CAS। ICICI और दूसरे बैंक: जल्द आ रहे हैं।')}</span>
             <button type="button" onClick={() => setHow(!how)} aria-expanded={how} style={S.link}>{how ? L('Hide', 'छिपाएँ') : L('How do I get my CAS?', 'CAS कैसे मिलेगा?')}</button>
             {how && <ol style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6, fontSize: 14, color: 'var(--ink2)' }}>
               <li>{L('On the CAMS website, open the consolidated account statement (CAS) request for CAMS and KFintech funds.', 'CAMS की वेबसाइट पर CAMS और KFintech फ़ंड का CAS (कंसॉलिडेटेड अकाउंट स्टेटमेंट) माँगने वाला पेज खोलें।')}</li>
@@ -142,11 +223,11 @@ export default function AddCas() {
             </ol>}
           </section>
           <section style={S.card}>
-            <span style={S.kicker}>{L('Bank and card statements', 'बैंक और कार्ड स्टेटमेंट')}</span>
-            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{L('See where your own money went', 'देखें आपका पैसा कहाँ गया')}</b>
-            <span style={S.sub}>{L('HDFC, SBI and Canara savings accounts; HDFC and Axis credit cards. Each statement is checked against its own totals to the paisa before Munim uses it.', 'HDFC, SBI और Canara के सेविंग्स खाते; HDFC और Axis के क्रेडिट कार्ड। मुनीम हर स्टेटमेंट को इस्तेमाल करने से पहले उसके अपने टोटल से पैसे-पैसे तक मिलाता है।')}</span>
-            <button type="button" onClick={choose} style={S.primary}>{L('Choose statement PDF', 'स्टेटमेंट PDF चुनें')}</button>
-            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{L('ICICI and other banks: coming next.', 'ICICI और दूसरे बैंक: जल्द आ रहे हैं।')}</span>
+            <span style={S.kicker}>{T.kicker}</span>
+            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{T.title}</b>
+            <span style={S.sub}>{T.sub}</span>
+            <button type="button" onClick={() => setStep('paste')} style={S.primary}>{T.cta}</button>
+            {smsCount > 0 && <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--muted)' }}>{T.saved(smsCount)}<button type="button" onClick={delSms} style={{ ...S.inlineLink, padding: 0, color: 'var(--err-ink)' }}>{T.del}</button></span>}
           </section>
           <StatementList list={stmts} onDelete={delStmt} hi={lang === 'hi'} />
         </>}
@@ -198,23 +279,26 @@ export default function AddCas() {
           <div style={S.fileChip}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--link)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></svg>
             <span style={{ flex: 1, minWidth: 0, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
-            <button type="button" onClick={choose} style={S.inlineLink}>{L('Change', 'बदलें')}</button>
+            {!inBatch() && <button type="button" onClick={choose} style={S.inlineLink}>{L('Change', 'बदलें')}</button>}
           </div>
-          <form onSubmit={(e) => { e.preventDefault(); if (pw) read(file, pw); }} style={{ display: 'grid', gap: 12 }}>
+          {inBatch() && <span style={S.sub}>{lang === 'hi' ? `फ़ाइल ${done.current.length + 1} / ${done.current.length + queue.current.length} पासवर्ड से बंद है।` : `File ${done.current.length + 1} of ${done.current.length + queue.current.length} is locked with a password.`}</span>}
+          <form onSubmit={(e) => { e.preventDefault(); if (!pw) return; if (inBatch()) void nextInBatch(run.current, pw); else read(file, pw); }} style={{ display: 'grid', gap: 12 }}>
             <label style={{ display: 'grid', gap: 6 }}><span style={{ fontSize: 14, fontWeight: 600 }}>{L('PDF password', 'PDF पासवर्ड')}</span>
               <span style={{ ...S.field, boxShadow: `inset 0 0 0 ${wrong ? '2px var(--err-ink)' : '1.5px var(--hair2)'}` }}>
-                <input type={show ? 'text' : 'password'} value={pw} onChange={(e) => { setPw(e.target.value); setWrong(false); }} autoComplete="off" autoCapitalize="off" spellCheck={false} autoFocus aria-invalid={wrong} placeholder={L('Your CAS password', 'आपका CAS पासवर्ड')} style={S.input} />
+                <input type={show ? 'text' : 'password'} value={pw} onChange={(e) => { setPw(e.target.value); setWrong(false); }} autoComplete="off" autoCapitalize="off" spellCheck={false} autoFocus aria-invalid={wrong} placeholder={L('The file’s password', 'फ़ाइल का पासवर्ड')} style={S.input} />
                 <button type="button" onClick={() => setShow(!show)} style={S.inlineLink}>{show ? L('Hide', 'छिपाएँ') : L('Show', 'दिखाएँ')}</button>
               </span>
             </label>
-            {wrong && <span role="alert" style={{ fontSize: 13.5, color: 'var(--err-ink)' }}>{L('That password didn’t open the file. Check caps lock, or ask CAMS for a new copy.', 'इस पासवर्ड से फ़ाइल नहीं खुली। Caps Lock देखें, या CAMS से नई कॉपी माँगें।')}</span>}
+            {wrong && <span role="alert" style={{ fontSize: 13.5, color: 'var(--err-ink)' }}>{L('That password didn’t open the file. Check caps lock. A CAS uses the password you set; a bank statement usually uses one your bank chose (often part of your name and date of birth, as the bank’s email says).', 'इस पासवर्ड से फ़ाइल नहीं खुली। Caps Lock देखें। CAS में वही पासवर्ड लगता है जो आपने रखा था; बैंक स्टेटमेंट में आम तौर पर बैंक का तय किया हुआ (अक्सर नाम और जन्मतिथि का हिस्सा, जैसा बैंक के ईमेल में लिखा हो)।')}</span>}
             <button type="submit" disabled={!pw} style={{ ...S.primary, opacity: pw ? 1 : 0.55 }}>{L('Read statement', 'स्टेटमेंट पढ़ें')}</button>
           </form>
+          {inBatch() && <button type="button" onClick={() => void skipFile()} style={S.link}>{L('Skip this file', 'यह फ़ाइल छोड़ें')}</button>}
           <span style={S.lock}><Lock />{L('Opened on this phone. The password is used once and never saved; the PDF never leaves your phone.', 'इसी फ़ोन पर खुलता है। पासवर्ड एक बार इस्तेमाल होता है और कभी सेव नहीं होता; PDF आपके फ़ोन से बाहर नहीं जाती।')}</span>
         </section>}
 
         {step === 'reading' && <section aria-busy="true" style={S.card}>
           <b className="serif" style={{ fontSize: 22 }}>{L('Reading your statement…', 'आपका स्टेटमेंट पढ़ा जा रहा है…')}</b>
+          {inBatch() && <span aria-live="polite" style={S.sub}>{lang === 'hi' ? `फ़ाइल ${done.current.length + 1} / ${done.current.length + queue.current.length}` : `File ${done.current.length + 1} of ${done.current.length + queue.current.length}`}</span>}
           {(lang === 'hi' ? ['फ़ाइल खुल रही है', 'आपके फ़ंड ढूँढे जा रहे हैं', 'हर फ़ंड की यूनिट मिलाई जा रही हैं', 'स्टेटमेंट का टोटल मिलाया जा रहा है'] : ['Opening the file', 'Finding your funds', 'Checking every fund’s units add up', 'Matching the statement’s total']).map((t, i) => {
             const done = i < progress, now = i === progress;
             return <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, color: done || now ? 'var(--ink)' : 'var(--muted)' }}>
@@ -247,18 +331,37 @@ export default function AddCas() {
           <StatementList list={stmts} onDelete={delStmt} hi={lang === 'hi'} />
         </>}
 
+        {step === 'batch' && batch && <>
+          <section role="status" style={S.card}>
+            <b ref={batchHead} tabIndex={-1} className="serif" style={{ fontSize: 22, lineHeight: 1.2, outline: 'none' }}>{lang === 'hi' ? `${batch.length} में से ${batch.filter((x) => x.ok).length} ${batch.filter((x) => x.ok).length === 1 ? 'फ़ाइल जुड़ गई' : 'फ़ाइलें जुड़ गईं'}` : `${batch.filter((x) => x.ok).length} of ${batch.length} file${batch.length === 1 ? '' : 's'} added`}</b>
+            <div style={{ display: 'grid', gap: 0 }}>{batch.map((x, i) => (
+              <div key={`${x.name}-${i}`} style={{ display: 'flex', gap: 10, padding: '10px 0', borderTop: i ? '1px solid var(--hair)' : 0 }}>
+                <span aria-hidden="true" style={{ color: x.ok ? 'var(--link)' : 'var(--err-ink)', fontWeight: 700 }}>{x.ok ? '✓' : '✕'}</span>
+                <span style={{ flex: 1, minWidth: 0, display: 'grid', gap: 2 }}><b style={{ fontSize: 14.5, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.title}</b>
+                  <span style={{ fontSize: 13, color: 'var(--ink2)' }}><span style={{ position: 'absolute', left: -9999 }}>{x.ok ? L('Added. ', 'जुड़ गया। ') : L('Not added. ', 'नहीं जुड़ा। ')}</span>{x.detail}</span></span>
+              </div>))}</div>
+            {batch.some((x) => x.kind === 'unknown') && <button type="button" onClick={() => setStep('paste')} style={S.link}>{L('No statement for that bank? Paste your bank SMS', 'उस बैंक का स्टेटमेंट नहीं? बैंक के SMS डालें')}</button>}
+            {batch.some((x) => (x.kind === 'bank' || x.kind === 'sms') && x.ok) && <a href="/spends" style={{ ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }}>{L('See your spends', 'अपना खर्च देखें')}</a>}
+            {batch.some((x) => x.kind === 'cas' && x.ok) && <a href="/invest/xray" style={{ ...(batch.some((x) => (x.kind === 'bank' || x.kind === 'sms') && x.ok) ? { ...S.link, display: 'grid', placeItems: 'center', textDecoration: 'none' } : { ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }) }}>{L('See your X-ray', 'अपना X-ray देखें')}</a>}
+            <button type="button" onClick={choose} style={S.link}>{L('Add more files', 'और फ़ाइलें जोड़ें')}</button>
+          </section>
+          <StatementList list={stmts} onDelete={delStmt} hi={lang === 'hi'} />
+        </>}
+
         {(step === 'summary' || step === 'partial' || step === 'mismatch' || step === 'unknown') && <section role="alert" style={S.card}>
-          <span style={S.warnTag}>{step === 'summary' ? L('Summary statement', 'समरी स्टेटमेंट') : step === 'partial' ? L('Starts mid-way', 'बीच से शुरू') : step === 'mismatch' ? L(`${res?.cas?.skipped.length ?? 0} fund${(res?.cas?.skipped.length ?? 0) === 1 ? '' : 's'} didn’t add up`, `${res?.cas?.skipped.length ?? 0} फ़ंड का हिसाब नहीं मिला`) : L('Couldn’t find funds', 'फ़ंड नहीं मिले')}</span>
-          <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{step === 'summary' ? L('This CAS has no transactions', 'इस CAS में लेन-देन नहीं हैं') : step === 'partial' ? L('This CAS starts after your first investment', 'यह CAS आपके पहले निवेश के बाद से शुरू होता है') : step === 'mismatch' ? L(`${fund(res?.cas?.skipped[0] ?? '')} needs a look`, `${fund(res?.cas?.skipped[0] ?? '')} को देखना होगा`) : L('This doesn’t look like a detailed CAS', 'यह डिटेल्ड CAS नहीं लगता')}</b>
+          <span style={S.warnTag}>{step === 'summary' ? L('Summary statement', 'समरी स्टेटमेंट') : step === 'partial' ? L('Starts mid-way', 'बीच से शुरू') : step === 'mismatch' ? L(`${res?.cas?.skipped.length ?? 0} fund${(res?.cas?.skipped.length ?? 0) === 1 ? '' : 's'} didn’t add up`, `${res?.cas?.skipped.length ?? 0} फ़ंड का हिसाब नहीं मिला`) : res ? L('Couldn’t find funds', 'फ़ंड नहीं मिले') : L('Can’t read this yet', 'अभी नहीं पढ़ सकते')}</span>
+          <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{step === 'summary' ? L('This CAS has no transactions', 'इस CAS में लेन-देन नहीं हैं') : step === 'partial' ? L('This CAS starts after your first investment', 'यह CAS आपके पहले निवेश के बाद से शुरू होता है') : step === 'mismatch' ? L(`${fund(res?.cas?.skipped[0] ?? '')} needs a look`, `${fund(res?.cas?.skipped[0] ?? '')} को देखना होगा`) : res ? L('This doesn’t look like a detailed CAS', 'यह डिटेल्ड CAS नहीं लगता') : L('Munim doesn’t recognise this file', 'मुनीम इस फ़ाइल को नहीं पहचानता')}</b>
           <span style={S.sub}>{step === 'summary'
             ? L('It’s the summary version, so Munim can’t work out your returns, tax or fees. Ask CAMS for the Detailed one; it’s free and takes a few minutes.', 'यह समरी वाला है, इसलिए मुनीम आपका रिटर्न, टैक्स या फ़ीस नहीं निकाल सकता। CAMS से Detailed वाला माँगें; यह मुफ़्त है और कुछ मिनट लगते हैं।')
             : step === 'partial'
               ? L('It covers only part of your history (for example this financial year), so Munim can’t work out what you paid, your returns or your tax. Ask for a Detailed CAS from your first investment to today.', 'इसमें आपके निवेश का सिर्फ़ कुछ हिस्सा है (जैसे इसी वित्त वर्ष का), इसलिए मुनीम यह नहीं निकाल सकता कि आपने कितना लगाया, रिटर्न या टैक्स कितना है। पहले निवेश से आज तक का Detailed CAS माँगें।')
             : step === 'mismatch'
               ? L(`Its transactions don’t add up to the units the statement shows. Munim shows your other ${funds} fund${funds === 1 ? '' : 's'} and leaves ${(res?.cas?.skipped.length ?? 0) === 1 ? 'this one' : 'these'} out until it’s fixed, rather than guessing.`, `इसके लेन-देन स्टेटमेंट में दिखी यूनिट से मेल नहीं खाते। मुनीम अंदाज़ा लगाने के बजाय आपके बाक़ी ${funds} फ़ंड दिखाता है और इसे ठीक होने तक बाहर रखता है।`)
+              : !res ? `${CANT[lang]} ${L('If it is one of these, copy the diagnostics below and send them to us: they have no amounts, names or account numbers.', 'अगर यह इनमें से एक है, तो नीचे की जाँच-जानकारी कॉपी करके हमें भेजें: उसमें कोई रक़म, नाम या खाता नंबर नहीं है।')}`
               : L('Munim couldn’t find any funds in it. If it is a CAMS or KFintech detailed CAS, copy the diagnostics below and send them to us: they have no amounts, names or account numbers.', 'मुनीम को इसमें कोई फ़ंड नहीं मिला। अगर यह CAMS या KFintech का डिटेल्ड CAS है, तो नीचे की जाँच-जानकारी कॉपी करके हमें भेजें: उसमें कोई रक़म, नाम या खाता नंबर नहीं है।')}</span>
           {step === 'mismatch' ? <button type="button" onClick={() => setStep('done')} style={S.primary}>{L(`Continue with ${funds} fund${funds === 1 ? '' : 's'}`, `${funds} फ़ंड के साथ आगे बढ़ें`)}</button>
             : <button type="button" onClick={() => { setStep('intro'); setHow(true); }} style={S.primary}>{step === 'summary' || step === 'partial' ? L('How to get the right CAS', 'सही CAS कैसे मिलेगा') : L('Try another file', 'दूसरी फ़ाइल आज़माएँ')}</button>}
+          {step === 'unknown' && !res && <button type="button" onClick={() => setStep('paste')} style={S.link}>{L('No statement? Paste your bank SMS', 'स्टेटमेंट नहीं है? बैंक के SMS डालें')}</button>}
           {(step === 'mismatch' || step === 'unknown') && (res || diag) && <button type="button" onClick={copyDiag} style={S.link}>{copied ? L('✓ Copied (no amounts or names)', '✓ कॉपी हो गया (कोई रक़म या नाम नहीं)') : L('Copy diagnostics', 'जाँच-जानकारी कॉपी करें')}</button>}
           {(step === 'summary' || step === 'partial') && <button type="button" onClick={choose} style={S.link}>{L('Choose another file', 'दूसरी फ़ाइल चुनें')}</button>}
         </section>}
