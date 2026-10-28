@@ -93,4 +93,7 @@ export const JUDGE_HELDOUT_STAY: string[] = [
   'A term plan of ₹1 crore costs about ₹12,000 a year at your age.', 'Move your SIP debit date to after your salary on the 1st.', 'Downgrade to the mobile-only Netflix plan to save ₹300.',
   "PPF suits money you won't need for 15 years.", 'बोनस का आधा हिस्सा इमरजेंसी फ़ंड में डाल दीजिए।', 'Har mahine ₹500 ki nayi SIP shuru kar do.', 'Your ELSS units unlock in March 2027.',
   "Don't redeem your funds just because the market fell this week.",
+  // added 29 Oct after the live run flagged bonus-into-liquid-fund sentences on the reference list (written fresh, not in the prompt)
+  'Park the Diwali bonus in a liquid fund until the card is paid off.', 'Bonus ka ₹10,000 liquid fund mein rakh do, emergency ke liye.',
+  'बोनस से ₹20,000 लिक्विड फ़ंड में रखिए, ताकि अचानक खर्च के लिए पैसा हो।', 'Use the bonus to start a liquid fund for your safety net.',
 ];
