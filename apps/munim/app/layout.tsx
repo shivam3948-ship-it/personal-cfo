@@ -2,7 +2,12 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { TestSwitches } from '@/ui/TestSwitches';
 
-export const metadata: Metadata = { title: 'Munim', description: 'Your personal CFO: a daily money check-in, your spends and your investments, explained.' };
+export const metadata: Metadata = {
+  title: 'Munim', description: 'Your personal CFO: a daily money check-in, your spends and your investments, explained.',
+  // home-screen install (D-060): iPhone needs these; Android reads app/manifest.ts
+  appleWebApp: { capable: true, title: 'Munim', statusBarStyle: 'default' },
+  icons: { icon: [{ url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }], apple: [{ url: '/icons/apple-icon.png', sizes: '180x180' }] },
+};
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#0F5E58' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
