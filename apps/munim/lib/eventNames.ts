@@ -11,6 +11,7 @@ export const EVENTS = {
   cas_read: 'cas_read',                         // { result, funds } (never amounts or names)
   cas_deleted: 'cas_deleted',
   statement_read: 'statement_read',             // { format, ok, rows } (never amounts or descriptions)
+  files_added: 'files_added',                   // { files, bank, cas, sms, unknown, skipped } one upload of several files (counts only)
   statement_deleted: 'statement_deleted',                   // {}
   ask_opened: 'ask_opened',                     // { ctx } (D-042: is Ask found from sub-screens?)
   voice_started: 'voice_started',               // { ctx, mode }
@@ -43,6 +44,7 @@ export const PROPS: Record<EventName | 'answer' | 'feedback' | 'voice_turn', Rec
   home_top_item_tapped: { reason: 'token', position: 'num' }, home_call_started: {}, home_tile_tapped: { tile: 'token' }, credit_notify_tapped: {},
   cas_add_opened: {}, cas_read: { result: ['summary', 'partial', 'unknown', 'mismatch', 'done', 'unreadable', 'unrecognised', 'wrong_password', 'needs_password'], funds: 'num' }, cas_deleted: {},
   statement_read: { format: 'token', ok: 'bool', rows: 'num' }, statement_deleted: {},
+  files_added: { files: 'num', bank: 'num', cas: 'num', sms: 'num', unknown: 'num', skipped: 'num' },
   ask_opened: { ctx: CTX }, voice_started: { ctx: CTX, mode: ['server', 'browser'] },
   answer_listened: { ctx: CTX, how: ['tap', 'auto'], pieces: 'num', voice: ['sarvam', 'browser', 'none'], first_ms: 'num' },
   onboarding_opened: { again: 'bool' }, onboarding_lang: { lang: ['hi', 'en'] }, onboarding_start: { start: ['mine', 'sample'] }, onboarding_name: { given: 'bool' },

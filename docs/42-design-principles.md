@@ -40,6 +40,7 @@ When two goals conflict, the higher one wins: e.g. a second tap is accepted (mot
 | Variable reward, honestly | Novelty keeps a habit alive; manufactured novelty erodes trust | Phase 2 card pool changes with real money events, never invented urgency or slot-machine tricks | Our label | docs/38 Phase 2 |
 | Celebrating milestones | Marking a finished step reinforces it | Finishing a money-path step becomes a celebration card ("Card cleared! Next: …") | Our label | D-037 |
 | Progressive disclosure | Show the next thing; keep the rest one tap away | Money path behind "Why this?"; "What you can change" on Spends collapsed by default, savings card always visible | Our label | D-037, docs/41 |
+| Conservation of complexity (Tesler's law) | Some complexity can't be removed, only moved; move it to the system | One upload button: Munim classifies the files, not the user; each file says what happened to it | Our label (Shivam: "we are transferring the complexity from user to the system") | D-068 |
 | Trust through transparency | People act on numbers they can check | "Show the math"; statements rejected unless they reconcile; SMS rows marked provisional | Our label | docs/38, D-047, D-055 |
 | Commitment by stated intent | Saying "tell me" is a small commitment and a demand signal | "Reserve my autopay" and "Tell me when it's ready" on every fake door; the phone remembers so it doesn't ask twice | Our label | docs/37, D-063 |
 
@@ -76,6 +77,7 @@ When two goals conflict, the higher one wins: e.g. a second tap is accepted (mot
 | D-063 | 28 Oct | What happens on a coming-soon button? | A "Coming soon" sheet, "Tell me when it's ready", intent recorded | Honest fake doors; commitment |
 | D-064 | 28 Oct | Should people see whether AI answered? | Always: 'AI (Claude)' or 'rules, no AI' on every answer | Trust through transparency (AI disclosure); visual load (one word on an existing line) |
 | D-066 | 28 Oct | Advice for some people, not all? | A private unlock key per browser; picks from an owner-curated list; an honest not-registered disclaimer (adviser and distributor); outside it, a removed instruction is replaced by a plain no-licence line, not silence | User and builder control; trust through transparency (say what it is, and say why something was left out) |
+| D-068 | 28 Oct | Should people sort their own files? | No: one 'Choose files' button; Munim works out which file is which; one result line per file | Conservation of complexity (move it from the user to the system); cognitive and motor load (one decision, one tap) |
 
 ## 6. Open design questions
 - Do people miss the Ask orb because it shares the teal of the button above it? If tests say yes, go back to indigo (docs/38).
