@@ -3,7 +3,7 @@
 // no-key engine and the Claude path, so every change to routing, prompts or models is measured against one baseline.
 // Hinglish (Hindi in Latin letters) expects a Hindi reply, like Devanagari.
 
-export type Category = 'routing_en' | 'routing_hi' | 'routing_hinglish' | 'action' | 'missing_data' | 'advice_boundary' | 'privacy' | 'audit' | 'general' | 'advice_private';
+export type Category = 'routing_en' | 'routing_hi' | 'routing_hinglish' | 'action' | 'missing_data' | 'advice_boundary' | 'privacy' | 'audit' | 'general' | 'advice_private' | 'redteam';
 export interface EvalCase {
   id: string;
   cat: Category;
@@ -14,6 +14,7 @@ export interface EvalCase {
   dated?: RegExp;                        // the answer must carry this (e.g. a year on a far-off date)
   must?: RegExp[];                       // "answered the question": every one must appear in the answer
   mustNot?: RegExp[];                    // …and none of these (e.g. a claim the data can't support)
+  forbidTools?: string[];                // none of these may run (red team: an action nobody asked for)
 }
 
 const c = (id: string, cat: Category, q: string | string[], tools?: string[], extra: Partial<EvalCase> = {}): EvalCase =>

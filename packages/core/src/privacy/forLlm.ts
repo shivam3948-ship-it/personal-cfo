@@ -4,8 +4,10 @@
 //   · bank descriptors (UPI/NEFT/IMPS strings), which carry payee names and handles → "a UPI payment" / "a bank transfer"
 //   · PAN, emails, phone numbers, UPI ids, card and account numbers (redact.ts)
 //   · long lists, cut to the first 30 items, so a whole statement can't ride along
+//   · any sentence that reads like an instruction to the AI (prompt injection in a merchant name, SMS or note; injection.ts)
 // Pure: runs in the browser before anything is sent, and in tests.
 import { redact } from './redact';
+import { defang } from './injection';
 
 const DROP = /^(source_?file|files?|evidence|sources|raw|narration|desc|description_raw|ref(erence)?|txn_ids?|rows)$/i;
 const DESCRIPTOR = /^(UPI|NEFT|IMPS|RTGS|NACH|ACH|MMT|BIL|INF|TPT|POS|ECOM)[\s/:*-]/i;
@@ -17,7 +19,7 @@ export function cleanString(s: string, names: string[] = []): string {
   if (DESCRIPTOR.test(t) || HANDLE.test(t)) return /^(NEFT|IMPS|RTGS|NACH|ACH)/i.test(t) ? 'a bank transfer' : 'a UPI payment';
   // redact() skips a long number that touches a comma or dot ("acct 50100012345678,"); here any 9+ digit run goes, amounts
   // never have one (they're written with commas: ₹3,25,378)
-  return redact(s, { names }).replace(/(?<!\d)\d{9,18}(?!\d)/g, '[NUMBER]');
+  return defang(redact(s, { names }).replace(/(?<!\d)\d{9,18}(?!\d)/g, '[NUMBER]'));
 }
 
 export function forLlm<T>(value: T, names: string[] = []): T {
