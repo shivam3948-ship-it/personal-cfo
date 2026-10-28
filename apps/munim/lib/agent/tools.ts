@@ -12,6 +12,7 @@ import { foundationPlan } from '@core/finance/advice';
 import { moneyAudit, sipValue, type AuditScope } from '@core/finance/audit';
 import { safetyNet } from '@core/finance/essentials';
 import { DISCLAIMER, namesFunds, type AdviceMode } from '@/lib/advice';
+import { fundLabels, labelFor } from './funds';
 import { portfolioView } from '@core/portfolio/engine';
 import { xrayInsights, fdComparison } from '@core/portfolio/insights';
 import { gcalLink, type Action } from '@/lib/actionsCore';
@@ -201,14 +202,15 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const p = ds.portfolio; const named = namesFunds(ctx.adviceMode);
       if (!p) return { result: { error: 'No mutual fund statement (CAS) added yet.' } };
       const v = portfolioView(p.holdings, p.asOf); const x = xrayInsights(p.holdings, p.asOf); const fd = fdComparison(p.holdings, p.asOf);
+      const fname = named ? (n: string) => n : labelFor(fundLabels(p.holdings, ctx.lang), ctx.lang); // before the licence the AI only sees categories (D-051)
       return { result: {
         as_of: p.asOf, value: R(v.value), invested: R(v.cost), your_return_per_year_pct: v.xirrPct, fd_rate_pct: fd.rate, more_than_7pct_fd_before_tax: R(fd.extra),
         tax_free_gains: { limit_left_this_year: R(x.harvest.left), deadline: x.harvest.deadline, days_left: x.harvest.daysLeft, long_term_gains_available: R(x.harvest.ltGainAll), future_tax_saved_if_booked: R(x.harvest.taxSavedLater),
           // the named-fund plan (which funds, how much, by when) is rung 3 of the advice ladder: demo/internal/advised only
           plan: named ? { move_to_direct_value: R(x.harvest.combo.value), gains_booked: R(x.harvest.combo.gain), tax_now: R(0), fees_saved_per_year: R(x.harvest.combo.feeSavedYr), funds: x.harvest.combo.funds } : null },
         regular_plans: { extra_fees_per_year_estimate: R(x.regular.feeTotal), sip_into_regular_per_month: R(x.regular.sipReg), ...(named ? { switch_all_long_term_value: R(x.regular.ltValueReg), tax_if_switch_all: R(x.regular.taxIfSwitchAllLT), fees_saved_per_year_if_switch_all: R(x.regular.feeOnLT), payback_years: x.regular.paybackYears } : {}), note: 'Fee gap is an estimate (0.9% a year for equity). Units under a year old carry exit load and 20% short-term tax.' },
-        elss_out_of_lock_in: x.elss ? { fund: x.elss.fund, free_value: R(x.elss.freeValue), free_gain: R(x.elss.freeGain) } : null,
-        vs_plain_index_fund_same_dates: Object.fromEntries(Object.entries(x.vsIndex).map(([k, z]) => [k, { invested: R(z.invested), fund_value: R(z.fundValue), index_fund_value: R(z.indexValue), difference: R(z.diff) }])),
+        elss_out_of_lock_in: x.elss ? { fund: fname(x.elss.fund), free_value: R(x.elss.freeValue), free_gain: R(x.elss.freeGain) } : null,
+        vs_plain_index_fund_same_dates: Object.fromEntries(Object.entries(x.vsIndex).map(([k, z]) => [fname(k), { invested: R(z.invested), fund_value: R(z.fundValue), index_fund_value: R(z.indexValue), difference: R(z.diff) }])),
         guidance: named
           ? 'Sample data (demo): you may walk through the plan above (which units, how much, by when). Never name a new fund to buy, and never tell the user to exit a fund.'
           : 'Facts and categories only: what regular-plan fees cost, that direct plans of the same fund cost less, the tax-free limit and deadline. Do not tell the user which fund to move, sell or buy, how much, or when. Suggest they decide with the facts; Munim doesn\'t have an investment adviser licence yet.',
