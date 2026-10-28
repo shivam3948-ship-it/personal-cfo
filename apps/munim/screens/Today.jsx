@@ -192,10 +192,11 @@ class Component extends DCLogic {
     var swiped = function (st, x, y) { if (!st) return; var dx = x - st.x, dy = y - st.y; if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.1) { swipeTo(dx < 0 ? 1 : -1); } };
     var touchStart = function (e) { var t = e.touches && e.touches[0]; self._tw = t ? { x: t.clientX, y: t.clientY } : null; };
     var touchEnd = function (e) { var t = e.changedTouches && e.changedTouches[0], st = self._tw; self._tw = null; if (t) swiped(st, t.clientX, t.clientY); };
-    var swipeStart = function (e) {
-      if (e.pointerType === 'touch') return; // touch handled above
-      self._sw = { x: e.clientX, y: e.clientY };
-      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { /* old browsers */ }
+    var swipeStart = function (e) { if (e.pointerType !== 'touch') self._sw = { x: e.clientX, y: e.clientY, cap: false }; }; // touch handled above
+    // capture the mouse only once it is clearly dragging sideways, so a plain click still reaches the card's buttons
+    var swipeMove = function (e) {
+      var st = self._sw; if (!st || st.cap || Math.abs(e.clientX - st.x) < 12) return;
+      st.cap = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { /* old browsers */ }
     };
     var swipeEnd = function (e) { var st = self._sw; self._sw = null; if (e.pointerType !== 'touch') swiped(st, e.clientX, e.clientY); };
     var on = 'var(--btn)', off = 'var(--hair)';
@@ -399,7 +400,7 @@ class Component extends DCLogic {
       backToSummary: function () { self.setState({ cur: null, editing: null }); },
       reviewCards: function () { self.setState({ cur: order[0], editing: null }); },
       doDaily: function () { self.setState({ daily: true }); },
-      showCard: !showSummary, showSummary: showSummary, steps: steps, swipeStart: swipeStart, swipeEnd: swipeEnd, swipeCancel: function () { self._sw = null; }, touchStart: touchStart, touchEnd: touchEnd,
+      showCard: !showSummary, showSummary: showSummary, steps: steps, swipeStart: swipeStart, swipeMove: swipeMove, swipeEnd: swipeEnd, swipeCancel: function () { self._sw = null; }, touchStart: touchStart, touchEnd: touchEnd,
       slideClass: s.slide ? s.slide + '-' + (order.indexOf(curKey) % 2) : 'rise', // two copies of each keyframe so every change replays the slide week: week, done: count,
       allDone: allDone, notAllDone: !allDone,
       seg1: count >= 1 ? on : off, seg2: count >= 2 ? on : off, seg3: count >= 3 ? on : off,
@@ -451,7 +452,7 @@ export default function Today(props) {
             <section aria-label={V.rd?.title} style={{"flex": "none", "background": "var(--card)", "borderRadius": "24px", "padding": "18px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)"}}><span style={{"fontSize": "13px", "fontWeight": "600", "color": "var(--warn)"}}>{V.rd?.kicker}</span><b style={{"fontFamily": V.df, "fontSize": "28px", "fontWeight": "700", "lineHeight": "1.1"}}>{V.rd?.title}</b><span style={{"fontSize": "14.5px", "color": "var(--ink2)"}}>{V.rd?.sub}</span><div style={{"display": "flex", "gap": "8px", "flexWrap": "wrap", "marginTop": "4px"}}><a href={route(V.rd?.href)} style={{"minHeight": "48px", "display": "inline-flex", "alignItems": "center", "gap": "8px", "padding": "0 20px", "borderRadius": "999px", "background": "var(--btn)", "color": "var(--on-btn)", "fontSize": "15px", "fontWeight": "600", "textDecoration": "none"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--on-btn)" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" /></svg>{V.rd?.cta}</a><a href={route(V.rd?.href)} style={{"minHeight": "48px", "display": "inline-flex", "alignItems": "center", "padding": "0 16px", "borderRadius": "999px", "background": "var(--tint)", "fontSize": "15px", "textDecoration": "none"}}>{V.rd?.alt}</a></div><span style={{"fontSize": "12.5px", "color": "var(--muted)"}}>{V.c?.rdNote}</span><button type="button" onClick={V.doDaily} style={{"justifySelf": "start", "minHeight": "44px", "padding": "0", "border": "0", "background": "transparent", "fontSize": "14.5px", "fontWeight": "600", "color": "var(--link)", "cursor": "pointer"}}>{V.c?.doDaily}</button></section>
           </>)}
           {!!(V.notRecapDay) && (<>
-            <section aria-labelledby="ci" onPointerDown={V.swipeStart} onPointerUp={V.swipeEnd} onPointerCancel={V.swipeCancel} onTouchStart={V.touchStart} onTouchEnd={V.touchEnd} style={{"flex": "none", "background": "var(--card)", "borderRadius": "24px", "padding": "16px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)", "touchAction": "pan-y"}}><div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center", "gap": "8px"}}>{!!(V.notBackToSummary) && (<>
+            <section aria-labelledby="ci" onPointerDown={V.swipeStart} onPointerMove={V.swipeMove} onPointerUp={V.swipeEnd} onPointerCancel={V.swipeCancel} onTouchStart={V.touchStart} onTouchEnd={V.touchEnd} style={{"flex": "none", "background": "var(--card)", "borderRadius": "24px", "padding": "16px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)", "touchAction": "pan-y"}}><div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center", "gap": "8px"}}>{!!(V.notBackToSummary) && (<>
                   <h2 id="ci" style={{"margin": "0", "fontSize": "15px", "fontWeight": "600"}}>{V.c?.checkin}</h2>
                 </>)}{!!(V.showBackToSummary) && (<>
                   <button type="button" onClick={V.backToSummary} style={{"minHeight": "40px", "marginLeft": "-6px", "padding": "0 6px", "border": "0", "background": "transparent", "display": "inline-flex", "alignItems": "center", "gap": "4px", "fontSize": "15px", "fontWeight": "600", "color": "var(--link)", "cursor": "pointer"}}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>{V.c?.allDone}</button>

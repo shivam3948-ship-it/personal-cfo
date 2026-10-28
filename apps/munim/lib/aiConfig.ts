@@ -1,7 +1,7 @@
 // Which models Munim uses, in one place (D-062). Two versions of the same app:
 //   · "AI on": Claude answers Ask (when ANTHROPIC_API_KEY is set) and Sarvam does speech (when SARVAM_API_KEY is set).
-//   · "AI off": the rules engine answers, the browser listens and speaks. No model is called and nothing goes to Claude
-//     or Sarvam. Same screens, same numbers (the numbers never come from a model anyway).
+//   · "AI off": the rules engine answers, the browser listens and speaks. Nothing goes to Claude or Sarvam (the
+//     browser's own speech recognition may use its maker's servers, e.g. Chrome's; the voice consent note says so). Same screens, same numbers (the numbers never come from a model anyway).
 // Server switches (Vercel env):  MUNIM_AI=off            every model off for everyone
 //                                MUNIM_STT=browser       speech to text in the browser only
 //                                MUNIM_TTS=browser       answers read by the browser's voice only

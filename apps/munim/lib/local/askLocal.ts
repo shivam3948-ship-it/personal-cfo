@@ -76,6 +76,7 @@ export async function askLocal(history: Turn[]): Promise<LocalReply> {
   const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;
   const t0 = Date.now();
+  if (/(?:^|;\s*)munim_ai=off(?:;|$)/.test(document.cookie)) noKey = true; // ?ai=off (D-062): don't even ask the relay
   try { if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds))); }
   catch (e) { fallback = !(e instanceof NoKey); r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
   const spoken = redact(r.answer, { names }).replace(/\b(UPI|NEFT|IMPS)[-/][^\s,.।]+/gi, 'a payment'); // what may go to the voice service

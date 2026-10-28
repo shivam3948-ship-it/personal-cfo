@@ -125,7 +125,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const [votes, setVotes] = useState<Record<number, { vote: 'up' | 'down'; why?: Why }>>({});
   const [canVote, setCanVote] = useState(false);
   const [aiOff, setAiOff] = useState(false); // the no-model version (D-062): rules engine + browser voice
-  useEffect(() => { fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => setAiOff(j.chat === 'rules')).catch(() => {}); }, []);
+  useEffect(() => { fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => setAiOff(j.chat === 'rules' && j.stt === 'browser' && j.tts === 'browser')).catch(() => {}); }, []);
   useEffect(() => { setCanVote(!usageOff()); }, []);
   function vote(i: number, id: string | undefined, v: 'up' | 'down', why?: Why) {
     setVotes((cur) => ({ ...cur, [i]: { vote: v, why } }));
