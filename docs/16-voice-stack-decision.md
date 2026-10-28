@@ -71,4 +71,4 @@ Sources: Sarvam API reference pages for [speech-to-text](https://docs.sarvam.ai/
 ## Update 26 Oct 2026 (D-058): piece-by-piece speech and stage timings
 - Answers are checked whole (the number check), then spoken a sentence at a time: the first sentence plays while the next is synthesised (`splitForSpeech` in packages/core, `speakPieces` in apps/munim/ui/voice.ts). Not token streaming, so no unchecked figure is ever spoken.
 - Every voice turn records three stages as a `voice_turn` event (D-057, metadata only): hearing (server STT), answering, and speaking (answer back to first sound). Test mode shows them under each answer.
-- As of 26 Oct the live site has no `SARVAM_API_KEY` (TTS returns 501, so the browser voice reads answers) and no `ANTHROPIC_API_KEY` (the rules engine answers). Real latency numbers need both keys set on Vercel.
+- Keys set on Vercel on 28 Oct: Claude answers Ask and Sarvam speaks. First live check: one Ask answer in 3.7 s with 7 of 7 figures checked; one short Hindi line from Sarvam in 2.5 s. Single samples, not latency figures; read `voice_turn` p50/p90 once usage counts are stored.
