@@ -8,6 +8,7 @@ import { clearPending } from '@/lib/agent/offline';
 import { PROMPT_VERSION } from '@/lib/agent/prompt';
 import { storeConfigured, storeSampleTrace } from '@/lib/eventStore';
 import { isInstallId, traceId } from '@/lib/telemetryCore';
+import { aiConfig } from '@/lib/aiConfig';
 import { redact } from '@core/privacy/redact';
 
 export const runtime = 'nodejs';
@@ -35,7 +36,8 @@ export async function POST(req: Request) {
     .slice(-12).map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
   if (!messages.length || messages.at(-1)!.role !== 'user') return json({ error: 'Ask a question first.' }, 400);
   try {
-    const r = await respond(messages, sid, await session.dataset(), body.lang ?? 'auto', !!body.offline, session.adviceMode);
+    const ai = aiConfig(req); // ?ai=off or MUNIM_AI=off: the rules engine answers, no model is called (D-062)
+    const r = await respond(messages, sid, await session.dataset(), body.lang ?? 'auto', !!body.offline || ai.chat === 'rules', session.adviceMode);
     // the client gets the answer, which engine answered, the number check and any drafted actions; tool names only, no raw results
     const trace = traceId(); // lets a thumbs up or down point at this answer
     const res = json({ answer: r.answer, lang: r.lang, engine: r.engine, model: r.model, prompt: PROMPT_VERSION, ms: r.ms, check: r.check, actions: r.actions, tools: r.trace.map((t) => t.tool), fallback: !!r.fallbackReason, repaired: !!r.repaired, trace, disclaimer: DISCLAIMER[session.adviceMode][r.lang] });

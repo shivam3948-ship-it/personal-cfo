@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-export const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+export const MODEL = process.env.MUNIM_CHAT_MODEL || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
 export const EXTRACT_MODEL = process.env.ANTHROPIC_EXTRACT_MODEL || MODEL;
 
 /** Minimal surface we use, so tests can inject a fake. */
@@ -10,7 +10,7 @@ export interface LlmClient {
 
 let cached: LlmClient | null = null;
 export function getClient(): LlmClient | null {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
+  if (!process.env.ANTHROPIC_API_KEY || process.env.MUNIM_AI === 'off') return null; // MUNIM_AI=off: no model calls anywhere (D-062)
   if (!cached) cached = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 45_000, maxRetries: 1 }) as unknown as LlmClient;
   return cached;
 }

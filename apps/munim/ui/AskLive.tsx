@@ -59,7 +59,7 @@ export const UI = {
     sttBusy: 'Voice service is busy, so your browser will listen instead. Tap the mic again.',
     consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording.',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
-    placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
+    aiOff: 'AI off', placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
     lat: (l: Lat) => `Voice: ${[l.stt !== undefined ? `hearing ${sec(l.stt)}` : '', `answer ${sec(l.agent)}`, l.speak !== undefined ? `first word ${sec(l.speak)}` : ''].filter(Boolean).join(' · ')}`,
     helped: 'Did this help?', up: 'Yes, it helped', down: 'No, it didn’t help', whatWrong: 'What went wrong?', thanks: 'Thanks. This helps Munim get better.',
     why: { wrong_number: 'A number looks wrong', not_answered: 'Didn’t answer my question', hard_to_follow: 'Hard to follow' } as Record<Why, string>,
@@ -76,7 +76,7 @@ export const UI = {
     sttBusy: 'आवाज़ वाली सर्विस अभी व्यस्त है, इसलिए अब आपका ब्राउज़र सुनेगा। माइक फिर से दबाएँ।',
     consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता।',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
-    placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
+    aiOff: 'एआई बंद', placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
     lat: (l: Lat) => `आवाज़: ${[l.stt !== undefined ? `सुनना ${sec(l.stt, true)}` : '', `जवाब ${sec(l.agent, true)}`, l.speak !== undefined ? `पहला शब्द ${sec(l.speak, true)}` : ''].filter(Boolean).join(' · ')}`,
     helped: 'क्या इससे मदद मिली?', up: 'हाँ, मदद मिली', down: 'नहीं, मदद नहीं मिली', whatWrong: 'क्या गड़बड़ हुई?', thanks: 'धन्यवाद। इससे मुनीम बेहतर बनता है।',
     why: { wrong_number: 'कोई आँकड़ा गलत लगता है', not_answered: 'मेरे सवाल का जवाब नहीं मिला', hard_to_follow: 'समझना मुश्किल था' } as Record<Why, string>,
@@ -124,6 +124,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   // thumbs up or down per answer (D-057): only the vote, a reason from a fixed list and the answer's random id are sent
   const [votes, setVotes] = useState<Record<number, { vote: 'up' | 'down'; why?: Why }>>({});
   const [canVote, setCanVote] = useState(false);
+  const [aiOff, setAiOff] = useState(false); // the no-model version (D-062): rules engine + browser voice
+  useEffect(() => { fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => setAiOff(j.chat === 'rules')).catch(() => {}); }, []);
   useEffect(() => { setCanVote(!usageOff()); }, []);
   function vote(i: number, id: string | undefined, v: 'up' | 'down', why?: Why) {
     setVotes((cur) => ({ ...cur, [i]: { vote: v, why } }));
@@ -233,7 +235,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
         <div aria-hidden="true" style={S.grab} />
         <header style={S.head}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--muted)' }}>{t.asking(chips.label)}
-            {disc.test && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--mari-ink)', background: 'var(--mari-tint)', borderRadius: 999, padding: '2px 8px' }}>{t.test}</span>}</span>
+            {disc.test && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--mari-ink)', background: 'var(--mari-tint)', borderRadius: 999, padding: '2px 8px' }}>{t.test}</span>}
+            {disc.test && aiOff && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink2)', background: 'var(--tint)', borderRadius: 999, padding: '2px 8px' }}>{t.aiOff}</span>}</span>
           <a href={back} aria-label={t.close} style={S.close}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></a>
         </header>
 

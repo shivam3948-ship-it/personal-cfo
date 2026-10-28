@@ -186,12 +186,18 @@ class Component extends DCLogic {
       if (showSummary || i < 0 || j < 0 || j >= order.length) return;
       self.setState({ cur: order[j], editing: null, slide: dir > 0 ? 'next' : 'prev' });
     };
-    var swipeStart = function (e) { self._sw = { x: e.clientX, y: e.clientY }; };
-    var swipeEnd = function (e) {
-      var st = self._sw; self._sw = null; if (!st) return;
-      var dx = e.clientX - st.x, dy = e.clientY - st.y;
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) swipeTo(dx < 0 ? 1 : -1);
+    // The whole check-in card is the swipe area (header and dots too). Touch events are the main path on phones (iOS
+    // Safari included); pointer events cover a mouse or pen. A swipe counts when it moves 35px more sideways than up/down,
+    // so a curved thumb swipe still works; ending outside the card is fine (touchend and pointer capture both track it).
+    var swiped = function (st, x, y) { if (!st) return; var dx = x - st.x, dy = y - st.y; if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.1) { swipeTo(dx < 0 ? 1 : -1); } };
+    var touchStart = function (e) { var t = e.touches && e.touches[0]; self._tw = t ? { x: t.clientX, y: t.clientY } : null; };
+    var touchEnd = function (e) { var t = e.changedTouches && e.changedTouches[0], st = self._tw; self._tw = null; if (t) swiped(st, t.clientX, t.clientY); };
+    var swipeStart = function (e) {
+      if (e.pointerType === 'touch') return; // touch handled above
+      self._sw = { x: e.clientX, y: e.clientY };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { /* old browsers */ }
     };
+    var swipeEnd = function (e) { var st = self._sw; self._sw = null; if (e.pointerType !== 'touch') swiped(st, e.clientX, e.clientY); };
     var on = 'var(--btn)', off = 'var(--hair)';
     var letters = hi ? ['सो', 'मं', 'बु', 'गु', 'शु', 'श', 'र'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     var week = letters.map(function (l, i) {
@@ -393,7 +399,7 @@ class Component extends DCLogic {
       backToSummary: function () { self.setState({ cur: null, editing: null }); },
       reviewCards: function () { self.setState({ cur: order[0], editing: null }); },
       doDaily: function () { self.setState({ daily: true }); },
-      showCard: !showSummary, showSummary: showSummary, steps: steps, swipeStart: swipeStart, swipeEnd: swipeEnd, swipeCancel: function () { self._sw = null; },
+      showCard: !showSummary, showSummary: showSummary, steps: steps, swipeStart: swipeStart, swipeEnd: swipeEnd, swipeCancel: function () { self._sw = null; }, touchStart: touchStart, touchEnd: touchEnd,
       slideClass: s.slide ? s.slide + '-' + (order.indexOf(curKey) % 2) : 'rise', // two copies of each keyframe so every change replays the slide week: week, done: count,
       allDone: allDone, notAllDone: !allDone,
       seg1: count >= 1 ? on : off, seg2: count >= 2 ? on : off, seg3: count >= 3 ? on : off,
@@ -445,14 +451,14 @@ export default function Today(props) {
             <section aria-label={V.rd?.title} style={{"flex": "none", "background": "var(--card)", "borderRadius": "24px", "padding": "18px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)"}}><span style={{"fontSize": "13px", "fontWeight": "600", "color": "var(--warn)"}}>{V.rd?.kicker}</span><b style={{"fontFamily": V.df, "fontSize": "28px", "fontWeight": "700", "lineHeight": "1.1"}}>{V.rd?.title}</b><span style={{"fontSize": "14.5px", "color": "var(--ink2)"}}>{V.rd?.sub}</span><div style={{"display": "flex", "gap": "8px", "flexWrap": "wrap", "marginTop": "4px"}}><a href={route(V.rd?.href)} style={{"minHeight": "48px", "display": "inline-flex", "alignItems": "center", "gap": "8px", "padding": "0 20px", "borderRadius": "999px", "background": "var(--btn)", "color": "var(--on-btn)", "fontSize": "15px", "fontWeight": "600", "textDecoration": "none"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--on-btn)" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" /></svg>{V.rd?.cta}</a><a href={route(V.rd?.href)} style={{"minHeight": "48px", "display": "inline-flex", "alignItems": "center", "padding": "0 16px", "borderRadius": "999px", "background": "var(--tint)", "fontSize": "15px", "textDecoration": "none"}}>{V.rd?.alt}</a></div><span style={{"fontSize": "12.5px", "color": "var(--muted)"}}>{V.c?.rdNote}</span><button type="button" onClick={V.doDaily} style={{"justifySelf": "start", "minHeight": "44px", "padding": "0", "border": "0", "background": "transparent", "fontSize": "14.5px", "fontWeight": "600", "color": "var(--link)", "cursor": "pointer"}}>{V.c?.doDaily}</button></section>
           </>)}
           {!!(V.notRecapDay) && (<>
-            <section aria-labelledby="ci" style={{"flex": "none", "background": "var(--card)", "borderRadius": "24px", "padding": "16px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)"}}><div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center", "gap": "8px"}}>{!!(V.notBackToSummary) && (<>
+            <section aria-labelledby="ci" onPointerDown={V.swipeStart} onPointerUp={V.swipeEnd} onPointerCancel={V.swipeCancel} onTouchStart={V.touchStart} onTouchEnd={V.touchEnd} style={{"flex": "none", "background": "var(--card)", "borderRadius": "24px", "padding": "16px", "display": "grid", "gap": "10px", "boxShadow": "0 0 0 1px var(--hair)", "touchAction": "pan-y"}}><div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center", "gap": "8px"}}>{!!(V.notBackToSummary) && (<>
                   <h2 id="ci" style={{"margin": "0", "fontSize": "15px", "fontWeight": "600"}}>{V.c?.checkin}</h2>
                 </>)}{!!(V.showBackToSummary) && (<>
                   <button type="button" onClick={V.backToSummary} style={{"minHeight": "40px", "marginLeft": "-6px", "padding": "0 6px", "border": "0", "background": "transparent", "display": "inline-flex", "alignItems": "center", "gap": "4px", "fontSize": "15px", "fontWeight": "600", "color": "var(--link)", "cursor": "pointer"}}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>{V.c?.allDone}</button>
                 </>)}<div style={{"display": "flex", "alignItems": "center", "marginRight": "-8px"}}>{(V.steps || []).map((st, i1) => (<Fragment key={i1}>
                     <button type="button" aria-label={st?.aria} onClick={st?.go} style={{"width": "28px", "height": "32px", "padding": "0", "border": "0", "background": "transparent", "display": "grid", "placeItems": "center", "cursor": "pointer"}}><span style={{"width": st?.w, "height": "6px", "borderRadius": "3px", "background": st?.bg}}></span></button>
                   </Fragment>))}</div></div>{!!(V.showCard) && (<>
-                <div className={V.slideClass} onPointerDown={V.swipeStart} onPointerUp={V.swipeEnd} onPointerCancel={V.swipeCancel} style={{"display": "grid", "gap": "8px", "minHeight": "172px", "alignContent": "start", "touchAction": "pan-y"}}><span style={{"fontSize": "13px", "fontWeight": "600", "color": V.cur?.kickerInk}}>{V.cur?.kicker}</span><b style={{"fontFamily": V.df, "fontSize": V.cur?.titleSize, "fontWeight": "700", "lineHeight": "1.15"}}>{V.cur?.title}</b><span style={{"fontSize": "14.5px", "color": "var(--ink2)"}}>{V.cur?.sub}</span>{!!(V.cur?.hasWhy) && (<>
+                <div className={V.slideClass} style={{"display": "grid", "gap": "8px", "minHeight": "172px", "alignContent": "start"}}><span style={{"fontSize": "13px", "fontWeight": "600", "color": V.cur?.kickerInk}}>{V.cur?.kicker}</span><b style={{"fontFamily": V.df, "fontSize": V.cur?.titleSize, "fontWeight": "700", "lineHeight": "1.15"}}>{V.cur?.title}</b><span style={{"fontSize": "14.5px", "color": "var(--ink2)"}}>{V.cur?.sub}</span>{!!(V.cur?.hasWhy) && (<>
                     <button type="button" onClick={V.openWhy} style={{"justifySelf": "start", "minHeight": "36px", "marginTop": "-4px", "padding": "0", "border": "0", "background": "transparent", "display": "inline-flex", "alignItems": "center", "gap": "4px", "fontSize": "13.5px", "fontWeight": "600", "color": "var(--link)", "cursor": "pointer"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.3 2-2.3 3.5M12 17h.01" /></svg>{V.c?.why}</button>
                   </>)}{!!(V.cur?.hasTags) && (<>
                     <div style={{"display": "flex", "gap": "6px", "flexWrap": "wrap"}}><span style={{"fontSize": "13px", "background": "var(--tint)", "borderRadius": "8px", "padding": "3px 8px"}}>Zomato {V.m?.zomato}</span><span style={{"fontSize": "13px", "background": "var(--tint)", "borderRadius": "8px", "padding": "3px 8px"}}>YouTube Premium {V.m?.yt}</span></div>

@@ -111,7 +111,7 @@ button{font:inherit;color:inherit}
     </sc-if>
 
     <sc-if value="{{notRecapDay}}" hint-placeholder-val="{{ true }}">
-    <section aria-labelledby="ci" style="flex: none; background: var(--card); border-radius: 24px; padding: 16px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair)">
+    <section aria-labelledby="ci" onPointerDown="{{swipeStart}}" onPointerUp="{{swipeEnd}}" onPointerCancel="{{swipeCancel}}" onTouchStart="{{touchStart}}" onTouchEnd="{{touchEnd}}" style="flex: none; background: var(--card); border-radius: 24px; padding: 16px; display: grid; gap: 10px; box-shadow: 0 0 0 1px var(--hair); touch-action: pan-y">
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
         <sc-if value="{{notBackToSummary}}" hint-placeholder-val="{{ true }}"><h2 id="ci" style="margin: 0; font-size: 15px; font-weight: 600">{{c.checkin}}</h2></sc-if>
         <sc-if value="{{showBackToSummary}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{backToSummary}}" style="min-height: 40px; margin-left: -6px; padding: 0 6px; border: 0; background: transparent; display: inline-flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 600; color: var(--link); cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"></path></svg>{{c.allDone}}</button></sc-if>
@@ -123,7 +123,7 @@ button{font:inherit;color:inherit}
       </div>
 
       <sc-if value="{{showCard}}" hint-placeholder-val="{{ true }}">
-        <div class="{{slideClass}}" onPointerDown="{{swipeStart}}" onPointerUp="{{swipeEnd}}" onPointerCancel="{{swipeCancel}}" style="display: grid; gap: 8px; min-height: 172px; align-content: start; touch-action: pan-y">
+        <div class="{{slideClass}}" style="display: grid; gap: 8px; min-height: 172px; align-content: start">
           <span style="font-size: 13px; font-weight: 600; color: {{cur.kickerInk}}">{{cur.kicker}}</span>
           <b style="font-family: {{df}}; font-size: {{cur.titleSize}}; font-weight: 700; line-height: 1.15">{{cur.title}}</b>
           <span style="font-size: 14.5px; color: var(--ink2)">{{cur.sub}}</span>
@@ -738,12 +738,18 @@ class Component extends DCLogic {
       if (showSummary || i < 0 || j < 0 || j >= order.length) return;
       self.setState({ cur: order[j], editing: null, slide: dir > 0 ? 'next' : 'prev' });
     };
-    var swipeStart = function (e) { self._sw = { x: e.clientX, y: e.clientY }; };
-    var swipeEnd = function (e) {
-      var st = self._sw; self._sw = null; if (!st) return;
-      var dx = e.clientX - st.x, dy = e.clientY - st.y;
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) swipeTo(dx < 0 ? 1 : -1);
+    // The whole check-in card is the swipe area (header and dots too). Touch events are the main path on phones (iOS
+    // Safari included); pointer events cover a mouse or pen. A swipe counts when it moves 35px more sideways than up/down,
+    // so a curved thumb swipe still works; ending outside the card is fine (touchend and pointer capture both track it).
+    var swiped = function (st, x, y) { if (!st) return; var dx = x - st.x, dy = y - st.y; if (Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.1) { swipeTo(dx < 0 ? 1 : -1); } };
+    var touchStart = function (e) { var t = e.touches && e.touches[0]; self._tw = t ? { x: t.clientX, y: t.clientY } : null; };
+    var touchEnd = function (e) { var t = e.changedTouches && e.changedTouches[0], st = self._tw; self._tw = null; if (t) swiped(st, t.clientX, t.clientY); };
+    var swipeStart = function (e) {
+      if (e.pointerType === 'touch') return; // touch handled above
+      self._sw = { x: e.clientX, y: e.clientY };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) { /* old browsers */ }
     };
+    var swipeEnd = function (e) { var st = self._sw; self._sw = null; if (e.pointerType !== 'touch') swiped(st, e.clientX, e.clientY); };
     var on = 'var(--btn)', off = 'var(--hair)';
     var letters = hi ? ['सो', 'मं', 'बु', 'गु', 'शु', 'श', 'र'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     var week = letters.map(function (l, i) {
@@ -945,7 +951,7 @@ class Component extends DCLogic {
       backToSummary: function () { self.setState({ cur: null, editing: null }); },
       reviewCards: function () { self.setState({ cur: order[0], editing: null }); },
       doDaily: function () { self.setState({ daily: true }); },
-      showCard: !showSummary, showSummary: showSummary, steps: steps, swipeStart: swipeStart, swipeEnd: swipeEnd, swipeCancel: function () { self._sw = null; },
+      showCard: !showSummary, showSummary: showSummary, steps: steps, swipeStart: swipeStart, swipeEnd: swipeEnd, swipeCancel: function () { self._sw = null; }, touchStart: touchStart, touchEnd: touchEnd,
       slideClass: s.slide ? s.slide + '-' + (order.indexOf(curKey) % 2) : 'rise', // two copies of each keyframe so every change replays the slide week: week, done: count,
       allDone: allDone, notAllDone: !allDone,
       seg1: count >= 1 ? on : off, seg2: count >= 2 ? on : off, seg3: count >= 3 ? on : off,

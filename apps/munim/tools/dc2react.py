@@ -40,7 +40,7 @@ ATTR = {'class': 'className', 'for': 'htmlFor', 'tabindex': 'tabIndex', 'maxleng
         'markerwidth': 'markerWidth', 'markerheight': 'markerHeight', 'refx': 'refX', 'refy': 'refY', 'stddeviation': 'stdDeviation',
         'xlink:href': 'xlinkHref', 'onclick': 'onClick', 'onchange': 'onChange', 'oninput': 'onInput', 'onkeydown': 'onKeyDown',
         'onsubmit': 'onSubmit', 'onfocus': 'onFocus', 'onblur': 'onBlur', 'autofocus': 'autoFocus', 'enterkeyhint': 'enterKeyHint',
-        'crossorigin': 'crossOrigin', 'onpointermove': 'onPointerMove', 'onpointerdown': 'onPointerDown', 'onpointerup': 'onPointerUp', 'onpointerleave': 'onPointerLeave', 'onpointercancel': 'onPointerCancel', 'onpointerenter': 'onPointerEnter', 'onmouseenter': 'onMouseEnter', 'onmouseleave': 'onMouseLeave', 'onkeyup': 'onKeyUp', 'ontouchstart': 'onTouchStart', 'onscroll': 'onScroll', 'srcset': 'srcSet', 'datetime': 'dateTime', 'accesskey': 'accessKey', 'contenteditable': 'contentEditable'}
+        'crossorigin': 'crossOrigin', 'onpointermove': 'onPointerMove', 'onpointerdown': 'onPointerDown', 'onpointerup': 'onPointerUp', 'onpointerleave': 'onPointerLeave', 'onpointercancel': 'onPointerCancel', 'onpointerenter': 'onPointerEnter', 'onmouseenter': 'onMouseEnter', 'onmouseleave': 'onMouseLeave', 'onkeyup': 'onKeyUp', 'ontouchstart': 'onTouchStart', 'ontouchend': 'onTouchEnd', 'ontouchmove': 'onTouchMove', 'ontouchcancel': 'onTouchCancel', 'onscroll': 'onScroll', 'srcset': 'srcSet', 'datetime': 'dateTime', 'accesskey': 'accessKey', 'contenteditable': 'contentEditable'}
 BOOL = {'disabled', 'checked', 'open', 'hidden', 'required', 'readonly', 'selected', 'multiple', 'autofocus'}
 HOLE = re.compile(r'\{\{\s*([^}]*?)\s*\}\}')
 
@@ -120,6 +120,8 @@ class Emit:
             if k.startswith('hint-') or k in ('xmlns',) and False: continue
             if k.startswith('hint-'): continue
             name = ATTR.get(k, k if (k.startswith('aria-') or k.startswith('data-')) else camel(k) if '-' in k else k)
+            if re.fullmatch(r'on[a-z]+', name):  # an event React would silently ignore (e.g. 'ontouchend' before it was mapped)
+                raise SystemExit(f'dc2react: unknown event attribute "{k}" on <{tag}>: add it to ATTR')
             if v is None:
                 out.append(name if k in BOOL or True else name); continue
             if k == 'style': out.append(f'style={self.style(v)}'); continue

@@ -14,6 +14,7 @@ import { DISCLAIMER } from '@/lib/session';
 import { systemPrompt } from '@/lib/agent/prompt';
 import { TOOLS } from '@/lib/agent/tools';
 import { allow } from '@/lib/rateLimit';
+import { modelsAllowed } from '@/lib/aiConfig';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -48,7 +49,7 @@ function clean(messages: unknown): Anthropic.MessageParam[] | null {
 }
 
 export async function POST(req: Request) {
-  const client = getClient();
+  const client = modelsAllowed(req) ? getClient() : null; // AI off (D-062) behaves like no key: the phone answers
   if (!client) return json({ error: 'no_key' }, 503);
   if (!sameOrigin(req)) return json({ error: 'Forbidden.' }, 403);
   const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'local';

@@ -2,17 +2,18 @@
 // the transcript. Munim keeps no copy of the audio. Without a key it answers 501 and the screen falls back to the browser's
 // own speech recognition, or typing.
 import { NextResponse } from 'next/server';
-import { sarvamConfigured, sarvamStt } from '@/lib/voice/sarvam';
+import { sarvamStt } from '@/lib/voice/sarvam';
+import { aiConfig } from '@/lib/aiConfig';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 const json = (b: unknown, status = 200) => NextResponse.json(b, { status, headers: { 'Cache-Control': 'no-store' } });
 
 /** Whether server speech-to-text is set up, so the screen can pick the browser's recognition up front instead. */
-export async function GET() { return json({ configured: sarvamConfigured() }); }
+export async function GET(req: Request) { return json({ configured: aiConfig(req).stt === 'sarvam' }); }
 
 export async function POST(req: Request) {
-  if (!sarvamConfigured()) return json({ error: 'Voice service not set up', fallback: 'browser' }, 501);
+  if (aiConfig(req).stt !== 'sarvam') return json({ error: 'Voice service not set up', fallback: 'browser' }, 501);
   const form = await req.formData().catch(() => null);
   const file = form?.get('file');
   const lang = (form?.get('lang') as 'hi' | 'en' | 'auto' | null) ?? 'auto';
