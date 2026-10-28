@@ -283,7 +283,7 @@ button{font:inherit;color:inherit}
 
     <nav aria-label="{{c.tools}}" style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
       <sc-for list="{{tools}}" as="tool" hint-placeholder-count="4">
-        <a href="#" style="text-decoration: none; color: var(--ink); display: grid; justify-items: center; gap: 4px; padding: 2px 0">
+        <button type="button" onClick="{{tool.open}}" aria-haspopup="dialog" style="border: 0; background: transparent; font: inherit; cursor: pointer; color: var(--ink); display: grid; justify-items: center; gap: 4px; padding: 2px 0; min-height: 44px">
           <span style="width: 46px; height: 46px; border-radius: 15px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); display: grid; place-items: center; color: var(--warn)">
             <sc-if value="{{tool.isGoals}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.5"></circle></svg></sc-if>
             <sc-if value="{{tool.isFire}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18h18"></path><path d="M6 18a6 6 0 0 1 12 0"></path><path d="M12 4v3M4.9 8.9l2 2M19.1 8.9l-2 2"></path></svg></sc-if>
@@ -291,7 +291,7 @@ button{font:inherit;color:inherit}
             <sc-if value="{{tool.isFam}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3 20a6 6 0 0 1 12 0M14.5 20a4.5 4.5 0 0 1 7-3.7"></path></svg></sc-if>
           </span>
           <span style="font-size: 12.5px; font-weight: 500">{{tool.name}}</span>
-        </a>
+        </button>
       </sc-for>
     </nav>
   </div>
@@ -553,7 +553,7 @@ button{font:inherit;color:inherit}
         <sc-if value="{{notNotified}}" hint-placeholder-val="{{ true }}">
           <button type="button" onClick="{{closeSheet}}" style="min-height: 44px; border: 0; background: transparent; font-size: 15px; color: var(--muted); cursor: pointer">{{c.notNow}}</button>
         </sc-if>
-        <sc-if value="{{shSoon}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: var(--muted); text-align: center">{{c.noMove}}</span></sc-if>
+        <sc-if value="{{shMoney}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: var(--muted); text-align: center">{{c.noMove}}</span></sc-if>
       </section>
     </div>
   </sc-if>
@@ -637,12 +637,18 @@ class Component extends DCLogic {
         primaryLabel: T('Show me how to cancel', 'बंद करने का तरीका बताएँ'), secondaryLabel: T('I still use it', 'अभी भी इस्तेमाल होता है'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
         primary: function () { self.complete('fix', T('Show me how to cancel', 'बंद करने का तरीका बताएँ')); }, secondary: function () { self.complete('fix', T('I still use it', 'अभी भी इस्तेमाल होता है')); } }
     };
+    // a "coming soon" sheet records the intent (D-063): opened, then "tell me when it's ready". Kept on the phone too, so
+    // reopening one you already asked about says so instead of asking again.
+    var openSheet = function (k) {
+      self.setState({ sheet: k, notified: !!(self.props.intents || {})[k] });
+      if (self.props.onIntent && k !== 'ins') self.props.onIntent(k, 'opened');
+    };
     var billsMode = this.props.bills ?? 'pending';
     if (billsMode === 'dueSoon') {
       items.fix = { kicker: pos('fix') + T('Bill due in 2 days', 'बिल की तारीख़ 2 दिन में'), kickerInk: 'var(--warn)', title: T('Pay your card bill · ', 'कार्ड बिल भरें · ') + m.card, titleSize: '24px',
         sub: T('Due 24 Oct. Your bank balance covers it, and paying in full avoids interest.', 'आख़िरी तारीख़ 24 अक्टूबर। बैंक बैलेंस से यह भर जाएगा, और पूरा भरने पर ब्याज नहीं लगता।'), hasButtons: true,
         primaryLabel: T('Pay now', 'अभी भरें'), secondaryLabel: T('Remind me tomorrow', 'कल याद दिलाएँ'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
-        primary: function () { self.setState({ sheet: 'pay', notified: false }); }, secondary: function () { self.complete('fix', T('Remind me tomorrow', 'कल याद दिलाएँ')); } };
+        primary: function () { openSheet('pay'); }, secondary: function () { self.complete('fix', T('Remind me tomorrow', 'कल याद दिलाएँ')); } };
     }
     if (TD && TD.day.none) {
       items.yday = { kicker: pos('yday') + T('Your days', 'आपके दिन'), kickerInk: plain, title: T('Add a bank statement', 'बैंक स्टेटमेंट जोड़ें'), titleSize: '24px', sub: T('Munim shows each day’s spending once it has one. It’s read on this phone.', 'स्टेटमेंट मिलते ही मुनीम हर दिन का खर्च दिखाएगा। यह इसी फ़ोन पर पढ़ा जाता है।'),
@@ -677,7 +683,7 @@ class Component extends DCLogic {
         primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
         primary: proof ? cancelIt : keepIt, secondary: proof ? keepIt : cancelIt, tertiary: function () { answer('later', T('Okay. Munim will ask again next week.', 'ठीक है। मुनीम अगले हफ़्ते फिर पूछेगा।')); } };
     }
-    var openAuto = function () { self.setState({ sheet: 'autopay', notified: false }); };
+    var openAuto = function () { openSheet('autopay'); };
     // ---- money path (D-036, D-037): the step decides the Save card; never shown on Today itself ----
     var STEPS = ['buffer', 'debt', 'emergency', 'insurance', 'invest'];
     var mstep = this.props.moneyStep ?? 'emergency';
@@ -690,12 +696,12 @@ class Component extends DCLogic {
       items.save = { kicker: pos('save') + T('Clear your card first', 'पहले कार्ड का बकाया चुकाएँ'), kickerInk: 'var(--warn)', title: T(fmtR(DEBT.bal) + ' carried on your card', 'कार्ड पर ' + fmtR(DEBT.bal) + ' बकाया'), titleSize: '24px',
         sub: T('It costs about ' + fmtR(DEBT.interest) + ' this month in interest (3.5% a month). Paying it down beats saving right now.', 'इस महीने इस पर करीब ' + fmtR(DEBT.interest) + ' ब्याज लगेगा (3.5% महीना)। अभी बचत से बेहतर है इसे चुकाना।'), hasWhy: true,
         hasButtons: true, primaryLabel: T('Plan an extra payment', 'ज़्यादा भुगतान का प्लान बनाएँ'), secondaryLabel: T('Save instead', 'इसकी जगह बचत करें'), tertiaryLabel: T('Not now', 'अभी नहीं'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
-        primary: function () { self.setState({ sheet: 'debt', notified: false }); }, secondary: openAuto, tertiary: function () { self.complete('save', T('Not now', 'अभी नहीं')); } };
+        primary: function () { openSheet('debt'); }, secondary: openAuto, tertiary: function () { self.complete('save', T('Not now', 'अभी नहीं')); } };
     } else if ((sc === 'new' || sc === 'day4') && mstep === 'insurance') {
       items.save = { kicker: pos('save') + T('✓ Emergency fund ready', '✓ इमरजेंसी फ़ंड तैयार'), kickerInk: 'var(--link)', title: T('Do you have term and health insurance?', 'क्या आपके पास टर्म बीमा और हेल्थ बीमा है?'), titleSize: '24px',
         sub: T('Before investing, make sure one bad event can\u2019t undo your savings.', 'निवेश से पहले पक्का करें कि एक बुरी घटना आपकी बचत न मिटा दे।'), hasWhy: true,
         hasButtons: true, primaryLabel: T('Yes, both', 'हाँ, दोनों'), secondaryLabel: T('Not sure', 'पता नहीं'), tertiaryLabel: T('No', 'नहीं'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
-        primary: function () { self.complete('save', T('Has term and health insurance', 'टर्म और हेल्थ बीमा है')); }, secondary: function () { self.setState({ sheet: 'ins', notified: false }); }, tertiary: function () { self.setState({ sheet: 'ins', notified: false }); } };
+        primary: function () { self.complete('save', T('Has term and health insurance', 'टर्म और हेल्थ बीमा है')); }, secondary: function () { openSheet('ins'); }, tertiary: function () { openSheet('ins'); } };
     } else if ((sc === 'new' || sc === 'day4') && mstep === 'invest') {
       items.save = { kicker: pos('save') + T('✓ Safety net in place', '✓ सुरक्षा का इंतज़ाम हो गया'), kickerInk: 'var(--link)', title: T('You\u2019re ready to start investing', 'आप निवेश शुरू करने के लिए तैयार हैं'), titleSize: '24px',
         sub: T('Buffer, no costly debt, emergency fund and insurance: all done.', 'बफ़र, कोई महँगा लोन नहीं, इमरजेंसी फ़ंड और बीमा: सब हो गया।'), hasWhy: true,
@@ -707,14 +713,14 @@ class Component extends DCLogic {
         title: sc === 'day4' ? T('Make it automatic?', 'इसे अपने आप करवाएँ?') : T('Save ' + amt.label + ' a day, automatically', 'रोज़ ' + amt.label + ' बचाएँ, अपने आप'), titleSize: '24px',
         sub: hi ? goal.name + ': ' + v(fmtR(goal.g.target)) + ' में से ' + v(fmtR(goal.g.saved)) + ' (' + goal.note + ')। कभी भी बदलें या रोकें।' : goal.name + ': ' + v(fmtR(goal.g.saved)) + ' of ' + v(fmtR(goal.g.target)) + ' (' + goal.note + '). Change or stop anytime.', hasWhy: true,
         hasAmounts: false, hasAmountLink: false, hasButtons: true, hasSkip: false, primaryLabel: T('Set up autopay', 'ऑटोपे शुरू करें'), secondaryLabel: T('Save once', 'एक बार बचाएँ'), tertiaryLabel: T('Not now', 'अभी नहीं'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
-        primary: openAuto, secondary: function () { self.setState({ sheet: 'once', notified: false }); }, tertiary: function () { self.complete('save', T('Not now', 'अभी नहीं')); } };
+        primary: openAuto, secondary: function () { openSheet('once'); }, tertiary: function () { self.complete('save', T('Not now', 'अभी नहीं')); } };
     } else if (sc === 'autopayOn') {
       items.save = { kicker: pos('save') + T('Autopay · saved for you at 7:02 am', 'ऑटोपे · सुबह 7:02 बजे बचत हो गई'), kickerInk: 'var(--btn)', title: T('₹50 saved today ✓', 'आज ₹50 की बचत ✓'), titleSize: '28px', sub: T(v('₹750') + ' saved since 1 Oct, automatically.', '1 अक्टूबर से अपने आप ' + v('₹750') + ' की बचत।'),
         hasTopup: !s.topupGone, hasControls: true, hasButtons: false };
     } else {
       items.save = { kicker: pos('save') + T('Autopay', 'ऑटोपे'), kickerInk: 'var(--warn)', title: T('No ₹50 today', 'आज ₹50 नहीं कटे'), titleSize: '28px', sub: T('Your bank balance was low, so nothing was taken. No charge, and your streak is safe.', 'बैंक बैलेंस कम था, इसलिए कुछ नहीं कटा। कोई चार्ज नहीं, और आपके लगातार दिन नहीं टूटेंगे।'),
         hasButtons: true, primaryLabel: T('Save ₹50 now', 'अभी ₹50 बचाएँ'), secondaryLabel: T('Okay', 'ठीक है'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
-        primary: function () { self.setState({ sheet: 'now', notified: false }); }, secondary: function () { self.complete('save', T('Okay, skip today', 'ठीक है, आज छोड़ें')); } };
+        primary: function () { openSheet('now'); }, secondary: function () { self.complete('save', T('Okay, skip today', 'ठीक है, आज छोड़ें')); } };
     }
     ['yday', 'fix', 'save'].forEach(function (k) { var it = items[k]; ['hasTags', 'hasAmounts', 'hasAmountLink', 'hasTopup', 'hasControls', 'hasSkip'].forEach(function (f) { if (it[f] === undefined) it[f] = false; }); it.hasTertiary = !!it.tertiaryLabel; it.noTertiary = !it.tertiaryLabel; if (it.hasWhy === undefined) it.hasWhy = false; });
     var ck = curKey || ((this.props.offStep ?? 'none') !== 'none' ? 'yday' : null) || order.filter(function (k) { return !done[k]; })[0] || order[0];
@@ -771,6 +777,10 @@ class Component extends DCLogic {
       ins: { title: T('Cover first, then invest', 'पहले बीमा, फिर निवेश'), hasYear: false, body: T('For education only, not investment advice. Term life cover is commonly sized at 10\u201315\u00d7 your yearly income. Health cover from your employer stops if you change jobs, so a policy of your own is worth checking.', 'सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। टर्म बीमा का कवर आम तौर पर आपकी सालाना आमदनी का 10\u201315 गुना रखा जाता है। कंपनी से मिला हेल्थ बीमा नौकरी बदलने पर बंद हो जाता है, इसलिए अपनी ख़ुद की पॉलिसी देख लेना ठीक रहेगा।'), cta: T('Remind me this weekend', 'इस शनिवार-रविवार याद दिलाएँ'), okText: T('\u2713 We\u2019ll remind you on Saturday.', '\u2713 हम शनिवार को याद दिलाएँगे।'), doneKey: 'save', doneLabel: T('Insurance: remind me this weekend', 'बीमा: इस शनिवार-रविवार याद दिलाएँ') },
       now: { title: T('Save ₹50 now', 'अभी ₹50 बचाएँ'), hasYear: false, body: T('Paying by UPI right away is almost here, so a missed day can be made up in one tap.', 'UPI से तुरंत भरना बस आने वाला है, ताकि छूटा हुआ दिन एक टैप में पूरा हो सके।'), cta: T('Tell me when it’s ready', 'तैयार होने पर बताएँ'), okText: T('✓ We’ll tell you when it’s ready.', '✓ तैयार होते ही हम बताएँगे।'), doneKey: 'save', doneLabel: T('Save ₹50 now · notify me', 'अभी ₹50 बचाएँ · मुझे बताएँ') }
     };
+    SH.tool_goals = { title: T('Goals', 'लक्ष्य'), hasYear: false, body: T('Save towards something you name, like a phone, a festival or school fees, with a date and a small daily amount.', 'किसी चीज़ के लिए बचत करें, जैसे फ़ोन, त्योहार या स्कूल की फ़ीस: एक तारीख और रोज़ की छोटी रकम के साथ।'), cta: T('Tell me when it’s ready', 'तैयार होने पर बताएँ'), okText: T('✓ We’ll tell you when it’s ready.', '✓ तैयार होते ही हम बताएँगे।') };
+    SH.tool_fire = { title: T('FIRE', 'रिटायरमेंट'), hasYear: false, body: T('See how much you would need to stop working one day, and how today’s saving gets you there.', 'देखें कि एक दिन काम छोड़ने के लिए कितना चाहिए, और आज की बचत आपको वहाँ तक कैसे ले जाती है।'), cta: T('Tell me when it’s ready', 'तैयार होने पर बताएँ'), okText: T('✓ We’ll tell you when it’s ready.', '✓ तैयार होते ही हम बताएँगे।') };
+    SH.tool_ins = { title: T('Insurance', 'बीमा'), hasYear: false, body: T('Check whether your term and health cover would be enough for your family, from your policy papers.', 'अपने पॉलिसी के कागज़ों से देखें कि आपका टर्म और हेल्थ बीमा परिवार के लिए काफ़ी है या नहीं।'), cta: T('Tell me when it’s ready', 'तैयार होने पर बताएँ'), okText: T('✓ We’ll tell you when it’s ready.', '✓ तैयार होते ही हम बताएँगे।') };
+    SH.tool_fam = { title: T('Family', 'परिवार'), hasYear: false, body: T('See a parent’s or partner’s money next to yours, only with their permission.', 'माता-पिता या जीवनसाथी का हिसाब अपने साथ देखें, सिर्फ़ उनकी इजाज़त से।'), cta: T('Tell me when it’s ready', 'तैयार होने पर बताएँ'), okText: T('✓ We’ll tell you when it’s ready.', '✓ तैयार होते ही हम बताएँगे।') };
     var sh = SH[s.sheet || 'autopay'];
     ['autopay', 'once', 'topup', 'pay', 'now', 'debt', 'ins'].forEach(function (k) { if (SH[k]) { SH[k].hasPick = k === 'autopay' || k === 'once' || k === 'debt'; } });
     var pick;
@@ -961,23 +971,23 @@ class Component extends DCLogic {
       streakLabel: hi ? 'लगातार दिन: ' + shown + '। खोलें' : 'Streak: ' + shown + (shown === 1 ? ' day' : ' days') + '. Open streak',
       streakDays: shown + T(shown === 1 ? ' day' : ' days', ' दिन'), weekCount: wk,
       streakOpen: s.streak, sheetOpen: !!s.sheet, sh: sh, notified: s.notified, notNotified: !s.notified, pick: pick,
-      shSoon: (s.sheet || 'autopay') !== 'ins',
+      shSoon: (s.sheet || 'autopay') !== 'ins', shMoney: (s.sheet || 'autopay') !== 'ins' && !/^tool_/.test(s.sheet || ''),
       whyOpen: !!s.why, whySteps: whySteps, openWhy: openWhy, closeWhy: function () { self.setState({ why: false }); },
       ctaReady: !s.notified && amountOk, ctaWaiting: !s.notified && !amountOk, showYear: !!sh.hasYear && amountOk,
       hidden: h, shown: !h, eyeLabel: h ? T('Show amounts', 'रक़म दिखाएँ') : T('Hide amounts', 'रक़म छिपाएँ'),
       mathOpen: s.mathOpen, mathLabel: s.mathOpen ? T('Hide math', 'हिसाब छिपाएँ') : T('Show the math', 'हिसाब देखें'),
       tools: [
-        { name: T('Goals', 'लक्ष्य'), isGoals: true, isFire: false, isIns: false, isFam: false },
-        { name: T('FIRE', 'रिटायरमेंट'), isGoals: false, isFire: true, isIns: false, isFam: false },
-        { name: T('Insurance', 'बीमा'), isGoals: false, isFire: false, isIns: true, isFam: false },
-        { name: T('Family', 'परिवार'), isGoals: false, isFire: false, isIns: false, isFam: true }
+        { name: T('Goals', 'लक्ष्य'), isGoals: true, isFire: false, isIns: false, isFam: false, open: function () { openSheet('tool_goals'); } },
+        { name: T('FIRE', 'रिटायरमेंट'), isGoals: false, isFire: true, isIns: false, isFam: false, open: function () { openSheet('tool_fire'); } },
+        { name: T('Insurance', 'बीमा'), isGoals: false, isFire: false, isIns: true, isFam: false, open: function () { openSheet('tool_ins'); } },
+        { name: T('Family', 'परिवार'), isGoals: false, isFire: false, isIns: false, isFam: true, open: function () { openSheet('tool_fam'); } }
       ],
       openAmounts: function () { self.setState({ amtOpen: true }); },
-      openTopup: function () { self.setState({ sheet: 'topup', notified: false }); },
+      openTopup: function () { openSheet('topup'); },
       dismissTopup: function () { self.setState({ topupGone: true }); },
       openStreak: function () { self.setState({ streak: true }); },
       closeStreak: function () { self.setState({ streak: false }); },
-      notify: function () { self.setState({ notified: true }); },
+      notify: function () { self.setState({ notified: true }); if (self.props.onIntent && s.sheet) self.props.onIntent(s.sheet, 'notify'); },
       sheetDone: function () { if (sh.doneKey) { self.complete(sh.doneKey, sh.doneLabel); } else { self.setState({ sheet: null, notified: false, topupGone: true }); } },
       closeSheet: function () { self.setState({ sheet: null }); },
       toggleHidden: function () { self.setState({ hidden: !s.hidden }); },

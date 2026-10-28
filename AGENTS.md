@@ -22,6 +22,7 @@ Munim: an AI personal CFO for India. **Primary user: the first-time saver in tie
 - Every new table: RLS policy + deletion coverage in `delete_user`
 - Every new insight rule: a deterministic template fallback + golden-set cases
 - Update `DECISIONS.md` when a decision changes; never delete rows
+- A design decision also updates `docs/42-design-principles.md`: the principle it applies, the psychology or UX framework behind it, and whether that name comes from a source or is our label
 
 ## Workflow
 - Small PRs; each references a PRD feature ID (F1…F16) or a task ID (T-, L-)
