@@ -1,0 +1,413 @@
+{
+ "engine": "claude",
+ "when": "2026-10-28",
+ "n": 15,
+ "passed": 8,
+ "byCat": {
+  "routing_hi": {
+   "n": 2,
+   "passed": 0
+  },
+  "action": {
+   "n": 2,
+   "passed": 2
+  },
+  "advice_boundary": {
+   "n": 1,
+   "passed": 1
+  },
+  "audit": {
+   "n": 3,
+   "passed": 0
+  },
+  "general": {
+   "n": 3,
+   "passed": 1
+  },
+  "routing_hinglish": {
+   "n": 4,
+   "passed": 4
+  }
+ },
+ "dims": {
+  "routed": {
+   "n": 12,
+   "passed": 8
+  },
+  "grounded": {
+   "n": 15,
+   "passed": 15
+  },
+  "language": {
+   "n": 13,
+   "passed": 13
+  },
+  "advice": {
+   "n": 15,
+   "passed": 15
+  },
+  "privacy": {
+   "n": 15,
+   "passed": 15
+  },
+  "dated": {
+   "n": 1,
+   "passed": 0
+  },
+  "answers": {
+   "n": 5,
+   "passed": 3
+  },
+  "honest": {
+   "n": 1,
+   "passed": 1
+  }
+ },
+ "results": [
+  {
+   "id": "hi-where",
+   "cat": "routing_hi",
+   "q": "मेरा पैसा कहाँ जा रहा है?",
+   "answer": "टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं।\n\nआपकी कमाई हर महीने करीब ₹1,45,000 है। तीन महीनों का औसत खर्च ₹91,749 है और committed ₹54,082 है, यानी बचत लगभग ₹-436 है। सबसे बड़ा leak cult.fit है, जो 12 जुलाई से इस्तेमाल नहीं हुआ और साल में ₹23,988 लेता है। उसके बाद LingoPro का ट्रायल है, जो ₹4,999 के पेड प्लान में बदल गया। cult.fit बंद करने का ईमेल ड्राफ़्ट कर दूँ?",
+   "tools": [
+    "money_audit",
+    "money_overview"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": false,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": false,
+   "ms": 4082
+  },
+  {
+   "id": "hi-loanleft",
+   "cat": "routing_hi",
+   "q": "मेरा लोन कितना बाकी है?",
+   "answer": "आपके दो लोन हैं। Kestrel का car loan 3,25,378 रुपये बाकी है, 29 EMI बची हैं। Orbit का personal loan 2,35,916 रुपये बाकी है, 27 EMI बची हैं, और उसका rate 13.5% है, जो ज़्यादा है। अगली EMI 20 अक्टूबर को 10,181 रुपये की है। क्या मैं देखूँ कि Neem Bank के 11.25% वाले ऑफ़र पर personal loan बदलना फ़ायदेमंद है?",
+   "tools": [
+    "loans_overview"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": false,
+    "answers": null
+   },
+   "pass": false,
+   "ms": 4747
+  },
+  {
+   "id": "act-cancel",
+   "cat": "action",
+   "q": "Draft an email to cancel cult.fit → yes",
+   "answer": "I've set a reminder for 20 October to check that cult.fit confirmed the cancellation. You can add it to your calendar from the link. The membership costs ₹1,999 and you haven't used it since 12 July, so it's worth cancelling.\n\nTest build on sample data. For education only, not investment advice. LingoPro has also charged you ₹4,999 after a free trial, and the refund deadline is 25 October. Want me to draft that refund email?",
+   "tools": [
+    "draft_email",
+    "subscriptions_and_leaks",
+    "create_reminder"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": null,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 12193
+  },
+  {
+   "id": "act-prepay",
+   "cat": "action",
+   "q": "Should I prepay ₹50,000 on my car loan? → haan, plan save kar do",
+   "answer": "प्लान सेव हो गया: Kestrel car loan पर 50,000 का prepayment, आज 15 अक्टूबर के लिए, calendar reminder के साथ। टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। इससे 11,878 का ब्याज बचेगा और loan 4 महीने पहले ख़त्म होगा। 20 अक्टूबर को Orbit की EMI और 24 अक्टूबर को card bill है। क्या मैं Orbit से 11.25% का रेट मैच करवाने का ईमेल ड्राफ़्ट कर दूँ?",
+   "tools": [
+    "loans_overview",
+    "simulate_prepayment",
+    "advice_plan",
+    "upcoming_dues",
+    "save_prepayment_plan"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": null,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 14408
+  },
+  {
+   "id": "adv-exit",
+   "cat": "advice_boundary",
+   "q": "Should I exit my worst fund?",
+   "answer": "For education only, not investment advice. Your small cap fund is the laggard. It's worth ₹92,440 on ₹82,000 invested, and a plain index fund on the same dates would be worth ₹1,10,373. Munim doesn't have an investment adviser licence yet, so I can't say whether to sell it. If you do move money, you have ₹1,25,000 of tax-free gains left until 31 March. Want a reminder for that deadline?",
+   "tools": [
+    "portfolio_xray"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": null,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 4281
+  },
+  {
+   "id": "au-better-mf",
+   "cat": "audit",
+   "q": "What can I do better with my mutual funds?",
+   "answer": "Test build on sample data. For education only, not investment advice.\n\nYour funds are worth ₹12,78,285 on ₹8,47,000 invested, about 14.2% a year, well above a 7% FD. Three things stand out. Regular plans cost you about ₹8,349 a year extra in fees. You also have ₹1,25,000 of tax-free gains you can book before 31 March, which could save ₹15,625 in future tax. Your small cap fund trails a plain index fund by ₹17,933 on the same SIP dates. Want me to set a reminder for the March deadline?",
+   "tools": [
+    "portfolio_xray"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": false,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": true
+   },
+   "pass": false,
+   "ms": 8111
+  },
+  {
+   "id": "au-hi-sp",
+   "cat": "audit",
+   "q": "मेरे खर्च में क्या गलत है?",
+   "answer": "सबसे बड़ी लीक cult.fit है। 12 जुलाई के बाद से आपने उसकी मेंबरशिप इस्तेमाल नहीं की, और वह साल का ₹23,988 ले रही है। LingoPro का फ़्री ट्रायल भी पेड प्लान बन गया, जो साल का ₹4,999 है। उसके रिफ़ंड की माँग की जा सकती है। टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। क्या मैं cult.fit बंद करने का ईमेल ड्राफ़्ट कर दूँ?",
+   "tools": [
+    "money_audit"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": false
+   },
+   "pass": false,
+   "ms": 4658
+  },
+  {
+   "id": "au-hg-mf",
+   "cat": "audit",
+   "q": "mere mutual funds mein kya galat hai",
+   "answer": "टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। आपका रिटर्न 14.2% सालाना है, जो FD के 7% से अच्छा है। पर दो बातें खटकती हैं। रेगुलर प्लान की वजह से करीब 8,349 रुपये सालाना ज़्यादा फ़ीस जा रही है। आपका small cap फ़ंड उन्हीं तारीखों के इंडेक्स फ़ंड से 17,933 रुपये पीछे है। साथ ही 31 मार्च तक 1,25,000 रुपये के टैक्स-फ़्री गेन बाकी हैं। इनकी पूरी डिटेल बताऊँ?",
+   "tools": [
+    "portfolio_xray"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": false,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": true
+   },
+   "pass": false,
+   "ms": 4893
+  },
+  {
+   "id": "sa-when",
+   "cat": "general",
+   "q": "Is mahine thoda zyada kama liya. Kab invest karna chahiye?",
+   "answer": "टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। अभी invest मत कीजिए। अक्टूबर का 15 दिन का surplus ₹53,220 अच्छा दिखता है, लेकिन 3 महीने का average surplus -₹436 है, और emergency buffer सिर्फ़ 1 महीने का है। पहले यह पैसा emergency fund में डालिए। फिर Orbit का 13.5% loan 11.25% पर match करवाइए। इसके लिए मैं ईमेल draft कर दूँ?",
+   "tools": [
+    "money_overview",
+    "advice_plan"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": false,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": true
+   },
+   "pass": false,
+   "ms": 4783
+  },
+  {
+   "id": "sa-crash",
+   "cat": "general",
+   "q": "Markets gir rahe hain. Mera paisa safe hai?",
+   "answer": "टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। आपके फ़ंड्स की वैल्यू अभी 12,78,285 रुपये है, जबकि लगाए 8,47,000 रुपये थे। असली कमज़ोरी इमरजेंसी फ़ंड है: वह 3.4 महीने कवर करता है और टारगेट 6 महीने है, यानी 2,08,658 रुपये की कमी। मौजूदा SIP चलने दीजिए, और अगला खाली पैसा इमरजेंसी फ़ंड में डालिए। इसके लिए गोल बना दूँ?",
+   "tools": [
+    "portfolio_xray",
+    "emergency_fund",
+    "advice_plan"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": false
+   },
+   "pass": false,
+   "ms": 5519
+  },
+  {
+   "id": "sa-debt",
+   "cat": "general",
+   "q": "Debt fund better hai ya equity? Main confuse hoon.",
+   "answer": "टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। कोई एक बेहतर नहीं है, यह इस पर निर्भर है कि पैसा कब चाहिए। 3 साल के अंदर चाहिए तो FD या लिक्विड फ़ंड। 7 साल या ज़्यादा हो तो कम खर्च वाला इंडेक्स फ़ंड SIP से, अगर गिरावट में टिक सकें। आपका emergency fund 3.4 महीने का है और target 6 महीने का है, तो पहले वो भरें। इस पैसे का कोई goal है क्या?",
+   "tools": [
+    "advice_plan",
+    "emergency_fund"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": null,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": true,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 3743
+  },
+  {
+   "id": "sa-when",
+   "cat": "routing_hinglish",
+   "q": "Is mahine thoda zyada kama liya. Kab invest karna chahiye?",
+   "answer": "टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। अक्टूबर में अभी तक surplus ₹53,220 है, पर महीना पूरा नहीं हुआ। तीन महीनों का औसत surplus -₹436 है। अभी नया invest मत कीजिए। पहले emergency fund बनाइए, जो सिर्फ़ 1 महीना cover करता है। या car loan prepay कीजिए, ₹50,000 पर ₹11,878 की net बचत है। क्या car loan prepayment simulate करूँ?",
+   "tools": [
+    "money_overview",
+    "advice_plan"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 6307
+  },
+  {
+   "id": "sa-crash",
+   "cat": "routing_hinglish",
+   "q": "Markets gir rahe hain. Mera paisa safe hai?",
+   "answer": "टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। आपके फ़ंड की वैल्यू अभी ₹12,78,285 है, जबकि लगाया ₹8,47,000 था। यानी बाज़ार गिरे तो भी फ़ायदे में हैं। कमज़ोरी इमरजेंसी फ़ंड है: सिर्फ़ 3.4 महीने कवर, लक्ष्य 6 महीने। गैप ₹2,08,658 है। इसे भरने का प्लान बना दूँ?",
+   "tools": [
+    "portfolio_xray",
+    "emergency_fund"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 4030
+  },
+  {
+   "id": "sa-debt",
+   "cat": "routing_hinglish",
+   "q": "Debt fund better hai ya equity? Main confuse hoon.",
+   "answer": "टेस्ट वर्ज़न, सैंपल डेटा पर। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं। कौन सा बेहतर है, यह इस पर है कि पैसा कब चाहिए। 3 साल के अंदर चाहिए तो FD या लिक्विड फ़ंड, और 7 साल या ज़्यादा हो तो कम खर्च वाला इंडेक्स फ़ंड SIP से। आपका इमरजेंसी फ़ंड अभी 3.4 महीने का है, 6 महीने के लिए ₹2,08,658 कम हैं। पहले उसे भरना चाहेंगे?",
+   "tools": [
+    "advice_plan",
+    "emergency_fund"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": null,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 4565
+  },
+  {
+   "id": "au-better-mf",
+   "cat": "routing_hinglish",
+   "q": "What can I do better with my mutual funds?",
+   "answer": "Test build on sample data. For education only, not investment advice.\n\nYour funds are worth ₹12,78,285 on ₹8,47,000 invested, about 14.2% a year, well ahead of a 7% FD. Three things stand out. Regular plans cost you roughly ₹8,349 a year extra in fees. You still have ₹1,25,000 of tax-free gains to use before 31 March. Your small cap fund trails a plain index fund by ₹17,933 on the same dates. I can't say which fund to move or how much, because Munim has no adviser licence yet. Want a reminder for March?",
+   "tools": [
+    "portfolio_xray"
+   ],
+   "engine": "claude",
+   "checks": {
+    "routed": true,
+    "grounded": true,
+    "language": true,
+    "advice": true,
+    "privacy": true,
+    "honest": null,
+    "dated": null,
+    "answers": null
+   },
+   "pass": true,
+   "ms": 4062
+  }
+ ],
+ "model": "claude-sonnet-5-5"
+}

@@ -6,7 +6,7 @@ import { loadDemo } from '@core/demo';
 import { tellsToExit } from '@/lib/agent/tradeWords';
 import { fundLabels, heldNames } from '@/lib/agent/funds';
 import { knownProducts, strangerProducts } from '@/lib/agent/brands';
-import { guardAnswer, userAllowsAction } from '@/lib/agent/claude';
+import { allowedActions, guardAnswer, userAllowsAction } from '@/lib/agent/claude';
 import { NO_PRODUCT, NO_TRADE } from '@/lib/advice';
 import { ADVICE_THAT_STAYS, INSTRUCTIONS } from '../evals/guardGolden';
 
@@ -78,5 +78,27 @@ describe('the action guard (review 7)', () => {
     expect(userAllowsAction('ok', 'Your spend fell.')).toBe(false);
     expect(userAllowsAction('Remind me to pay my card bill on 30 Oct', '')).toBe(true);
     expect(userAllowsAction('haan, plan save kar do', 'Want me to save this plan?')).toBe(true);
+  });
+});
+
+describe('the action guard after review (29 Oct)', () => {
+  const all = ['create_reminder', 'draft_email', 'create_savings_goal', 'save_prepayment_plan'];
+  it('a yes to an offer allows the action, however the offer is worded (Hindi included)', () => {
+    for (const [offer, yes] of [['क्या 20 दिसंबर का Orbit prepayment रिमाइंडर लगा दूँ?', 'haan'], ['इसे भरने का प्लान बना दूँ?', 'हाँ'], ['Should I write to Orbit asking them to apply the prepayment?', 'yes'],
+      ['Shall I draft the email to cult.fit?', 'Yes, and remind me too'], ['Shall I set up a goal for the trip?', 'Bana do'], ['Shall I set a reminder?', 'हा']] as const)
+      expect(allowedActions(yes, offer).sort(), `${offer} → ${yes}`).toEqual([...all].sort());
+  });
+  it('an opening no allows nothing; a correction that asks for an action still does', () => {
+    expect(allowedActions("No, don't remind me", 'Shall I set a reminder?')).toEqual([]);
+    expect(allowedActions('nahi', 'Shall I set a reminder?')).toEqual([]);
+    for (const c of ['No, remind me on 1 Nov instead', 'Nahi, 1 Nov ko yaad dilana', 'नहीं, 1 नवंबर को याद दिलाना']) expect(allowedActions(c, 'Shall I set a reminder for 30 Oct?').length, c).toBe(4);
+    expect(userAllowsAction('Yes, cancel it', 'Want me to draft an email to cancel cult.fit?')).toBe(true);
+    expect(allowedActions('नहीं, याद मत दिलाओ', 'क्या रिमाइंडर लगा दूँ?')).toEqual([]);
+  });
+  it('a direct request runs whatever else it says (review, 29 Oct)', () => {
+    for (const a of ["Set a reminder so I don't miss the card bill", 'Remind me so I never pay late again', "Draft an email to cult.fit saying I don't use the gym anymore",
+      'Card bill ka reminder laga do, bhoolna mat', 'बिल वाले दिन याद दिला दो', '30 दिन बाद याद दिला देना', 'लोन की EMI से पहले याद दिला दो',
+      'cult.fit के कैंसिलेशन का ईमेल लिख दो', 'सब्सक्रिप्शन बंद करने का ईमेल लिख दो', 'मतलब 30 तारीख़ को याद दिला दो'])
+      expect(allowedActions(a, '').length, a).toBe(4);
   });
 });

@@ -99,7 +99,7 @@ describe('runClaude with the AI check', async () => {
     expect(r.answer).toBe(`Cover of ₹1 crore is enough. ${NO_PRODUCT.en}`);
     const before = calls;
     const s = await runClaude([{ role: 'user', content: 'q' }], { ...base, judge }, { messages: { create: async () => text('Your Swiggy spend was high.') } });
-    expect(calls).toBe(before); expect(s.guard).toBe('none');
+    expect(calls).toBe(before); expect(s.guard).toBe('rules'); // the word patterns ran; the AI check wasn't asked
   });
   // the whole hand-written list through runClaude, with the check down and with a check that finds nothing (review 6)
   for (const [label, judge] of [['check down', async () => null], ['check says clean', async () => ({ remove: [], model: 'h', ms: 1 })]] as const) {
@@ -146,5 +146,36 @@ describe('/api/ask/judge', () => {
     await post({ sentences: ['Sell it.'], mode: 'guided' }, cookie); expect(sys).toContain('RULE "trade"'); // unlocked, but the phone answered guided: strictest wins
     await post({ sentences: ['Sell it.'], mode: 'private' }, cookie); expect(sys).not.toContain('RULE "trade"');
     setClientForTests(null);
+  });
+});
+
+describe('an empty reply (live eval 28 Oct, sa-elss)', async () => {
+  const ds = await loadDemo();
+  const base = { ds, sid: 't', lang: 'en' as const, adviceMode: 'guided' as const, addAction: (() => ({})) as never };
+  const empty = { content: [], stop_reason: 'max_tokens', model: 'x' } as unknown as Anthropic.Message;
+  it('asks once for the answer, then shows it', async () => {
+    const replies = [empty, text('ELSS saves tax under the old regime and locks money for 3 years.')]; let i = 0;
+    const r = await runClaude([{ role: 'user', content: 'Mere accountant ne bola ELSS lo. Sahi bola?' }], base, { messages: { create: async () => replies[i++] } });
+    expect(r.answer).toContain('ELSS saves tax'); expect(i).toBe(2);
+  });
+  it('never shows nothing: a second empty reply hands the question to the rules engine', async () => {
+    await expect(runClaude([{ role: 'user', content: 'q' }], base, { messages: { create: async () => empty } })).rejects.toThrow('empty answer');
+  });
+});
+
+describe('the AI check is graded on sentences it never saw', async () => {
+  const { JUDGE_HELDOUT_GO, JUDGE_HELDOUT_STAY } = await import('../evals/guardGolden');
+  const { tellsToExit } = await import('@/lib/agent/tradeWords');
+  const { fundLabels, heldNames } = await import('@/lib/agent/funds');
+  const held = heldNames(fundLabels((await loadDemo()).portfolio!.holdings, 'en'));
+  it('no held-out sentence appears in its prompt', () => {
+    const prompt = judgeSystem(false) + judgeSystem(true);
+    const norm = (t: string) => t.toLowerCase().replace(/[^\p{L}\p{N}₹]+/gu, ' ').trim();
+    const p = norm(prompt);
+    for (const x of [...JUDGE_HELDOUT_GO, ...JUDGE_HELDOUT_STAY]) { const w = norm(x).split(' '); for (let i = 0; i + 5 <= w.length; i++) expect(p.includes(w.slice(i, i + 5).join(' ')), `${x}: "${w.slice(i, i + 5).join(' ')}"`).toBe(false); } // any 5-word run, not just the opening (4 words hits plain phrases like "your small cap fund")
+  });
+  it('the held-out instructions are ones the word patterns miss (the check\'s whole job), and the must-stay ones pass them', () => {
+    for (const x of JUDGE_HELDOUT_GO) expect(tellsToExit(x, held), x).toBe(false);
+    for (const x of JUDGE_HELDOUT_STAY) expect(tellsToExit(x, held), x).toBe(false);
   });
 });

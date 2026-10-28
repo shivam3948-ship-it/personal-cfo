@@ -54,7 +54,7 @@ export const PROPS: Record<EventName | 'answer' | 'feedback' | 'voice_turn', Rec
   fake_door_shown: { feature: FEATURES, first: 'bool' }, fake_door_notify_tapped: { feature: FEATURES },
   answer: { id: 'token', engine: ['claude', 'offline'], model: 'token', prompt: 'token', tools: 'token', steps: 'num', ms: 'num', grounded: 'bool', checked: 'num', unverified: 'num',
     lang: ['hi', 'en'], data: ['sample', 'mine'], where: ['server', 'phone', 'phone+relay'], fallback: 'bool', repaired: 'bool',
-    guard: ['ai', 'rules', 'none'], guard_ms: 'num' }, // which advice check ran (D-069) and how long it took
+    guard: ['ai', 'rules', 'rules_fallback', 'none'], guard_ms: 'num' }, // which advice check ran (D-069) and how long it took
   feedback: { id: 'token', vote: ['up', 'down'], reason: ['wrong_number', 'not_answered', 'hard_to_follow'], data: ['sample', 'mine'] },
   voice_turn: { id: 'token', stt: ['server', 'browser', 'none'], stt_ms: 'num', agent_ms: 'num', speak_ms: 'num', total_ms: 'num', voice: ['sarvam', 'browser', 'none'], pieces: 'num', lang: ['hi', 'en'], data: ['sample', 'mine'] },
 };
