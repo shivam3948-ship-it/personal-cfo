@@ -30,10 +30,13 @@ const OFFERED = /\?|\bif you (?:like|want)\b|\b(?:shall|should|can) I\b|\bwant m
 /** The actions the user allows now: any, when their own message asks for one or says yes to an offer in Munim's last answer;
  *  none otherwise. A reply that opens with a no allows nothing, unless it asks for an action itself ("No, remind me on 1 Nov
  *  instead"). Which action is NOT guessed from keywords: that guess failed on Hindi and paraphrased offers (review, 29 Oct). */
+// "don't remind me", "याद मत दिलाओ", "mat likho": the negation is tied to the action word, not anywhere in the message
+const NEGATED_ACTION = /(?:don[’']?t|do not|never|no need to)\s+(?:\w+\s+)?(?:remind|draft|set|send|e-?mail|mail|save|write|create|make)|(?:याद|ईमेल|रिमाइंडर|लिख|बना)\S*\s+(?:मत|न)(?![\u0900-\u097F])|\b(?:mat|na)\s+(?:likh|bana|bhej|dila|laga|kar)|\b(?:likh|bana|bhej|dila|laga|yaad)\w*\s+mat\b/i;
 export function allowedActions(last: string, prevAssistant: string): string[] {
-  const asks = ASKS_ACTION.test(last) && !/\b(?:don[’']?t|do not|mat|never)\b|मत|न\s/i.test(last);
-  if (asks) return [...ACTION_TOOLS];
-  if (REFUSES.test(last) && !YES_IDIOM.test(last)) return [];
+  const asks = ASKS_ACTION.test(last);
+  // a reply that opens with a no: allowed only if it asks for an action and doesn't negate the action itself
+  if (REFUSES.test(last) && !YES_IDIOM.test(last)) return asks && !NEGATED_ACTION.test(last) ? [...ACTION_TOOLS] : [];
+  if (asks) return [...ACTION_TOOLS]; // a direct request runs, whatever else it says ("…so I don't miss the bill", "बिल वाले दिन याद दिला दो")
   return OFFERED.test(prevAssistant) && (AGREES.test(last) || YES_IDIOM.test(last)) ? [...ACTION_TOOLS] : [];
 }
 export const userAllowsAction = (last: string, prevAssistant: string) => allowedActions(last, prevAssistant).length > 0;

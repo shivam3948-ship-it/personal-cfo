@@ -93,5 +93,12 @@ describe('the action guard after review (29 Oct)', () => {
     expect(allowedActions('nahi', 'Shall I set a reminder?')).toEqual([]);
     for (const c of ['No, remind me on 1 Nov instead', 'Nahi, 1 Nov ko yaad dilana', 'नहीं, 1 नवंबर को याद दिलाना']) expect(allowedActions(c, 'Shall I set a reminder for 30 Oct?').length, c).toBe(4);
     expect(userAllowsAction('Yes, cancel it', 'Want me to draft an email to cancel cult.fit?')).toBe(true);
+    expect(allowedActions('नहीं, याद मत दिलाओ', 'क्या रिमाइंडर लगा दूँ?')).toEqual([]);
+  });
+  it('a direct request runs whatever else it says (review, 29 Oct)', () => {
+    for (const a of ["Set a reminder so I don't miss the card bill", 'Remind me so I never pay late again', "Draft an email to cult.fit saying I don't use the gym anymore",
+      'Card bill ka reminder laga do, bhoolna mat', 'बिल वाले दिन याद दिला दो', '30 दिन बाद याद दिला देना', 'लोन की EMI से पहले याद दिला दो',
+      'cult.fit के कैंसिलेशन का ईमेल लिख दो', 'सब्सक्रिप्शन बंद करने का ईमेल लिख दो', 'मतलब 30 तारीख़ को याद दिला दो'])
+      expect(allowedActions(a, '').length, a).toBe(4);
   });
 });
