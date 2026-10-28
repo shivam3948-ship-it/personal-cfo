@@ -42,7 +42,7 @@ const FEATURES = ['autopay', 'save_once', 'topup', 'save_now', 'bill_pay', 'card
 export const PROPS: Record<EventName | 'answer' | 'feedback' | 'voice_turn', Record<string, PropKind>> = {
   screen_viewed: { screen: 'token' }, view_load_failed: { screen: 'token' }, math_opened: { screen: 'token', figure: 'token' },
   home_top_item_tapped: { reason: 'token', position: 'num' }, home_call_started: {}, home_tile_tapped: { tile: 'token' }, credit_notify_tapped: {},
-  cas_add_opened: {}, cas_read: { result: ['summary', 'partial', 'unknown', 'mismatch', 'done', 'unreadable', 'unrecognised', 'wrong_password', 'needs_password'], funds: 'num' }, cas_deleted: {},
+  cas_add_opened: {}, cas_read: { result: ['summary', 'partial', 'unknown', 'mismatch', 'done', 'unreadable', 'unrecognised', 'wrong_password', 'needs_password', 'older'], funds: 'num' }, cas_deleted: {},
   statement_read: { format: 'token', ok: 'bool', rows: 'num' }, statement_deleted: {},
   files_added: { files: 'num', bank: 'num', cas: 'num', sms: 'num', unknown: 'num', skipped: 'num' },
   ask_opened: { ctx: CTX }, voice_started: { ctx: CTX, mode: ['server', 'browser'] },

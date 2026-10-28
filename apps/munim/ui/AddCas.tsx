@@ -66,6 +66,11 @@ export default function AddCas() {
   const queue = useRef<File[]>([]); // several files chosen together, read one after another
   const [batch, setBatch] = useState<Item[] | null>(null);
   const done = useRef<Item[]>([]); // the batch's results so far (state for the screen, this for the count)
+  // a batch is running: state, so the screen never flickers back to the single-file password step between files (review)
+  const [batchOn, setBatchOn] = useState(false);
+  const run = useRef(0); // each new pick (or leaving the screen) starts a new run; an older run stops where it is
+  const batchHead = useRef<HTMLElement>(null);
+  useEffect(() => () => { run.current++; }, []); // leaving the screen stops a batch that is still reading
   const [smsText, setSmsText] = useState('');
   const [smsRes, setSmsRes] = useState<Awaited<ReturnType<typeof readSmsText>> | null>(null);
   const [smsCount, setSmsCount] = useState(0);
@@ -122,6 +127,12 @@ export default function AddCas() {
     }
     if (any.type === 'cas') {
       const r = any.cas;
+      // two CAS in one batch (or an older one than saved): keep the newest, never let an older one replace it (review)
+      const have = await loadCas().catch(() => null);
+      if (r.cas && have && have.asOf > r.cas.asOf) {
+        track('cas_read', { result: 'older', funds: r.cas.holdings.length });
+        return { name: f.name, kind: 'cas', ok: false, title: L('Mutual fund CAS (older)', 'म्यूचुअल फ़ंड CAS (पुराना)'), detail: lang === 'hi' ? `${day(have.asOf)} का नया CAS पहले से है, इसलिए यह पुराना वाला नहीं लिया।` : `A newer CAS (${day(have.asOf)}) is already here, so this older one wasn't used.` };
+      }
       if (r.cas) { await saveCas(r.cas); setSaved(r.cas); }
       track('cas_read', { result: r.kind === 'summary' ? 'summary' : r.kind === 'partial' ? 'partial' : !r.cas ? 'unknown' : r.cas.skipped.length ? 'mismatch' : 'done', funds: r.cas?.holdings.length ?? 0 });
       const n = r.cas?.holdings.length ?? 0;
@@ -134,31 +145,46 @@ export default function AddCas() {
     return { name: f.name, kind: 'unknown', ok: false, title: f.name, detail: CANT[lang] };
   }
   /** Work through the chosen files one by one; a locked file stops here for its password (or a skip). */
-  async function nextInBatch(password?: string) {
+  async function nextInBatch(id: number, password?: string) {
+    if (id !== run.current) return; // a newer pick, or the screen was left
     const f = queue.current[0];
     if (!f) {
+      setStep('reading'); // never sit on the password step while the batch is closing
       const all = done.current, n = (k: Item['kind']) => all.filter((x) => x.kind === k).length;
+      const list = await loadStatements();
+      if (id !== run.current) return;
       track('files_added', { files: all.length, bank: n('bank'), cas: n('cas'), sms: n('sms'), unknown: n('unknown'), skipped: n('skipped') });
-      setStmts(await loadStatements()); setBatch([...all]); setStep('batch'); return;
+      setStmts(list); setBatch([...all]); setBatchOn(false); setStep('batch'); setTimeout(() => batchHead.current?.focus(), 0); return;
     }
     setFile(f); setStep('reading'); setProgress(1); setErr(null); setWrong(false);
     let item: Item;
     try { item = await readOne(f, password); }
     catch (e) {
-      if (e instanceof PdfPasswordError) { setWrong(e.reason === 'wrong' && !!password); setPw(''); setStep('password'); return; } // wait for this file's password
-      item = { name: f.name, kind: 'unknown', ok: false, title: f.name, detail: CANT[lang] };
+      if (id !== run.current) return;
+      if (e instanceof PdfPasswordError) { // wait for this file's password, with the same events as one file
+        track('cas_read', { result: e.reason === 'wrong' && password ? 'wrong_password' : 'needs_password' });
+        setWrong(e.reason === 'wrong' && !!password); setPw(''); setStep('password'); return;
+      }
+      track('cas_read', { result: 'unreadable' });
+      item = { name: f.name, kind: 'unknown', ok: false, title: f.name, detail: L('Couldn’t read this file. If it is from a bank Munim reads, try the PDF straight from the bank’s site.', 'यह फ़ाइल नहीं पढ़ी जा सकी। अगर यह उन बैंकों में से है जिन्हें मुनीम पढ़ता है, तो बैंक की वेबसाइट से सीधे PDF लेकर आज़माएँ।') };
     }
+    if (id !== run.current) return;
     setPw(''); // used once, never kept
     queue.current.shift(); done.current.push(item); setBatch([...done.current]);
-    await nextInBatch();
+    await nextInBatch(id);
   }
-  const skipFile = async () => { const f = queue.current.shift(); if (f) { done.current.push({ name: f.name, kind: 'skipped', ok: false, title: f.name, detail: L('Skipped: it needs a password.', 'छोड़ा: इसके लिए पासवर्ड चाहिए।') }); setBatch([...done.current]); } setPw(''); await nextInBatch(); };
-  const inBatch = () => queue.current.length > 0;
+  const skipping = useRef(false);
+  const skipFile = async () => {
+    if (skipping.current) return; skipping.current = true; // a double tap skips one file, not two
+    try { const f = queue.current.shift(); if (f) { done.current.push({ name: f.name, kind: 'skipped', ok: false, title: f.name, detail: L('Skipped: it needs a password.', 'छोड़ा: इसके लिए पासवर्ड चाहिए।') }); setBatch([...done.current]); } setPw(''); await nextInBatch(run.current); }
+    finally { skipping.current = false; }
+  };
+  const inBatch = () => batchOn;
   const onPick = (list?: FileList | null) => {
     const files = [...(list ?? [])]; if (!files.length) return;
-    setPw(''); setWrong(false);
-    if (files.length === 1) { queue.current = []; setBatch(null); setFile(files[0]); read(files[0]); return; } // one file: the detailed result screens
-    queue.current = files; done.current = []; setBatch([]); void nextInBatch(); // try each without a password first
+    setPw(''); setWrong(false); const id = ++run.current;
+    if (files.length === 1) { queue.current = []; setBatch(null); setBatchOn(false); setFile(files[0]); read(files[0]); return; } // one file: the detailed result screens
+    queue.current = files; done.current = []; setBatch([]); setBatchOn(true); void nextInBatch(id); // try each without a password first
   };
   const del = async () => { await deleteCas(); setSaved(null); setRes(null); setFile(null); setStep('intro'); track('cas_deleted'); };
   const copyDiag = async () => { const t = res?.diagnostics || diag; if (!t) return; try { await navigator.clipboard.writeText(t); setCopied(true); } catch { setCopied(false); } };
@@ -256,7 +282,7 @@ export default function AddCas() {
             {!inBatch() && <button type="button" onClick={choose} style={S.inlineLink}>{L('Change', 'बदलें')}</button>}
           </div>
           {inBatch() && <span style={S.sub}>{lang === 'hi' ? `फ़ाइल ${done.current.length + 1} / ${done.current.length + queue.current.length} पासवर्ड से बंद है।` : `File ${done.current.length + 1} of ${done.current.length + queue.current.length} is locked with a password.`}</span>}
-          <form onSubmit={(e) => { e.preventDefault(); if (!pw) return; if (inBatch()) void nextInBatch(pw); else read(file, pw); }} style={{ display: 'grid', gap: 12 }}>
+          <form onSubmit={(e) => { e.preventDefault(); if (!pw) return; if (inBatch()) void nextInBatch(run.current, pw); else read(file, pw); }} style={{ display: 'grid', gap: 12 }}>
             <label style={{ display: 'grid', gap: 6 }}><span style={{ fontSize: 14, fontWeight: 600 }}>{L('PDF password', 'PDF पासवर्ड')}</span>
               <span style={{ ...S.field, boxShadow: `inset 0 0 0 ${wrong ? '2px var(--err-ink)' : '1.5px var(--hair2)'}` }}>
                 <input type={show ? 'text' : 'password'} value={pw} onChange={(e) => { setPw(e.target.value); setWrong(false); }} autoComplete="off" autoCapitalize="off" spellCheck={false} autoFocus aria-invalid={wrong} placeholder={L('The file’s password', 'फ़ाइल का पासवर्ड')} style={S.input} />
@@ -272,7 +298,7 @@ export default function AddCas() {
 
         {step === 'reading' && <section aria-busy="true" style={S.card}>
           <b className="serif" style={{ fontSize: 22 }}>{L('Reading your statement…', 'आपका स्टेटमेंट पढ़ा जा रहा है…')}</b>
-          {inBatch() && <span style={S.sub}>{lang === 'hi' ? `फ़ाइल ${done.current.length + 1} / ${done.current.length + queue.current.length}` : `File ${done.current.length + 1} of ${done.current.length + queue.current.length}`}</span>}
+          {inBatch() && <span aria-live="polite" style={S.sub}>{lang === 'hi' ? `फ़ाइल ${done.current.length + 1} / ${done.current.length + queue.current.length}` : `File ${done.current.length + 1} of ${done.current.length + queue.current.length}`}</span>}
           {(lang === 'hi' ? ['फ़ाइल खुल रही है', 'आपके फ़ंड ढूँढे जा रहे हैं', 'हर फ़ंड की यूनिट मिलाई जा रही हैं', 'स्टेटमेंट का टोटल मिलाया जा रहा है'] : ['Opening the file', 'Finding your funds', 'Checking every fund’s units add up', 'Matching the statement’s total']).map((t, i) => {
             const done = i < progress, now = i === progress;
             return <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, color: done || now ? 'var(--ink)' : 'var(--muted)' }}>
@@ -306,15 +332,15 @@ export default function AddCas() {
         </>}
 
         {step === 'batch' && batch && <>
-          <section style={S.card}>
-            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{lang === 'hi' ? `${batch.length} में से ${batch.filter((x) => x.ok).length} फ़ाइलें जुड़ गईं` : `${batch.filter((x) => x.ok).length} of ${batch.length} files added`}</b>
+          <section role="status" style={S.card}>
+            <b ref={batchHead} tabIndex={-1} className="serif" style={{ fontSize: 22, lineHeight: 1.2, outline: 'none' }}>{lang === 'hi' ? `${batch.length} में से ${batch.filter((x) => x.ok).length} ${batch.filter((x) => x.ok).length === 1 ? 'फ़ाइल जुड़ गई' : 'फ़ाइलें जुड़ गईं'}` : `${batch.filter((x) => x.ok).length} of ${batch.length} file${batch.length === 1 ? '' : 's'} added`}</b>
             <div style={{ display: 'grid', gap: 0 }}>{batch.map((x, i) => (
               <div key={`${x.name}-${i}`} style={{ display: 'flex', gap: 10, padding: '10px 0', borderTop: i ? '1px solid var(--hair)' : 0 }}>
                 <span aria-hidden="true" style={{ color: x.ok ? 'var(--link)' : 'var(--err-ink)', fontWeight: 700 }}>{x.ok ? '✓' : '✕'}</span>
                 <span style={{ flex: 1, minWidth: 0, display: 'grid', gap: 2 }}><b style={{ fontSize: 14.5, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.title}</b>
                   <span style={{ fontSize: 13, color: 'var(--ink2)' }}><span style={{ position: 'absolute', left: -9999 }}>{x.ok ? L('Added. ', 'जुड़ गया। ') : L('Not added. ', 'नहीं जुड़ा। ')}</span>{x.detail}</span></span>
               </div>))}</div>
-            {batch.some((x) => x.kind === 'unknown' || x.kind === 'skipped') && <button type="button" onClick={() => setStep('paste')} style={S.link}>{L('No statement for that bank? Paste your bank SMS', 'उस बैंक का स्टेटमेंट नहीं? बैंक के SMS डालें')}</button>}
+            {batch.some((x) => x.kind === 'unknown') && <button type="button" onClick={() => setStep('paste')} style={S.link}>{L('No statement for that bank? Paste your bank SMS', 'उस बैंक का स्टेटमेंट नहीं? बैंक के SMS डालें')}</button>}
             {batch.some((x) => (x.kind === 'bank' || x.kind === 'sms') && x.ok) && <a href="/spends" style={{ ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }}>{L('See your spends', 'अपना खर्च देखें')}</a>}
             {batch.some((x) => x.kind === 'cas' && x.ok) && <a href="/invest/xray" style={{ ...(batch.some((x) => (x.kind === 'bank' || x.kind === 'sms') && x.ok) ? { ...S.link, display: 'grid', placeItems: 'center', textDecoration: 'none' } : { ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }) }}>{L('See your X-ray', 'अपना X-ray देखें')}</a>}
             <button type="button" onClick={choose} style={S.link}>{L('Add more files', 'और फ़ाइलें जोड़ें')}</button>
