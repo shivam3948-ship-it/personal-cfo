@@ -19,7 +19,8 @@ export function fundLabels(holdings: Holding[], lang: 'hi' | 'en'): FundLabel[] 
   return holdings.map((h) => {
     const short = shortName(h.scheme), bare = short.replace(/ Fund$/i, ''), two = firstTwo(h);
     const amc = (h.amc ?? '').toLowerCase();
-    const twoOk = two.length > 3 && twoCount.get(two) === 1 && !amc.startsWith(two.toLowerCase()) && two.toLowerCase() !== amc;
+    // with no fund house known (a phone-read CAS can leave it empty), the first two words may BE the fund house: skip them
+    const twoOk = !!amc && two.length > 3 && twoCount.get(two) === 1 && !amc.startsWith(two.toLowerCase()) && two.toLowerCase() !== amc;
     const n = (catSeen.get(h.category) ?? 0) + 1; catSeen.set(h.category, n);
     const nth = (catTotal.get(h.category) ?? 0) > 1 ? ` (${n})` : '';
     const cat = h.category && h.category !== 'Other' ? catWords(h.category) : '';
@@ -41,6 +42,6 @@ export function scrubFunds(answer: string, funds: FundLabel[]) {
   return a.replace(/\b(The|A|An)\s+(your|one of your)\b/g, (_, __, w: string) => w[0].toUpperCase() + w.slice(1)).replace(/\b(the|a|an)\s+(your|one of your)\b/g, '$2');
 }
 /** For tool results: a fund's name → its label (unknown names come back unchanged). */
-export function labelFor(funds: FundLabel[]) {
-  return (name: string) => funds.find((f) => f.names.some((n) => n.toLowerCase() === name.toLowerCase()))?.label ?? name;
+export function labelFor(funds: FundLabel[], lang: 'hi' | 'en' = 'en') {
+  return (name: string) => funds.find((f) => f.names.some((n) => n.toLowerCase() === name.toLowerCase()))?.label ?? (lang === 'hi' ? 'आपका एक फ़ंड' : 'one of your funds');
 }

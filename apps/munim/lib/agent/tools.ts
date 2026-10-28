@@ -202,7 +202,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
       const p = ds.portfolio; const named = namesFunds(ctx.adviceMode);
       if (!p) return { result: { error: 'No mutual fund statement (CAS) added yet.' } };
       const v = portfolioView(p.holdings, p.asOf); const x = xrayInsights(p.holdings, p.asOf); const fd = fdComparison(p.holdings, p.asOf);
-      const fname = named ? (n: string) => n : labelFor(fundLabels(p.holdings, ctx.lang)); // before the licence the AI only sees categories (D-051)
+      const fname = named ? (n: string) => n : labelFor(fundLabels(p.holdings, ctx.lang), ctx.lang); // before the licence the AI only sees categories (D-051)
       return { result: {
         as_of: p.asOf, value: R(v.value), invested: R(v.cost), your_return_per_year_pct: v.xirrPct, fd_rate_pct: fd.rate, more_than_7pct_fd_before_tax: R(fd.extra),
         tax_free_gains: { limit_left_this_year: R(x.harvest.left), deadline: x.harvest.deadline, days_left: x.harvest.daysLeft, long_term_gains_available: R(x.harvest.ltGainAll), future_tax_saved_if_booked: R(x.harvest.taxSavedLater),

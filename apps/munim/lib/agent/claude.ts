@@ -20,7 +20,9 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const system = systemPrompt({ asOf: asOfDate(ctx.ds), lang: ctx.lang, dataLabel: ctx.ds.label, sources: ctx.ds.log.filter((l) => l.file !== '(all documents)').map((l) => `${l.file} (${l.kind})`), testMode: ctx.adviceMode === 'demo' || ctx.adviceMode === 'internal', disclaimer: DISCLAIMER[ctx.adviceMode][ctx.lang] });
   // The user's own words can carry PII too ("my PAN is…"): scrub them like document text before they reach the model.
   const names = [...holderNames(ctx.ds.docs.map((d) => d.text)), ...(ctx.names ?? [])];
-  const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: t.role === 'user' ? redact(t.content, { names }) : t.content }));
+  // fund names the user typed, or an earlier answer used, are swapped for categories before Claude sees them (D-051)
+  const preFunds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
+  const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: scrubFunds(t.role === 'user' ? redact(t.content, { names }) : t.content, preFunds) }));
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   let repaired = false, fundsRepaired = false;
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
