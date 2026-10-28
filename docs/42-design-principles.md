@@ -74,6 +74,7 @@ When two goals conflict, the higher one wins: e.g. a second tap is accepted (mot
 | D-060 | 28 Oct | Home-screen icon? | Yes, मु on teal | Habit (a cue on the home screen); Hindi-first |
 | D-062 | 28 Oct | One version or two? | AI on and AI off from one config | User and builder control |
 | D-063 | 28 Oct | What happens on a coming-soon button? | A "Coming soon" sheet, "Tell me when it's ready", intent recorded | Honest fake doors; commitment |
+| D-064 | 28 Oct | Should people see whether AI answered? | Always: 'AI (Claude)' or 'rules, no AI' on every answer | Trust through transparency (AI disclosure); visual load (one word on an existing line) |
 
 ## 6. Open design questions
 - Do people miss the Ask orb because it shares the teal of the button above it? If tests say yes, go back to indigo (docs/38).

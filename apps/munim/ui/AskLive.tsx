@@ -52,7 +52,7 @@ export const UI = {
     title: 'Ask anything about your money', sub: 'Hindi or English. Every number comes from your own statements.',
     listen: 'Listen', stop: 'Stop', listenAria: 'Listen to this answer', stopAria: 'Stop reading this answer',
     from: (s: string) => `From ${s}`, general: 'General help', yourDocs: 'your documents',
-    checked: (n: number, ok: boolean) => ` · ${n} number${n > 1 ? 's' : ''} ${ok ? 'checked' : 'could not be checked'}`, rules: 'rules, no AI',
+    checked: (n: number, ok: boolean) => ` · ${n} number${n > 1 ? 's' : ''} ${ok ? 'checked' : 'could not be checked'}`, rules: 'rules, no AI', byClaude: 'AI (Claude)',
     busy: 'Checking your statements…', retry: 'Retry',
     noAnswer: 'Munim could not answer just now.', notCaught: 'Didn’t catch that. Try again or type.',
     noMic: 'Couldn’t use the microphone. Allow it in the browser, or type.', noBrowserVoice: 'Voice typing isn’t working in this browser right now. Type instead.',
@@ -69,7 +69,7 @@ export const UI = {
     title: 'अपने पैसे के बारे में कुछ भी पूछें', sub: 'हिंदी या अंग्रेज़ी में। हर आँकड़ा आपके अपने स्टेटमेंट से आता है।',
     listen: 'सुनें', stop: 'रोकें', listenAria: 'यह जवाब सुनें', stopAria: 'यह जवाब सुनाना रोकें',
     from: (s: string) => `स्रोत: ${s}`, general: 'आम जानकारी', yourDocs: 'आपके दस्तावेज़',
-    checked: (n: number, ok: boolean) => ` · ${n} ${n > 1 ? 'आँकड़े' : 'आँकड़ा'} ${ok ? (n > 1 ? 'जाँचे गए' : 'जाँचा गया') : 'जाँच नहीं हो पाई'}`, rules: 'नियम, AI नहीं',
+    checked: (n: number, ok: boolean) => ` · ${n} ${n > 1 ? 'आँकड़े' : 'आँकड़ा'} ${ok ? (n > 1 ? 'जाँचे गए' : 'जाँचा गया') : 'जाँच नहीं हो पाई'}`, rules: 'नियम, AI नहीं', byClaude: 'AI (क्लॉड)',
     busy: 'आपके स्टेटमेंट देख रहा हूँ…', retry: 'फिर कोशिश करें',
     noAnswer: 'मुनीम अभी जवाब नहीं दे पाया। फिर कोशिश करें।', notCaught: 'सुनाई नहीं दिया। फिर कोशिश करें या लिखकर पूछें।',
     noMic: 'माइक नहीं चल पाया। ब्राउज़र में माइक की इजाज़त दें, या लिखकर पूछें।', noBrowserVoice: 'इस ब्राउज़र में अभी बोलकर पूछना काम नहीं कर रहा। लिखकर पूछें।',
@@ -263,7 +263,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
                   <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>
                     {m.meta.tools.length ? t.from([...new Set(m.meta.tools.map((k) => (hi ? TOOL_LABEL_HI : TOOL_LABEL)[k] ?? t.yourDocs))].join(', ')) : t.general}
                     {m.meta.checked ? t.checked(m.meta.checked, m.meta.ok) : ''}
-                    {disc.test ? ` · ${m.meta.engine === 'claude' ? 'Claude' : t.rules}` : ''}
+                    {` · ${m.meta.engine === 'claude' ? t.byClaude : t.rules}`}{/* always shown: who answered, AI or rules (D-064) */}
                   </span>
                 )}
                 {disc.test && m.lat && <span style={{ fontSize: 12, color: 'var(--muted)' }}>{t.lat(m.lat)}</span>}
