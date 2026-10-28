@@ -19,10 +19,15 @@ const ACTION_TOOLS = new Set(['create_reminder', 'draft_email', 'create_savings_
 export const ASKS_ACTION = /\bremind|reminder|yaad\s*dila|याद\s*दिला|\bdraft|(?:e-?mail|mail)\s+(?:likh|bana|draft|bhej)|likh\s*(?:do|dijiye)|लिख\s*(?:दो|दीजिए)|\bset\s+(?:up\s+)?(?:a\s+)?(?:goal|reminder)|goal\s+bana|लक्ष्य\s+बना|save\s+(?:the\s+|a\s+|this\s+)?plan|plan\s+save|prepayment\s+plan|calendar|कैलेंडर/i;
 /** A yes to an offer (review 7: the primary user says "thik hai", "ज़रूर", "अच्छा", "chalega"). */
 export const AGREES = /\b(?:yes|yeah|yep|yup|ya|haa?n?|ha|ji|ok(?:ay|k)?|sure|of course|absolutely|definitely|please(?: do)?|do (?:it|that)|go ahead|go for it|sounds good|done|fine|theek|thik|thee?k hai|zaroor|jaroor|acha|accha|achha|sahi|chalega|bilkul|kar(?:\s*(?:do|lo|dijiye|dein))|kardo|ho\s*jaye|ho\s*jaaye|chalo)\b|हाँ|हां|हा\b|जी|ठीक|ज़रूर|जरूर|अच्छा|सही|चलेगा|बिल्कुल|कर\s*(?:दो|दीजिए|लो)|हो\s*जाए|चलो|👍|✅/i;
-export const REFUSES = /\b(?:no|nope|nah|nahi|nahin|mat|not now|later|baad\s*mein|rehne\s*do|cancel(?:\s+it)?|don'?t|stop)\b|नहीं|मत|रहने\s*दो|बाद\s*में/i;
+// a refusal OPENS the reply or is all of it ("no", "nahi", "baad mein"); "Yes, cancel it", "haan kyun nahi", "no problem, go
+// ahead" are yeses (final review, 29 Oct)
+export const REFUSES = /^\s*(?:no|nope|nah|nahi|nahin|not now|not yet|later|baad\s*mein|rehne\s*do|mat|नहीं|मत|रहने\s*दो|बाद\s*में)(?![\w\u0900-\u097F])(?!\s*(?:problem|worries|issue|dikkat))/i;
+const YES_IDIOM = /kyu?n\s*nahi|क्यों\s*नहीं|no\s*(?:problem|worries)|why\s*not/i;
+// an offer in Munim's last answer: a question, or "I can … if you like", "क्या मैं …", "kar doon"
+const OFFERED = /\?|\bif you (?:like|want)\b|\b(?:shall|should|can) I\b|\bwant me to\b|\bI can (?:set|draft|save|create|make)\b|क्या मैं|kar doon|bana doon|likh doon/i;
 /** Actions run only when the user's own last message asks for one, or says yes to an offer Munim made in its last answer
  *  (an order that slipped in through data can't create one; prompt-injection review, 29 Oct). */
-export const userAllowsAction = (last: string, prevAssistant: string) => ASKS_ACTION.test(last) || (/\?\s*$|\?/.test(prevAssistant) && AGREES.test(last) && !REFUSES.test(last));
+export const userAllowsAction = (last: string, prevAssistant: string) => ASKS_ACTION.test(last) || (OFFERED.test(prevAssistant) && (AGREES.test(last) || YES_IDIOM.test(last)) && (!REFUSES.test(last) || YES_IDIOM.test(last)));
 export interface Turn { role: 'user' | 'assistant'; content: string }
 export interface TraceStep { tool: string; input: Record<string, unknown>; result: Record<string, unknown>; ms: number }
 export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceStep[]; actions: Action[]; check: NumberCheck; engine: 'claude' | 'offline'; model?: string; ms: number; repaired?: boolean;

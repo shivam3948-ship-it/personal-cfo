@@ -66,6 +66,12 @@ describe('the action guard (review 7)', () => {
     for (const y of ['yes', 'haan', 'thik hai', 'theek hai', 'ज़रूर', 'जरूर', 'अच्छा', 'Zaroor', 'Acha', 'Sahi hai', 'Chalega', 'kar lo', 'हो जाए', 'Haa', 'Sounds good', 'Go for it', 'Yep', 'Of course', 'Absolutely', 'Do that', 'okk', '👍', 'हाँ कर दो', 'ठीक है', 'OK'])
       expect(userAllowsAction(y, offer), y).toBe(true);
   });
+  it('a yes that names the action, or says it the Hinglish way, is still a yes (final review)', () => {
+    const cancel = 'Want me to draft an email to cancel cult.fit?';
+    for (const y of ['Yes, cancel it', 'haan, cancel kar do', 'Yes, cancel the membership', 'Yes, stop it', 'haan kyun nahi', 'Bilkul, kyun nahi', 'क्यों नहीं, कर दो', 'No problem, go ahead', "ok do it, don't wait", 'haan, mat ruko'])
+      expect(userAllowsAction(y, cancel), y).toBe(true);
+    expect(userAllowsAction('haan', 'I can set a reminder for 30 October if you like.')).toBe(true);
+  });
   it('a no, or no offer, runs nothing; an outright ask always does', () => {
     for (const n of ['no', 'nahi', 'not now', 'baad mein', 'रहने दो', 'मत करो']) expect(userAllowsAction(n, offer), n).toBe(false);
     expect(userAllowsAction('How much did I save last month?', 'Your spend fell.')).toBe(false);
