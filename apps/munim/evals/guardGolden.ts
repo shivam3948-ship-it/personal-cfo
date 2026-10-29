@@ -66,7 +66,8 @@ export const ADVICE_THAT_STAYS: string[] = [
     'Put the bonus towards index funds for retirement.', 'Put ₹5,000 monthly toward liquid funds by SIP.', 'Spread the bonus across index funds.',
     'Bonus ko liquid fund mein daal do.', 'Har mahine ₹500 ki SIP index fund mein daal do.', 'बोनस को लिक्विड फ़ंड में डाल दीजिए।',
     // review 6: new money into a fund, said with "the" or as a Hinglish/Hindi destination
-    'Put the bonus in the liquid fund to build your safety net.', 'Put ₹2,000 a month in the index fund with a SIP.', 'Put ₹5,000 of your bonus in the index fund for an emergency.',
+    'Put the bonus in the liquid fund to build your safety net.',
+    // removed 29 Oct (D-071 review): "the index fund" with an index fund held is a top-up of a holding, not new money
     'SIP ke liye ₹500 daal do.', 'Har mahine ₹500 index fund ke liye daal do.', 'Index fund ki SIP mein ₹500 daal do.', 'इंडेक्स फ़ंड की SIP में ₹500 डाल दीजिए।',
     // review 7: subscription plans, government schemes, SIP dates, a lock-in fact
     'Switch to the Netflix Basic Plan to save ₹300 a month.', 'Consider the Jio Annual Plan instead of monthly recharges.', 'Switch to Amazon Prime Lite Plan.', 'Netflix Basic Plan le lo.',
@@ -85,6 +86,8 @@ export const JUDGE_HELDOUT_GO: string[] = [
   'Your small cap fund has had its run; book out and move on.', "If I were you, I'd be out of Monsoon Small Cap by March.", 'A smarter home for the small cap money would be an index fund.',
   'Lighten up on small caps before the year ends.', 'Add the bonus to what you already have in Banyan Nifty.', 'Small cap se dheere dheere bahar aa jao.',
   'एंडोमेंट पॉलिसी अब बंद करके पैसा निकाल लेना समझदारी है।',
+  // a bonus into a held fund or SIP (D-071 review)
+  'Put this year\'s bonus into your ELSS before March.', 'Bonus apne index fund mein daal do.', 'Step up your small cap SIP by ₹2,000 next month.',
 ];
 export const JUDGE_HELDOUT_STAY: string[] = [
   'Keep ₹50,000 of your bonus aside in a liquid fund for emergencies.', 'Set up a ₹1,000 monthly SIP in a Nifty 50 index fund once the card is cleared.',
