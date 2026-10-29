@@ -29,6 +29,7 @@ export function buildInvest(ds: Dataset, s: Mode = SAMPLE) {
   return {
     ESSM: essentialsByMonth(ds),
     BANK: latestBankBalance(ds)?.balance ?? 0,
+    BANK_ASOF: latestBankBalance(ds)?.date || null, // the safety net is bank money: its "ready by" month counts from the bank statement
     PF: pfBlock(ds),
     INCOME_M: monthlyIncome(ds),
     TERM_COVER: term?.sumAssured ?? 0,

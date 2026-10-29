@@ -87,7 +87,7 @@ class Component extends DCLogic {
     var have = BANK + debtFund, gap = Math.max(0, target - have), mCov = Math.round(have / essAvg * 10) / 10;
     var pct = function (v) { return Math.min(100, Math.round(v / target * 1000) / 10) + '%'; };
     var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var landing = function (n) { var i = (+PF.asOf.slice(5, 7) - 1) + n; return (hi ? MONHI : MON)[i % 12] + ' ' + (+PF.asOf.slice(0, 4) + Math.floor(i / 12)); }; // counted from your statement's month, not a fixed October
+    var BASE = (this.props.data && this.props.data.BANK_ASOF) || PF.asOf; var landing = function (n) { var i = (+BASE.slice(5, 7) - 1) + n; return (hi ? MONHI : MON)[i % 12] + ' ' + (+BASE.slice(0, 4) + Math.floor(i / 12)); }; // counted from your bank statement's month (the safety net is bank money), not a fixed October
     var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
     var pills = [500000, 1000000, 2000000].map(function (a) { var on = s.pick === a, cs = chip(on); return { amt: R(a), when: hi ? Math.ceil(gap / a) + ' महीने में तैयार' : 'ready in ' + Math.ceil(gap / a) + ' mo', on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ pick: a }); } }; });
     // ---- your money vs your funds: fund = point-to-point growth since your first purchase (CAS NAVs); you = XIRR on your dates ----
@@ -123,11 +123,11 @@ class Component extends DCLogic {
       { name: 'एंडोमेंट · Bharosa Jeevan Nidhi', sub: '₹5,000 महीना · अगला 10 नवंबर', fact: 'अनुमानित रिटर्न ' + ENDOW.irrLo.toFixed(1) + '–' + ENDOW.irrHi.toFixed(1) + '% सालाना, बीमा कंपनी के अपने इलस्ट्रेशन से (गारंटी नहीं)।', tag: 'अपना रिटर्न जानें' }
     ].forEach(function (h, i) { Object.assign(policies[i], h); });
     policies.forEach(function (p, i) { p.rule = i < policies.length - 1 ? '1px solid var(--hair)' : '0'; });
-    var WRONG = { missing: 'Bought after ' + asD + '? Add a newer CAS. Funds held in a demat account show in your depository statement (NSDL or CDSL), not in this one.',
-      value: 'Values use prices from ' + asD + ', the date of your CAS. Add a newer CAS to bring them up to date.',
+    var WRONG = { missing: (asD ? 'Bought after ' + asD + '? ' : 'Bought recently? ') + 'Add a newer CAS. Funds held in a demat account show in your depository statement (NSDL or CDSL), not in this one.',
+      value: 'Values use prices from ' + (asD || 'the date of your CAS') + (asD ? ', the date of your CAS' : '') + '. Add a newer CAS to bring them up to date.',
       notmine: 'Funds held jointly appear in every holder’s statement. Add a newer CAS, or ask Munim to leave a fund out of your totals.' };
-    if (hi) WRONG = { missing: asDHi + ' के बाद खरीदा? नया CAS जोड़ें। डीमैट खाते वाले फ़ंड आपके डिपॉज़िटरी स्टेटमेंट (NSDL या CDSL) में दिखते हैं, इसमें नहीं।',
-      value: 'रक़में ' + asDHi + ' के भाव पर हैं, यानी आपके CAS की तारीख़ पर। ताज़ा रक़म के लिए नया CAS जोड़ें।',
+    if (hi) WRONG = { missing: (asDHi ? asDHi + ' के बाद खरीदा? ' : 'हाल में खरीदा? ') + 'नया CAS जोड़ें। डीमैट खाते वाले फ़ंड आपके डिपॉज़िटरी स्टेटमेंट (NSDL या CDSL) में दिखते हैं, इसमें नहीं।',
+      value: 'रक़में ' + (asDHi || 'CAS की तारीख़') + ' के भाव पर हैं, यानी आपके CAS की तारीख़ पर। ताज़ा रक़म के लिए नया CAS जोड़ें।',
       notmine: 'जॉइंट फ़ंड हर होल्डर के स्टेटमेंट में दिखते हैं। नया CAS जोड़ें, या मुनीम से कहें कि वह फ़ंड आपके कुल में न गिने।' };
     var WRONG_HI = { missing: 'कोई फ़ंड नहीं दिख रहा', value: 'कोई रक़म गलत लग रही है', notmine: 'कोई फ़ंड मेरा नहीं है' };
     var wrongOpts = [['missing', 'A fund is missing'], ['value', 'A value looks off'], ['notmine', 'A fund isn’t mine']].map(function (o) { var on = s.wrong === o[0], cs = chip(on); return { t: hi ? WRONG_HI[o[0]] : o[1], on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ wrong: o[0] }); } }; });

@@ -63,6 +63,18 @@ describe('Today: the last-day card equals the engine', async () => {
   });
 });
 
+it('statements with only an SIP and a transfer: no spending day, no "₹0 spent"', async () => {
+  const { finalise } = await import('@core/ingest/finalise');
+  const acc = 'bank:3333';
+  const d: Dataset = { ...emptyDataset('sip'), accounts: [{ id: acc, kind: 'bank', last4: '3333', label: 'Bank ••3333' }], txns: [
+    { id: 's1', date: '2026-08-05', desc: 'ACH D- BSE LTD MF SIP', amount: 100000, dir: 'debit', account: acc, source: 'bank_statement', sourceFile: 's.pdf' },
+    { id: 's2', date: '2026-08-10', desc: 'UPI/DR/4/SELF/HDFC/me@ok/own a/c', amount: 500000, dir: 'debit', account: acc, source: 'bank_statement', sourceFile: 's.pdf' }] };
+  finalise(d); d.today = '2026-08-31';
+  const isSpend = (t: Dataset['txns'][number]) => t.dir === 'debit' && ['everyday', 'uncat'].includes(bucketOf(t.category ?? 'Other', 'debit'));
+  if (d.txns.some(isSpend)) return; // the categoriser read one as spending: then the other cases cover it
+  expect(buildTodayMine(d).day.none).toBe(true);
+});
+
 describe('Invest: dates come from the CAS, never a fixed 15 Oct', async () => {
   const ds = await loadDemo();
   const base = buildInvest(ds);
@@ -77,12 +89,15 @@ describe('Invest: dates come from the CAS, never a fixed 15 Oct', async () => {
     expect(render(shifted, { open: 'holdings' })).not.toMatch(/15 Oct/);
     expect(render(shifted, { variant: 'bharat' })).toContain('10 फ़रवरी तक');
   });
-  it('"ready by" counts from the CAS month, not October 2026', () => {
+  it('"ready by" counts from the bank statement month, not October 2026', () => {
     const readyBy = (data: unknown) => render(data, { __state: { pick: 500000, planned: true } }).match(/ready by (\w{3}) (\d{4})/);
     const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const a = readyBy(base)!, b = readyBy(shifted)!;
-    expect(a && b).toBeTruthy();
-    const idx = (m: RegExpMatchArray) => Number(m[2]) * 12 + MON.indexOf(m[1]);
-    expect(idx(b) - idx(a)).toBe(4); // Oct 2026 → Feb 2027: the same number of months, four months later
+    const idx = (m: RegExpMatchArray | null) => Number(m![2]) * 12 + MON.indexOf(m![1]);
+    const a = readyBy(base);
+    expect(a).toBeTruthy();
+    // the safety net is bank money: the month counts from the bank statement, so a newer bank statement moves it ...
+    expect(idx(readyBy({ ...base, BANK_ASOF: '2027-02-10' })) - idx(a)).toBe(4); // Oct 2026 → Feb 2027: same months to go, four months later
+    // ... and a CAS of another date does not
+    expect(idx(readyBy(shifted))).toBe(idx(a));
   });
 });

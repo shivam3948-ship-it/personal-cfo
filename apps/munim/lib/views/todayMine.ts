@@ -85,7 +85,9 @@ export function buildTodayMine(ds: Dataset): TodayMine {
   // UPI to people and small shops is most of a first-time saver's spending, so it counts (D-076, 29 Oct)
   const spendB = (t: { category?: string }) => { const b = bucketOf(t.category ?? 'Other', 'debit'); return b === 'everyday' || b === 'uncat'; };
   const evDays = ds.txns.filter((t) => t.dir === 'debit' && spendB(t)).map((t) => t.date).sort();
-  const day = evDays.at(-1) ?? asOf;
+  if (!evDays.length) return { mine: true, verdictSub: 'From your statements', verdictSubHi: 'आपके स्टेटमेंट से', dateLine: '', dateLineHi: '', inv: false, bill: null, fix: null, sub: null, // only SIPs or transfers: no spending day to show
+    day: { none: true, date: asOf, label: '', labelHi: '', spent: 0, usual: null, top: [], unsorted: 0 } };
+  const day = evDays.at(-1)!;
   const onDay = ds.txns.filter((t) => t.date === day && t.dir === 'debit');
   const everyday = onDay.filter((t) => bucketOf(t.category ?? 'Other', 'debit') === 'everyday');
   const byMerchant = new Map<string, number>();

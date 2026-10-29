@@ -658,7 +658,7 @@ class Component extends DCLogic {
     if (TD) {
       var dd = TD.day, top = dd.top.map(function (x) { return x[0] + ' ' + v(fmtR(x[1])); }).join(', ');
       if (!dd.none) items.yday = { kicker: pos('yday') + (hi ? dd.labelHi : dd.label), kickerInk: plain, title: v(fmtR(dd.spent)) + T(' spent', ' खर्च'), titleSize: '30px',
-        sub: hi ? (dd.usual !== null ? 'आपके औसत दिन (' + v(fmtR(dd.usual)) + ') से ' + (dd.spent <= dd.usual ? 'कम' : 'ज़्यादा') + '। ' : '') + (top ? top + '।' + (dd.unsorted ? ' इनमें ' + v(fmtR(dd.unsorted)) + ' अभी छाँटा नहीं गया।' : '') : 'अभी इसमें से कुछ भी छाँटा नहीं गया।')
+        sub: hi ? (dd.usual !== null ? 'आपके औसत दिन (' + v(fmtR(dd.usual)) + ') से ' + (dd.spent <= dd.usual ? 'कम' : 'ज़्यादा') + '। ' : '') + (top ? top + '।' + (dd.unsorted ? ' इसमें से ' + v(fmtR(dd.unsorted)) + ' अभी छाँटा नहीं गया।' : '') : 'अभी इसमें से कुछ भी छाँटा नहीं गया।')
           : (dd.usual !== null ? (dd.spent <= dd.usual ? 'Below' : 'Above') + ' your average day of ' + v(fmtR(dd.usual)) + '. ' : '') + (top ? top + '.' + (dd.unsorted ? ' ' + v(fmtR(dd.unsorted)) + ' of it not sorted yet.' : '') : 'None of it sorted yet.'),
         hasTags: false, hasButtons: true, primaryLabel: T('Looks right', 'सही है'), secondaryLabel: T("Something's off?", 'कुछ गड़बड़ है?'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
         primary: function () { self.complete('yday', T('Looks right', 'सही है')); }, secondary: function () { go('/spends/transactions'); } };
@@ -817,7 +817,7 @@ class Component extends DCLogic {
     var WHY = [
       { t: T('Starter buffer', 'शुरुआती बफ़र'), d: T('1 month of essentials, ' + fmtR(BUF.target) + ', so a surprise bill doesn\u2019t go on a card', '1 महीने का ज़रूरी खर्च, ' + fmtR(BUF.target) + ', ताकि अचानक आया बिल कार्ड पर न जाए') },
       { t: T('Clear costly debt', 'महँगा लोन चुकाएँ'), d: T('Credit card balances and expensive loans first', 'पहले क्रेडिट कार्ड का बकाया और महँगे लोन') },
-      { t: T('Emergency fund', 'इमरजेंसी फ़ंड'), d: T('6 months of essentials, ' + fmtR(EMG.target) + '. Your savings balance counts', '6 महीने का ज़रूरी खर्च, ' + fmtR(EMG.target) + '। आपके बचत खाते का पैसा भी गिना जाता है') },
+      { t: T('Emergency fund', 'इमरजेंसी फ़ंड'), d: T('6 months of essentials' + (EMG.target ? ', ' + fmtR(EMG.target) : '') + '. Your savings balance counts', '6 महीने का ज़रूरी खर्च' + (EMG.target ? ', ' + fmtR(EMG.target) : '') + '। आपके बचत खाते का पैसा भी गिना जाता है') },
       { t: T('Insurance check', 'बीमा की जाँच'), d: T('Term and health cover before you invest', 'निवेश से पहले टर्म बीमा और हेल्थ बीमा') },
       { t: T('Start investing', 'निवेश शुरू करें'), d: T('With a safety net in place', 'सुरक्षा का इंतज़ाम होने के बाद') } ];
     var whySteps = WHY.map(function (w, i) { var st = i < mi ? 'done' : (i === mi ? 'here' : 'next');
