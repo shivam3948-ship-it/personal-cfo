@@ -49,3 +49,26 @@ describe('Spends on any statements', async () => {
     });
   }
 });
+
+// A real statement (29 Oct demo check): most of a tier-2/3 saver's money goes over UPI to people and small shops Munim
+// doesn't recognise. Those debits are "uncategorised" spending and must count in the month's total and in what's left;
+// the screen used to start that total at zero and show only the recognised merchants.
+describe('uncategorised UPI spending counts (synthetic statement)', async () => {
+  const { renderToString } = await import('react-dom/server');
+  const { createElement } = await import('react');
+  const Spends = (await import('@/screens/Spends')).default;
+  const { finalise } = await import('@core/ingest/finalise');
+  it('the total and "left after spending" include it', () => {
+    const acc = 'bank:1111';
+    const tx = (id: string, date: string, desc: string, rupees: number, dir: 'debit' | 'credit') => ({ id, date, desc, amount: rupees * 100, dir, account: acc, source: 'bank_statement' as const });
+    const ds: Dataset = { ...emptyDataset('synthetic'), accounts: [{ id: acc, kind: 'bank', last4: '1111', label: 'Bank ••1111' }],
+      txns: [tx('a', '2026-08-03', 'UPI/DR/123/RAMESH K/SBIN/ramesh@ok/UPI', 1200, 'debit'), tx('b', '2026-08-09', 'UPI/DR/124/SUNITA V/UTIB/sv@ok/UPI', 300, 'debit'),
+        tx('c', '2026-08-30', 'UPI/DR/125/IRCTC/YESB/irctc@yes/Paym', 500, 'debit'), tx('d', '2026-08-05', 'NEFT*RELATIVE NAME*', 2500, 'credit')] };
+    finalise(ds); ds.today = '2026-08-31';
+    const v = buildSpendsMain(ds, { reportFrom: null });
+    expect(v.UNCAT).toBe(150000); // ₹1,500 to people and a shop Munim doesn't know
+    const html = renderToString(createElement(Spends, { theme: 'light', state: 'ready', data: v }));
+    expect(html).toContain('₹2,000'); // ₹1,500 uncategorised + ₹500 travel, not ₹500
+    expect(html).not.toMatch(/left after spending[^₹]*₹2,500/); // money in ₹2,500 minus ₹2,000 out, never minus ₹500
+  });
+});
