@@ -25,14 +25,14 @@ export const CATEGORIES: Record<string, Category> = {
   Education: { name: 'Education', group: 'spend', hi: 'पढ़ाई' },
   'Cash withdrawal': { name: 'Cash withdrawal', group: 'spend', hi: 'कैश निकासी' },
   'Fees & charges': { name: 'Fees & charges', group: 'spend', hi: 'बैंक चार्ज' },
-  'Local shops': { name: 'Local shops', group: 'spend', hi: 'आस-पास की दुकानें' }, // UPI to a shop's QR or a shop name (D-078)
-  'Paid to people': { name: 'Paid to people', group: 'spend', hi: 'लोगों को भेजा' }, // UPI to a person: who, not what for (D-078)
+  'Shops & businesses': { name: 'Shops & businesses', group: 'spend', hi: 'दुकानें और कारोबार' }, // UPI to a merchant/QR handle or a business name (D-078)
+  'Paid to people': { name: 'Paid to people', group: 'spend', hi: 'लोगों को भेजे पैसे' }, // UPI to a person: who, not what for (D-078)
   Other: { name: 'Other', group: 'spend', hi: 'अन्य' },
   'Loan EMI': { name: 'Loan EMI', group: 'committed', hi: 'लोन EMI' },
   Insurance: { name: 'Insurance', group: 'committed', hi: 'बीमा' },
   Investments: { name: 'Investments', group: 'committed', hi: 'निवेश' },
   'Family support': { name: 'Family support', group: 'committed', hi: 'परिवार को' },
-  'Regular payments': { name: 'Regular payments', group: 'committed', hi: 'हर महीने के भुगतान' }, // same person, about the same amount, every month (D-078)
+  'Regular payments': { name: 'Regular payments', group: 'committed', hi: 'नियमित भुगतान' }, // same person, about the same amount, every month (D-078)
   Tax: { name: 'Tax', group: 'committed', hi: 'टैक्स' },
   'Self transfer': { name: 'Self transfer', group: 'non_spend', hi: 'अपने खाते में' },
   'Card bill payment': { name: 'Card bill payment', group: 'non_spend', hi: 'कार्ड बिल' },
@@ -132,7 +132,7 @@ export function categorize(t: Pick<Txn, 'desc' | 'dir'>): string {
     if (r.dir && r.dir !== t.dir) continue;
     if (r.re.test(t.desc)) return r.cat;
   }
-  if (t.dir === 'debit') { const p = upiPayee(t.desc); if (p === 'shop') return 'Local shops'; if (p === 'person') return 'Paid to people'; }
+  if (t.dir === 'debit') { const p = upiPayee(t.desc); if (p === 'shop') return 'Shops & businesses'; if (p === 'person') return 'Paid to people'; }
   return t.dir === 'credit' ? 'Other income' : 'Other';
 }
 

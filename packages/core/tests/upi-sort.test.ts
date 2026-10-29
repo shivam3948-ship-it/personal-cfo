@@ -26,7 +26,7 @@ describe('UPI payee type', () => {
   });
   it('categories: people stay unsorted (who, not what for); shops are everyday; word rules still win', () => {
     expect(d('UPI/DR/1/RAMESH K/SBIN/9876543210/UPI')).toBe('Paid to people');
-    expect(d('UPI/DR/1/GUPTA GENERAL/YESB/paytmqr2810/UPI')).toBe('Local shops');
+    expect(d('UPI/DR/1/GUPTA GENERAL/YESB/paytmqr2810/UPI')).toBe('Shops & businesses');
     expect(d('UPI/DR/1/Swiggy/ICIC/swiggy@icici/UPI')).toBe('Food delivery');
     expect(d('UPI/DR/1/MAA/SBIN/9876543210/UPI')).toBe('Family support');
     expect(d('UPI/DR/1/SELF/HDFC/9876543210/own a/c')).toBe('Self transfer');
@@ -57,5 +57,20 @@ describe('regular payments', () => {
     const ds = { ...emptyDataset('x'), txns: [{ ...tx('1', '2026-08-03', 'RAMESH K', 8000), category: 'Food delivery', merchant: 'RAMESH K' }, { ...tx('2', '2026-09-03', 'RAMESH K', 8000), category: 'Food delivery', merchant: 'RAMESH K' }] };
     regularPayments(ds);
     expect(ds.txns.map((x) => x.category)).toEqual(['Food delivery', 'Food delivery']);
+  });
+});
+
+describe('review fixes (29 Oct)', () => {
+  it('regular payments need months in a row', async () => {
+    const acc = 'bank:1111';
+    const tx = (id: string, date: string): Txn => ({ id, date, desc: `UPI/DR/${id}/RAMESH K/SBIN/9876543210/UPI`, amount: 800000, dir: 'debit', account: acc, source: 'bank_statement', sourceFile: 's.pdf' });
+    const ds = { ...emptyDataset('x'), txns: [tx('1', '2026-08-03'), tx('2', '2026-10-03')] }; finalise(ds);
+    expect(ds.txns.map((x) => x.category)).toEqual(['Paid to people', 'Paid to people']);
+  });
+  it('a business name with a common first word is still masked before any AI sees it', async () => {
+    const { counterpartyNames } = await import('../src/privacy/counterparties');
+    const t: Txn = { id: '1', date: '2026-09-01', desc: 'UPI/DR/5/INDIA GATE STORES/SBIN/igs12/UPI', amount: 10000, dir: 'debit', account: 'bank:1', source: 'bank_statement', sourceFile: 's.pdf', category: 'Shops & businesses', merchant: 'INDIA GATE STORES' };
+    expect(counterpartyNames([t])).toContain('INDIA GATE STORES');
+    expect(counterpartyNames([{ ...t, desc: 'NEFT Payment for rent', merchant: 'Payment for rent', category: 'Rent' }])).not.toContain('Payment for rent');
   });
 });

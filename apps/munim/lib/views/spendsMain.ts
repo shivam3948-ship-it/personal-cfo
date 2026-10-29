@@ -17,7 +17,7 @@ export function bucketOf(cat: string, dir: Txn['dir']): Bucket {
   const g = groupOf(cat);
   if (dir === 'credit') return g === 'income' ? 'income' : 'skip';
   if (cat === 'Other' || cat === 'Paid to people') return 'uncat'; // paid to a person: we know who, not what for (D-078)
-  if (cat === 'Rent' || cat === 'Loan EMI' || cat === 'Insurance' || cat === 'Regular payments' || cat === 'Tax') return 'fixed';
+  if (cat === 'Rent' || cat === 'Loan EMI' || cat === 'Insurance' || cat === 'Regular payments') return 'fixed'; // Tax is "not counted": a once-a-year payment isn't a month's fixed cost
   if (cat === 'Family support') return 'family';
   if (g === 'spend') return 'everyday';
   return 'not'; // investments, self transfers, card bill payments
