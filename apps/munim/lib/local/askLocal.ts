@@ -58,7 +58,8 @@ function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode 
     if (r.status === 503) { noKey = true; throw new NoKey(); }
     const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'relay failed');
     if (j.mode === 'guided' || seen.mode === 'guided') seen.mode = 'guided'; else if (j.mode) seen.mode = j.mode; // the strictest mode the server used
-    return { content: j.content, stop_reason: j.stop_reason, model: j.model } as Anthropic.Message;
+    const u = j.llm ?? {}; // timing and token counts only; the model the relay actually used (voice turns may differ)
+    return { content: j.content, stop_reason: j.stop_reason, model: j.model, usage: { input_tokens: u.input ?? 0, output_tokens: u.output ?? 0, cache_read_input_tokens: u.cacheRead ?? 0, cache_creation_input_tokens: u.cacheWrite ?? 0 } } as Anthropic.Message;
   } } };
 }
 class NoKey extends Error { constructor() { super('no_key'); } }

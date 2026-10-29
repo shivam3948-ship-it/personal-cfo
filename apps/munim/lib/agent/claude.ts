@@ -92,14 +92,15 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const messages: Anthropic.MessageParam[] = history.slice(-12).map((t) => ({ role: t.role, content: t.role === 'user' ? redact(t.content, { names }) : t.content }));
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   const lastUser = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
-  const prevAssistant = history.slice(0, -1).filter((t) => t.role === 'assistant').at(-1)?.content ?? '';
-  let emptyRetried = false; const llm = newStats(); const model = ctx.model || MODEL;
+  // the saved-actions note (doneNote) is a record, not Munim's words: a "?" in a saved title must never read as an offer (review, 29 Oct)
+  const prevAssistant = (history.slice(0, -1).filter((t) => t.role === 'assistant').at(-1)?.content ?? '').replace(/\s*\(Already saved in this answer: [^\n]*\)\s*$/, '');
+  let emptyRetried = false; const llm = newStats(); const model = ctx.model || MODEL; let usedModel = model;
   let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0;
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
   for (let step = 0; step < 7; step++) {
     const tc = Date.now();
     const res = await client.messages.create(cacheOn() ? { model, max_tokens: 700, system: cachedSystem(system), tools: TOOLS, messages: withCacheMark(messages) } : { model, max_tokens: 700, system, tools: TOOLS, messages });
-    addUsage(llm, Date.now() - tc, res.usage);
+    addUsage(llm, Date.now() - tc, res.usage); if (res.model) usedModel = res.model; // the model that actually answered (the relay may use the voice model)
     const uses = res.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
     if (res.stop_reason !== 'tool_use' || !uses.length) {
       const answer = res.content.filter((b): b is Anthropic.TextBlock => b.type === 'text').map((b) => b.text).join(' ').trim();
@@ -136,7 +137,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
         continue;
       }
       const final = g.flagged.length ? removeFlagged(answer, g.flagged, ctx.adviceMode, ctx.lang, funds) : answer;
-      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model, ms: Date.now() - t0, llm, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
+      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: usedModel, ms: Date.now() - t0, llm, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
     }
     messages.push({ role: 'assistant', content: res.content });
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
@@ -156,7 +157,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
     messages.push({ role: 'user', content: toolResults });
   }
   const answer = ctx.lang === 'hi' ? 'माफ़ कीजिए, मैं इसका जवाब पूरा नहीं कर पाया। क्या आप सवाल थोड़ा छोटा करके पूछेंगे?' : "Sorry, I couldn't finish that one. Could you ask it a bit more simply?";
-  return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'claude', model, ms: Date.now() - t0, llm, guard, guardMs };
+  return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'claude', model: usedModel, ms: Date.now() - t0, llm, guard, guardMs };
 }
 
 /** What the guard objects to in an answer (D-051, D-066). */

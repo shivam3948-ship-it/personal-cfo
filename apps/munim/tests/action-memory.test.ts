@@ -10,3 +10,15 @@ describe('the saved-actions note', () => {
     expect(doneNote([])).toBe(''); expect(doneNote(undefined)).toBe('');
   });
 });
+
+describe('the note never reads as an offer (review, 29 Oct)', async () => {
+  const { allowedActions } = await import('@/lib/agent/claude');
+  it('a "?" in a saved title does not let a bare "ok" run an action', async () => {
+    const { runClaude } = await import('@/lib/agent/claude');
+    expect(allowedActions('ok', 'Done, I saved it.')).toEqual([]);
+    // runClaude strips the note before the guard: simulated through the same regex the loop uses
+    const prev = 'Done, I saved it.\n\n(Already saved in this answer: reminder "Pay the HDFC card bill?" for 2026-10-30.)'.replace(/\s*\(Already saved in this answer: [^\n]*\)\s*$/, '');
+    expect(allowedActions('ok', prev)).toEqual([]);
+    expect(typeof runClaude).toBe('function');
+  });
+});

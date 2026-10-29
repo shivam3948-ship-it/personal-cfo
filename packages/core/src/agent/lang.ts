@@ -47,7 +47,13 @@ export function splitForSpeech(text: string, opts: { minFirst?: number; max?: nu
   if (opts.firstMax && first.length > opts.firstMax) {
     const head = first.slice(0, opts.firstMax);
     const cut = Math.max(head.lastIndexOf(', '), head.lastIndexOf(' — '));
-    if (cut >= minFirst) { out.push(first.slice(0, cut + 1).trim()); first = first.slice(cut + 1).trim(); }
+    const headPart = first.slice(0, cut + 1), tail = first.slice(cut + 1);
+    // Never cut where the first piece alone could sound like an instruction (review, 29 Oct): a Hindi negation comes after
+    // the verb ("…बेच दीजिए, ऐसा मैं नहीं कह सकता"), and a listener can stop after piece one. So no cut when the rest negates,
+    // or when the first piece speaks of selling, stopping, switching or buying.
+    const NEGATES = /\b(?:not|never|no|cannot|can't|won't|don't|nahi|nahin|mat|na)\b|n't\b|नहीं|मत|न\s|ना\s/i;
+    const TRADE = /\b(?:sell|selling|sold|redeem|exit|switch|stop|surrender|buy|buying|invest|withdraw|book)\w*|बेच|निकाल|रोक|बंद|सरेंडर|खरीद|निवेश|\bbech\w*|\bnikal\w*|\bband\b|\bkhareed\w*/i;
+    if (cut >= minFirst && !NEGATES.test(tail) && !TRADE.test(headPart)) { out.push(headPart.trim()); first = tail.trim(); }
   }
   out.push(first);
   let cur = '';

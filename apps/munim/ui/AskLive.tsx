@@ -153,7 +153,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const ttsOff = useRef(false); // after one 501 (no voice key) this visit uses the browser's voice
   const ackOk = useRef(false);
   async function ask(q: string, via: 'text' | 'voice' = 'text', stt?: SttTiming) {
-    q = q.trim(); if (!q || busyRef.current) return;
+    q = q.trim(); if (!q || busyRef.current) { ackOk.current = false; return; }
     const next: Msg[] = [...msgsRef.current, { role: 'user', content: q }];
     stopSpeaking(); setSpeaking(null);
     setMsgs(next); setText(''); setBusy(true); setErr(null);
@@ -172,7 +172,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       if (j.trace) send('answer', answerProps({ id: j.trace, engine: j.engine, model: j.model, prompt: j.prompt ?? 'unknown', tools: j.tools ?? [], ms: j.ms ?? 0,
         check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified ?? [] }, lang: j.lang ?? (hi ? 'hi' : 'en'), data: local ? 'mine' : 'sample', where: j.where ?? 'server', fallback: j.fallback, repaired: j.repaired, guard: j.guard, guardMs: j.guardMs }));
       if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang }); // asked by voice → answered by voice; typed → stays quiet
-    } catch (e) { setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
+    } catch (e) { ackOk.current = false; setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
     finally { setBusy(false); input.current?.focus(); }
   }
   const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content;
@@ -207,9 +207,10 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           const form = new FormData(); form.append('file', r.blob, 'speech.webm'); form.append('lang', 'auto');
           const res = await fetch('/api/stt', { method: 'POST', body: form }); const j = await res.json();
           if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice', { mode: 'server', ms: Math.round(performance.now() - tEnd) }); return; }
+          ackOk.current = false; // no transcript: nothing to acknowledge
           if (j.fallback === 'browser' && browserSttAvailable()) { setSttMode('browser'); setVoice('idle'); setNote(t.sttBusy); return; }
           setVoice('idle'); setErr(hi ? t.notCaught : j.error ?? t.notCaught);
-        } catch { setVoice('idle'); setErr(t.notCaught); }
+        } catch { ackOk.current = false; setVoice('idle'); setErr(t.notCaught); }
       } });
     } catch { setVoice('idle'); setErr(t.noMic); }
   }
