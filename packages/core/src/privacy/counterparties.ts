@@ -13,7 +13,10 @@ const COMMON = /\b(upi|neft|imps|rtgs|nach|ach|mb|ib|dr|cr|p2a|p2p|ref|payment|p
 
 function isName(x: string): boolean {
   if (x.length < 3 || /\d|@/.test(x) || !/^[A-Za-zऀ-ॿ .']+$/.test(x) || BANK_CODES.test(x)) return false;
-  return !x.split(/\s+/).every((w) => COMMON.test(w)) && !COMMON.test(x.split(/\s+/)[0]) ; // "Payment for rent", "THANK YOU" are words, not people
+  const ws = x.split(/\s+/);
+  // "Payment for rent", "THANK YOU" are words, not people; but a common first word with two or more other words is still a
+  // name ("INDIA GATE STORES", review 29 Oct): mask it rather than send it
+  return !ws.every((w) => COMMON.test(w)) && (!COMMON.test(ws[0]) || ws.filter((w) => !COMMON.test(w)).length >= 2);
 }
 
 export function counterpartyNames(txns: Txn[]): string[] {

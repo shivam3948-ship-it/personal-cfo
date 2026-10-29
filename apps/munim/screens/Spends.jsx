@@ -23,7 +23,7 @@ class Component extends DCLogic {
     var OCTCUM = this.props.data.OCTCUM;
     var FIXED = this.props.data.FIXED, FAMILY = this.props.data.FAMILY, UNCAT = this.props.data.UNCAT, NOTCOUNTED = this.props.data.NOTCOUNTED;
     var RECENT = this.props.data.RECENT;
-    var HI_CAT = { 'Subscriptions': 'सब्सक्रिप्शन', 'Cash withdrawal': 'कैश निकासी', 'Food delivery': 'फ़ूड डिलीवरी', 'Dining': 'बाहर खाना', 'Fuel': 'पेट्रोल', 'Fitness': 'जिम', 'Utilities': 'बिजली-पानी', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Cabs': 'कैब', 'Mobile & internet': 'मोबाइल-इंटरनेट' };
+    var HI_CAT = { 'Shops & businesses': 'दुकानें और कारोबार', 'Paid to people': 'लोगों को भेजे पैसे', 'Regular payments': 'नियमित भुगतान', 'Tax': 'टैक्स', 'Subscriptions': 'सब्सक्रिप्शन', 'Cash withdrawal': 'कैश निकासी', 'Food delivery': 'फ़ूड डिलीवरी', 'Dining': 'बाहर खाना', 'Fuel': 'पेट्रोल', 'Fitness': 'जिम', 'Utilities': 'बिजली-पानी', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Cabs': 'कैब', 'Mobile & internet': 'मोबाइल-इंटरनेट' };
     var R = function (p) { return '₹' + Math.round(p / 100).toLocaleString('en-IN'); };
     var med = (function (v) { return v.length ? v[Math.floor(v.length / 2)] : 0; })(PACE.map(function (x) { return x.v; }).sort(function (a, b) { return a - b; }));
     var orbitMatch = this.props.data.orbitMatch, orbitSwitchNet = this.props.data.orbitSwitchNet;   // compareRefinance vs Neem Bank's real pre-approved 11.25% offer (email, 6 Oct), 1% fee + GST; switching allowed only from 20 Dec, offer expires 31 Oct
@@ -179,7 +179,7 @@ class Component extends DCLogic {
     var split = [
       { l: C.everyday, v: R(everyday), sub: '', fill: 'var(--btn)', flex: everyday },
       { l: C.fixed, v: R(fixedV), sub: '', fill: 'var(--muted)', flex: fixedV },
-      { l: C.others, v: R(famV + uncV), sub: uncV ? (hi ? 'परिवार ' + R(famV) + ' · बिना कैटेगरी ' + R(uncV) : 'Family ' + R(famV) + ' · uncategorised ' + R(uncV)) : C.othersSub, fill: 'var(--hair2)', flex: famV + uncV }
+      { l: C.others, v: R(famV + uncV), sub: uncV ? (hi ? 'परिवार ' + R(famV) + ' · लोगों को भेजे और बिना कैटेगरी ' + R(uncV) : 'Family ' + R(famV) + ' · paid to people and unsorted ' + R(uncV)) : C.othersSub, fill: 'var(--hair2)', flex: famV + uncV }
     ];
     // ---- money in: salaried = packages/core sample family (Salary credits, nextSalaryDate = last + 1 month); irregular = illustrative sample, fictional clients ----
     var MON = hi ? ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

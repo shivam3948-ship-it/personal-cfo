@@ -101,3 +101,24 @@ describe('Invest: dates come from the CAS, never a fixed 15 Oct', async () => {
     expect(idx(readyBy(shifted))).toBe(idx(a));
   });
 });
+
+// Transactions keeps its own copy of the buckets (it re-buckets when you change a category). It must agree with the engine
+// for every category the engine can produce, or the filter counts disagree with Spends (D-078).
+describe('Transactions: each row sits in the bucket the engine counts it in', async () => {
+  const { CATEGORIES } = await import('@core/finance/categorize');
+  const { buildTransactions } = await import('@/lib/views/spends');
+  const Transactions = (await import('@/screens/Transactions')).default;
+  it('every category', async () => {
+    const acc = 'bank:4444';
+    const cats = Object.keys(CATEGORIES);
+    // money out in every category that isn't income (a debit "Salary" doesn't happen), money in for the income categories
+    const { groupOf } = await import('@core/finance/categorize');
+    const txns = cats.map((c, i) => ({ id: `${i}`, date: '2026-08-10', desc: c, amount: 10000 + i, dir: groupOf(c) === 'income' ? 'credit' as const : 'debit' as const, account: acc, source: 'bank_statement' as const, sourceFile: 's.pdf', category: c, merchant: c }));
+    const ds: Dataset = { ...emptyDataset('all'), accounts: [{ id: acc, kind: 'bank', last4: '4444', label: 'b' }], txns, today: '2026-08-31' };
+    const t = text(renderToStaticMarkup(createElement(Transactions as never, { theme: 'light', state: 'ready', data: buildTransactions(ds) })));
+    const screenBucket = { everyday: 'Everyday', fixed: 'Fixed', family: 'Others', uncat: 'Others', not: 'Not counted', income: 'Money in' } as Record<string, string>;
+    const want: Record<string, number> = {};
+    for (const x of txns) { const b = bucketOf(x.category, x.dir); if (b === 'skip') continue; want[screenBucket[b]] = (want[screenBucket[b]] ?? 0) + 1; }
+    for (const [label, n] of Object.entries(want)) expect(t, label).toMatch(new RegExp(`${label} ${n}\\b`));
+  });
+});

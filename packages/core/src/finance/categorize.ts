@@ -25,11 +25,15 @@ export const CATEGORIES: Record<string, Category> = {
   Education: { name: 'Education', group: 'spend', hi: 'पढ़ाई' },
   'Cash withdrawal': { name: 'Cash withdrawal', group: 'spend', hi: 'कैश निकासी' },
   'Fees & charges': { name: 'Fees & charges', group: 'spend', hi: 'बैंक चार्ज' },
+  'Shops & businesses': { name: 'Shops & businesses', group: 'spend', hi: 'दुकानें और कारोबार' }, // UPI to a merchant/QR handle or a business name (D-078)
+  'Paid to people': { name: 'Paid to people', group: 'spend', hi: 'लोगों को भेजे पैसे' }, // UPI to a person: who, not what for (D-078)
   Other: { name: 'Other', group: 'spend', hi: 'अन्य' },
   'Loan EMI': { name: 'Loan EMI', group: 'committed', hi: 'लोन EMI' },
   Insurance: { name: 'Insurance', group: 'committed', hi: 'बीमा' },
   Investments: { name: 'Investments', group: 'committed', hi: 'निवेश' },
   'Family support': { name: 'Family support', group: 'committed', hi: 'परिवार को' },
+  'Regular payments': { name: 'Regular payments', group: 'committed', hi: 'नियमित भुगतान' }, // same person, about the same amount, every month (D-078)
+  Tax: { name: 'Tax', group: 'committed', hi: 'टैक्स' },
   'Self transfer': { name: 'Self transfer', group: 'non_spend', hi: 'अपने खाते में' },
   'Card bill payment': { name: 'Card bill payment', group: 'non_spend', hi: 'कार्ड बिल' },
   Cashback: { name: 'Cashback', group: 'non_spend', hi: 'कैशबैक' },
@@ -52,6 +56,8 @@ const RULES: Rule[] = [
   { cat: 'Subscriptions', re: /\blinkedin ?premium\b|\bswiggy ?one\b|\bzomato ?gold\b|\buber ?one\b|\bzepto ?pass\b|\bflipkart ?(vip|plus)\b|\bnetflix\b|\bspotify\b|\bhotstar\b|\bjiohotstar\b|\byoutube ?premium\b|\byoutubepremium\b|\bprime\b|\bsonyliv\b|\bzee5\b|\blingopro\b|\baudible\b|\bicloud\b|\bgoogle one\b|\bchatgpt\b|\bopenai\b/i },
   { cat: 'Fitness', re: /\bcult(fit|\.fit)?\b|\bgym\b|\bfitness\b|\bhealthifyme\b/i },
   { cat: 'Self transfer', re: /\bself\b|\bown a\/c\b/i },
+  { cat: 'Self transfer', re: /\bsweep\b|\bauto ?sweep\b|\bfd (booking|creation)\b|\bto fd\b/i }, // money moved into your own FD (SBI "SWEEP TFR", 29 Oct)
+  { cat: 'Tax', re: /\bcbdt\b|\bincome ?tax\b|\btin 2\.0\b|\badvance tax\b|\bself assessment tax\b/i, dir: 'debit' },
   { cat: 'Loan EMI', re: /\bemi\b|\bauto finance\b|\bfinserv\b|\bloan\b|\bln xx\d+/i, dir: 'debit' },
   { cat: 'Investments', re: /\bmf sip\b|\bsip\b|\bmutual fund\b|\bbse ltd\b|\biccl\b|\bzerodha\b|\bgroww\b/i, dir: 'debit' },
   { cat: 'Insurance', re: /\binsurance\b|\bpremium\b|\blic\b|\bpol xx\d+/i, dir: 'debit' },
@@ -101,11 +107,32 @@ export function merchantOf(desc: string): string {
   return (cand ?? desc).replace(/\s+/g, ' ').slice(0, 40);
 }
 
+// UPI payments no word rule caught (D-078). Most of a first-time saver's spending is UPI to people and small shops, and the
+// narration already says who was paid: the payee's UPI handle and name. Read on the phone; nothing is sent anywhere.
+//   a shop: a merchant/QR handle (paytmqr, bharatpe, q123…@ybl, razorpay…) or a shop word in the name ("SHARMA MEDICAL")
+//   a person: a phone-number handle, or a plain name with a plain handle. A tiny shop on a personal UPI ID reads as a
+//   person: "Paid to people" says who was paid, not what for, so it stays in the unsorted bucket (bucketOf)
+const SHOP_HANDLE = /paytmqr|bharatpe|^q\d{5,}|razorpay|\brzp|pinelabs|okbiz|mswipe|ezetap|vyapar|yespay|ibkpos|^paytm-|merchant|^mab\./i;
+const SHOP_WORDS = /\b(stores?|enterprises?|traders?|trading|medicals?|pharma|pharmacy|chemists?|mart|shop|kirana|hotel|restaurant|cafe|dhaba|bakery|bakers|pvt|ltd|llp|agency|agencies|clinic|hospital|salon|parlour|tailors?|electricals?|hardware|mobiles|garments|textiles?|jewell?ers|opticals?|motors|automobiles|petroleum)\b/i;
+export function upiPayee(desc: string): 'shop' | 'person' | null {
+  if (!/^\s*UPI\b/i.test(desc)) return null;
+  const sbi = /^\s*UPI\/(DR|CR)\//i.test(desc); // SBI: UPI/DR/ref/NAME/BANK/handle(cut)/note; others: UPI-NAME-handle@bank-…
+  const parts = desc.split('/').map((x) => x.trim());
+  const handle = (desc.match(/[\w.]+@[A-Za-z]+/)?.[0] ?? (sbi ? parts[5] ?? '' : '')).toLowerCase();
+  const local = handle.split('@')[0];
+  const name = (sbi ? parts[3] : desc.split(/[-/]/)[1]) ?? '';
+  if (SHOP_HANDLE.test(handle) || SHOP_WORDS.test(name)) return 'shop';
+  if (/^(\+?91)?\d{10}$/.test(local)) return 'person';
+  if (/^[a-z][a-z.\-_]*\d{0,4}$/.test(local) && /^[A-Za-z .]{3,}$/.test(name.trim())) return 'person';
+  return null;
+}
+
 export function categorize(t: Pick<Txn, 'desc' | 'dir'>): string {
   for (const r of RULES) {
     if (r.dir && r.dir !== t.dir) continue;
     if (r.re.test(t.desc)) return r.cat;
   }
+  if (t.dir === 'debit') { const p = upiPayee(t.desc); if (p === 'shop') return 'Shops & businesses'; if (p === 'person') return 'Paid to people'; }
   return t.dir === 'credit' ? 'Other income' : 'Other';
 }
 

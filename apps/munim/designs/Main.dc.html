@@ -902,7 +902,7 @@ class Component extends DCLogic {
       sundayCall: 'रविवार की मनी कॉल', weekly: 'हर हफ़्ते · 2 मिनट', closeMonth: 'महीना बंद करें', salaryDay: 'सैलरी का दिन',
       pathTitle: 'पैसे का आपका रास्ता', pathSub: 'आप इस रास्ते पर जहाँ हैं, उसी हिसाब से मुनीम आज के कार्ड चुनता है।', youAreHere: 'आप यहाँ हैं',
       pathNote: 'यह रास्ता दिखाता है, नियम नहीं: आप बचत, भुगतान या निवेश किसी भी क्रम में कर सकते हैं। सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं।', gotIt: 'ठीक है',
-      back: 'वापस', offYday: 'कल, 14 अक्टूबर', offMathHead: '14 अक्टूबर का रोज़ का खर्च, बैंक के SMS अलर्ट से (15 अक्टूबर, सुबह 7:40 तक पढ़े गए)', offNotCounted: 'नहीं गिना: किराया, EMI, निवेश, अपने ही खातों में ट्रांसफ़र।',
+      back: 'वापस', offYday: 'कल, 14 अक्टूबर', offMathHead: '14 अक्टूबर का रोज़ का खर्च, बैंक स्टेटमेंट से (15 अक्टूबर तक)', offNotCounted: 'नहीं गिना: किराया, EMI, निवेश, अपने ही खातों में ट्रांसफ़र।',
       offNowCat: 'अभी: फ़ूड डिलीवरी · सही कैटेगरी चुनें', category: 'कैटेगरी', changeOnce: 'सिर्फ़ इसे बदलें', changeAll: 'Zomato के सारे ऑर्डर बदलें', chooseCat: 'कैटेगरी चुनें',
       howMuch: 'कितना?', amountAria: 'रक़म', missingAria: 'छूटी हुई रक़म, रुपये में', typeAmount: 'रक़म लिखें', onWhat: 'किस पर?', pickBoth: 'रक़म चुनें और बताएँ किस पर खर्च हुआ',
       missingNote: 'ऐसे खाते से खर्च हुआ जो मुनीम नहीं देख सकता? उस खाते का स्टेटमेंट जोड़ दें, फिर यह हमेशा के लिए ठीक हो जाएगा।',
@@ -923,7 +923,7 @@ class Component extends DCLogic {
       sundayCall: 'Sunday Money Call', weekly: 'Weekly · 2 min', closeMonth: 'Close your month', salaryDay: 'Salary day',
       pathTitle: 'Your money path', pathSub: 'Munim picks today’s cards from where you are on this path.', youAreHere: 'You are here',
       pathNote: 'This is guidance, not a rule: you can save, pay or invest in any order. For education only, not investment advice.', gotIt: 'Got it',
-      back: 'Back', offYday: 'Yesterday, 14 Oct', offMathHead: 'Everyday spending on 14 Oct, from bank SMS alerts read up to 15 Oct, 7:40 am', offNotCounted: 'Not counted: rent, EMIs, investments, transfers to your own accounts.',
+      back: 'Back', offYday: 'Yesterday, 14 Oct', offMathHead: 'Everyday spending on 14 Oct, from the bank statement up to 15 Oct', offNotCounted: 'Not counted: rent, EMIs, investments, transfers to your own accounts.',
       offNowCat: 'Now: Food delivery · pick the right one', category: 'Category', changeOnce: 'Change this one', changeAll: 'Change all Zomato orders', chooseCat: 'Choose a category',
       howMuch: 'How much?', amountAria: 'Amount', missingAria: 'Missing amount in rupees', typeAmount: 'Type an amount', onWhat: 'On what?', pickBoth: 'Pick an amount and what it was for',
       missingNote: "Spending from an account Munim can't see? Adding that account's statement fixes this for good.",
@@ -951,7 +951,7 @@ class Component extends DCLogic {
           invLbl: TD.inv ? T('Investments (your CAS)', 'निवेश (आपका CAS)') : T('Investments (none added)', 'निवेश (नहीं जोड़ा)'), bankLbl: T('Bank (latest statement balance)', 'बैंक (आख़िरी स्टेटमेंट का बैलेंस)'), loanLbl: T('Loans (none added)', 'लोन (नहीं जोड़ा)'),
           card: TD.bill ? v(fmtR(TD.bill.amount)) : '', due: TD.bill ? (hi ? 'तारीख़ ' + TD.bill.dueHi : 'due ' + TD.bill.due) : '', ok: TD.bill ? (TD.bill.covered === null ? T('Add a bank statement to check', 'जाँचने के लिए बैंक स्टेटमेंट जोड़ें') : TD.bill.covered ? T('Covered ✓', 'बैंक में पैसा है ✓') : T('Bank falls short', 'बैंक में कम है')) : '',
           okInk: TD.bill && TD.bill.covered === false ? 'var(--warn)' : 'var(--link)' }
-        : { card: m.card, gainLine: T('Investments ' + m.gain + ' above what you put in · 14.2% a year', 'निवेश आपके लगाए पैसे से ' + m.gain + ' ज़्यादा · 14.2% सालाना'), invLbl: T('Investments (CAS, 15 Oct)', 'निवेश (CAS, 15 अक्टूबर)'), bankLbl: T('Bank (SMS alerts)', 'बैंक (SMS अलर्ट)'), loanLbl: T('Loans outstanding (2)', 'बाक़ी लोन (2)'), due: T('due 24 Oct', 'तारीख़ 24 अक्टूबर'), ok: T('Covered ✓', 'बैंक में पैसा है ✓'), okInk: 'var(--link)' },
+        : { card: m.card, gainLine: T('Investments ' + m.gain + ' above what you put in · 14.2% a year', 'निवेश आपके लगाए पैसे से ' + m.gain + ' ज़्यादा · 14.2% सालाना'), invLbl: T('Investments (CAS, 15 Oct)', 'निवेश (CAS, 15 अक्टूबर)'), bankLbl: T('Bank statement', 'बैंक स्टेटमेंट'), loanLbl: T('Loans outstanding (2)', 'बाक़ी लोन (2)'), due: T('due 24 Oct', 'तारीख़ 24 अक्टूबर'), ok: T('Covered ✓', 'बैंक में पैसा है ✓'), okInk: 'var(--link)' },
       billRow: TD ? !!TD.bill : billsMode === 'pending' && !(mstep === 'debt' && (sc === 'new' || sc === 'day4')),
       showRecaps: !TD,
       dateLabel: TD ? (hi ? TD.dateLineHi : TD.dateLine) : st === 'empty' ? (function () { var d = new Date(); return hi ? ['रविवार', 'सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'][d.getDay()] + ', ' + d.getDate() + ' ' + ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'][d.getMonth()] : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()] + ', ' + d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()]; })()

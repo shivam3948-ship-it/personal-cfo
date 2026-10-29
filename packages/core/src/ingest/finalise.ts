@@ -19,6 +19,7 @@ export function finalise(ds: Dataset) {
     if (prior) { t.category = prior.category; t.merchant = prior.merchant; }
   }
   ds.txns.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id, undefined, { numeric: true }));
+  regularPayments(ds);
   cardPayments(ds);
   crossChecks(ds);
 }
@@ -40,6 +41,26 @@ function cardPayments(ds: Dataset) {
     if (sum(paid) === s.payments) continue;
     const others = credits.filter(notCb);
     if (others.length && sum(paid) + sum(others) === s.payments) others.forEach(label);
+  }
+}
+
+/** Rent to a landlord, the maid, tuition: the same payee, about the same amount (±10%), once a month for 2+ months in a row, is a
+ *  regular payment (a fixed cost), not unsorted spending (D-078). Only payees no rule placed; ₹500 and up. */
+export function regularPayments(ds: Dataset) {
+  const by = new Map<string, Txn[]>();
+  for (const t of ds.txns) {
+    if (t.dir !== 'debit' || !['Paid to people', 'Other'].includes(t.category ?? '') || t.amount < 50000) continue;
+    const k = `${t.account}|${(t.merchant ?? '').trim().toLowerCase()}`;
+    if ((t.merchant ?? '').trim().length < 3) continue;
+    by.set(k, [...(by.get(k) ?? []), t]);
+  }
+  for (const xs of by.values()) {
+    const amts = xs.map((t) => t.amount).sort((a, b) => a - b), med = amts[Math.floor(amts.length / 2)];
+    const same = xs.filter((t) => Math.abs(t.amount - med) <= med * 0.1);
+    const months = [...new Set(same.map((t) => t.date.slice(0, 7)))].sort();
+    const mi = (k: string) => Number(k.slice(0, 4)) * 12 + Number(k.slice(5, 7));
+    const consecutive = months.every((k, i) => i === 0 || mi(k) - mi(months[i - 1]) === 1); // Aug and Dec is not "every month"
+    if (months.length >= 2 && consecutive && same.length === months.length) for (const t of same) t.category = 'Regular payments';
   }
 }
 

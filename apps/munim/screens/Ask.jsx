@@ -22,7 +22,7 @@ class Component extends DCLogic {
       checking: 'आपका बैंक और बिल देख रहा हूँ…',
       yes: 'हाँ।', a1: '', a2: ' का कार्ड बिल 24 अक्टूबर को भरना है। आपके बैंक में ', a3: ' हैं। सैलरी से पहले के सारे भुगतान के बाद ', a4: ' बचेंगे।',
       speaking: 'बोल रहा हूँ', show: 'हिसाब देखें', hide: 'हिसाब छिपाएँ',
-      mathHead: 'बैंक बैलेंस − सैलरी से पहले के भुगतान', mathBank: 'बैंक (SMS अलर्ट, 15 अक्टूबर)', mathLeft: 'सारे भुगतान के बाद बचे',
+      mathHead: 'बैंक बैलेंस − सैलरी से पहले के भुगतान', mathBank: 'बैंक स्टेटमेंट, 15 अक्टूबर', mathLeft: 'सारे भुगतान के बाद बचे',
       remind: '22 अक्टूबर को याद दिलाएँ', allBills: 'सारे बिल देखें', anotherAria: 'एक और सवाल पूछें', another: 'और पूछें',
       errTag: 'सुनाई नहीं दिया', errTitle: 'मुनीम आपकी बात सुन नहीं पाया', errBody: 'आप बोल रहे थे तभी कनेक्शन टूट गया। फिर कोशिश करें, या अपना सवाल लिखकर पूछें।', retry: 'फिर कोशिश करें'
     } : {
@@ -34,7 +34,7 @@ class Component extends DCLogic {
       checking: 'Checking your bank and bills…',
       yes: 'Yes.', a1: 'The ', a2: ' card bill is due 24 Oct. Your bank has ', a3: '. After every payment due before salary, ', a4: ' is left.',
       speaking: 'Speaking', show: 'Show the math', hide: 'Hide the math',
-      mathHead: 'Bank balance − payments due before salary', mathBank: 'Bank (SMS alerts, 15 Oct)', mathLeft: 'Left after all dues',
+      mathHead: 'Bank balance − payments due before salary', mathBank: 'Bank statement, 15 Oct', mathLeft: 'Left after all dues',
       remind: 'Remind me on 22 Oct', allBills: 'See all bills', anotherAria: 'Ask another question', another: 'Ask another',
       errTag: 'Didn\'t catch that', errTitle: 'Munim couldn\'t hear you', errBody: 'The connection dropped while you were speaking. Try again, or type your question instead.', retry: 'Try again'
     };

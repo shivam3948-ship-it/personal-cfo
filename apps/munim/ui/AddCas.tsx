@@ -1,7 +1,7 @@
 'use client';
 // Add your statements (mock: Upload.dc.html, confirmed 22 Oct). Everything here runs on the phone: the PDF is read in the
 // browser, the password is used once and dropped, and only what reconciles is saved in this browser.
-// One button for every kind of file (D-068): bank and card statements, the mutual fund CAS and SMS backups. Munim works out
+// One button for every kind of file (D-068): bank and card statements, and the mutual fund CAS. Munim works out
 // which is which (lib/local/statements.ts readAny), so the user never has to sort them. Several files at once: each is read
 // in turn, a locked one asks for its own password (or can be skipped), and every file gets its own result line.
 import { useEffect, useRef, useState } from 'react';
@@ -9,34 +9,15 @@ import { track } from '@/lib/analytics';
 import { saveCas, loadCas, deleteCas, PdfPasswordError, type LocalCas, type ReadResult } from '@/lib/local/cas';
 import { readAny, loadStatements, deleteStatement, type SavedStatement } from '@/lib/local/statements';
 import type { BankRead } from '@core/ingest/banks';
-import { readSmsText, loadSms, deleteAllSms } from '@/lib/local/sms';
+import { deleteAllSms } from '@/lib/local/sms';
 import { getProfile } from '@/lib/local/profile';
 
-// bank SMS (D-055): copy for the paste flow, in the language chosen at onboarding
-const SMS_T = {
-  en: { kicker: 'Bank SMS', title: 'No statement? Use your bank SMS', sub: 'Paste the debit and credit messages your bank sends. Munim reads them on this phone; OTPs and offers are ignored.', cta: 'Paste bank SMS',
-    pasteTitle: 'Paste your bank SMS', pasteHelp: 'In your messages app, open your bank’s chat, long-press a message, tap Copy, and paste it here. Paste as many as you like, one under the other.', placeholder: 'Paste messages here', read: 'Read messages', file: 'Or choose an SMS backup file (.txt or .xml)',
-    privacy: 'Read on this phone. The messages aren’t saved or sent anywhere; only the payments read from them are kept here.',
-    got: (n: number) => `${n} payment${n === 1 ? '' : 's'} read`, none: 'No payments found', from: (m: number) => `from ${m} message${m === 1 ? '' : 's'}`,
-    skipped: (o: number, x: number) => [o ? `${o} OTP${o === 1 ? '' : 's'}` : '', x ? `${x} reminder${x === 1 ? '' : 's'}, offer${x === 1 ? '' : 's'} or failed payment${x === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and ') + ' skipped',
-    unreadable: (u: number) => `${u} message${u === 1 ? '' : 's'} missing an amount, account or date, so not used`, already: (d: number) => `${d} already added before`,
-    provisional: 'SMS have no totals to check against, so these count until a bank statement for the same dates replaces them.', gap: 'A balance didn’t follow from the message before it: a message may be missing.',
-    spends: 'See your spends', more: 'Paste more SMS', saved: (n: number) => `${n} payment${n === 1 ? '' : 's'} from SMS on this phone`, del: 'Delete SMS data', back: 'Back' },
-  hi: { kicker: 'बैंक SMS', title: 'स्टेटमेंट नहीं है? बैंक के SMS से काम चलेगा', sub: 'बैंक से आए पैसे कटने और आने वाले मैसेज यहाँ डालें। मुनीम इन्हें इसी फ़ोन पर पढ़ता है; OTP और ऑफ़र छोड़ देता है।', cta: 'बैंक SMS डालें',
-    pasteTitle: 'बैंक के SMS डालें', pasteHelp: 'मैसेज ऐप में बैंक का चैट खोलें, मैसेज को दबाकर रखें, Copy दबाएँ और यहाँ डालें। जितने चाहें डालें, एक के नीचे एक।', placeholder: 'मैसेज यहाँ डालें', read: 'मैसेज पढ़ें', file: 'या SMS बैकअप फ़ाइल चुनें (.txt या .xml)',
-    privacy: 'इसी फ़ोन पर पढ़ा जाता है। मैसेज न सेव होते हैं न कहीं भेजे जाते हैं; सिर्फ़ उनसे पढ़े गए लेन-देन यहाँ रखे जाते हैं।',
-    got: (n: number) => `${n} लेन-देन पढ़े गए`, none: 'कोई लेन-देन नहीं मिला', from: (m: number) => `${m} मैसेज में से`,
-    skipped: (o: number, x: number) => [o ? `${o} OTP` : '', x ? `${x} रिमाइंडर, ऑफ़र या फ़ेल पेमेंट` : ''].filter(Boolean).join(' और ') + ' छोड़े गए',
-    unreadable: (u: number) => `${u} मैसेज में रक़म, खाता या तारीख़ नहीं मिली, इसलिए नहीं लिए`, already: (d: number) => `${d} पहले ही जोड़े जा चुके थे`,
-    provisional: 'SMS में जाँचने लायक़ कुल रक़म नहीं होती, इसलिए ये तब तक गिने जाएँगे जब तक उन्हीं तारीख़ों का बैंक स्टेटमेंट न आ जाए।', gap: 'एक बैलेंस पिछले मैसेज से मेल नहीं खाया: शायद कोई मैसेज छूट गया है।',
-    spends: 'अपना खर्च देखें', more: 'और SMS डालें', saved: (n: number) => `इस फ़ोन पर SMS से ${n} लेन-देन`, del: 'SMS का डेटा मिटाएँ', back: 'वापस' },
-};
 
-// a file Munim can't read yet: say what it can read, and offer SMS (D-068)
+// a file Munim can't read yet: say what it can read (D-068)
 const CANT = { en: 'Can’t read this one yet. Munim reads HDFC, SBI and Canara savings, HDFC and Axis cards, and the CAMS or KFintech CAS.', hi: 'इसे अभी नहीं पढ़ सकते। मुनीम HDFC, SBI और Canara सेविंग्स, HDFC और Axis कार्ड, और CAMS या KFintech का CAS पढ़ता है।' };
-type Step = 'paste' | 'sms' | 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'partial' | 'mismatch' | 'unknown' | 'bank' | 'batch';
+type Step = 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'partial' | 'mismatch' | 'unknown' | 'bank' | 'batch';
 /** One file's result when several were chosen together. */
-interface Item { name: string; kind: 'bank' | 'cas' | 'sms' | 'unknown' | 'skipped'; ok: boolean; title: string; detail: string }
+interface Item { name: string; kind: 'bank' | 'cas' | 'unknown' | 'skipped'; ok: boolean; title: string; detail: string }
 const R = (p: number) => '₹' + Math.round(p / 100).toLocaleString('en-IN');
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const day = (iso: string) => (iso ? `${+iso.slice(8, 10)} ${MON[+iso.slice(5, 7) - 1]} ${iso.slice(0, 4)}` : '');
@@ -71,19 +52,10 @@ export default function AddCas() {
   const run = useRef(0); // each new pick (or leaving the screen) starts a new run; an older run stops where it is
   const batchHead = useRef<HTMLElement>(null);
   useEffect(() => () => { run.current++; }, []); // leaving the screen stops a batch that is still reading
-  const [smsText, setSmsText] = useState('');
-  const [smsRes, setSmsRes] = useState<Awaited<ReturnType<typeof readSmsText>> | null>(null);
-  const [smsCount, setSmsCount] = useState(0);
   const [lang, setLang] = useState<'en' | 'hi'>('en');
-  const T = SMS_T[lang];
   const L = (en: string, hi: string) => (lang === 'hi' ? hi : en);
-  useEffect(() => { setLang(getProfile()?.lang === 'hi' ? 'hi' : 'en'); loadSms().then((t) => setSmsCount(t.length)); }, []);
-  const showSms = async (r: Awaited<ReturnType<typeof readSmsText>>) => {
-    setSmsRes(r); setSmsCount((await loadSms()).length); setStep('sms');
-    track('sms_read', { messages: r.messages, rows: r.txns.length, added: r.added, otp: r.skipped.otp, unreadable: r.skipped.unreadable });
-  };
-  const readPaste = async () => { if (!smsText.trim()) return; const r = await readSmsText(smsText); setSmsText(''); await showSms(r); };
-  const delSms = async () => { await deleteAllSms(); setSmsCount(0); track('sms_deleted'); };
+  // bank SMS paste was removed (29 Oct, owner's call; native SMS reading stays parked): clear any SMS rows an earlier version saved
+  useEffect(() => { setLang(getProfile()?.lang === 'hi' ? 'hi' : 'en'); void deleteAllSms(); }, []);
 
   useEffect(() => { loadCas().then((c) => { if (c) { setSaved(c); setStep('done'); } }); loadStatements().then(setStmts); track('cas_add_opened'); }, []);
 
@@ -99,7 +71,6 @@ export default function AddCas() {
         track('statement_read', { format: any.read.format, ok: any.ok, rows: any.read.txns.length });
         setStep('bank'); return;
       }
-      if (any.type === 'sms') { await showSms(any.sms); return; }
       if (any.type === 'unknown') { setDiag(any.diagnostics); setRes(null); setStep('unknown'); track('cas_read', { result: 'unrecognised' }); return; }
       const r = any.cas;
       setRes(r);
@@ -120,10 +91,6 @@ export default function AddCas() {
       const a = any.read, period = a.period ? `${day(a.period.from)} – ${day(a.period.to)} · ` : '';
       track('statement_read', { format: a.format, ok: any.ok, rows: a.txns.length });
       return { name: f.name, kind: 'bank', ok: any.ok, title: a.account.label, detail: any.ok ? `${period}${a.txns.length} ${L('transactions, balances to the paisa', 'लेन-देन, पैसे-पैसे तक मिलता है')}` : L('Didn’t add up, so not saved. Try the PDF straight from your bank’s site.', 'हिसाब नहीं मिला, इसलिए सेव नहीं किया। बैंक की वेबसाइट से सीधे PDF लेकर आज़माएँ।') };
-    }
-    if (any.type === 'sms') {
-      track('sms_read', { messages: any.sms.messages, rows: any.sms.txns.length, added: any.sms.added, otp: any.sms.skipped.otp, unreadable: any.sms.skipped.unreadable });
-      return { name: f.name, kind: 'sms', ok: any.sms.txns.length > 0, title: L('Bank SMS', 'बैंक SMS'), detail: any.sms.txns.length ? T.got(any.sms.txns.length) + ' ' + T.from(any.sms.messages) : T.none };
     }
     if (any.type === 'cas') {
       const r = any.cas;
@@ -153,7 +120,7 @@ export default function AddCas() {
       const all = done.current, n = (k: Item['kind']) => all.filter((x) => x.kind === k).length;
       const list = await loadStatements();
       if (id !== run.current) return;
-      track('files_added', { files: all.length, bank: n('bank'), cas: n('cas'), sms: n('sms'), unknown: n('unknown'), skipped: n('skipped') });
+      track('files_added', { files: all.length, bank: n('bank'), cas: n('cas'), unknown: n('unknown'), skipped: n('skipped') });
       setStmts(list); setBatch([...all]); setBatchOn(false); setStep('batch'); setTimeout(() => batchHead.current?.focus(), 0); return;
     }
     setFile(f); setStep('reading'); setProgress(1); setErr(null); setWrong(false);
@@ -222,45 +189,8 @@ export default function AddCas() {
               <li>{L('The PDF arrives by email in a few minutes. Save it to your phone.', 'कुछ मिनट में PDF ईमेल पर आ जाएगी। उसे अपने फ़ोन में सेव करें।')}</li>
             </ol>}
           </section>
-          <section style={S.card}>
-            <span style={S.kicker}>{T.kicker}</span>
-            <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{T.title}</b>
-            <span style={S.sub}>{T.sub}</span>
-            <button type="button" onClick={() => setStep('paste')} style={S.primary}>{T.cta}</button>
-            {smsCount > 0 && <span style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--muted)' }}>{T.saved(smsCount)}<button type="button" onClick={delSms} style={{ ...S.inlineLink, padding: 0, color: 'var(--err-ink)' }}>{T.del}</button></span>}
-          </section>
           <StatementList list={stmts} onDelete={delStmt} hi={lang === 'hi'} />
         </>}
-
-        {step === 'paste' && <section style={S.card}>
-          <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{T.pasteTitle}</b>
-          <span style={S.sub}>{T.pasteHelp}</span>
-          <label style={{ display: 'grid' }}><span style={{ position: 'absolute', left: -9999 }}>{T.pasteTitle}</span>
-            <textarea value={smsText} onChange={(e) => setSmsText(e.target.value)} rows={8} placeholder={T.placeholder} autoCapitalize="off" spellCheck={false}
-              style={{ width: '100%', boxSizing: 'border-box', borderRadius: 14, border: 0, boxShadow: 'inset 0 0 0 1.5px var(--hair2)', background: 'var(--bg)', color: 'var(--ink)', font: 'inherit', fontSize: 14.5, padding: 12, resize: 'vertical' }} /></label>
-          <button type="button" onClick={readPaste} disabled={!smsText.trim()} style={{ ...S.primary, opacity: smsText.trim() ? 1 : 0.55 }}>{T.read}</button>
-          <button type="button" onClick={choose} style={S.link}>{T.file}</button>
-          <span style={S.lock}><Lock />{T.privacy}</span>
-          <button type="button" onClick={() => setStep('intro')} style={S.link}>{T.back}</button>
-        </section>}
-
-        {step === 'sms' && smsRes && <section role={smsRes.txns.length ? undefined : 'alert'} style={S.card}>
-          <span style={smsRes.txns.length ? S.okTag : S.warnTag}>{smsRes.txns.length ? '✓ ' + T.from(smsRes.messages) : T.from(smsRes.messages)}</span>
-          <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{smsRes.txns.length ? T.got(smsRes.txns.length) : T.none}</b>
-          <div style={{ display: 'grid', gap: 4, fontSize: 13.5, color: 'var(--ink2)' }}>
-            {(smsRes.skipped.otp + smsRes.skipped.notMoney) > 0 && <span>{T.skipped(smsRes.skipped.otp, smsRes.skipped.notMoney)}</span>}
-            {smsRes.skipped.unreadable > 0 && <span>{T.unreadable(smsRes.skipped.unreadable)}</span>}
-            {smsRes.txns.length - smsRes.added > 0 && <span>{T.already(smsRes.txns.length - smsRes.added)}</span>}
-            {/^\d+ gap/.test(smsRes.checks.find((c) => c.id === 'balances')?.detail ?? '') && <span>{T.gap}</span>}
-          </div>
-          {smsRes.txns.length > 0 && <div style={{ display: 'grid', gap: 0 }}>{smsRes.txns.slice(-5).reverse().map((t) => (
-            <div key={t.id} style={{ display: 'flex', gap: 10, padding: '8px 0', borderTop: '1px solid var(--hair)', fontSize: 14 }}>
-              <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.desc.replace(/^(UPI|NEFT|IMPS)\//, '')}<span style={{ display: 'block', fontSize: 12.5, color: 'var(--muted)' }}>{day(t.date)} · ••{t.account.split(':')[1]}</span></span>
-              <b style={{ fontWeight: 600, color: t.dir === 'credit' ? 'var(--link)' : 'var(--ink)' }}>{t.dir === 'credit' ? '+' : '−'}{R(t.amount)}</b></div>))}</div>}
-          <span style={{ fontSize: 13, color: 'var(--muted)' }}>{T.provisional}</span>
-          {smsRes.txns.length > 0 && <a href="/spends" style={{ ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }}>{T.spends}</a>}
-          <button type="button" onClick={() => setStep('paste')} style={S.link}>{T.more}</button>
-        </section>}
 
         {step === 'bank' && bank && <>
           <section role={bank.ok ? undefined : 'alert'} style={S.card}>
@@ -340,9 +270,8 @@ export default function AddCas() {
                 <span style={{ flex: 1, minWidth: 0, display: 'grid', gap: 2 }}><b style={{ fontSize: 14.5, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>{x.title}</b>
                   <span style={{ fontSize: 13, color: 'var(--ink2)' }}><span style={{ position: 'absolute', left: -9999 }}>{x.ok ? L('Added. ', 'जुड़ गया। ') : L('Not added. ', 'नहीं जुड़ा। ')}</span>{x.detail}</span></span>
               </div>))}</div>
-            {batch.some((x) => x.kind === 'unknown') && <button type="button" onClick={() => setStep('paste')} style={S.link}>{L('No statement for that bank? Paste your bank SMS', 'उस बैंक का स्टेटमेंट नहीं? बैंक के SMS डालें')}</button>}
-            {batch.some((x) => (x.kind === 'bank' || x.kind === 'sms') && x.ok) && <a href="/spends" style={{ ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }}>{L('See your spends', 'अपना खर्च देखें')}</a>}
-            {batch.some((x) => x.kind === 'cas' && x.ok) && <a href="/invest/xray" style={{ ...(batch.some((x) => (x.kind === 'bank' || x.kind === 'sms') && x.ok) ? { ...S.link, display: 'grid', placeItems: 'center', textDecoration: 'none' } : { ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }) }}>{L('See your X-ray', 'अपना X-ray देखें')}</a>}
+            {batch.some((x) => x.kind === 'bank' && x.ok) && <a href="/spends" style={{ ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }}>{L('See your spends', 'अपना खर्च देखें')}</a>}
+            {batch.some((x) => x.kind === 'cas' && x.ok) && <a href="/invest/xray" style={{ ...(batch.some((x) => x.kind === 'bank' && x.ok) ? { ...S.link, display: 'grid', placeItems: 'center', textDecoration: 'none' } : { ...S.primary, display: 'grid', placeItems: 'center', textDecoration: 'none' }) }}>{L('See your X-ray', 'अपना X-ray देखें')}</a>}
             <button type="button" onClick={choose} style={S.link}>{L('Add more files', 'और फ़ाइलें जोड़ें')}</button>
           </section>
           <StatementList list={stmts} onDelete={delStmt} hi={lang === 'hi'} />
@@ -361,7 +290,6 @@ export default function AddCas() {
               : L('Munim couldn’t find any funds in it. If it is a CAMS or KFintech detailed CAS, copy the diagnostics below and send them to us: they have no amounts, names or account numbers.', 'मुनीम को इसमें कोई फ़ंड नहीं मिला। अगर यह CAMS या KFintech का डिटेल्ड CAS है, तो नीचे की जाँच-जानकारी कॉपी करके हमें भेजें: उसमें कोई रक़म, नाम या खाता नंबर नहीं है।')}</span>
           {step === 'mismatch' ? <button type="button" onClick={() => setStep('done')} style={S.primary}>{L(`Continue with ${funds} fund${funds === 1 ? '' : 's'}`, `${funds} फ़ंड के साथ आगे बढ़ें`)}</button>
             : <button type="button" onClick={() => { setStep('intro'); setHow(true); }} style={S.primary}>{step === 'summary' || step === 'partial' ? L('How to get the right CAS', 'सही CAS कैसे मिलेगा') : L('Try another file', 'दूसरी फ़ाइल आज़माएँ')}</button>}
-          {step === 'unknown' && !res && <button type="button" onClick={() => setStep('paste')} style={S.link}>{L('No statement? Paste your bank SMS', 'स्टेटमेंट नहीं है? बैंक के SMS डालें')}</button>}
           {(step === 'mismatch' || step === 'unknown') && (res || diag) && <button type="button" onClick={copyDiag} style={S.link}>{copied ? L('✓ Copied (no amounts or names)', '✓ कॉपी हो गया (कोई रक़म या नाम नहीं)') : L('Copy diagnostics', 'जाँच-जानकारी कॉपी करें')}</button>}
           {(step === 'summary' || step === 'partial') && <button type="button" onClick={choose} style={S.link}>{L('Choose another file', 'दूसरी फ़ाइल चुनें')}</button>}
         </section>}

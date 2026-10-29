@@ -9,7 +9,6 @@ import { emptyDataset, type Dataset, type Txn } from '@core/types';
 import { readCasLines, type ReadResult } from './cas';
 import { idbGet, idbPut, idbDel } from './idb';
 import { loadSubAnswers } from './subAnswers';
-import { loadSms, mergeSms, readSmsText } from './sms';
 import { switchToMyData } from './profile';
 
 export { PdfPasswordError };
@@ -23,15 +22,13 @@ async function store(list: SavedStatement[]) { memory = list; await idbPut(KEY, 
 export async function deleteStatement(key: string) { await store((await loadStatements()).filter((s) => s.key !== key)); }
 export async function deleteAllStatements() { memory = []; await idbDel(KEY); }
 
-export type AnyRead = { type: 'cas'; cas: ReadResult } | { type: 'bank'; read: BankRead; ok: boolean; saved: boolean } | { type: 'sms'; sms: Awaited<ReturnType<typeof readSmsText>> } | { type: 'unknown'; diagnostics: string };
+export type AnyRead = { type: 'cas'; cas: ReadResult } | { type: 'bank'; read: BankRead; ok: boolean; saved: boolean } | { type: 'unknown'; diagnostics: string };
 
 /** Read any supported file on the device: a CAS, or an HDFC/SBI/Canara savings or HDFC/Axis card statement. Saves only what reconciles. */
 export async function readAny(file: File, password?: string): Promise<AnyRead> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const isPdf = bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;
   const lines = isPdf ? (await pdfLines(bytes, password)).lines : new TextDecoder().decode(bytes).split(/\r?\n/);
-  // a text or XML export of bank SMS (D-055): read when it holds money alerts, else fall through to the other readers
-  if (!isPdf) { const text = new TextDecoder().decode(bytes); if (/<smses\b/.test(text) || /(debited|credited|spent|sent rs|received rs)/i.test(text)) { const sms = await readSmsText(text, file.name.replace(/[^\w.-]/g, '_')); if (sms.txns.length || /<smses\b/.test(text)) return { type: 'sms', sms }; } }
   if (detectFormat(lines)) {
     const read = readBank(lines, file.name.replace(/[^\w.-]/g, '_'))!;
     const ok = read.txns.length > 0 && read.checks.every((c) => c.ok);
@@ -50,7 +47,7 @@ export async function readAny(file: File, password?: string): Promise<AnyRead> {
 
 /** Your statements as a Dataset for the engine (same shape the server builds for the sample family). */
 export async function myDataset(): Promise<Dataset | null> {
-  const [list, sms] = await Promise.all([loadStatements(), loadSms()]); if (!list.length && !sms.length) return null;
+  const list = await loadStatements(); if (!list.length) return null; // bank SMS rows were removed with the paste flow (29 Oct)
   const ds = emptyDataset('Your statements');
   const seen = new Set<string>();
   for (const s of list) {
@@ -61,14 +58,6 @@ export async function myDataset(): Promise<Dataset | null> {
       if (!seen.has(k)) { seen.add(k); ds.txns.push(t); }
     }
   }
-  // bank SMS (D-055): provisional rows where no statement covers the account and date
-  const periods = list.filter((s) => s.period).map((s) => ({ account: s.account.id, from: s.period!.from, to: s.period!.to }));
-  const extra = mergeSms(ds.txns, periods, sms);
-  for (const id of new Set(extra.map((t) => t.account))) if (!ds.accounts.some((a) => a.id === id)) {
-    const [kind, last4] = id.split(':') as ['bank' | 'card', string];
-    ds.accounts.push({ id, kind, last4, label: `${kind === 'bank' ? 'Bank account' : 'Card'} ••${last4} (from SMS)` });
-  }
-  ds.txns.push(...extra);
   finalise(ds); // categories, then the cross-document checks: a bank debit that paid a card bill stops counting as spend
   ds.subAnswers = await loadSubAnswers(); // "Still using it?" answers (D-052)
   { const n = new Date(); ds.today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; }

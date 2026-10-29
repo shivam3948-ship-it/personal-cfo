@@ -35,7 +35,7 @@ describe('Ask on your data: what leaves the phone', async () => {
     const client: LlmClient = { messages: { create: vi.fn(async (body: Anthropic.MessageCreateParamsNonStreaming) => {
       sent.push(JSON.stringify(body.messages));
       step++;
-      if (step === 1) return { content: [{ type: 'tool_use', id: 't1', name: 'spending_breakdown', input: {} }, { type: 'tool_use', id: 't2', name: 'subscriptions_and_leaks', input: {} }, { type: 'tool_use', id: 't3', name: 'money_overview', input: {} }, { type: 'tool_use', id: 't4', name: 'spending_breakdown', input: { category: 'Other', month: '2026-10' } }], stop_reason: 'tool_use' } as unknown as Anthropic.Message;
+      if (step === 1) return { content: [{ type: 'tool_use', id: 't1', name: 'spending_breakdown', input: {} }, { type: 'tool_use', id: 't2', name: 'subscriptions_and_leaks', input: {} }, { type: 'tool_use', id: 't3', name: 'money_overview', input: {} }, { type: 'tool_use', id: 't4', name: 'spending_breakdown', input: { category: 'Paid to people', month: '2026-10' } }], stop_reason: 'tool_use' } as unknown as Anthropic.Message;
       return { content: [{ type: 'text', text: 'Most of it went on everyday spending.' }], stop_reason: 'end_turn' } as unknown as Anthropic.Message;
     }) } };
     const r = await runClaude([{ role: 'user', content: 'I am Asha. Where is my money going? I paid Rahul Kumar on UPI.' }], ctx, client);
@@ -48,7 +48,7 @@ describe('Ask on your data: what leaves the phone', async () => {
     // the tool results themselves (what the phone computed) carry none of it
     const toolPart = sent.at(-1)!.split('"tool_result"').slice(1).join('');
     expect(leaks(toolPart)).toEqual([]);
-    // and the filter is what did it: unfiltered, "Other" by merchant carries the raw UPI descriptor (payee name and UPI id)
+    // and the filter is what did it: unfiltered, "Paid to people" by merchant carries the raw UPI descriptor (payee name and UPI id)
     expect(leaks(JSON.stringify(r.trace.map((t) => t.result))).length).toBeGreaterThan(0);
   });
 
