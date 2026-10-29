@@ -11,6 +11,7 @@ import { loadDemo } from '@core/demo';
 import { getClient } from '@core/llm';
 import { runJudge, judgeSentences, JUDGE_MODEL, JUDGE_TIMEOUT_MS } from '@/lib/agent/judge';
 import { fundLabels, heldNames } from '@/lib/agent/funds';
+import { knownProducts } from '@/lib/agent/brands';
 import { ADVICE_THAT_STAYS, INSTRUCTIONS, JUDGE_HELDOUT_GO, JUDGE_HELDOUT_STAY } from '../evals/guardGolden';
 
 const live = process.env.RUN_LIVE === '1' && !!process.env.ANTHROPIC_API_KEY;
@@ -28,7 +29,9 @@ const pctl = (xs: number[], p: number) => { const s = [...xs].sort((a, b) => a -
 describe.skipIf(!live)(`AI check, live (${JUDGE_MODEL})`, () => {
   const rows: { s: string; want: boolean; got: boolean | null; ms: number; set: 'heldout' | 'reference' | 'steered' }[] = [];
   beforeAll(async () => {
-    const ds = await loadDemo(); const held = heldNames(fundLabels(ds.portfolio!.holdings, 'en'));
+    const ds = await loadDemo();
+    // the same holdings list production sends (claude.ts checkAdvice): funds and policies (review, 29 Oct: policies were missing)
+    const held = [...new Set([...knownProducts(ds.portfolio!.holdings, ds.policies).names, ...heldNames(fundLabels(ds.portfolio!.holdings, 'en'))])].slice(0, 40);
     // held out = the gate (never quoted in the prompt); reference = the lists the prompt learned from, reported only
     const cases = [...JUDGE_HELDOUT_GO.map((s) => ({ s, want: true, set: 'heldout' as const })), ...JUDGE_HELDOUT_STAY.map((s) => ({ s, want: false, set: 'heldout' as const })),
       ...PRODUCTS.map((s) => ({ s, want: true, set: 'heldout' as const })), ...PRODUCT_FACTS.map((s) => ({ s, want: false, set: 'heldout' as const })),
