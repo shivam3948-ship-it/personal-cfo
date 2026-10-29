@@ -13,3 +13,4 @@ paths:
 - Every new table: RLS test + coverage in the delete_user integration test.
 - Log-redaction test must pass (no PAN / password / folio patterns in captured logs).
 - AI-touching changes: run evals/ and attach the scorecard diff to the PR.
+- Every number a screen shows: a test that the screen's figure equals the engine's, on data shaped like the primary user's month (UPI-heavy: people, small shops, unknown payees), not only the sample family. "It renders" and "it reconciles" are not "it's right" (D-076).
