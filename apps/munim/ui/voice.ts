@@ -6,7 +6,7 @@ export interface Recording { blob: Blob; mime: string; ms: number }
 export interface RecorderHandle { stop: () => void; cancel: () => void }
 
 /** Records until `silenceMs` of quiet after speech, `maxMs`, or stop(). Reports input level 0..1. */
-export async function record(opts: { onLevel?: (v: number) => void; silenceMs?: number; maxMs?: number; onDone: (r: Recording | null) => void }): Promise<RecorderHandle> {
+export async function record(opts: { onLevel?: (v: number) => void; silenceMs?: number; maxMs?: number; noSpeechMs?: number; onNoSpeech?: () => void; onDone: (r: Recording | null) => void }): Promise<RecorderHandle> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 } });
   const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find((m) => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(m)) ?? '';
   const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
@@ -21,6 +21,7 @@ export async function record(opts: { onLevel?: (v: number) => void; silenceMs?: 
     opts.onLevel?.(level);
     const now = Date.now();
     if (level > 0.12) { spoke = true; quietSince = 0; } else if (spoke && !quietSince) quietSince = now;
+    if (!spoke && opts.noSpeechMs && now - t0 > opts.noSpeechMs) { cancelled = true; stop(); opts.onNoSpeech?.(); return; } // hands-free: nobody spoke, so the conversation ends
     if ((spoke && quietSince && now - quietSince > silenceMs) || now - t0 > maxMs) { stop(); return; }
     raf = requestAnimationFrame(tick);
   };
@@ -55,6 +56,7 @@ export function browserListen(lang: 'hi' | 'en', onInterim: (t: string) => void,
 }
 
 let current: HTMLAudioElement | null = null;
+let currentDone: (() => void) | null = null; // settles the clip's promise when it is stopped (pause fires no 'ended'), so an interrupted answer never hangs
 let gen = 0; // bumped by stopSpeaking(): a piece-by-piece answer checks it before each piece
 
 /** Phones only let a page play sound after a tap. Call this inside the mic tap so the spoken answer that arrives
@@ -65,6 +67,7 @@ export function unlockAudio() {
 }
 function halt() {
   if (current) { current.pause(); current = null; }
+  if (currentDone) { const d = currentDone; currentDone = null; d(); }
   if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
 }
 export function stopSpeaking() { gen++; halt(); }
@@ -75,8 +78,9 @@ export function playBase64(b64: string, mime: string, onStart?: () => void): Pro
   return new Promise((resolve) => {
     let began = false;
     const a = new Audio(`data:${mime};base64,${b64}`); current = a;
+    currentDone = () => resolve(true); // stopped mid-way counts as played: the caller checks whether it was stopped
     a.onplaying = () => { began = true; onStart?.(); onStart = undefined; };
-    a.onended = () => { current = null; resolve(true); }; a.onerror = () => { current = null; resolve(began); };
+    a.onended = () => { current = null; currentDone = null; resolve(true); }; a.onerror = () => { current = null; currentDone = null; resolve(began); };
     a.play().catch(() => resolve(false));
   });
 }
@@ -100,11 +104,11 @@ export interface SpokenRun { pieces: number; voice: 'sarvam' | 'browser' | 'none
 /** Speaks an answer piece by piece (D-058): piece 1 is turned into speech and starts playing while piece 2 is being
  *  made, and so on, so the first words come out after one short request instead of one long one. If the voice service
  *  fails, the rest is read by the browser's voice. `firstMs` is from the call to the first sound. Stop cancels it all. */
-export async function speakPieces(pieces: string[], lang: 'hi' | 'en', tts: (piece: string) => Promise<Audio64 | null>, browserText: (piece: string) => string): Promise<SpokenRun> {
+export async function speakPieces(pieces: string[], lang: 'hi' | 'en', tts: (piece: string) => Promise<Audio64 | null>, browserText: (piece: string) => string, onFirstSound?: () => void): Promise<SpokenRun> {
   stopSpeaking();
   const my = gen, t0 = performance.now();
   const run: SpokenRun = { pieces: pieces.length, voice: 'none', firstMs: null, stopped: false };
-  const started = (v: 'sarvam' | 'browser') => () => { if (run.firstMs === null) { run.firstMs = Math.round(performance.now() - t0); run.voice = v; } };
+  const started = (v: 'sarvam' | 'browser') => () => { if (run.firstMs === null) { run.firstMs = Math.round(performance.now() - t0); run.voice = v; onFirstSound?.(); } };
   let useBrowser = false;
   let next: Promise<Audio64 | null> | null = pieces.length ? tts(pieces[0]).catch(() => null) : null;
   for (let i = 0; i < pieces.length; i++) {
@@ -117,4 +121,28 @@ export async function speakPieces(pieces: string[], lang: 'hi' | 'en', tts: (pie
     if (gen !== my) { run.stopped = true; return run; }
   }
   return run;
+}
+
+/** Hands-free conversation (D-082): while Munim is speaking, listen for the user starting to talk so they can interrupt
+ *  ("barge in") instead of waiting or tapping. The phone's echo cancellation removes most of Munim's own voice; a higher
+ *  level and a short hold stop its leftover from counting. Calls onSpeech once, then stops itself. */
+export async function watchForSpeech(onSpeech: () => void, opts: { threshold?: number; holdMs?: number } = {}): Promise<{ stop: () => void }> {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
+  const ctx = new AudioContext(); const an = ctx.createAnalyser(); an.fftSize = 1024; ctx.createMediaStreamSource(stream).connect(an);
+  const buf = new Uint8Array(an.fftSize); const th = opts.threshold ?? 0.3, hold = opts.holdMs ?? 300;
+  let since = 0, raf = 0, live = true, sumL = 0, nL = 0; const t0 = performance.now();
+  const stop = () => { if (!live) return; live = false; cancelAnimationFrame(raf); stream.getTracks().forEach((t) => t.stop()); ctx.close().catch(() => {}); };
+  const tick = () => {
+    if (!live) return;
+    an.getByteTimeDomainData(buf);
+    let sum = 0; for (const v of buf) sum += (v - 128) * (v - 128);
+    const level = Math.min(1, (Math.sqrt(sum / buf.length) / 128) * 6), now = performance.now();
+    // the first 600 ms learn how loud Munim's own voice leaks back on this phone; after that you must be clearly louder
+    if (now - t0 < 600) { sumL += level; nL++; raf = requestAnimationFrame(tick); return; }
+    const need = Math.max(th, Math.min(0.6, (nL ? sumL / nL : 0) * 2)); // capped, so someone already talking can still cut in
+    if (level > need) { if (!since) since = now; if (now - since > hold) { stop(); onSpeech(); return; } } else since = 0;
+    raf = requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+  return { stop };
 }

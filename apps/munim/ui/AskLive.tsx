@@ -12,7 +12,7 @@ import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
 import { disclaimerLast, forSpeech, splitForSpeech } from '@core/agent/lang';
 import { doneNote, type Action } from '@/lib/actionsCore';
-import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, type Audio64, type RecorderHandle } from '@/ui/voice';
+import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type RecorderHandle } from '@/ui/voice';
 
 // Latency sprint: the moment you stop talking, a short spoken acknowledgement plays while Munim hears and answers, so the
 // first sound comes in about a second instead of after the whole answer. Voiced once per language and reused.
@@ -63,6 +63,7 @@ export const UI = {
     noMic: 'Couldn’t use the microphone. Allow it in the browser, or type.', noBrowserVoice: 'Voice typing isn’t working in this browser right now. Type instead.',
     sttBusy: 'Voice service is busy, so your browser will listen instead. Tap the mic again.',
     consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording.',
+    talkHint: 'Listening… just talk. Tap ■ to end.', interruptHint: 'Talk any time to interrupt.', talkEnded: 'Conversation ended. Tap the mic to talk again.', endTalk: 'End the conversation',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
     aiOff: 'AI off', placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
     lat: (l: Lat) => `Voice: ${[l.stt !== undefined ? `hearing ${sec(l.stt)}` : '', `answer ${sec(l.agent)}`, l.speak !== undefined ? `first word ${sec(l.speak)}` : ''].filter(Boolean).join(' · ')}`,
@@ -80,6 +81,7 @@ export const UI = {
     noMic: 'माइक नहीं चल पाया। ब्राउज़र में माइक की इजाज़त दें, या लिखकर पूछें।', noBrowserVoice: 'इस ब्राउज़र में अभी बोलकर पूछना काम नहीं कर रहा। लिखकर पूछें।',
     sttBusy: 'आवाज़ वाली सर्विस अभी व्यस्त है, इसलिए अब आपका ब्राउज़र सुनेगा। माइक फिर से दबाएँ।',
     consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता।',
+    talkHint: 'सुन रहा हूँ… बस बोलिए। ख़त्म करने के लिए ■ दबाएँ।', interruptHint: 'बीच में बोलकर रोक सकते हैं।', talkEnded: 'बातचीत ख़त्म हुई। फिर बात करने के लिए माइक दबाएँ।', endTalk: 'बातचीत ख़त्म करें',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
     aiOff: 'एआई बंद', placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
     lat: (l: Lat) => `आवाज़: ${[l.stt !== undefined ? `सुनना ${sec(l.stt, true)}` : '', `जवाब ${sec(l.agent, true)}`, l.speak !== undefined ? `पहला शब्द ${sec(l.speak, true)}` : ''].filter(Boolean).join(' · ')}`,
@@ -122,6 +124,10 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   // voice: idle → (consent once) → listening → hearing (speech to text) → the question is sent like a typed one
   const [voice, setVoice] = useState<'idle' | 'consent' | 'listening' | 'hearing'>('idle');
   const [level, setLevel] = useState(0);
+  // hands-free conversation (D-082): one tap starts it; Munim listens again after each answer, you can talk over it, and
+  // it ends on a tap or after 8 s with nobody speaking. No push-to-talk per question.
+  const [talk, setTalk] = useState(false); const talkRef = useRef(false);
+  const setTalkOn = (v: boolean) => { talkRef.current = v; setTalk(v); };
   const [heard, setHeard] = useState('');
   const [sttMode, setSttMode] = useState<'server' | 'browser'>('server');
   const [note, setNote] = useState<string | null>(null); // neutral info (not an error)
@@ -154,6 +160,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const ackOk = useRef(false);
   async function ask(q: string, via: 'text' | 'voice' = 'text', stt?: SttTiming) {
     q = q.trim(); if (!q || busyRef.current) { ackOk.current = false; return; }
+    if (via === 'text' && talkRef.current) setTalkOn(false); // typing ends a hands-free conversation
     const next: Msg[] = [...msgsRef.current, { role: 'user', content: q }];
     stopSpeaking(); setSpeaking(null);
     setMsgs(next); setText(''); setBusy(true); setErr(null);
@@ -176,19 +183,28 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     finally { setBusy(false); input.current?.focus(); }
   }
   const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content;
+  const startVoiceRef = useRef<() => Promise<void>>(async () => {});
 
   const consented = () => { try { return sessionStorage.getItem('munim_voice_ok') === '1'; } catch { return false; } };
+  function endTalk(quiet: boolean) {
+    setTalkOn(false);
+    const h = rec.current as (RecorderHandle | { stop: () => void } | null); rec.current = null;
+    if (h && 'cancel' in h) h.cancel(); else h?.stop();
+    stopSpeaking(); setSpeaking(null); setVoice('idle'); setLevel(0); ackOk.current = false;
+    setNote(quiet ? t.talkEnded : null);
+  }
   async function startVoice() {
-    if (voice === 'listening') { rec.current?.stop(); return; }
-    if (busy || voice === 'hearing') return;
+    if (voice === 'listening' && !talkRef.current) { rec.current?.stop(); return; }
+    if (busyRef.current || voice === 'hearing') return;
     if (!consented()) { setVoice('consent'); return; }
     stopSpeaking(); setSpeaking(null); unlockAudio(); setErr(null); setNote(null); setHeard('');
-    track('voice_started', { ctx, mode: sttMode });
+    track('voice_started', { ctx, mode: sttMode, talk: talkRef.current });
+    setTalkOn(true);
     const tt = t;
     if (sttMode === 'browser') {
       setVoice('listening');
-      rec.current = browserListen(hiLast ? 'hi' : 'en', (t) => setHeard(t), (t) => { setVoice('idle'); rec.current = null; if (t) ask(t, 'voice', { mode: 'browser' }); else setErr(tt.notCaught); },
-        (e) => { setVoice('idle'); rec.current = null;
+      rec.current = browserListen(hiLast ? 'hi' : 'en', (t) => setHeard(t), (t) => { setVoice('idle'); rec.current = null; if (t) ask(t, 'voice', { mode: 'browser' }); else if (talkRef.current) endTalk(true); else setErr(tt.notCaught); },
+        (e) => { setVoice('idle'); rec.current = null; if (e === 'no-speech' && talkRef.current) { endTalk(true); return; } setTalkOn(false);
           setErr(/not-allowed|service-not-allowed|audio-capture/.test(e) ? tt.noMic : e === 'no-speech' ? tt.notCaught : tt.noBrowserVoice); });
       return;
     }
@@ -196,7 +212,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     if (!ackCache.has(ackLang)) ackCache.set(ackLang, tts(ACK[ackLang], ackLang).catch(() => null)); // voiced while you speak
     try {
       setVoice('listening');
-      rec.current = await record({ onLevel: setLevel, onDone: async (r) => {
+      rec.current = await record({ onLevel: setLevel, silenceMs: 1000, noSpeechMs: 8000, onNoSpeech: () => endTalk(true), onDone: async (r) => {
         rec.current = null;
         if (!r) { setVoice('idle'); return; }
         setVoice('hearing');
@@ -208,12 +224,14 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           const res = await fetch('/api/stt', { method: 'POST', body: form }); const j = await res.json();
           if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice', { mode: 'server', ms: Math.round(performance.now() - tEnd) }); return; }
           ackOk.current = false; // no transcript: nothing to acknowledge
+          setTalkOn(false);
           if (j.fallback === 'browser' && browserSttAvailable()) { setSttMode('browser'); setVoice('idle'); setNote(t.sttBusy); return; }
           setVoice('idle'); setErr(hi ? t.notCaught : j.error ?? t.notCaught);
-        } catch { ackOk.current = false; setVoice('idle'); setErr(t.notCaught); }
+        } catch { ackOk.current = false; setTalkOn(false); setVoice('idle'); setErr(t.notCaught); }
       } });
-    } catch { setVoice('idle'); setErr(t.noMic); }
+    } catch { setTalkOn(false); setVoice('idle'); setErr(t.noMic); }
   }
+  startVoiceRef.current = startVoice; // the newest one, for the hands-free loop
   async function tts(piece: string, lang: 'hi' | 'en'): Promise<Audio64 | null> {
     if (ttsOff.current) return null;
     const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: piece, lang }) });
@@ -226,11 +244,17 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     if (speaking === idx) { stopSpeaking(); setSpeaking(null); return; } // second tap stops it
     const lang = /[\u0900-\u097F]/.test(textToSay) ? 'hi' : 'en';
     stopSpeaking(); setSpeaking(idx);
+    // hands-free: while Munim speaks, talking over it stops the answer and Munim listens (barge-in)
+    const handsFree = how === 'auto' && talkRef.current;
+    let barged = false;
+    let watch: Promise<{ stop: () => void } | null> | null = null; // starts at Munim's first sound, so it learns the echo, not the silence before it
+    const startWatch = () => { if (handsFree && !watch) watch = watchForSpeech(() => { barged = true; stopSpeaking(); }).catch(() => null); };
+    if (handsFree) setNote(t.interruptHint);
     try {
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net
       const spoken = local ? redact(textToSay) : textToSay;
       // piece by piece (D-058): the first sentence plays while the next is being made
-      const run = await speakPieces(splitForSpeech(disclaimerLast(spoken), { firstMax: 90 }), lang, (p) => tts(p, lang), (p) => forSpeech(p, lang));
+      const run = await speakPieces(splitForSpeech(disclaimerLast(spoken), { firstMax: 90 }), lang, (p) => tts(p, lang), (p) => forSpeech(p, lang), startWatch);
       track('answer_listened', { ctx, how, pieces: run.pieces, voice: run.voice, ...(run.firstMs !== null ? { first_ms: run.firstMs } : {}) });
       if (turn && run.firstMs !== null) {
         const speak = run.firstMs, stt = turn.stt?.ms;
@@ -239,7 +263,11 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           total_ms: (stt ?? 0) + turn.agentMs + speak, voice: run.voice, pieces: run.pieces, lang: turn.lang ?? lang, data: local ? 'mine' : 'sample' });
       }
     } catch { /* playback failed: the answer is still on screen */ }
-    finally { setSpeaking((cur) => (cur === idx ? null : cur)); }
+    finally {
+      setSpeaking((cur) => (cur === idx ? null : cur));
+      void (watch as Promise<{ stop: () => void } | null> | null)?.then((w) => w?.stop());
+      if (handsFree) { setNote(null); if (talkRef.current) setTimeout(() => { if (talkRef.current) void startVoiceRef.current(); }, barged ? 0 : 200); } // listen again for the next question
+    }
   }
 
   return (
@@ -328,7 +356,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           {voice === 'listening' || voice === 'hearing'
             ? <span role="status" style={{ ...S.input, display: 'flex', alignItems: 'center', gap: 10, color: 'var(--link)', fontWeight: 600 }}>
                 {voice === 'listening'
-                  ? <><span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 3, height: 20 }}>{[0.5, 0.8, 1, 0.8, 0.5].map((k, i) => <span key={i} style={{ width: 3, borderRadius: 2, background: 'var(--link)', height: `${Math.max(4, Math.round(level * k * 20))}px` }} />)}</span>{heard || t.listening}</>
+                  ? <><span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 3, height: 20 }}>{[0.5, 0.8, 1, 0.8, 0.5].map((k, i) => <span key={i} style={{ width: 3, borderRadius: 2, background: 'var(--link)', height: `${Math.max(4, Math.round(level * k * 20))}px` }} />)}</span>{heard || (talk ? t.talkHint : t.listening)}</>
                   : <><span className="dot" /><span className="dot dot2" /><span className="dot dot3" />{t.hearing}</>}
               </span>
             : <textarea id="q" ref={input} rows={1} value={text} placeholder={t.placeholder} maxLength={500} onChange={(e) => setText(e.target.value)}
@@ -337,8 +365,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
             ? <button type="submit" disabled={busy} aria-label={t.send} className="orb-teal" style={{ ...S.send, opacity: busy ? 0.5 : 1 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </button>
-            : <button type="button" onClick={startVoice} disabled={busy || voice === 'hearing'} aria-label={voice === 'listening' ? t.stopSend : t.speak} aria-pressed={voice === 'listening'} className="orb-teal" style={{ ...S.send, opacity: busy || voice === 'hearing' ? 0.5 : 1 }}>
-                {voice === 'listening'
+            : <button type="button" onClick={talk ? () => endTalk(false) : startVoice} disabled={!talk && (busy || voice === 'hearing')} aria-label={talk ? t.endTalk : voice === 'listening' ? t.stopSend : t.speak} aria-pressed={talk || voice === 'listening'} className="orb-teal" style={{ ...S.send, opacity: !talk && (busy || voice === 'hearing') ? 0.5 : 1 }}>
+                {talk || voice === 'listening'
                   ? <span style={{ width: 14, height: 14, borderRadius: 3, background: '#FFFFFF' }} />
                   : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>}
               </button>}
