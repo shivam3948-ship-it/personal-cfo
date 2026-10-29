@@ -30,6 +30,11 @@ create index if not exists sample_traces_install on public.sample_traces (instal
 create index if not exists events_install on public.events (install);
 alter table public.sample_traces enable row level security;
 
+-- Explicit access (29 Oct): works whether or not the project exposes new tables to the API by default. Only the server's
+-- service-role key may write, read (the "turn off" delete) and delete; the public anon and signed-in roles get nothing.
+revoke all on public.events, public.sample_traces from anon, authenticated;
+grant select, insert, delete on public.events, public.sample_traces to service_role;
+
 -- Retention (D-057): 180 days of events, 90 days of sample traces, every night at 02:30 UTC. Uses pg_cron when the
 -- project has it; otherwise this block only prints a notice and the two deletes must be run another way.
 do $$
