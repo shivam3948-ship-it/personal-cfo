@@ -37,7 +37,10 @@ const NEGATED_ACTION = /(?:don[’']?t|do not|never|no need to)\s+(?:\w+\s+)?(?:
 const NEG_CLAUSE = /^\s*(?:please\s+|pls\s+|yes\s+|ok\s+)?(?:(?:don[’']?t|do not|never|no need to)\s+(?:\w+\s+)?(?:remind|draft|send|e-?mail|mail|save|write|create|set)\b|(?:mat|na)\s+(?:likh|bana|bhej|dila|laga|kar)|मत\s+(?:लिख|बना|भेज|दिला|लगा|कर))|\b(?:remind|reminder|e-?mail|mail|likh|bana|bhej|dila|laga|yaad)\w*\s+mat\b/i;
 const CLAUSE_BREAK = /[,;]|\s+(?:but|par|lekin|just|instead|rather)\s+|\s+(?:पर|लेकिन|बल्कि)\s+/i;
 const ACT_START = /^\s*(?:just\s+|instead\s+|rather\s+)?(?:remind|set|draft|send|save|create|write|e-?mail)\b|yaad\s*dila|याद\s*दिला|(?:laga|bana|likh|bhej)\s*do|(?:लगा|बना|लिख|भेज)\s*दो/i;
-const negClause = (c: string) => NEG_CLAUSE.test(c) || NEGATED_ACTION.test(c);
+// a request whose own content carries the negation is still a request: "Draft an email asking them to never email me",
+// "Write to the bank: do not send paper statements", "Email likh do ki mail mat bhejo" (review, 29 Oct follow-up)
+const CONTENT_ASK = /^\s*(?:please\s+)?(?:draft|write|e-?mail|mail|send|remind|set)\b.*?(?:\bsaying\b|\basking\b|\btelling\b|\bthat\b|\bki\b|कि|:|—|\bto\s+(?:never|not)\b)/i;
+const negClause = (c: string) => !CONTENT_ASK.test(c) && (NEG_CLAUSE.test(c) || NEGATED_ACTION.test(c));
 export function allowedActions(last: string, prevAssistant: string): string[] {
   const asks = ASKS_ACTION.test(last);
   // a negated action anywhere: allowed only if another clause asks for one ("Don't email them, just remind me")
