@@ -19,10 +19,10 @@ class Component extends DCLogic {
     var RULES0 = this.props.data.RULES0; // rules the user already has (the sample family has one: ATM cash counts as household help)
     // ---- buckets (docs/41): which category counts where ----
     var GROUPS = [
-      ['everyday', ['Food delivery', 'Dining', 'Groceries', 'Quick commerce', 'Shopping', 'Cabs', 'Fuel', 'Subscriptions', 'Fitness', 'Utilities', 'Mobile & internet', 'Cash withdrawal']],
-      ['fixed', ['Rent', 'Loan EMI', 'Insurance', 'Household help']],
-      ['others', ['Family support', 'Gift', 'Other']],
-      ['not', ['Self transfer', 'Investments', 'Card bill payment']]
+      ['everyday', ['Food delivery', 'Dining', 'Groceries', 'Quick commerce', 'Shopping', 'Cabs', 'Fuel', 'Subscriptions', 'Fitness', 'Utilities', 'Mobile & internet', 'Cash withdrawal', 'Local shops']],
+      ['fixed', ['Rent', 'Loan EMI', 'Insurance', 'Household help', 'Regular payments', 'Tax']],
+      ['others', ['Family support', 'Gift', 'Other', 'Paid to people']],
+      ['not', ['Self transfer', 'Investments', 'Card bill payment', 'Cashback', 'Refund']]
     ];
     var INCOME_CATS = ['Salary', 'Other income', 'Refund', 'Self transfer'];
     var bucketOf = function (cat, dir) {
@@ -32,7 +32,7 @@ class Component extends DCLogic {
     };
     var NAME = { 'POS CHAAYOS SECTOR 29': 'Chaayos', 'OWN A': hi ? 'अपने दूसरे खाते में' : 'To your other account', 'ACME TECHNOLOGIES PVT LTD SALARY': hi ? 'सैलरी' : 'Salary' };
     var nameOf = function (m, cat) { if (NAME[m]) return NAME[m]; if (m === 'Person-to-person') return cat === 'Rent' ? (hi ? 'किराया · UPI' : 'Rent · UPI transfer') : (hi ? 'परिवार को · UPI' : 'Family transfer · UPI'); return m; };
-    var HI = { 'Mobile & internet': 'मोबाइल-इंटरनेट', 'Food delivery': 'फ़ूड डिलीवरी', 'Subscriptions': 'सब्सक्रिप्शन', 'Fuel': 'पेट्रोल', 'Utilities': 'बिजली-पानी', 'Cabs': 'कैब', 'Insurance': 'बीमा', 'Cash withdrawal': 'कैश निकासी', 'Fitness': 'जिम', 'Family support': 'परिवार को', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Loan EMI': 'लोन EMI', 'Investments': 'निवेश', 'Dining': 'बाहर खाना', 'Self transfer': 'अपने खाते में', 'Rent': 'किराया', 'Salary': 'सैलरी', 'Groceries': 'किराना', 'Household help': 'घरेलू मदद', 'Gift': 'तोहफ़ा', 'Other': 'अन्य', 'Card bill payment': 'कार्ड बिल', 'Other income': 'दूसरी आमदनी', 'Refund': 'रिफ़ंड' };
+    var HI = { 'Local shops': 'आस-पास की दुकानें', 'Paid to people': 'लोगों को भेजा', 'Regular payments': 'हर महीने के भुगतान', 'Tax': 'टैक्स', 'Mobile & internet': 'मोबाइल-इंटरनेट', 'Food delivery': 'फ़ूड डिलीवरी', 'Subscriptions': 'सब्सक्रिप्शन', 'Fuel': 'पेट्रोल', 'Utilities': 'बिजली-पानी', 'Cabs': 'कैब', 'Insurance': 'बीमा', 'Cash withdrawal': 'कैश निकासी', 'Fitness': 'जिम', 'Family support': 'परिवार को', 'Quick commerce': 'क्विक कॉमर्स', 'Shopping': 'शॉपिंग', 'Loan EMI': 'लोन EMI', 'Investments': 'निवेश', 'Dining': 'बाहर खाना', 'Self transfer': 'अपने खाते में', 'Rent': 'किराया', 'Salary': 'सैलरी', 'Groceries': 'किराना', 'Household help': 'घरेलू मदद', 'Gift': 'तोहफ़ा', 'Other': 'अन्य', 'Card bill payment': 'कार्ड बिल', 'Other income': 'दूसरी आमदनी', 'Refund': 'रिफ़ंड' };
     var catName = function (c) { return hi ? (HI[c] || c) : c; };
     var acctOf = function (a) { var k = a.split(':'); return (k[0] === 'bank' ? (hi ? 'बैंक' : 'Bank') : (hi ? 'कार्ड' : 'Card')) + ' ••' + k[1]; };
     var BL = hi ? { everyday: 'रोज़ का', fixed: 'तय खर्च', others: 'अन्य', not: 'गिना नहीं गया', income: 'आमदनी' } : { everyday: 'Everyday', fixed: 'Fixed', others: 'Others', not: 'Not counted', income: 'Money in' };

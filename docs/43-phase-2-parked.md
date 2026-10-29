@@ -29,6 +29,14 @@ Evidence column key:
 | Account Aggregator | One consented link instead of uploads | Indirect (the "coming soon" CTA records intent, D-005) | Needs an AA partner (FIU onboarding) and puts data on a server | Intent counts from the event store justify a partner conversation |
 | More bank and card formats (ICICI and others) | Users of other banks can upload | Direct (a user hits "can't read this one yet", once data flows) | Each format is about half a day; we read five today | The event store shows which unsupported banks people actually try |
 
+## Sorting spending (D-078 follow-ups)
+| Item | User need it serves | Evidence | Why parked | Comes back when |
+|---|---|---|---|---|
+| One "who is this?" card for the biggest unknown payee | Turns "Paid to people" into rent, maid, a friend, family, in one optional tap that sorts every past and future payment to them | Direct: owner's SBI statements, 29 Oct (Paid to people is 62% of August's money out after D-078) | Needs saved user fixes that the engine applies (today a fix in All transactions lives only on that screen) | Usage shows people open Spends; or the next build after the Bachatt share |
+| Make the category fix in All transactions real | A correction should stick, change every total and make a rule | Direct: it resets on reload and changes no total (found 29 Oct) | Same piece of work as the card above | With the card above |
+| Shared directory of shop UPI handles | A shop one user sorted is sorted for everyone | None yet | Needs a server and consent; handles of small shops can be personal numbers | The server database starts (Platform below) |
+| Account-holder name match for self transfers | Money to your own other account isn't spending | Indirect (owner's statement: the name sits elsewhere in the PDF header) | The SBI header layout differs between statements; needs a careful reader | Next statement-reader change |
+
 ## Channels
 | Item | User need it serves | Evidence | Why parked | Comes back when |
 |---|---|---|---|---|

@@ -8,7 +8,7 @@ import { monthName } from '../dates';
 import { sum } from '../money';
 
 export const ESSENTIALS: Record<string, string[]> = {
-  'Fixed costs': ['Rent', 'Loan EMI', 'Insurance'],
+  'Fixed costs': ['Rent', 'Loan EMI', 'Insurance', 'Regular payments'],
   'Family support': ['Family support'],
   Groceries: ['Groceries'],
   Utilities: ['Utilities'],
