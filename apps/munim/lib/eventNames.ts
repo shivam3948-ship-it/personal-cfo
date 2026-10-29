@@ -22,6 +22,7 @@ export const EVENTS = {
   onboarding_name: 'onboarding_name',           // { given } (never the name)
   onboarding_add: 'onboarding_add',             // { kind: statement | cas }
   onboarding_later: 'onboarding_later',         // {}
+  you_changed: 'you_changed',                   // { what, value } a setting on the You page (29 Oct)
   switched_to_sample: 'switched_to_sample',     // {}
   sample_bar_add_tapped: 'sample_bar_add_tapped', // {}
   sub_answered: 'sub_answered',                 // { answer } (never the merchant) (D-052)
@@ -48,7 +49,7 @@ export const PROPS: Record<EventName | 'answer' | 'feedback' | 'voice_turn', Rec
   ask_opened: { ctx: CTX }, voice_started: { ctx: CTX, mode: ['server', 'browser'] },
   answer_listened: { ctx: CTX, how: ['tap', 'auto'], pieces: 'num', voice: ['sarvam', 'browser', 'none'], first_ms: 'num' },
   onboarding_opened: { again: 'bool' }, onboarding_lang: { lang: ['hi', 'en'] }, onboarding_start: { start: ['mine', 'sample'] }, onboarding_name: { given: 'bool' },
-  onboarding_add: { kind: ['statement', 'cas'] }, onboarding_later: {}, switched_to_sample: {}, sample_bar_add_tapped: {},
+  onboarding_add: { kind: ['statement', 'cas'] }, onboarding_later: {}, you_changed: { what: ['lang', 'theme', 'start'], value: ['hi', 'en', 'auto', 'light', 'dark', 'mine', 'sample'] }, switched_to_sample: {}, sample_bar_add_tapped: {},
   sub_answered: { answer: ['yes', 'no', 'later'] }, ask_sent: { ctx: CTX, turn: 'num', via: ['text', 'voice'] },
   sms_read: { messages: 'num', rows: 'num', added: 'num', otp: 'num', unreadable: 'num' }, sms_deleted: {},
   fake_door_shown: { feature: FEATURES, first: 'bool' }, fake_door_notify_tapped: { feature: FEATURES },

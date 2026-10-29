@@ -1,13 +1,14 @@
 'use client';
 // Onboarding (D-049): language → how to start → first name → add a statement. No sign-up: the answers stay on this phone
 // (lib/local/profile.ts). "Look around first" goes straight to the sample family; "Use my statements" never shows it
-// unless asked. Opening it again (the "You" button on Today) edits the same answers.
+// unless asked. Opening it again (the "You" button on Today) shows the You page: language, theme, name, your data (29 Oct).
 import { useEffect, useState, type CSSProperties } from 'react';
 import { getProfile, saveProfile, cleanName, type Lang, type Profile } from '@/lib/local/profile';
+import { getThemePref, setThemePref, type ThemePref } from '@/lib/local/theme';
 import { track } from '@/lib/analytics';
 import { noticeShown, privacySignal, setUsage, usageOff } from '@/lib/telemetry';
 
-type Step = 'lang' | 'start' | 'name' | 'add';
+type Step = 'you' | 'lang' | 'start' | 'name' | 'add';
 const T = {
   en: {
     startQ: 'How would you like to start?', mine: 'Use my statements', mineD: 'Bank, card and mutual fund statements. Munim reads them on this phone; nothing is uploaded.',
@@ -17,6 +18,8 @@ const T = {
     bank: 'Bank and card statements', bankD: 'HDFC, SBI and Canara savings · HDFC and Axis credit cards', bankBtn: 'Choose statement PDF',
     cas: 'Mutual funds (CAS)', casD: 'CAMS or MF Central, detailed, full history', casBtn: 'Choose CAS PDF', checked: '✓ Each file is checked against its own totals before Munim uses it.',
     later: 'I’ll do this later', cont: 'Continue', skip: 'Skip', back: 'Back',
+    you: 'You', langH: 'Language', themeH: 'Look', phone: 'Like my phone', light: 'Light', dark: 'Dark', nameH: 'Name', noName: 'Not given', change: 'Change',
+    dataH: 'Your data', addData: 'Add or remove statements', useMine: 'Show my statements', useSample: 'Show the sample family', showing: (m: boolean) => (m ? 'Showing your statements' : 'Showing the sample family'), done: 'Done',
   },
   hi: {
     startQ: 'कैसे शुरू करना चाहेंगे?', mine: 'मेरे स्टेटमेंट से', mineD: 'बैंक, कार्ड और म्यूचुअल फ़ंड के स्टेटमेंट। मुनीम इन्हें इसी फ़ोन पर पढ़ता है; कुछ भी अपलोड नहीं होता।',
@@ -26,6 +29,8 @@ const T = {
     bank: 'बैंक और कार्ड स्टेटमेंट', bankD: 'HDFC, SBI और केनरा बचत खाता · HDFC और एक्सिस क्रेडिट कार्ड', bankBtn: 'स्टेटमेंट PDF चुनें',
     cas: 'म्यूचुअल फ़ंड (CAS)', casD: 'CAMS या MF Central, डिटेल्ड, पूरी हिस्ट्री', casBtn: 'CAS PDF चुनें', checked: '✓ हर फ़ाइल उसके अपने टोटल से मिलाई जाती है, तभी मुनीम उसे इस्तेमाल करता है।',
     later: 'बाद में करूँगा', cont: 'आगे बढ़ें', skip: 'छोड़ें', back: 'पीछे',
+    you: 'आप', langH: 'भाषा', themeH: 'रंग-रूप', phone: 'फ़ोन जैसा', light: 'हल्का', dark: 'गहरा', nameH: 'नाम', noName: 'नहीं दिया', change: 'बदलें',
+    dataH: 'आपका डेटा', addData: 'स्टेटमेंट जोड़ें या हटाएँ', useMine: 'मेरे स्टेटमेंट दिखाएँ', useSample: 'नमूना परिवार दिखाएँ', showing: (m: boolean) => (m ? 'आपके स्टेटमेंट दिख रहे हैं' : 'नमूना परिवार दिख रहा है'), done: 'हो गया',
   },
 };
 
@@ -38,9 +43,10 @@ export default function Welcome() {
   const [start, setStart] = useState<Profile['start']>('mine');
   const [name, setName] = useState('');
   const [had, setHad] = useState<Profile | null>(null);
+  const [theme, setTheme] = useState<ThemePref>('auto');
   useEffect(() => {
-    const p = getProfile(); setHad(p);
-    if (p) { setLang(p.lang); setStart(p.start); setName(p.name ?? ''); }
+    const p = getProfile(); setHad(p); setTheme(getThemePref());
+    if (p) { setLang(p.lang); setStart(p.start); setName(p.name ?? ''); setStep('you'); }
     track('onboarding_opened', { again: !!p });
   }, []);
   const t = T[lang];
@@ -55,20 +61,55 @@ export default function Welcome() {
       if (start === 'sample') { save({ start: 'sample' }); location.assign('/'); return; }
       setStep('name'); return;
     }
-    if (step === 'name') { save({}); track('onboarding_name', { given: !!cleanName(name) }); setStep('add'); }
+    if (step === 'name') { save({}); track('onboarding_name', { given: !!cleanName(name) }); setStep(had ? 'you' : 'add'); }
   };
-  const dots = { lang: 1, start: 2, name: 3, add: 4 }[step];
+  const dots = { you: 0, lang: 1, start: 2, name: 3, add: 4 }[step];
+  // the You page saves each change at once (no Continue): language and data source in the profile, the look in this browser
+  const setLangNow = (l: Lang) => { setLang(l); save({ lang: l }); track('you_changed', { what: 'lang', value: l }); };
+  const setThemeNow = (v: ThemePref) => { setTheme(v); setThemePref(v); track('you_changed', { what: 'theme', value: v }); };
+  const setStartNow = (v: Profile['start']) => { setStart(v); save({ start: v }); track('you_changed', { what: 'start', value: v }); };
   const shown = cleanName(name);
 
   return (
     <main lang={lang === 'hi' ? 'hi' : 'en'} style={S.page}>
       <div style={S.col}>
-        {step !== 'lang' && (
+        {step !== 'lang' && step !== 'you' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <button type="button" aria-label={t.back} onClick={() => setStep(step === 'add' ? 'name' : step === 'name' ? 'start' : 'lang')} style={S.back}>‹</button>
+            <button type="button" aria-label={t.back} onClick={() => setStep(step === 'add' ? 'name' : step === 'name' ? (had ? 'you' : 'start') : 'lang')} style={S.back}>‹</button>
             <div aria-hidden="true" style={{ display: 'flex', gap: 6 }}>{[1, 2, 3, 4].map((i) => <i key={i} style={{ width: 22, height: 4, borderRadius: 2, background: i <= dots ? 'var(--btn)' : 'var(--hair2)' }} />)}</div>
           </div>
         )}
+
+        {step === 'you' && (<>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <a href="/" aria-label={t.back} style={{ ...S.back, display: 'grid', placeItems: 'center', textDecoration: 'none' }}>‹</a>
+            <h1 className="serif" style={{ ...S.h1, margin: 0 }}>{t.you}</h1>
+          </div>
+          <section aria-label={t.langH} style={{ display: 'grid', gap: 10 }}>
+            <b style={S.label}>{t.langH}</b>
+            <div role="radiogroup" aria-label={t.langH} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <Chip on={lang === 'hi'} onPick={() => setLangNow('hi')} label="हिंदी" lang="hi" />
+              <Chip on={lang === 'en'} onPick={() => setLangNow('en')} label="English" lang="en" />
+            </div>
+          </section>
+          <section aria-label={t.themeH} style={{ display: 'grid', gap: 10 }}>
+            <b style={S.label}>{t.themeH}</b>
+            <div role="radiogroup" aria-label={t.themeH} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+              <Chip on={theme === 'auto'} onPick={() => setThemeNow('auto')} label={t.phone} />
+              <Chip on={theme === 'light'} onPick={() => setThemeNow('light')} label={t.light} />
+              <Chip on={theme === 'dark'} onPick={() => setThemeNow('dark')} label={t.dark} />
+            </div>
+          </section>
+          <section style={{ ...S.card, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ display: 'grid', gap: 2, flex: 1 }}><span style={S.muted}>{t.nameH}</span><b style={{ fontSize: 17 }}>{shown || t.noName}</b></span>
+            <button type="button" onClick={() => setStep('name')} style={S.ghost}>{t.change}</button>
+          </section>
+          <section style={{ ...S.card, display: 'grid', gap: 10 }}>
+            <span style={S.muted}>{t.dataH} · {t.showing(start === 'mine')}</span>
+            <a href="/invest/add" style={S.btn}>{t.addData}</a>
+            <button type="button" onClick={() => setStartNow(start === 'mine' ? 'sample' : 'mine')} style={S.ghost}>{start === 'mine' ? t.useSample : t.useMine}</button>
+          </section>
+        </>)}
 
         {step === 'lang' && (<>
           <div style={{ display: 'grid', gap: 6, marginTop: 'auto' }}>
@@ -125,12 +166,21 @@ export default function Welcome() {
         </>)}
 
         <div style={{ marginTop: step === 'lang' ? 0 : 'auto', display: 'grid', gap: 4 }}>
-          {step !== 'add' && <button type="button" onClick={next} style={{ ...S.btn, border: 0, cursor: 'pointer' }}>{step === 'lang' ? (lang === 'hi' ? 'आगे बढ़ें' : 'Continue') : t.cont}</button>}
+          {step === 'you' && <a href="/" style={S.btn}>{t.done}</a>}
+          {step !== 'add' && step !== 'you' && <button type="button" onClick={next} style={{ ...S.btn, border: 0, cursor: 'pointer' }}>{step === 'lang' ? (lang === 'hi' ? 'आगे बढ़ें' : 'Continue') : t.cont}</button>}
           {step === 'name' && <button type="button" onClick={() => { setName(''); save({ name: null }); setStep('add'); }} style={S.ghost}>{t.skip}</button>}
           {step === 'add' && <a href="/" onClick={() => track('onboarding_later')} style={{ ...S.ghost, textDecoration: 'none', display: 'grid', placeItems: 'center' }}>{t.later}</a>}
         </div>
       </div>
     </main>
+  );
+}
+
+function Chip({ on, onPick, label, lang }: { on: boolean; onPick: () => void; label: string; lang?: string }) {
+  return (
+    <button type="button" role="radio" aria-checked={on} onClick={onPick} lang={lang}
+      style={{ minHeight: 48, borderRadius: 14, border: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 600,
+        background: on ? 'var(--tint)' : 'var(--card)', boxShadow: on ? '0 0 0 2px var(--btn)' : '0 0 0 1px var(--hair2)', color: 'var(--ink)' }}>{on ? '✓ ' : ''}{label}</button>
   );
 }
 
@@ -152,6 +202,7 @@ const S: Record<string, CSSProperties> = {
   h1: { margin: '8px 0 0', fontSize: 27, lineHeight: 1.2 },
   card: { background: 'var(--card)', borderRadius: 22, boxShadow: '0 0 0 1px var(--hair)', padding: 18 },
   muted: { fontSize: 13.5, color: 'var(--muted)' },
+  label: { fontSize: 14, fontWeight: 600, color: 'var(--ink2)' },
   btn: { minHeight: 52, borderRadius: 999, background: 'var(--btn)', color: 'var(--on-btn)', fontSize: 16, fontWeight: 600, display: 'grid', placeItems: 'center', textDecoration: 'none', fontFamily: 'inherit' },
   ghost: { minHeight: 44, border: 0, background: 'transparent', color: 'var(--link)', fontWeight: 600, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' },
   back: { width: 40, height: 40, marginLeft: -10, border: 0, background: 'transparent', fontSize: 28, color: 'var(--ink)', cursor: 'pointer' },
