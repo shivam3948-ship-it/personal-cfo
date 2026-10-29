@@ -232,6 +232,13 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     } catch { setTalkOn(false); setVoice('idle'); setErr(t.noMic); }
   }
   startVoiceRef.current = startVoice; // the newest one, for the hands-free loop
+  const endTalkRef = useRef(endTalk); endTalkRef.current = endTalk;
+  // the mic never stays on behind your back: leaving the sheet or switching away from the tab ends the conversation
+  useEffect(() => {
+    const away = () => { if (document.hidden && talkRef.current) endTalkRef.current(false); };
+    document.addEventListener('visibilitychange', away);
+    return () => { document.removeEventListener('visibilitychange', away); if (talkRef.current) endTalkRef.current(false); };
+  }, []);
   async function tts(piece: string, lang: 'hi' | 'en'): Promise<Audio64 | null> {
     if (ttsOff.current) return null;
     const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: piece, lang }) });
