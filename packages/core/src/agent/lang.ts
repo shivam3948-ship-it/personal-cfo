@@ -31,9 +31,11 @@ export function parseAmountRupees(text: string): number | null {
 // Spoken answers lead with the answer (29 Oct, owner: "the disclaimers are still being spoken first"). The education
 // disclaimer is still said, and still shown on screen, but as the last sentence. Only that line moves: a "no licence"
 // refusal is the answer to the question, so it stays where the answer put it.
-const DISCLAIMER_SENT = /education only|not investment advice|^\s*(test build|private test)\b|सिर्फ़ जानकारी के लिए|निवेश सलाह नहीं\s*[।.]|टेस्ट वर्ज़न|निजी टेस्ट/i;
+// Only the exact lines from apps/munim/lib/advice.ts DISCLAIMER (review 29 Oct): a model sentence that merely mentions
+// "not investment advice" stays put, and the private-mode line is left whole.
+const DISCLAIMER_SENT = /^\(?\s*((this is )?(for education only|only for education),? (and )?not investment advice\.?|test build( on sample data)?\.|(यह )?सिर्फ़ जानकारी के लिए( है)?,? निवेश सलाह नहीं( है)?।?|टेस्ट वर्ज़न(, सैंपल डेटा पर)?।)\s*\)?$/i; // the line alone, as written or as the model says it
 export function disclaimerLast(text: string): string {
-  const parts = text.split(/(?<=[.!?।])\s+/);
+  const parts = text.split(/(?<=[.!?।]\)?)\s+|\n+/).map((x) => x.trim()).filter(Boolean);
   if (parts.length < 2) return text;
   const disc = parts.filter((x) => DISCLAIMER_SENT.test(x)), rest = parts.filter((x) => !DISCLAIMER_SENT.test(x));
   return disc.length && rest.length ? [...rest, ...disc].join(' ') : text;

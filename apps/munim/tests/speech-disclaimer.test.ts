@@ -17,3 +17,28 @@ describe('disclaimer last when spoken (29 Oct)', async () => {
     expect(disclaimerLast('For education only, not investment advice.')).toBe('For education only, not investment advice.');
   });
 });
+
+describe('review fixes (29 Oct)', async () => {
+  const { disclaimerLast } = await import('@core/agent/lang');
+  const { DISCLAIMER } = await import('@/lib/advice');
+  it('only the exact disclaimer lines move; the private-mode line stays whole', () => {
+    const general = 'This is general info, not investment advice, but index funds are cheap. You hold three funds.';
+    expect(disclaimerLast(general)).toBe(general);
+    const priv = DISCLAIMER.private.en + ' Sell the small cap fund by 30 Nov.';
+    expect(disclaimerLast(priv)).toBe(priv);
+    for (const m of ['guided', 'demo', 'internal'] as const) for (const l of ['en', 'hi'] as const) {
+      const said = disclaimerLast(DISCLAIMER[m][l] + ' ₹1,00,000.50 at 14.2% a year.');
+      expect(said.startsWith('₹1,00,000.50 at 14.2% a year.'), `${m}/${l}`).toBe(true);
+      expect(said.endsWith(DISCLAIMER[m][l]), `${m}/${l}`).toBe(true);
+    }
+  });
+  it('a line break without a full stop is its own piece', () => {
+    expect(disclaimerLast('Spent ₹5,874\nFor education only, not investment advice.\nMost went on travel.')).toBe('Spent ₹5,874 Most went on travel. For education only, not investment advice.');
+  });
+});
+
+it('the line as the model words it also moves', async () => {
+  const { disclaimerLast } = await import('@core/agent/lang');
+  expect(disclaimerLast('(This is for education only, not investment advice.) Keep 6 months aside.')).toBe('Keep 6 months aside. (This is for education only, not investment advice.)');
+  expect(disclaimerLast('यह सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं है। 6 महीने का खर्च अलग रखें।')).toBe('6 महीने का खर्च अलग रखें। यह सिर्फ़ जानकारी के लिए है, निवेश सलाह नहीं है।');
+});
