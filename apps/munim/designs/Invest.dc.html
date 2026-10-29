@@ -373,11 +373,11 @@ class Component extends DCLogic {
     var have = BANK + debtFund, gap = Math.max(0, target - have), mCov = Math.round(have / essAvg * 10) / 10;
     var pct = function (v) { return Math.min(100, Math.round(v / target * 1000) / 10) + '%'; };
     var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var landing = function (n) { var i = 9 + n; return (hi ? MONHI : MON)[i % 12] + ' ' + (2026 + Math.floor(i / 12)); };
+    var landing = function (n) { var i = (+PF.asOf.slice(5, 7) - 1) + n; return (hi ? MONHI : MON)[i % 12] + ' ' + (+PF.asOf.slice(0, 4) + Math.floor(i / 12)); }; // counted from your statement's month, not a fixed October
     var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
     var pills = [500000, 1000000, 2000000].map(function (a) { var on = s.pick === a, cs = chip(on); return { amt: R(a), when: hi ? Math.ceil(gap / a) + ' महीने में तैयार' : 'ready in ' + Math.ceil(gap / a) + ' mo', on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ pick: a }); } }; });
     // ---- your money vs your funds: fund = point-to-point growth since your first purchase (CAS NAVs); you = XIRR on your dates ----
-    var END = new Date('2026-10-15');
+    var END = new Date(PF.asOf); // returns up to your statement's date
     var cmp = PF.funds.map(function (f) { var yrs = (END - new Date(f[6])) / (365.25 * 864e5); return { fund: Math.round((Math.pow(f[8] / f[7], 1 / yrs) - 1) * 1000) / 10, you: f[5] }; });
     var ahead = cmp.filter(function (c) { return c.you - c.fund >= 0.5; }).length, behind = cmp.filter(function (c) { return c.fund - c.you >= 0.5; }).length;
     var regExtra = sum(PF.funds.map(function (f) { return f[9]; }));

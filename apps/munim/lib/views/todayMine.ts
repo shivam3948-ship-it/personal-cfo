@@ -81,20 +81,22 @@ export function buildTodayMine(ds: Dataset): TodayMine {
   const asOf = asOfDate(ds);
   if (!ds.txns.length) return { mine: true, verdictSub: 'From your mutual fund statement', verdictSubHi: 'आपके म्यूचुअल फ़ंड स्टेटमेंट से', dateLine: '', dateLineHi: '', inv: false, bill: null, fix: null, sub: null, // a CAS but no bank or card statement yet
     day: { none: true, date: asOf, label: '', labelHi: '', spent: 0, usual: null, top: [], unsorted: 0 } };
-  // the most recent day with everyday spending (a day with only an SIP or a transfer says nothing about spending)
-  const evDays = ds.txns.filter((t) => t.dir === 'debit' && bucketOf(t.category ?? 'Other', 'debit') === 'everyday').map((t) => t.date).sort();
+  // the most recent day with spending, sorted or not (a day with only an SIP or a transfer says nothing about spending). Unsorted
+  // UPI to people and small shops is most of a first-time saver's spending, so it counts (D-076, 29 Oct)
+  const spendB = (t: { category?: string }) => { const b = bucketOf(t.category ?? 'Other', 'debit'); return b === 'everyday' || b === 'uncat'; };
+  const evDays = ds.txns.filter((t) => t.dir === 'debit' && spendB(t)).map((t) => t.date).sort();
   const day = evDays.at(-1) ?? asOf;
   const onDay = ds.txns.filter((t) => t.date === day && t.dir === 'debit');
   const everyday = onDay.filter((t) => bucketOf(t.category ?? 'Other', 'debit') === 'everyday');
   const byMerchant = new Map<string, number>();
   for (const t of everyday) { const m = cleanMerchant(t.merchant ?? t.desc); byMerchant.set(m, (byMerchant.get(m) ?? 0) + t.amount); }
   const top = [...byMerchant.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([m, p]) => [m, Math.round(p / 100)] as [string, number]);
-  const spent = everyday.reduce((s, t) => s + t.amount, 0);
   const unsorted = onDay.filter((t) => bucketOf(t.category ?? 'Other', 'debit') === 'uncat').reduce((s, t) => s + t.amount, 0);
+  const spent = everyday.reduce((s, t) => s + t.amount, 0) + unsorted; // the whole day; the card says how much of it is unsorted
 
   // your average day: everyday spending over the complete months in your statements ÷ their days (null if none yet)
   const complete = monthPictures(ds).filter((p) => p.complete);
-  const evTotal = complete.reduce((s, p) => s + ds.txns.filter((t) => t.date.startsWith(p.key) && t.dir === 'debit' && bucketOf(t.category ?? 'Other', 'debit') === 'everyday').reduce((a, t) => a + t.amount, 0), 0);
+  const evTotal = complete.reduce((s, p) => s + ds.txns.filter((t) => t.date.startsWith(p.key) && t.dir === 'debit' && spendB(t)).reduce((a, t) => a + t.amount, 0), 0); // same measure as the day: sorted and unsorted
   const days = complete.reduce((s, p) => s + daysIn(p.key), 0);
   const usual = days ? Math.round(evTotal / days / 100) : null;
 
