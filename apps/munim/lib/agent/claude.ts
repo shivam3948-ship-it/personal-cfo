@@ -54,11 +54,34 @@ export function allowedActions(last: string, prevAssistant: string): string[] {
 export const userAllowsAction = (last: string, prevAssistant: string) => allowedActions(last, prevAssistant).length > 0;
 export interface Turn { role: 'user' | 'assistant'; content: string }
 export interface TraceStep { tool: string; input: Record<string, unknown>; result: Record<string, unknown>; ms: number }
+export interface LlmStats { calls: number; ms: number; input: number; cacheRead: number; cacheWrite: number; output: number }
 export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceStep[]; actions: Action[]; check: NumberCheck; engine: 'claude' | 'offline'; model?: string; ms: number; repaired?: boolean;
   /** Which advice check ran on the answer (D-069): the AI check, the word patterns (its fallback), or none (no investment talk). */
   guard?: 'ai' | 'rules' | 'rules_fallback' | 'none'; guardMs?: number;
+  /** Model calls behind this answer, for the latency work: count, total ms, and prompt tokens read from / written to the cache. */
+  llm?: LlmStats;
   /** The advice check found something (and forced a rewrite or removed it). On an ordinary question this is a false alarm. */
   adviceFired?: boolean }
+
+// Prompt caching (latency sprint, D-073): the tool list and the instructions are the same on every model call of an answer
+// (up to 7), so they are marked cacheable; the conversation so far is marked too, so each tool round reuses the last one.
+// The cache only skips re-reading the same text: what the model sees, and so what it answers, is unchanged.
+export const cachedSystem = (system: string): Anthropic.TextBlockParam[] => [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
+export function withCacheMark(messages: Anthropic.MessageParam[]): Anthropic.MessageParam[] {
+  if (!messages.length) return messages;
+  const last = messages[messages.length - 1];
+  const blocks: Anthropic.ContentBlockParam[] = typeof last.content === 'string' ? [{ type: 'text', text: last.content }] : [...last.content];
+  if (!blocks.length) return messages;
+  blocks[blocks.length - 1] = { ...blocks[blocks.length - 1], cache_control: { type: 'ephemeral' } } as Anthropic.ContentBlockParam;
+  return [...messages.slice(0, -1), { ...last, content: blocks }];
+}
+export const newStats = (): LlmStats => ({ calls: 0, ms: 0, input: 0, cacheRead: 0, cacheWrite: 0, output: 0 });
+export function addUsage(st: LlmStats, ms: number, u?: Anthropic.Usage | null) {
+  st.calls++; st.ms += ms;
+  if (!u) return;
+  st.input += u.input_tokens ?? 0; st.output += u.output_tokens ?? 0; st.cacheRead += u.cache_read_input_tokens ?? 0; st.cacheWrite += u.cache_creation_input_tokens ?? 0;
+}
+export const cacheOn = (env: Record<string, string | undefined> = process.env) => env.MUNIM_PROMPT_CACHE !== 'off';
 
 export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient | null = getClient()): Promise<AgentReply> {
   if (!client) throw new Error('No ANTHROPIC_API_KEY');
@@ -70,11 +93,13 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   const lastUser = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
   const prevAssistant = history.slice(0, -1).filter((t) => t.role === 'assistant').at(-1)?.content ?? '';
-  let emptyRetried = false;
+  let emptyRetried = false; const llm = newStats();
   let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0;
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
   for (let step = 0; step < 7; step++) {
-    const res = await client.messages.create({ model: MODEL, max_tokens: 700, system, tools: TOOLS, messages });
+    const tc = Date.now();
+    const res = await client.messages.create(cacheOn() ? { model: MODEL, max_tokens: 700, system: cachedSystem(system), tools: TOOLS, messages: withCacheMark(messages) } : { model: MODEL, max_tokens: 700, system, tools: TOOLS, messages });
+    addUsage(llm, Date.now() - tc, res.usage);
     const uses = res.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
     if (res.stop_reason !== 'tool_use' || !uses.length) {
       const answer = res.content.filter((b): b is Anthropic.TextBlock => b.type === 'text').map((b) => b.text).join(' ').trim();
@@ -111,7 +136,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
         continue;
       }
       const final = g.flagged.length ? removeFlagged(answer, g.flagged, ctx.adviceMode, ctx.lang, funds) : answer;
-      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: MODEL, ms: Date.now() - t0, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
+      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: MODEL, ms: Date.now() - t0, llm, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
     }
     messages.push({ role: 'assistant', content: res.content });
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
@@ -131,7 +156,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
     messages.push({ role: 'user', content: toolResults });
   }
   const answer = ctx.lang === 'hi' ? 'माफ़ कीजिए, मैं इसका जवाब पूरा नहीं कर पाया। क्या आप सवाल थोड़ा छोटा करके पूछेंगे?' : "Sorry, I couldn't finish that one. Could you ask it a bit more simply?";
-  return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'claude', model: MODEL, ms: Date.now() - t0, guard, guardMs };
+  return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'claude', model: MODEL, ms: Date.now() - t0, llm, guard, guardMs };
 }
 
 /** What the guard objects to in an answer (D-051, D-066). */
