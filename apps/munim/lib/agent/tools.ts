@@ -26,6 +26,8 @@ import { holderNames, redact } from '@core/privacy/redact';
 export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMode: AdviceMode; addAction: (sid: string, a: Omit<Action, 'id' | 'createdAt'>) => Action & { duplicate?: boolean }; icsUrl?: (a: Action) => string;
   /** On the phone (D-050): every tool result passes through this before the AI sees it, and the number check uses the same filtered result. */
   sanitize?: (r: Record<string, unknown>) => Record<string, unknown>;
+  /** The model for this answer when it isn't the default (voice turns, D-075). Chosen on the server, never by the phone. */
+  model?: string;
   /** Advice mode only (D-066): the owner's picks, from the server module on the server or /api/advice/picks on the phone. */
   picks?: () => Promise<Picks>;
   /** The AI check on answers that touch investments (D-069): the server calls the model itself, the phone goes through

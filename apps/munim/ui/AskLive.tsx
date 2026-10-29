@@ -11,9 +11,14 @@ import { DISCLAIMER } from '@/lib/advice';
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
 import { forSpeech, splitForSpeech } from '@core/agent/lang';
-import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, type Audio64, type RecorderHandle } from '@/ui/voice';
+import { doneNote, type Action } from '@/lib/actionsCore';
+import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, type Audio64, type RecorderHandle } from '@/ui/voice';
 
-type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string; id?: string }; lat?: Lat };
+// Latency sprint: the moment you stop talking, a short spoken acknowledgement plays while Munim hears and answers, so the
+// first sound comes in about a second instead of after the whole answer. Voiced once per language and reused.
+const ACK = { hi: 'एक सेकंड, देख रहा हूँ।', en: 'One second, let me check.' } as const;
+const ackCache = new Map<'hi' | 'en', Promise<Audio64 | null>>();
+type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; done?: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string; id?: string }; lat?: Lat };
 /** Seconds-level timings of one voice turn (D-058): hearing (speech to text), answering, and until the first word is heard. */
 type Lat = { stt?: number; agent: number; speak?: number };
 type SttTiming = { mode: 'server' | 'browser'; ms?: number };
@@ -146,27 +151,28 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [msgs, busy]);
 
   const ttsOff = useRef(false); // after one 501 (no voice key) this visit uses the browser's voice
+  const ackOk = useRef(false);
   async function ask(q: string, via: 'text' | 'voice' = 'text', stt?: SttTiming) {
-    q = q.trim(); if (!q || busyRef.current) return;
+    q = q.trim(); if (!q || busyRef.current) { ackOk.current = false; return; }
     const next: Msg[] = [...msgsRef.current, { role: 'user', content: q }];
     stopSpeaking(); setSpeaking(null);
     setMsgs(next); setText(''); setBusy(true); setErr(null);
     track('ask_sent', { ctx, turn: next.filter((m) => m.role === 'user').length, via });
     try {
       const t0 = performance.now();
-      const turns = next.map(({ role, content }) => ({ role, content }));
-      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number } = local ? await askLocal(turns) : await (async () => {
-        const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined }) });
+      const turns = next.map(({ role, content, done }) => ({ role, content: done ? `${content}\n\n${done}` : content })); // what Munim already saved travels with its answer
+      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[] } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed') : await (async () => {
+        const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed' }) });
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
       const agentMs = Math.round(performance.now() - t0);
       if (local && j.mode) setDisc({ ...(j.mode === 'private' ? DISCLAIMER.private : DISCLAIMER.guided), test: false }); // the line matches the mode the answer was given in
-      setMsgs([...next, { role: 'assistant', content: j.answer, spoken: j.spoken, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine, id: j.trace }, ...(via === 'voice' ? { lat: { stt: stt?.ms, agent: agentMs } } : {}) }]);
+      setMsgs([...next, { role: 'assistant', content: j.answer, spoken: j.spoken, done: doneNote(j.actions) || undefined, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine, id: j.trace }, ...(via === 'voice' ? { lat: { stt: stt?.ms, agent: agentMs } } : {}) }]);
       // metadata only: which tools ran, how long, whether the numbers checked out. Never the question or the answer.
       if (j.trace) send('answer', answerProps({ id: j.trace, engine: j.engine, model: j.model, prompt: j.prompt ?? 'unknown', tools: j.tools ?? [], ms: j.ms ?? 0,
         check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified ?? [] }, lang: j.lang ?? (hi ? 'hi' : 'en'), data: local ? 'mine' : 'sample', where: j.where ?? 'server', fallback: j.fallback, repaired: j.repaired, guard: j.guard, guardMs: j.guardMs }));
       if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang }); // asked by voice → answered by voice; typed → stays quiet
-    } catch (e) { setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
+    } catch (e) { ackOk.current = false; setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
     finally { setBusy(false); input.current?.focus(); }
   }
   const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content;
@@ -186,20 +192,25 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           setErr(/not-allowed|service-not-allowed|audio-capture/.test(e) ? tt.noMic : e === 'no-speech' ? tt.notCaught : tt.noBrowserVoice); });
       return;
     }
+    const ackLang: 'hi' | 'en' = hi ? 'hi' : 'en';
+    if (!ackCache.has(ackLang)) ackCache.set(ackLang, tts(ACK[ackLang], ackLang).catch(() => null)); // voiced while you speak
     try {
       setVoice('listening');
       rec.current = await record({ onLevel: setLevel, onDone: async (r) => {
         rec.current = null;
         if (!r) { setVoice('idle'); return; }
         setVoice('hearing');
+        ackOk.current = true; // the answer's own voice turns this off, so a late acknowledgement never talks over it
+        void ackCache.get(ackLang)?.then((a) => { if (a && ackOk.current) void playBase64(a.audioBase64, a.mime); });
         const tEnd = performance.now(); // speech ended: hearing time runs from here to the transcript
         try {
           const form = new FormData(); form.append('file', r.blob, 'speech.webm'); form.append('lang', 'auto');
           const res = await fetch('/api/stt', { method: 'POST', body: form }); const j = await res.json();
           if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice', { mode: 'server', ms: Math.round(performance.now() - tEnd) }); return; }
+          ackOk.current = false; // no transcript: nothing to acknowledge
           if (j.fallback === 'browser' && browserSttAvailable()) { setSttMode('browser'); setVoice('idle'); setNote(t.sttBusy); return; }
           setVoice('idle'); setErr(hi ? t.notCaught : j.error ?? t.notCaught);
-        } catch { setVoice('idle'); setErr(t.notCaught); }
+        } catch { ackOk.current = false; setVoice('idle'); setErr(t.notCaught); }
       } });
     } catch { setVoice('idle'); setErr(t.noMic); }
   }
@@ -211,6 +222,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     return r.ok && j.audioBase64 ? { audioBase64: j.audioBase64, mime: j.mime } : null;
   }
   async function listen(textToSay: string, idx: number, how: 'tap' | 'auto' = 'tap', turn?: { stt?: SttTiming; agentMs: number; id?: string; lang?: string }) {
+    ackOk.current = false;
     if (speaking === idx) { stopSpeaking(); setSpeaking(null); return; } // second tap stops it
     const lang = /[\u0900-\u097F]/.test(textToSay) ? 'hi' : 'en';
     stopSpeaking(); setSpeaking(idx);
@@ -218,7 +230,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net
       const spoken = local ? redact(textToSay) : textToSay;
       // piece by piece (D-058): the first sentence plays while the next is being made
-      const run = await speakPieces(splitForSpeech(spoken), lang, (p) => tts(p, lang), (p) => forSpeech(p, lang));
+      const run = await speakPieces(splitForSpeech(spoken, { firstMax: 90 }), lang, (p) => tts(p, lang), (p) => forSpeech(p, lang));
       track('answer_listened', { ctx, how, pieces: run.pieces, voice: run.voice, ...(run.firstMs !== null ? { first_ms: run.firstMs } : {}) });
       if (turn && run.firstMs !== null) {
         const speak = run.firstMs, stt = turn.stt?.ms;

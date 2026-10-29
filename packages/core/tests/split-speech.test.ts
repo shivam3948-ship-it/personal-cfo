@@ -30,3 +30,28 @@ describe('splitForSpeech (D-058)', () => {
     expect(splitForSpeech('   ')).toEqual([]);
   });
 });
+
+describe('a short first piece for voice (latency sprint)', () => {
+  it('cuts a long first sentence at its last clause break, keeping rupee numbers whole', () => {
+    const a = 'In September, ₹1,40,292 went out in total, rent was the biggest item at ₹26,000, then loan EMIs at ₹22,782. Food came next.';
+    const p = splitForSpeech(a, { firstMax: 60 });
+    expect(p[0]).toBe('In September, ₹1,40,292 went out in total,');
+    expect(p.join(' ')).toBe(a);
+    expect(splitForSpeech(a)[0]).toBe('In September, ₹1,40,292 went out in total, rent was the biggest item at ₹26,000, then loan EMIs at ₹22,782.'); // unchanged without firstMax
+  });
+  it('leaves a sentence with no clause break alone', () => {
+    const b = 'Your card bill of ₹36,343 is due on 24 October and your balance covers it easily today.';
+    expect(splitForSpeech(b, { firstMax: 40 })[0]).toBe(b);
+  });
+});
+
+describe('the voice cut never leaves a bare instruction (review, 29 Oct)', () => {
+  it('keeps a refusal whole when the negation comes later, in Hindi and English', () => {
+    const hi = 'अपना HDFC फंड अभी बेच दीजिए, ऐसा मैं नहीं कह सकता क्योंकि मेरे पास सलाहकार का लाइसेंस नहीं है।';
+    expect(splitForSpeech(hi, { firstMax: 40 })[0]).toBe(hi);
+    const en = 'Selling your Axis fund right now, with the market down, is not something I can tell you to do.';
+    expect(splitForSpeech(en, { firstMax: 40 })[0]).toBe(en);
+    const en2 = 'Your bill is large this month, and it is not covered by your balance until salary arrives.';
+    expect(splitForSpeech(en2, { firstMax: 40 })[0]).toBe(en2); // a negation in the rest: no cut
+  });
+});

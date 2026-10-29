@@ -15,7 +15,7 @@ import type { ToolCtx } from './tools';
 export type { AgentReply, Turn };
 
 /** Claude when a key is configured, else (or on any failure) the rule-based agent. The reply says which one answered. */
-export async function respond(history: Turn[], sid: string, ds: Dataset, langHint: Lang | 'auto' = 'auto', forceOffline = false, adviceMode: AdviceMode = 'guided', extra: Pick<Partial<ToolCtx>, 'sanitize' | 'judge'> = {}): Promise<AgentReply & { fallbackReason?: string }> {
+export async function respond(history: Turn[], sid: string, ds: Dataset, langHint: Lang | 'auto' = 'auto', forceOffline = false, adviceMode: AdviceMode = 'guided', extra: Pick<Partial<ToolCtx>, 'sanitize' | 'judge' | 'model'> = {}): Promise<AgentReply & { fallbackReason?: string }> {
   const last = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
   const lang = detectLang(last, langHint);
   // default is the stricter guided mode; callers pass the session's mode. Picks only reach the tools in advice mode (D-066).

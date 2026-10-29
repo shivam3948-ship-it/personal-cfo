@@ -87,7 +87,7 @@ describe('#4: products the user does not hold, and (advice mode) the owner has n
 
 describe('#5: the phone follows the mode the server used', () => {
   it('the relay returns its mode, and the phone guards a guided answer', () => {
-    expect(readFileSync('app/api/ask/relay/route.ts', 'utf8')).toMatch(/model: MODEL, mode \}/);
+    expect(readFileSync('app/api/ask/relay/route.ts', 'utf8')).toMatch(/stop_reason: res.stop_reason, model, mode[,}]/);
     expect(readFileSync('lib/local/askLocal.ts', 'utf8')).toMatch(/seen\.mode === 'guided' && adviceMode !== 'guided'\) r = \{ \.\.\.r, answer: guardAnswer\(r\.answer, 'guided'/);
   });
 });

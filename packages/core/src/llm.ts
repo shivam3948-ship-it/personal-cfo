@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 
 export const MODEL = process.env.MUNIM_CHAT_MODEL || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+// A faster model for voice turns only (latency sprint, D-075): unset means voice uses MODEL. Server-side setting.
+export const VOICE_MODEL = process.env.MUNIM_VOICE_MODEL || '';
 export const EXTRACT_MODEL = process.env.ANTHROPIC_EXTRACT_MODEL || MODEL;
 
 /** Minimal surface we use, so tests can inject a fake. */

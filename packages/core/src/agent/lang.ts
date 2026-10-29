@@ -28,7 +28,7 @@ export function parseAmountRupees(text: string): number | null {
  *  Splits after . ? ! । followed by a space (so 1.5 and ₹1,25,000.50 stay whole, and Rs. / e.g. / vs. / No. don't end a
  *  sentence). The first piece is one sentence (merged with the next if it's under `minFirst` characters); later pieces
  *  gather sentences up to `max` characters. Joining the pieces with spaces gives back the text, whitespace aside. */
-export function splitForSpeech(text: string, opts: { minFirst?: number; max?: number } = {}): string[] {
+export function splitForSpeech(text: string, opts: { minFirst?: number; max?: number; firstMax?: number } = {}): string[] {
   const minFirst = opts.minFirst ?? 25, max = opts.max ?? 320;
   const raw = text.replace(/\s+/g, ' ').trim();
   if (!raw) return [];
@@ -42,6 +42,19 @@ export function splitForSpeech(text: string, opts: { minFirst?: number; max?: nu
   const out: string[] = [];
   let i = 0, first = sentences[i++];
   while (first.length < minFirst && i < sentences.length) first = `${first} ${sentences[i++]}`;
+  // Voice (latency sprint): a long first sentence is cut at its last clause break (", " or " — ") within `firstMax`, so the
+  // first words are voiced sooner. Indian-format numbers (₹1,40,292) have no space after the comma, so they stay whole.
+  if (opts.firstMax && first.length > opts.firstMax) {
+    const head = first.slice(0, opts.firstMax);
+    const cut = Math.max(head.lastIndexOf(', '), head.lastIndexOf(' — '));
+    const headPart = first.slice(0, cut + 1), tail = first.slice(cut + 1);
+    // Never cut where the first piece alone could sound like an instruction (review, 29 Oct): a Hindi negation comes after
+    // the verb ("…बेच दीजिए, ऐसा मैं नहीं कह सकता"), and a listener can stop after piece one. So no cut when the rest negates,
+    // or when the first piece speaks of selling, stopping, switching or buying.
+    const NEGATES = /\b(?:not|never|no|cannot|can't|won't|don't|nahi|nahin|mat|na)\b|n't\b|नहीं|मत|न\s|ना\s/i;
+    const TRADE = /\b(?:sell|selling|sold|redeem|exit|switch|stop|surrender|buy|buying|invest|withdraw|book)\w*|बेच|निकाल|रोक|बंद|सरेंडर|खरीद|निवेश|\bbech\w*|\bnikal\w*|\bband\b|\bkhareed\w*/i;
+    if (cut >= minFirst && !NEGATES.test(tail) && !TRADE.test(headPart)) { out.push(headPart.trim()); first = tail.trim(); }
+  }
   out.push(first);
   let cur = '';
   for (; i < sentences.length; i++) {
