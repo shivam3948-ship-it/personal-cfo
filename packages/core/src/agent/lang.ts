@@ -28,7 +28,7 @@ export function parseAmountRupees(text: string): number | null {
  *  Splits after . ? ! । followed by a space (so 1.5 and ₹1,25,000.50 stay whole, and Rs. / e.g. / vs. / No. don't end a
  *  sentence). The first piece is one sentence (merged with the next if it's under `minFirst` characters); later pieces
  *  gather sentences up to `max` characters. Joining the pieces with spaces gives back the text, whitespace aside. */
-export function splitForSpeech(text: string, opts: { minFirst?: number; max?: number } = {}): string[] {
+export function splitForSpeech(text: string, opts: { minFirst?: number; max?: number; firstMax?: number } = {}): string[] {
   const minFirst = opts.minFirst ?? 25, max = opts.max ?? 320;
   const raw = text.replace(/\s+/g, ' ').trim();
   if (!raw) return [];
@@ -42,6 +42,13 @@ export function splitForSpeech(text: string, opts: { minFirst?: number; max?: nu
   const out: string[] = [];
   let i = 0, first = sentences[i++];
   while (first.length < minFirst && i < sentences.length) first = `${first} ${sentences[i++]}`;
+  // Voice (latency sprint): a long first sentence is cut at its last clause break (", " or " — ") within `firstMax`, so the
+  // first words are voiced sooner. Indian-format numbers (₹1,40,292) have no space after the comma, so they stay whole.
+  if (opts.firstMax && first.length > opts.firstMax) {
+    const head = first.slice(0, opts.firstMax);
+    const cut = Math.max(head.lastIndexOf(', '), head.lastIndexOf(' — '));
+    if (cut >= minFirst) { out.push(first.slice(0, cut + 1).trim()); first = first.slice(cut + 1).trim(); }
+  }
   out.push(first);
   let cur = '';
   for (; i < sentences.length; i++) {

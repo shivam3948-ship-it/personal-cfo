@@ -41,3 +41,12 @@ export function gcalLink(a: Action): string | null {
   const p = new URLSearchParams({ action: 'TEMPLATE', text: a.title, dates: `${d}/${nextDay(r.date).replace(/-/g, '')}`, details: r.notes ?? '' });
   return `https://calendar.google.com/calendar/render?${p.toString()}`;
 }
+
+/** A line added to Munim's own earlier answer when it is sent back as history, so the model knows what it already saved:
+ *  without it, a "yes" to a follow-up made it apologise for a reminder it had in fact saved and save a second (29 Oct). */
+export function doneNote(actions?: Pick<Action, 'kind' | 'title' | 'reminder' | 'email'>[] | null): string {
+  if (!actions?.length) return '';
+  const one = (a: Pick<Action, 'kind' | 'title' | 'reminder' | 'email'>) => a.kind === 'reminder' ? `reminder "${a.title}" for ${a.reminder?.date ?? 'the date given'}`
+    : a.kind === 'email' ? `email draft "${a.title}"` : a.kind === 'goal' ? `savings goal "${a.title}"` : `prepayment plan "${a.title}"`;
+  return `(Already saved in this answer: ${actions.map(one).join('; ')}.)`;
+}

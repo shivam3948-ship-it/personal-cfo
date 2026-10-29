@@ -30,3 +30,17 @@ describe('splitForSpeech (D-058)', () => {
     expect(splitForSpeech('   ')).toEqual([]);
   });
 });
+
+describe('a short first piece for voice (latency sprint)', () => {
+  it('cuts a long first sentence at its last clause break, keeping rupee numbers whole', () => {
+    const a = 'In September, ₹1,40,292 went out in total, rent was the biggest item at ₹26,000, then loan EMIs at ₹22,782. Food came next.';
+    const p = splitForSpeech(a, { firstMax: 60 });
+    expect(p[0]).toBe('In September, ₹1,40,292 went out in total,');
+    expect(p.join(' ')).toBe(a);
+    expect(splitForSpeech(a)[0]).toBe('In September, ₹1,40,292 went out in total, rent was the biggest item at ₹26,000, then loan EMIs at ₹22,782.'); // unchanged without firstMax
+  });
+  it('leaves a sentence with no clause break alone', () => {
+    const b = 'Your card bill of ₹36,343 is due on 24 October and your balance covers it easily today.';
+    expect(splitForSpeech(b, { firstMax: 40 })[0]).toBe(b);
+  });
+});
