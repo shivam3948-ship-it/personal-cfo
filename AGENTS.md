@@ -25,6 +25,10 @@ Munim: an AI personal CFO for India. **Primary user: the first-time saver in tie
 - Update `DECISIONS.md` when a decision changes; never delete rows
 - A design decision also updates `docs/42-design-principles.md`: the principle it applies, the psychology or UX framework behind it, and whether that name comes from a source or is our label
 
+## Scope (D-074)
+- Phase 1 is frozen. A new feature request goes to `docs/43-phase-2-parked.md`, not into code, unless it passes that file's gate: a named user and problem, evidence it is real, why now, and its cost to the privacy and advice promises. Ask for the missing parts and push back; don't build on request alone.
+- Fixes to failing core cases, evals and compliance are not features.
+
 ## Workflow
 - Small PRs; each references a PRD feature ID (F1…F16) or a task ID (T-, L-)
 - Before committing: tests + lint + evals (if AI-touching)

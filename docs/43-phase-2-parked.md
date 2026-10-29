@@ -1,0 +1,67 @@
+# 43 · Phase 2: parked features
+
+Phase 1 is frozen (D-074, 29 Oct 2026): no new features until Munim has been shared with Bachatt's CPO and real users have used it. This file is the only place a new idea goes. Nothing moves from here into a sprint until it passes the gate below.
+
+## The gate (every item, every time)
+An item comes back only when all four are true, written down in its row:
+1. **A named user and problem.** Which user (D-054: the tier-2/3 first-time saver, unless stated), in what moment, failing at what.
+2. **Evidence the problem is real**, strongest first:
+   - an interview or concierge-test observation;
+   - usage data from the event store (D-057) or 👎 feedback;
+   - an eval failure;
+   - the owner's own use.
+   A plausible idea on its own is not evidence.
+3. **Why now beats the next item** on this list.
+4. **The cost, and what it costs the promise.** Days, money, and any change to "your statements stay on your phone" (D-036) or to the advice boundary (D-051, D-066).
+
+Evidence column key:
+- **None yet:** an idea, no observation behind it.
+- **Indirect:** a market signal, a competitor, or reviews.
+- **Direct:** a user, the data, or an eval.
+
+## Data in
+| Item | User need it serves | Evidence | Why parked | Comes back when |
+|---|---|---|---|---|
+| PhonePe and Google Pay statement PDFs | UPI is where a tier-2/3 saver's money moves; without it, Spends misses most of their life | Indirect (UPI share of payments; Play Store reviews, 16 Oct) | No reader exists; about a day per app; needs a real statement of each | Interviews show savers can and will export these statements (many may not know how) |
+| Loan and insurance documents on the phone | "Am I covered / what does my loan cost" from the user's own papers | None yet from users. The sample family uses them | Readers exist in the engine; about half a day to wire. The primary user is a first-time saver who usually holds neither | A test user uploads one and gets "can't read this one yet", or interviews show loans and EMIs drive the saving problem |
+| Automatic SMS reading (Android app, Expo, docs/18) | No manual paste: transactions arrive by themselves | Indirect (Jar, Bachatt and others read SMS) | A web app can't read SMS. Needs a native app, Play Store SMS-permission review and a privacy review | Pasted SMS (built) shows use, and the habit loop needs daily data |
+| Account Aggregator | One consented link instead of uploads | Indirect (the "coming soon" CTA records intent, D-005) | Needs an AA partner (FIU onboarding) and puts data on a server | Intent counts from the event store justify a partner conversation |
+| More bank and card formats (ICICI and others) | Users of other banks can upload | Direct (a user hits "can't read this one yet", once data flows) | Each format is about half a day; we read five today | The event store shows which unsupported banks people actually try |
+
+## Channels
+| Item | User need it serves | Evidence | Why parked | Comes back when |
+|---|---|---|---|---|
+| Phone calls and WhatsApp on the same agent | Reach users who prefer calls or chat to an app | Indirect (Saathi runs outbound call campaigns) | Answering on a server breaks D-036. WhatsApp's business terms (from Jan 2026, per earlier research; verify) restrict AI-first bots. Telephony cost | Server-side data with consent exists (below) and a partner wants the channel |
+
+## Platform
+| Item | User need it serves | Evidence | Why parked | Comes back when |
+|---|---|---|---|---|
+| Sign-in, server database, family accounts | Data survives a phone change; a parent's portfolio managed by a child | Indirect (family proxy segment, docs/13) | The owner's call: Phase 2, start only when he says (28 Oct). D-OPEN-6 is undecided | The owner starts Phase 2 |
+| Supabase ↔ GitHub schema deploys | Schema changes apply themselves | None yet (one migration so far) | One table set; the migration filename doesn't fit the auto-deploy naming | The server database above starts changing often |
+
+## Voice speed (latency sprint, D-073)
+Measured 29 Oct: Munim takes 12.6–15.3 s from end of speech to first sound; Saathi takes 7.0–7.6 s.
+
+| Item | User need it serves | Evidence | Why parked | Comes back when |
+|---|---|---|---|---|
+| Prompt caching (branch `perf/voice-latency`, built) | Faster, cheaper answers | Direct: answers about 0.6 s faster (within noise); cached tokens bill at a fraction of the normal price | Small gain; freeze | Merge with the next eval run (it changes no answer) |
+| One-call answers (fact snapshot up front) | Cut 1.5–3 s per answer | Direct: model time is about 100% of answer time; 2–3 calls per answer | Risky (number check, evals) | Voice users in tests drop off on waits; check with `npm run voice:latency` |
+| Faster model for voice turns | Cut 1–3 s | None yet (not measured) | Quality risk; needs the full live eval | After one-call answers, if still over 8 s |
+| Streaming speech-to-text and text-to-speech | Cut 3–4 s; talk-over and continuous listening like Saathi | Direct: the Saathi teardown, 29 Oct | Needs a small server outside Vercel to hold the connections | Voice becomes the main way users ask (event store: voice vs typed share) |
+| Shorter spoken answers (disclaimer on screen only) | Less to listen to | Direct: the Saathi comparison (tone) | Compliance review needed | With the latency work above |
+
+## Answer quality and safety follow-ups
+| Item | User need it serves | Evidence | Why parked | Comes back when |
+|---|---|---|---|---|
+| Weekly test-set refresh from real 👎 answers | Evals that track what real users hit | Waits on data (the event store went live 29 Oct) | No real users yet | 20+ real answers with feedback |
+| AI check: "top up a held fund" recall | Catch "put the bonus into your ELSS" phrasings | Direct: missed 3/3 held-out cases (29 Oct) | Passes its gates; the word patterns and Claude's own rules also apply | Next prompt change to the AI check |
+| Unknown insurer's plan with no cover words | Catch a product pick from memory | Direct (reviewer finding) | The AI check, live in production, is the layer for it | An eval or live answer shows one getting through |
+| Grow the held-out guard sets to about 60 sentences | Gates that aren't same-author and small | Direct (reviewer caveat) | Freeze | Before the next AI check change |
+
+## Product features already marked phase 2
+| Item | User need it serves | Evidence | Why parked | Comes back when |
+|---|---|---|---|---|
+| Heads-up spending alerts (D-039) | Warn before overspending | None yet | Replaced by "save what you skip" | Usage shows Spends is opened weekly |
+| Goals, FIRE calculator, family (coming-soon buttons, D-063) | Plan beyond the next step | Intent taps recorded | Coming soon by design | Intent counts justify one of them |
+| Variable check-in card pool; streak rules | Keep the daily check-in fresh | None yet | Deferred 19 Oct | Retention data from the habit loop |
+| Real autopay rail (docs/37) | Daily saving actually happens | Indirect | Needs a partner, an RBI e-mandate and a destination product | A partner (Bachatt-like) exists |
