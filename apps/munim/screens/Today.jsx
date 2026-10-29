@@ -106,8 +106,8 @@ class Component extends DCLogic {
     if (TD) {
       var dd = TD.day, top = dd.top.map(function (x) { return x[0] + ' ' + v(fmtR(x[1])); }).join(', ');
       if (!dd.none) items.yday = { kicker: pos('yday') + (hi ? dd.labelHi : dd.label), kickerInk: plain, title: v(fmtR(dd.spent)) + T(' spent', ' खर्च'), titleSize: '30px',
-        sub: hi ? (dd.usual !== null ? 'आपके औसत दिन (' + v(fmtR(dd.usual)) + ') से ' + (dd.spent <= dd.usual ? 'कम' : 'ज़्यादा') + '। ' : '') + (top ? top + '।' : 'उस दिन रोज़ का कोई खर्च नहीं।') + (dd.unsorted ? ' ' + v(fmtR(dd.unsorted)) + ' और, जो अभी छाँटा नहीं गया।' : '')
-          : (dd.usual !== null ? (dd.spent <= dd.usual ? 'Below' : 'Above') + ' your average day of ' + v(fmtR(dd.usual)) + '. ' : '') + (top ? top + '.' : 'Nothing everyday that day.') + (dd.unsorted ? ' ' + v(fmtR(dd.unsorted)) + ' more not sorted yet.' : ''),
+        sub: hi ? (dd.usual !== null ? 'आपके औसत दिन (' + v(fmtR(dd.usual)) + ') से ' + (dd.spent <= dd.usual ? 'कम' : 'ज़्यादा') + '। ' : '') + (top ? top + '।' + (dd.unsorted ? ' इसमें से ' + v(fmtR(dd.unsorted)) + ' अभी छाँटा नहीं गया।' : '') : 'अभी इसमें से कुछ भी छाँटा नहीं गया।')
+          : (dd.usual !== null ? (dd.spent <= dd.usual ? 'Below' : 'Above') + ' your average day of ' + v(fmtR(dd.usual)) + '. ' : '') + (top ? top + '.' + (dd.unsorted ? ' ' + v(fmtR(dd.unsorted)) + ' of it not sorted yet.' : '') : 'None of it sorted yet.'),
         hasTags: false, hasButtons: true, primaryLabel: T('Looks right', 'सही है'), secondaryLabel: T("Something's off?", 'कुछ गड़बड़ है?'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
         primary: function () { self.complete('yday', T('Looks right', 'सही है')); }, secondary: function () { go('/spends/transactions'); } };
       items.fix = TD.fix ? { kicker: pos('fix') + T('One fix', 'एक सुधार'), kickerInk: plain, title: hi ? TD.fix.titleHi : TD.fix.title, titleSize: '24px', sub: hi ? TD.fix.subHi : TD.fix.sub, hasButtons: true,
@@ -137,7 +137,7 @@ class Component extends DCLogic {
     var mstep = this.props.moneyStep ?? 'emergency';
     var ESS = this.props.data.ESS;                       // essentials per month (D-040): Jul–Sep average of fixed costs + family + groceries, utilities, fuel, mobile (packages/core monthPictures)
     var BUF = { saved: 12400, target: ESS }, EMG = this.props.data.EMG;   // emergency fund = bank balance + debt fund (counted, shown separately in Invest)
-    if (TD) mstep = EMG.saved >= EMG.target ? 'insurance' : 'emergency'; // your data: emergency fund full → the insurance check (debt/buffer steps need loan and card data)
+    if (TD) mstep = EMG.target > 0 && EMG.saved >= EMG.target ? 'insurance' : 'emergency'; // no target yet (no full month of essentials) is not "ready" (29 Oct QA) // your data: emergency fund full → the insurance check (debt/buffer steps need loan and card data)
     var DEBT = { bal: 48200, rate: 0.035 }; DEBT.interest = Math.round(DEBT.bal * DEBT.rate);
     var openWhy = function () { self.setState({ why: true }); };
     if ((sc === 'new' || sc === 'day4') && mstep === 'debt') {
@@ -159,7 +159,8 @@ class Component extends DCLogic {
       var goal = mstep === 'buffer' ? { name: T('Starter buffer', 'शुरुआती बफ़र'), g: BUF, note: T('1 month of essentials', '1 महीने का ज़रूरी खर्च') } : { name: T('Emergency fund', 'इमरजेंसी फ़ंड'), g: EMG, note: T('6 months of essentials', '6 महीने का ज़रूरी खर्च') };
       items.save = { kicker: pos('save') + (sc === 'day4' ? T('You saved 3 days running', 'आपने लगातार 3 दिन बचत की') : hi ? 'बचत · ' + goal.name : 'Save · ' + goal.name.toLowerCase()), kickerInk: sc === 'day4' ? 'var(--warn)' : plain,
         title: sc === 'day4' ? T('Make it automatic?', 'इसे अपने आप करवाएँ?') : T('Save ' + amt.label + ' a day, automatically', 'रोज़ ' + amt.label + ' बचाएँ, अपने आप'), titleSize: '24px',
-        sub: hi ? goal.name + ': ' + v(fmtR(goal.g.target)) + ' में से ' + v(fmtR(goal.g.saved)) + ' (' + goal.note + ')। कभी भी बदलें या रोकें।' : goal.name + ': ' + v(fmtR(goal.g.saved)) + ' of ' + v(fmtR(goal.g.target)) + ' (' + goal.note + '). Change or stop anytime.', hasWhy: true,
+        sub: !goal.g.target ? T(goal.name + ': ' + v(fmtR(goal.g.saved)) + ' saved. Your target appears once Munim sees a full month of essential spending. Change or stop anytime.', goal.name + ': ' + v(fmtR(goal.g.saved)) + ' जमा। एक पूरे महीने का ज़रूरी खर्च दिखते ही आपका लक्ष्य दिखेगा। कभी भी बदलें या रोकें।')
+          : hi ? goal.name + ': ' + v(fmtR(goal.g.target)) + ' में से ' + v(fmtR(goal.g.saved)) + ' (' + goal.note + ')। कभी भी बदलें या रोकें।' : goal.name + ': ' + v(fmtR(goal.g.saved)) + ' of ' + v(fmtR(goal.g.target)) + ' (' + goal.note + '). Change or stop anytime.', hasWhy: true,
         hasAmounts: false, hasAmountLink: false, hasButtons: true, hasSkip: false, primaryLabel: T('Set up autopay', 'ऑटोपे शुरू करें'), secondaryLabel: T('Save once', 'एक बार बचाएँ'), tertiaryLabel: T('Not now', 'अभी नहीं'), primaryBg: 'var(--btn)', primaryInk: 'var(--on-btn)',
         primary: openAuto, secondary: function () { openSheet('once'); }, tertiary: function () { self.complete('save', T('Not now', 'अभी नहीं')); } };
     } else if (sc === 'autopayOn') {
@@ -264,7 +265,7 @@ class Component extends DCLogic {
     var WHY = [
       { t: T('Starter buffer', 'शुरुआती बफ़र'), d: T('1 month of essentials, ' + fmtR(BUF.target) + ', so a surprise bill doesn\u2019t go on a card', '1 महीने का ज़रूरी खर्च, ' + fmtR(BUF.target) + ', ताकि अचानक आया बिल कार्ड पर न जाए') },
       { t: T('Clear costly debt', 'महँगा लोन चुकाएँ'), d: T('Credit card balances and expensive loans first', 'पहले क्रेडिट कार्ड का बकाया और महँगे लोन') },
-      { t: T('Emergency fund', 'इमरजेंसी फ़ंड'), d: T('6 months of essentials, ' + fmtR(EMG.target) + '. Your savings balance counts', '6 महीने का ज़रूरी खर्च, ' + fmtR(EMG.target) + '। आपके बचत खाते का पैसा भी गिना जाता है') },
+      { t: T('Emergency fund', 'इमरजेंसी फ़ंड'), d: T('6 months of essentials' + (EMG.target ? ', ' + fmtR(EMG.target) : '') + '. Your savings balance counts', '6 महीने का ज़रूरी खर्च' + (EMG.target ? ', ' + fmtR(EMG.target) : '') + '। आपके बचत खाते का पैसा भी गिना जाता है') },
       { t: T('Insurance check', 'बीमा की जाँच'), d: T('Term and health cover before you invest', 'निवेश से पहले टर्म बीमा और हेल्थ बीमा') },
       { t: T('Start investing', 'निवेश शुरू करें'), d: T('With a safety net in place', 'सुरक्षा का इंतज़ाम होने के बाद') } ];
     var whySteps = WHY.map(function (w, i) { var st = i < mi ? 'done' : (i === mi ? 'here' : 'next');
