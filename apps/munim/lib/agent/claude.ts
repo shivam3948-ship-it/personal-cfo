@@ -32,8 +32,11 @@ const OFFERED = /\?|\bif you (?:like|want)\b|\b(?:shall|should|can) I\b|\bwant m
  *  instead"). Which action is NOT guessed from keywords: that guess failed on Hindi and paraphrased offers (review, 29 Oct). */
 // "don't remind me", "याद मत दिलाओ", "mat likho": the negation is tied to the action word, not anywhere in the message
 const NEGATED_ACTION = /(?:don[’']?t|do not|never|no need to)\s+(?:\w+\s+)?(?:remind|draft|set|send|e-?mail|mail|save|write|create|make)|(?:याद|ईमेल|रिमाइंडर|लिख|बना)\S*\s+(?:मत|न)(?![\u0900-\u097F])|\b(?:mat|na)\s+(?:likh|bana|bhej|dila|laga|kar)|\b(?:likh|bana|bhej|dila|laga|yaad)\w*\s+mat\b/i;
+// an opening that negates the action itself; "Don't forget to remind me" is not one (the verb after don't is forget)
+const OPENS_NEGATED = /^\s*(?:please\s+|pls\s+)?(?:(?:don[’']?t|do not|never|no need to)\s+(?:\w+\s+)?(?:remind|draft|send|e-?mail|mail|save|write|create|set)\b|(?:mat|na)\s+(?:likh|bana|bhej|dila|laga|kar)|मत\s+(?:लिख|बना|भेज|दिला|लगा|कर))/i;
 export function allowedActions(last: string, prevAssistant: string): string[] {
   const asks = ASKS_ACTION.test(last);
+  if (OPENS_NEGATED.test(last)) return []; // "Don't draft any email", "never remind me", "mat likhna" (review, 29 Oct)
   // a reply that opens with a no: allowed only if it asks for an action and doesn't negate the action itself
   if (REFUSES.test(last) && !YES_IDIOM.test(last)) return asks && !NEGATED_ACTION.test(last) ? [...ACTION_TOOLS] : [];
   if (asks) return [...ACTION_TOOLS]; // a direct request runs, whatever else it says ("…so I don't miss the bill", "बिल वाले दिन याद दिला दो")

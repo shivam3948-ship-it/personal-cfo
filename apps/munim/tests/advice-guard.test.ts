@@ -95,6 +95,11 @@ describe('the action guard after review (29 Oct)', () => {
     expect(userAllowsAction('Yes, cancel it', 'Want me to draft an email to cancel cult.fit?')).toBe(true);
     expect(allowedActions('नहीं, याद मत दिलाओ', 'क्या रिमाइंडर लगा दूँ?')).toEqual([]);
   });
+  it('an opening that negates the action allows nothing (review, 29 Oct, follow-up)', () => {
+    for (const n of ["Don't draft any email", 'Do not send the email', 'Never remind me about this', 'Please don’t set a reminder', 'mat likhna email', 'मत लिखो ईमेल'])
+      expect(allowedActions(n, 'Shall I draft an email to cult.fit?'), n).toEqual([]);
+    for (const y of ["Don't forget to remind me on Friday", "Don't worry, set the reminder for 30 Oct"]) expect(allowedActions(y, '').length, y).toBe(4);
+  });
   it('a direct request runs whatever else it says (review, 29 Oct)', () => {
     for (const a of ["Set a reminder so I don't miss the card bill", 'Remind me so I never pay late again', "Draft an email to cult.fit saying I don't use the gym anymore",
       'Card bill ka reminder laga do, bhoolna mat', 'बिल वाले दिन याद दिला दो', '30 दिन बाद याद दिला देना', 'लोन की EMI से पहले याद दिला दो',
