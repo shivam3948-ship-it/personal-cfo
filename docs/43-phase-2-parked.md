@@ -56,7 +56,7 @@ Measured 29 Oct: Munim takes 12.6–15.3 s from end of speech to first sound; Sa
 | Prompt caching (branch `perf/voice-latency`, built) | Faster, cheaper answers | Direct: answers about 0.6 s faster (within noise); cached tokens bill at a fraction of the normal price | Small gain; freeze | Merge with the next eval run (it changes no answer) |
 | One-call answers (fact snapshot up front) | Cut 1.5–3 s per answer | Direct: model time is about 100% of answer time; 2–3 calls per answer | Risky (number check, evals) | Voice users in tests drop off on waits; check with `npm run voice:latency` |
 | Faster model for voice turns | Cut 1–3 s | None yet (not measured) | Quality risk; needs the full live eval | After one-call answers, if still over 8 s |
-| Streaming speech-to-text and text-to-speech | Cut 3–4 s; talk-over and continuous listening like Saathi | Direct: the Saathi teardown, 29 Oct | Needs a small server outside Vercel to hold the connections | Voice becomes the main way users ask (event store: voice vs typed share) |
+| Streaming speech-to-text and text-to-speech (hands-free conversation and talk-over are built without it, D-082) | Cut 3–4 s off each turn | Direct: the Saathi teardown, 29 Oct | Needs a small server outside Vercel to hold the connections | Voice becomes the main way users ask (event store: voice vs typed share) |
 | Shorter spoken answers (disclaimer on screen only) | Less to listen to | Direct: the Saathi comparison (tone) | Compliance review needed | With the latency work above |
 
 ## Answer quality and safety follow-ups

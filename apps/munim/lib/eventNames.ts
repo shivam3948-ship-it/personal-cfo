@@ -46,7 +46,7 @@ export const PROPS: Record<EventName | 'answer' | 'feedback' | 'voice_turn', Rec
   cas_add_opened: {}, cas_read: { result: ['summary', 'partial', 'unknown', 'mismatch', 'done', 'unreadable', 'unrecognised', 'wrong_password', 'needs_password', 'older'], funds: 'num' }, cas_deleted: {},
   statement_read: { format: 'token', ok: 'bool', rows: 'num' }, statement_deleted: {},
   files_added: { files: 'num', bank: 'num', cas: 'num', sms: 'num', unknown: 'num', skipped: 'num' },
-  ask_opened: { ctx: CTX }, voice_started: { ctx: CTX, mode: ['server', 'browser'] },
+  ask_opened: { ctx: CTX }, voice_started: { ctx: CTX, mode: ['server', 'browser'], talk: 'bool' },
   answer_listened: { ctx: CTX, how: ['tap', 'auto'], pieces: 'num', voice: ['sarvam', 'browser', 'none'], first_ms: 'num' },
   onboarding_opened: { again: 'bool' }, onboarding_lang: { lang: ['hi', 'en'] }, onboarding_start: { start: ['mine', 'sample'] }, onboarding_name: { given: 'bool' },
   onboarding_add: { kind: ['statement', 'cas'] }, onboarding_later: {}, you_changed: { what: ['lang', 'theme', 'start'], value: ['hi', 'en', 'auto', 'light', 'dark', 'mine', 'sample'] }, switched_to_sample: {}, sample_bar_add_tapped: {},
