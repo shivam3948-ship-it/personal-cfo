@@ -60,7 +60,7 @@ describe('uncategorised UPI spending counts (synthetic statement)', async () => 
   const { finalise } = await import('@core/ingest/finalise');
   it('the total and "left after spending" include it', () => {
     const acc = 'bank:1111';
-    const tx = (id: string, date: string, desc: string, rupees: number, dir: 'debit' | 'credit') => ({ id, date, desc, amount: rupees * 100, dir, account: acc, source: 'bank_statement' as const });
+    const tx = (id: string, date: string, desc: string, rupees: number, dir: 'debit' | 'credit') => ({ id, date, desc, amount: rupees * 100, dir, account: acc, source: 'bank_statement' as const, sourceFile: 'synthetic.pdf' });
     const ds: Dataset = { ...emptyDataset('synthetic'), accounts: [{ id: acc, kind: 'bank', last4: '1111', label: 'Bank ••1111' }],
       txns: [tx('a', '2026-08-03', 'UPI/DR/123/RAMESH K/SBIN/ramesh@ok/UPI', 1200, 'debit'), tx('b', '2026-08-09', 'UPI/DR/124/SUNITA V/UTIB/sv@ok/UPI', 300, 'debit'),
         tx('c', '2026-08-30', 'UPI/DR/125/IRCTC/YESB/irctc@yes/Paym', 500, 'debit'), tx('d', '2026-08-05', 'NEFT*RELATIVE NAME*', 2500, 'credit')] };
