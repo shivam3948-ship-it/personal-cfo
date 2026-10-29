@@ -32,8 +32,20 @@ const OFFERED = /\?|\bif you (?:like|want)\b|\b(?:shall|should|can) I\b|\bwant m
  *  instead"). Which action is NOT guessed from keywords: that guess failed on Hindi and paraphrased offers (review, 29 Oct). */
 // "don't remind me", "याद मत दिलाओ", "mat likho": the negation is tied to the action word, not anywhere in the message
 const NEGATED_ACTION = /(?:don[’']?t|do not|never|no need to)\s+(?:\w+\s+)?(?:remind|draft|set|send|e-?mail|mail|save|write|create|make)|(?:याद|ईमेल|रिमाइंडर|लिख|बना)\S*\s+(?:मत|न)(?![\u0900-\u097F])|\b(?:mat|na)\s+(?:likh|bana|bhej|dila|laga|kar)|\b(?:likh|bana|bhej|dila|laga|yaad)\w*\s+mat\b/i;
+// a clause that negates the action itself ("don't email them", "mat bhejo", "remind mat karo", "मत भेजो"); "Don't forget to
+// remind me" is not one (the verb after don't is forget). Judged per clause, so a redirect still runs (review, 29 Oct follow-up)
+const NEG_CLAUSE = /^\s*(?:please\s+|pls\s+|yes\s+|ok\s+)?(?:(?:don[’']?t|do not|never|no need to)\s+(?:\w+\s+)?(?:remind|draft|send|e-?mail|mail|save|write|create|set)\b|(?:mat|na)\s+(?:likh|bana|bhej|dila|laga|kar)|मत\s+(?:लिख|बना|भेज|दिला|लगा|कर))|\b(?:remind|reminder|e-?mail|mail|likh|bana|bhej|dila|laga|yaad)\w*\s+mat\b/i;
+const CLAUSE_BREAK = /[,;]|\s+(?:but|par|lekin|just|instead|rather)\s+|\s+(?:पर|लेकिन|बल्कि)\s+/i;
+const ACT_START = /^\s*(?:just\s+|instead\s+|rather\s+)?(?:remind|set|draft|send|save|create|write|e-?mail)\b|yaad\s*dila|याद\s*दिला|(?:laga|bana|likh|bhej)\s*do|(?:लगा|बना|लिख|भेज)\s*दो/i;
+// a request whose own content carries the negation is still a request: "Draft an email asking them to never email me",
+// "Write to the bank: do not send paper statements", "Email likh do ki mail mat bhejo" (review, 29 Oct follow-up)
+const CONTENT_ASK = /^\s*(?:please\s+)?(?:draft|write|e-?mail|mail|send|remind|set)\b.*?(?:\bsaying\b|\basking\b|\btelling\b|\bthat\b|\bki\b|कि|:|—|\bto\s+(?:never|not)\b)/i;
+const negClause = (c: string) => !CONTENT_ASK.test(c) && (NEG_CLAUSE.test(c) || NEGATED_ACTION.test(c));
 export function allowedActions(last: string, prevAssistant: string): string[] {
   const asks = ASKS_ACTION.test(last);
+  // a negated action anywhere: allowed only if another clause asks for one ("Don't email them, just remind me")
+  const clauses = last.split(CLAUSE_BREAK);
+  if (clauses.some(negClause)) return clauses.some((c) => !negClause(c) && (ASKS_ACTION.test(c) || ACT_START.test(c))) ? [...ACTION_TOOLS] : [];
   // a reply that opens with a no: allowed only if it asks for an action and doesn't negate the action itself
   if (REFUSES.test(last) && !YES_IDIOM.test(last)) return asks && !NEGATED_ACTION.test(last) ? [...ACTION_TOOLS] : [];
   if (asks) return [...ACTION_TOOLS]; // a direct request runs, whatever else it says ("…so I don't miss the bill", "बिल वाले दिन याद दिला दो")

@@ -95,6 +95,17 @@ describe('the action guard after review (29 Oct)', () => {
     expect(userAllowsAction('Yes, cancel it', 'Want me to draft an email to cancel cult.fit?')).toBe(true);
     expect(allowedActions('नहीं, याद मत दिलाओ', 'क्या रिमाइंडर लगा दूँ?')).toEqual([]);
   });
+  it('an opening that negates the action allows nothing (review, 29 Oct, follow-up)', () => {
+    for (const n of ["Don't draft any email", 'Do not send the email', 'Never remind me about this', 'Please don’t set a reminder', 'mat likhna email', 'मत लिखो ईमेल'])
+      expect(allowedActions(n, 'Shall I draft an email to cult.fit?'), n).toEqual([]);
+    for (const n of ['remind mat karo', 'email mat bhejo', 'reminder mat lagao', 'yes but dont send it', 'ठीक है पर मत भेजो', "No need to email, I'll call them"])
+      expect(allowedActions(n, 'Shall I draft an email to cult.fit?'), n).toEqual([]);
+    for (const y of ["Don't forget to remind me on Friday", "Don't worry, set the reminder for 30 Oct", "Don't email them, just remind me", 'No need to email, just remind me',
+      'Do not save the plan, set a reminder instead', "Don't set it for Friday, set it for Monday", 'Email mat likho, reminder laga do', 'mat bhejo email, yaad dila do',
+      'Draft an email asking cult.fit to never email me again', "Draft an email to HDFC saying don't send me promotional mail", 'Write to the bank: please do not send me paper statements',
+      'Draft an email to the landlord: do not mail the cheque', 'Email likh do ki mujhe mail mat bhejo'])
+      expect(allowedActions(y, 'Shall I draft an email to cult.fit?').length, y).toBe(4);
+  });
   it('a direct request runs whatever else it says (review, 29 Oct)', () => {
     for (const a of ["Set a reminder so I don't miss the card bill", 'Remind me so I never pay late again', "Draft an email to cult.fit saying I don't use the gym anymore",
       'Card bill ka reminder laga do, bhoolna mat', 'बिल वाले दिन याद दिला दो', '30 दिन बाद याद दिला देना', 'लोन की EMI से पहले याद दिला दो',
