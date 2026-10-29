@@ -85,3 +85,7 @@ When two goals conflict, the higher one wins: e.g. a second tap is accepted (mot
 - The streak rules and the autopay frequency caps are proposals; tune them with data (docs/37).
 - Is the primary button reachable one-handed on a 6.1" phone?
 - Every "our label" principle above is untested with users; the concierge test is the first evidence.
+
+
+## Settings live where the app already points (D-080, 29 Oct)
+The avatar's label already said "language, name and your data", so the You page sits behind it rather than adding a new control to every screen. Principle: keep a signifier's promise (Don Norman's "signifiers" from *The Design of Everyday Things*; the name is from that source). Each choice applies at once with no Save button, which keeps a reversible setting cheap to try (our label: "undo is the confirmation").
