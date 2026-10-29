@@ -83,7 +83,7 @@ describe('Ask Munim design in Hindi', () => {
     const pagesEn = askAll('standard'); const all = pagesEn.map(text).join(' ');
     for (const l of ['Asking about your money · Rohan', 'Ask anything about your money', 'Speak in Hindi or English. Every answer shows its math.', 'Is my card bill covered?', 'What is cult.fit costing me?',
       'Listening · Hindi or English', 'Checking your bank and bills…', 'Yes. The ₹36,343 card bill is due 24 Oct. Your bank has ₹1,41,764 . After every payment due before salary, ₹93,083 is left.',
-      'Show the math', 'Hide the math', 'Bank (SMS alerts, 15 Oct)', 'Remind me on 22 Oct', "Didn't catch that", "Munim couldn't hear you", 'Tap to talk · Type instead', 'Ask another · Type instead']) expect(all).toContain(l);
+      'Show the math', 'Hide the math', 'Bank statement, 15 Oct', 'Remind me on 22 Oct', "Didn't catch that", "Munim couldn't hear you", 'Tap to talk · Type instead', 'Ask another · Type instead']) expect(all).toContain(l);
     expect(pagesEn.join('')).toContain('aria-label="Ask Munim"');
   });
 });
