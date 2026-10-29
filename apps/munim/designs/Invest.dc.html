@@ -303,6 +303,10 @@ class Component extends DCLogic {
     var st = s.retried ? 'ready' : (this.props.state ?? 'ready');
     var hi = (this.props.variant ?? 'standard') === 'bharat';
     var MONHI = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+    // the date of the user's own CAS, never a fixed one (D-076 audit, 29 Oct); no CAS → no date
+    var ASOF = (this.props.data && this.props.data.PF && this.props.data.PF.asOf) || '';
+    var asD = ASOF ? (+ASOF.slice(8, 10)) + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+ASOF.slice(5, 7) - 1] : '';
+    var asDHi = ASOF ? (+ASOF.slice(8, 10)) + ' ' + MONHI[+ASOF.slice(5, 7) - 1] : '';
     // 'Jan 2021' (engine, English) -> 'जनवरी 2021'; anything else passes through
     var monHi = function (x) { var p = String(x).split(' '), i = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(p[0]); return i < 0 ? x : [MONHI[i]].concat(p.slice(1)).join(' '); };
     // the mode's disclaimer comes from the server in English; its Hindi twin, word for word as lib/advice.ts DISCLAIMER[mode].hi
@@ -311,7 +315,7 @@ class Component extends DCLogic {
       return /^Private test/.test(en) ? 'निजी टेस्ट। मुनीम न SEBI-रजिस्टर्ड निवेश सलाहकार है, न AMFI-रजिस्टर्ड म्यूचुअल फ़ंड डिस्ट्रीब्यूटर; कोई कदम उठाने से पहले किसी रजिस्टर्ड सलाहकार से पूछें।' : /^Investment advice from a SEBI-registered adviser/.test(en) ? 'SEBI-रजिस्टर्ड सलाहकार की निवेश सलाह।' : /^Test build on sample data/.test(en) ? 'टेस्ट वर्ज़न, सैंपल डेटा पर। ' + EDU : /^Test build/.test(en) ? 'टेस्ट वर्ज़न। ' + EDU : EDU; };
     var HI_ESS = { 'Fixed costs': 'तय खर्च (किराया, EMI, बीमा)', 'Family support': 'परिवार की मदद', 'Groceries': 'किराना', 'Utilities': 'बिजली-पानी', 'Mobile & internet': 'मोबाइल-इंटरनेट', 'Fuel': 'पेट्रोल' };
     var C = hi ? {
-      title: 'निवेश', asOf: '15 अक्टूबर तक', errLine: 'ताज़ा नहीं हो पाया। 15 अक्टूबर तक के आँकड़े दिख रहे हैं।', retry: 'फिर कोशिश करें', loading: 'आपका पैसा जोड़ा जा रहा है…',
+      title: 'निवेश', asOf: asDHi ? asDHi + ' तक' : '', errLine: 'ताज़ा नहीं हो पाया। ' + (asDHi ? asDHi + ' तक के' : 'पिछले') + ' आँकड़े दिख रहे हैं।', retry: 'फिर कोशिश करें', loading: 'आपका पैसा जोड़ा जा रहा है…',
       emptyTitle: 'एक स्टेटमेंट से शुरू करें', emptyBody: 'बैंक स्टेटमेंट से मुनीम आपका इमरजेंसी फ़ंड और अगला कदम निकालता है। CAS से पता चलता है कि आपका निवेश असल में कैसा चल रहा है।',
       emptyCta: 'बैंक स्टेटमेंट जोड़ें', emptyAlt: 'सैंपल डेटा से देखें', emptyNote: 'सब कुछ आपके फ़ोन पर ही पढ़ा जाता है।',
       pathAria: 'पैसे का रास्ता', pathHead: 'पैसे का रास्ता · 5 में से कदम 3', seeAll: 'सब देखें ›', step3: '5 में से कदम 3', nextTitle: 'इमरजेंसी फ़ंड को 6 महीने तक बढ़ाएँ',
@@ -330,7 +334,7 @@ class Component extends DCLogic {
       casChoose: 'CAS की PDF चुनें', casSample: 'सैंपल CAS से देखें', casPrivacy: 'आपके फ़ोन पर ही पढ़ा जाता है। PDF और उसका पासवर्ड फ़ोन से बाहर नहीं जाते; मुनीम सिर्फ़ फ़ंड के कुल आँकड़े रखता है, बिना आपकी पहचान के।',
       holdAria: 'होल्डिंग गलत दिख रही हैं?', holdTitle: 'क्या गलत लग रहा है?', stop: '।', wrongAria: 'क्या गलत लग रहा है', newerCas: 'नया CAS जोड़ें', ok: 'ठीक है'
     } : {
-      title: 'Invest', asOf: 'As of 15 Oct', errLine: 'Couldn’t refresh. Showing numbers as of 15 Oct.', retry: 'Retry', loading: 'Adding up your money…',
+      title: 'Invest', asOf: asD ? 'As of ' + asD : '', errLine: 'Couldn’t refresh. Showing ' + (asD ? 'numbers as of ' + asD : 'your last numbers') + '.', retry: 'Retry', loading: 'Adding up your money…',
       emptyTitle: 'Start with one statement', emptyBody: 'From your bank statement, Munim works out your safety net and your next move. From your CAS, how your investing is really doing.',
       emptyCta: 'Add bank statement', emptyAlt: 'Try with sample data', emptyNote: 'Everything is read on your phone.',
       pathAria: 'Money path', pathHead: 'Money path · step 3 of 5', seeAll: 'See all ›', step3: 'step 3 of 5', nextTitle: 'Grow your safety net to 6 months',
@@ -409,11 +413,11 @@ class Component extends DCLogic {
       { name: 'एंडोमेंट · Bharosa Jeevan Nidhi', sub: '₹5,000 महीना · अगला 10 नवंबर', fact: 'अनुमानित रिटर्न ' + ENDOW.irrLo.toFixed(1) + '–' + ENDOW.irrHi.toFixed(1) + '% सालाना, बीमा कंपनी के अपने इलस्ट्रेशन से (गारंटी नहीं)।', tag: 'अपना रिटर्न जानें' }
     ].forEach(function (h, i) { Object.assign(policies[i], h); });
     policies.forEach(function (p, i) { p.rule = i < policies.length - 1 ? '1px solid var(--hair)' : '0'; });
-    var WRONG = { missing: 'Bought after 15 Oct? Add a newer CAS. Funds held in a demat account show in your depository statement (NSDL or CDSL), not in this one.',
-      value: 'Values use prices from 15 Oct, the date of your CAS. Add a newer CAS to bring them up to date.',
+    var WRONG = { missing: (asD ? 'Bought after ' + asD + '? ' : 'Bought recently? ') + 'Add a newer CAS. Funds held in a demat account show in your depository statement (NSDL or CDSL), not in this one.',
+      value: 'Values use prices from ' + (asD || 'the date of your CAS') + (asD ? ', the date of your CAS' : '') + '. Add a newer CAS to bring them up to date.',
       notmine: 'Funds held jointly appear in every holder’s statement. Add a newer CAS, or ask Munim to leave a fund out of your totals.' };
-    if (hi) WRONG = { missing: '15 अक्टूबर के बाद खरीदा? नया CAS जोड़ें। डीमैट खाते वाले फ़ंड आपके डिपॉज़िटरी स्टेटमेंट (NSDL या CDSL) में दिखते हैं, इसमें नहीं।',
-      value: 'रक़में 15 अक्टूबर के भाव पर हैं, यानी आपके CAS की तारीख़ पर। ताज़ा रक़म के लिए नया CAS जोड़ें।',
+    if (hi) WRONG = { missing: (asDHi ? asDHi + ' के बाद खरीदा? ' : 'हाल में खरीदा? ') + 'नया CAS जोड़ें। डीमैट खाते वाले फ़ंड आपके डिपॉज़िटरी स्टेटमेंट (NSDL या CDSL) में दिखते हैं, इसमें नहीं।',
+      value: 'रक़में ' + (asDHi || 'CAS की तारीख़') + ' के भाव पर हैं, यानी आपके CAS की तारीख़ पर। ताज़ा रक़म के लिए नया CAS जोड़ें।',
       notmine: 'जॉइंट फ़ंड हर होल्डर के स्टेटमेंट में दिखते हैं। नया CAS जोड़ें, या मुनीम से कहें कि वह फ़ंड आपके कुल में न गिने।' };
     var WRONG_HI = { missing: 'कोई फ़ंड नहीं दिख रहा', value: 'कोई रक़म गलत लग रही है', notmine: 'कोई फ़ंड मेरा नहीं है' };
     var wrongOpts = [['missing', 'A fund is missing'], ['value', 'A value looks off'], ['notmine', 'A fund isn’t mine']].map(function (o) { var on = s.wrong === o[0], cs = chip(on); return { t: hi ? WRONG_HI[o[0]] : o[1], on: on, bg: cs.bg, ink: cs.ink, ring: cs.ring, pick: function () { self.setState({ wrong: o[0] }); } }; });

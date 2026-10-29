@@ -10,7 +10,7 @@ import { askLocal } from '@/lib/local/askLocal';
 import { DISCLAIMER } from '@/lib/advice';
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
-import { forSpeech, splitForSpeech } from '@core/agent/lang';
+import { disclaimerLast, forSpeech, splitForSpeech } from '@core/agent/lang';
 import { doneNote, type Action } from '@/lib/actionsCore';
 import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, type Audio64, type RecorderHandle } from '@/ui/voice';
 
@@ -230,7 +230,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net
       const spoken = local ? redact(textToSay) : textToSay;
       // piece by piece (D-058): the first sentence plays while the next is being made
-      const run = await speakPieces(splitForSpeech(spoken, { firstMax: 90 }), lang, (p) => tts(p, lang), (p) => forSpeech(p, lang));
+      const run = await speakPieces(splitForSpeech(disclaimerLast(spoken), { firstMax: 90 }), lang, (p) => tts(p, lang), (p) => forSpeech(p, lang));
       track('answer_listened', { ctx, how, pieces: run.pieces, voice: run.voice, ...(run.firstMs !== null ? { first_ms: run.firstMs } : {}) });
       if (turn && run.firstMs !== null) {
         const speak = run.firstMs, stt = turn.stt?.ms;
