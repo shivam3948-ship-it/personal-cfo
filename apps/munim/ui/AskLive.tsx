@@ -62,7 +62,7 @@ export const UI = {
     noAnswer: 'Munim could not answer just now.', notCaught: 'Didn’t catch that. Try again or type.',
     noMic: 'Couldn’t use the microphone. Allow it in the browser, or type.', noBrowserVoice: 'Voice typing isn’t working in this browser right now. Type instead.',
     sttBusy: 'Voice service is busy, so your browser will listen instead. Tap the mic again.',
-    consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording.',
+    consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording. After each answer the mic turns on again by itself. While Munim speaks, your phone listens so you can interrupt; nothing is sent. Tap ■ to stop.',
     talkHint: 'Listening… just talk. Tap ■ to end.', interruptHint: 'Talk any time to interrupt.', talkEnded: 'Conversation ended. Tap the mic to talk again.', endTalk: 'End the conversation',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
     aiOff: 'AI off', placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
@@ -80,7 +80,7 @@ export const UI = {
     noAnswer: 'मुनीम अभी जवाब नहीं दे पाया। फिर कोशिश करें।', notCaught: 'सुनाई नहीं दिया। फिर कोशिश करें या लिखकर पूछें।',
     noMic: 'माइक नहीं चल पाया। ब्राउज़र में माइक की इजाज़त दें, या लिखकर पूछें।', noBrowserVoice: 'इस ब्राउज़र में अभी बोलकर पूछना काम नहीं कर रहा। लिखकर पूछें।',
     sttBusy: 'आवाज़ वाली सर्विस अभी व्यस्त है, इसलिए अब आपका ब्राउज़र सुनेगा। माइक फिर से दबाएँ।',
-    consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता।',
+    consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता। हर जवाब के बाद माइक अपने-आप फिर चालू होता है। मुनीम के बोलते समय आपका फ़ोन सुनता है ताकि आप बीच में बोल सकें; कुछ भेजा नहीं जाता। रोकने के लिए ■ दबाएँ।',
     talkHint: 'सुन रहा हूँ… बस बोलिए। ख़त्म करने के लिए ■ दबाएँ।', interruptHint: 'बीच में बोलकर रोक सकते हैं।', talkEnded: 'बातचीत ख़त्म हुई। फिर बात करने के लिए माइक दबाएँ।', endTalk: 'बातचीत ख़त्म करें',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
     aiOff: 'एआई बंद', placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
@@ -179,7 +179,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       if (j.trace) send('answer', answerProps({ id: j.trace, engine: j.engine, model: j.model, prompt: j.prompt ?? 'unknown', tools: j.tools ?? [], ms: j.ms ?? 0,
         check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified ?? [] }, lang: j.lang ?? (hi ? 'hi' : 'en'), data: local ? 'mine' : 'sample', where: j.where ?? 'server', fallback: j.fallback, repaired: j.repaired, guard: j.guard, guardMs: j.guardMs }));
       if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang }); // asked by voice → answered by voice; typed → stays quiet
-    } catch (e) { ackOk.current = false; setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
+    } catch (e) { ackOk.current = false; setTalkOn(false); setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
     finally { setBusy(false); input.current?.focus(); }
   }
   const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content;
@@ -212,7 +212,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     if (!ackCache.has(ackLang)) ackCache.set(ackLang, tts(ACK[ackLang], ackLang).catch(() => null)); // voiced while you speak
     try {
       setVoice('listening');
-      rec.current = await record({ onLevel: setLevel, silenceMs: 1000, noSpeechMs: 8000, onNoSpeech: () => endTalk(true), onDone: async (r) => {
+      const h = await record({ onLevel: setLevel, silenceMs: 1000, noSpeechMs: 8000, onNoSpeech: () => endTalk(true), onDone: async (r) => {
         rec.current = null;
         if (!r) { setVoice('idle'); return; }
         setVoice('hearing');
@@ -229,6 +229,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           setVoice('idle'); setErr(hi ? t.notCaught : j.error ?? t.notCaught);
         } catch { ackOk.current = false; setTalkOn(false); setVoice('idle'); setErr(t.notCaught); }
       } });
+      if (!talkRef.current) { h.cancel(); setVoice('idle'); return; } // ended while the mic was starting: never record with nothing on screen
+      rec.current = h;
     } catch { setTalkOn(false); setVoice('idle'); setErr(t.noMic); }
   }
   startVoiceRef.current = startVoice; // the newest one, for the hands-free loop
