@@ -43,7 +43,7 @@ class Component extends DCLogic {
       paceBelow: function (x) { return 'आम रफ़्तार से ' + x + ' कम'; }, paceAbove: function (x) { return 'आम रफ़्तार से ' + x + ' ज़्यादा'; },
       legendYou: 'इस महीने', legendUsual: 'आम महीना', how: 'कैसे?', day1: '1', today: 'आज', paceTitle: 'रफ़्तार का हिसाब', close: 'बंद करें',
       moneyTitle: 'आमदनी', moneyPeriod: curFull + ' 1–' + DAY, last3: 'पिछले 3 महीने और यह महीना', spentSoFar: 'इस महीने कुल खर्च', leftLabel: 'बचे', notIncome: 'आमदनी में नहीं गिना: रिफ़ंड (ये उसी कैटेगरी का खर्च घटाते हैं), कार्ड कैशबैक, कार्ड बिल भुगतान और अपने ही खातों के बीच ट्रांसफ़र।',
-      moneyIn: 'आमदनी', leftAfter: 'खर्च के बाद बचे', trust: 'हर स्टेटमेंट का हिसाब मिलता है ·', yourData: 'आपका डेटा', dataTitle: 'आपका डेटा', dataIntro: 'मुनीम ने ये फ़ाइलें आपके फ़ोन पर पढ़ीं। हर स्टेटमेंट के टोटल रुपये तक मिलाए गए।', addStatement: 'नया स्टेटमेंट जोड़ें', dataPrivacy: 'फ़ाइलें आपके फ़ोन से बाहर नहीं जातीं।',
+      moneyIn: 'पैसा आया', leftAfter: 'खर्च के बाद बचे', trust: 'हर स्टेटमेंट का हिसाब मिलता है ·', yourData: 'आपका डेटा', dataTitle: 'आपका डेटा', dataIntro: 'मुनीम ने ये फ़ाइलें आपके फ़ोन पर पढ़ीं। हर स्टेटमेंट के टोटल रुपये तक मिलाए गए।', addStatement: 'नया स्टेटमेंट जोड़ें', dataPrivacy: 'फ़ाइलें आपके फ़ोन से बाहर नहीं जातीं।',
       monthsTitle: 'महीने', monthsNote: 'पिछला महीना चुनने पर उसका रिपोर्ट कार्ड खुलता है।', mathHead: DAY + ' तारीख़ तक रोज़ का खर्च, पिछले ' + META.pastN + ' महीने', mathFoot: 'बीच वाला महीना ही "आम तौर" है।', notCounted: 'गिना नहीं गया', notCountedWhat: 'अपने खातों में ट्रांसफ़र, कार्ड बिल भुगतान और निवेश।',
       outLabel: 'इस महीने कुल खर्च', everyday: 'रोज़ का', fixed: 'तय खर्च', others: 'अन्य', othersSub: 'परिवार, बिना कैटेगरी',
       changeHead: 'आप क्या बदल सकते हैं', saveKicker: 'सबसे पहले बचत', otherAmount: 'दूसरी रक़म', whereHead: 'पैसा कहाँ गया', vsUsual: 'आम तौर से तुलना', recentHead: 'हाल के लेन-देन',
@@ -90,7 +90,7 @@ class Component extends DCLogic {
         back: ['Paid me back', 'not'], igift: ['A gift to me', 'not'], loan: ['A loan to me', 'not'], side: ['Side income', 'income'], sale: ['Sold something', 'not'], iother: ['Something else', 'not'] };
     var BUCKETL = hi ? { everyday: 'रोज़ का', fixed: 'तय खर्च', others: 'अन्य', uncat: 'अन्य', not: 'आमदनी नहीं', income: 'आमदनी' } : { everyday: 'Everyday', fixed: 'Fixed costs', others: 'Others', uncat: 'Others', not: 'Not income', income: 'Money in' };
     var ORDER = { shop: ['groc', 'shop', 'help', 'family', 'gift', 'other'], person: ['help', 'family', 'gift', 'groc', 'shop', 'other'], in: ['back', 'side', 'igift', 'loan', 'sale', 'iother'] };
-    var cat2 = Object.assign({}, CAT), cum2 = OCTCUM.slice(), fixedAdd = 0, famAdd = 0, uncatV = 0, incAdd = 0, pendOut = 0, pendIn = 0;
+    var cat2 = Object.assign({}, CAT), cum2 = OCTCUM.slice(), fixedAdd = 0, famAdd = 0, uncatV = UNCAT || 0, incAdd = 0, pendOut = 0, pendIn = 0;
     UNS.forEach(function (u, i) {
       var a = s.sorted[i];
       if (!a) { if (u.dir === 'debit') { uncatV += u.amt; pendOut += u.amt; } else pendIn += u.amt; return; }
