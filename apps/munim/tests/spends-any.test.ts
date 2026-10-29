@@ -96,7 +96,7 @@ describe('the screen total equals the engine (every dataset)', async () => {
     const v = buildSpendsMain(ds, { reportFrom: null });
     const engine = Object.values(v.CAT as Record<string, number>).reduce((a, b) => a + b, 0) + v.FIXED + v.FAMILY + v.UNCAT;
     const html = renderToString(createElement(Spends, { theme: 'light', state: 'ready', data: v }));
-    expect(rupees(html, 'Total spent this month'), name).toBe(Math.round(engine / 100));
+    expect(rupees(html, 'Spent, 1'), name).toBe(Math.round(engine / 100)); // the headline is the total (29 Oct)
     if (name === 'upi heavy') {
       // and the buckets plus "not counted" account for every rupee that went out (no refunds in this month)
       const out = ds.txns.filter((t) => t.dir === 'debit' && t.date.startsWith('2026-08')).reduce((a, t) => a + t.amount, 0);

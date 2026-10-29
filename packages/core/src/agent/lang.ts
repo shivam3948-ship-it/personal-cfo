@@ -28,6 +28,19 @@ export function parseAmountRupees(text: string): number | null {
  *  Splits after . ? ! । followed by a space (so 1.5 and ₹1,25,000.50 stay whole, and Rs. / e.g. / vs. / No. don't end a
  *  sentence). The first piece is one sentence (merged with the next if it's under `minFirst` characters); later pieces
  *  gather sentences up to `max` characters. Joining the pieces with spaces gives back the text, whitespace aside. */
+// Spoken answers lead with the answer (29 Oct, owner: "the disclaimers are still being spoken first"). The education
+// disclaimer is still said, and still shown on screen, but as the last sentence. Only that line moves: a "no licence"
+// refusal is the answer to the question, so it stays where the answer put it.
+// Only the exact lines from apps/munim/lib/advice.ts DISCLAIMER (review 29 Oct): a model sentence that merely mentions
+// "not investment advice" stays put, and the private-mode line is left whole.
+const DISCLAIMER_SENT = /^\(?\s*((this is )?(for education only|only for education),? (and )?not investment advice\.?|test build( on sample data)?\.|(यह )?सिर्फ़ जानकारी के लिए( है)?,? निवेश सलाह नहीं( है)?।?|टेस्ट वर्ज़न(, सैंपल डेटा पर)?।)\s*\)?$/i; // the line alone, as written or as the model says it
+export function disclaimerLast(text: string): string {
+  const parts = text.split(/(?<=[.!?।]\)?)\s+|\n+/).map((x) => x.trim()).filter(Boolean);
+  if (parts.length < 2) return text;
+  const disc = parts.filter((x) => DISCLAIMER_SENT.test(x)), rest = parts.filter((x) => !DISCLAIMER_SENT.test(x));
+  return disc.length && rest.length ? [...rest, ...disc].join(' ') : text;
+}
+
 export function splitForSpeech(text: string, opts: { minFirst?: number; max?: number; firstMax?: number } = {}): string[] {
   const minFirst = opts.minFirst ?? 25, max = opts.max ?? 320;
   const raw = text.replace(/\s+/g, ' ').trim();
