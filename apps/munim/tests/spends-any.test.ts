@@ -72,3 +72,36 @@ describe('uncategorised UPI spending counts (synthetic statement)', async () => 
     expect(html).not.toMatch(/left after spending[^₹]*₹2,500/); // money in ₹2,500 minus ₹2,000 out, never minus ₹500
   });
 });
+
+// The invariant that would have caught D-076 (29 Oct): what the screen says was spent is exactly what the engine counted,
+// bucket by bucket, on every dataset, including a UPI-heavy one shaped like the primary user's month (people, small
+// shops, unknown payees). Checking that the screen renders was not enough.
+describe('the screen total equals the engine (every dataset)', async () => {
+  const { renderToString } = await import('react-dom/server');
+  const { createElement } = await import('react');
+  const Spends = (await import('@/screens/Spends')).default;
+  const { finalise } = await import('@core/ingest/finalise');
+  const acc = 'bank:2222';
+  const tx = (id: string, date: string, desc: string, rupees: number, dir: 'debit' | 'credit') => ({ id, date, desc, amount: rupees * 100, dir, account: acc, source: 'bank_statement' as const, sourceFile: 'synthetic.pdf' });
+  const upiHeavy: Dataset = { ...emptyDataset('upi heavy'), accounts: [{ id: acc, kind: 'bank', last4: '2222', label: 'Bank ••2222' }], txns: [
+    tx('1', '2026-08-02', 'UPI/DR/1/MOHAN L/SBIN/mohan@ok/UPI', 240, 'debit'), tx('2', '2026-08-04', 'UPI/DR/2/AUTO RAJU/PUNB/raju@ok/UPI', 60, 'debit'),
+    tx('3', '2026-08-06', 'UPI/DR/3/GUPTA STORE/BARB/gs@ok/UPI', 1180, 'debit'), tx('4', '2026-08-10', 'UPI/DR/4/SELF/HDFC/me@ok/own a/c', 5000, 'debit'),
+    tx('5', '2026-08-12', 'UPI/DR/5/Swiggy/ICIC/swiggy@icici/UPI', 389, 'debit'), tx('6', '2026-08-15', 'UPI/DR/6/MAA/SBIN/maa@ok/UPI', 3000, 'debit'),
+    tx('7', '2026-08-20', 'UPI/DR/7/PRAKASH M/SBIN/pm@ok/UPI', 950, 'debit'), tx('8', '2026-08-01', 'NEFT*EMPLOYER PVT LTD*SALARY', 18000, 'credit'),
+    tx('9', '2026-08-25', 'UPI/CR/9/RAVI/SBIN/ravi@ok/UPI', 500, 'credit')] };
+  finalise(upiHeavy); upiHeavy.today = '2026-08-31';
+  const rupees = (html: string, label: string) => { const m = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').match(new RegExp(label + '[^₹]*₹([\\d,]+)')); return m ? Number(m[1].replace(/,/g, '')) : null; };
+  const all: [string, Dataset][] = [['upi heavy', upiHeavy], ...(await variants())];
+  for (const [name, ds] of all) it(`${name}: total spent on screen = everyday + fixed + family + uncategorised`, () => {
+    const v = buildSpendsMain(ds, { reportFrom: null });
+    const engine = Object.values(v.CAT as Record<string, number>).reduce((a, b) => a + b, 0) + v.FIXED + v.FAMILY + v.UNCAT;
+    const html = renderToString(createElement(Spends, { theme: 'light', state: 'ready', data: v }));
+    expect(rupees(html, 'Total spent this month'), name).toBe(Math.round(engine / 100));
+    if (name === 'upi heavy') {
+      // and the buckets plus "not counted" account for every rupee that went out (no refunds in this month)
+      const out = ds.txns.filter((t) => t.dir === 'debit' && t.date.startsWith('2026-08')).reduce((a, t) => a + t.amount, 0);
+      expect(engine + v.NOTCOUNTED).toBe(out);
+      expect(v.UNCAT).toBeGreaterThan(0);
+    }
+  });
+});
