@@ -52,9 +52,9 @@ function addLocal(_sid: string, a: Omit<Action, 'id' | 'createdAt'>): Action & {
 const icsUrl = (a: Action) => { try { return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(toIcs(a)); } catch { return ''; } };
 
 /** A stand-in LLM client: forwards only the messages (question + filtered tool results) to the relay. */
-function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode }): LlmClient {
+function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode }, via?: 'voice' | 'typed'): LlmClient {
   return { messages: { create: async (body) => {
-    const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf }) });
+    const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via }) });
     if (r.status === 503) { noKey = true; throw new NoKey(); }
     const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'relay failed');
     if (j.mode === 'guided' || seen.mode === 'guided') seen.mode = 'guided'; else if (j.mode) seen.mode = j.mode; // the strictest mode the server used
@@ -72,7 +72,7 @@ export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en';
 
 /** On your own data the advice mode is 'guided' (no fund picks, the SEBI line), whatever the public test switch says:
  *  'demo' never reads real data, and 'internal' needs a server-side allow-list we don't have yet (compliance review, D-050). */
-export async function askLocal(history: Turn[]): Promise<LocalReply> {
+export async function askLocal(history: Turn[], via?: 'voice' | 'typed'): Promise<LocalReply> {
   const ds = await myData(); if (!ds) throw new Error('Add a statement first.');
   await loadActions();
   const p = getProfile();
@@ -96,7 +96,7 @@ export async function askLocal(history: Turn[]): Promise<LocalReply> {
   if (/(?:^|;\s*)munim_ai=off(?:;|$)/.test(document.cookie)) noKey = true; // ?ai=off (D-062): don't even ask the relay
   const seen: { mode?: AdviceMode } = {};
   try {
-    if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds), seen));
+    if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds), seen, via));
     // the server decides the mode (D-066 review, #5): if the relay answered in guided mode (the advice cookie expired, or advice
     // was switched off) while this phone thought advice was on, apply the guided guard to what the model said
     if (seen.mode === 'guided' && adviceMode !== 'guided') r = { ...r, answer: guardAnswer(r.answer, 'guided', fundLabels(ds.portfolio?.holdings ?? [], lang), knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? [], [], history.filter((t) => t.role === 'user').map((t) => t.content)), lang) };

@@ -93,12 +93,12 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const trace: TraceStep[] = []; const actions: Action[] = []; const results: unknown[] = [];
   const lastUser = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
   const prevAssistant = history.slice(0, -1).filter((t) => t.role === 'assistant').at(-1)?.content ?? '';
-  let emptyRetried = false; const llm = newStats();
+  let emptyRetried = false; const llm = newStats(); const model = ctx.model || MODEL;
   let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0;
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
   for (let step = 0; step < 7; step++) {
     const tc = Date.now();
-    const res = await client.messages.create(cacheOn() ? { model: MODEL, max_tokens: 700, system: cachedSystem(system), tools: TOOLS, messages: withCacheMark(messages) } : { model: MODEL, max_tokens: 700, system, tools: TOOLS, messages });
+    const res = await client.messages.create(cacheOn() ? { model, max_tokens: 700, system: cachedSystem(system), tools: TOOLS, messages: withCacheMark(messages) } : { model, max_tokens: 700, system, tools: TOOLS, messages });
     addUsage(llm, Date.now() - tc, res.usage);
     const uses = res.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
     if (res.stop_reason !== 'tool_use' || !uses.length) {
@@ -136,7 +136,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
         continue;
       }
       const final = g.flagged.length ? removeFlagged(answer, g.flagged, ctx.adviceMode, ctx.lang, funds) : answer;
-      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: MODEL, ms: Date.now() - t0, llm, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
+      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model, ms: Date.now() - t0, llm, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
     }
     messages.push({ role: 'assistant', content: res.content });
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
@@ -156,7 +156,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
     messages.push({ role: 'user', content: toolResults });
   }
   const answer = ctx.lang === 'hi' ? 'माफ़ कीजिए, मैं इसका जवाब पूरा नहीं कर पाया। क्या आप सवाल थोड़ा छोटा करके पूछेंगे?' : "Sorry, I couldn't finish that one. Could you ask it a bit more simply?";
-  return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'claude', model: MODEL, ms: Date.now() - t0, llm, guard, guardMs };
+  return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'claude', model, ms: Date.now() - t0, llm, guard, guardMs };
 }
 
 /** What the guard objects to in an answer (D-051, D-066). */

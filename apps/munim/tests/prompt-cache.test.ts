@@ -29,4 +29,10 @@ describe('prompt caching', () => {
     }
     expect(r.llm).toMatchObject({ calls: bodies.length, cacheRead: 3000 * bodies.length });
   });
+  it('a voice turn can use another model, chosen by the server (D-075)', async () => {
+    const ds = await loadDemo(); const models: string[] = [];
+    const client = { messages: { create: async (b: Anthropic.MessageCreateParamsNonStreaming) => { models.push(b.model); return reply('Your card bill is due on 24 October.'); } } };
+    const r = await runClaude([{ role: 'user', content: 'When is my card bill due?' }], { ds, sid: 't', lang: 'en', adviceMode: 'guided', addAction: (() => ({})) as never, model: 'fast-model' }, client);
+    expect(new Set(models)).toEqual(new Set(['fast-model'])); expect(r.model).toBe('fast-model');
+  });
 });
