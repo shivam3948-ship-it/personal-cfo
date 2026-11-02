@@ -14,7 +14,7 @@ import { getProfile } from '@/lib/local/profile';
 
 
 // a file Munim can't read yet: say what it can read (D-068)
-const CANT = { en: 'Can’t read this one yet. Munim reads HDFC, SBI and Canara savings, HDFC and Axis cards, and the CAMS or KFintech CAS.', hi: 'इसे अभी नहीं पढ़ सकते। मुनीम HDFC, SBI और Canara सेविंग्स, HDFC और Axis कार्ड, और CAMS या KFintech का CAS पढ़ता है।' };
+const CANT = { en: 'Can’t read this one yet. Munim reads HDFC, SBI, Canara and Federal Bank savings, HDFC and Axis cards, and the CAMS or KFintech CAS.', hi: 'इसे अभी नहीं पढ़ सकते। मुनीम HDFC, SBI, Canara और Federal Bank सेविंग्स, HDFC और Axis कार्ड, और CAMS या KFintech का CAS पढ़ता है।' };
 type Step = 'intro' | 'password' | 'reading' | 'done' | 'summary' | 'partial' | 'mismatch' | 'unknown' | 'bank' | 'batch';
 /** One file's result when several were chosen together. */
 interface Item { name: string; kind: 'bank' | 'cas' | 'unknown' | 'skipped'; ok: boolean; title: string; detail: string }
@@ -81,7 +81,7 @@ export default function AddCas() {
       setStep(next);
     } catch (e) {
       if (e instanceof PdfPasswordError) { setWrong(e.reason === 'wrong'); setStep('password'); track('cas_read', { result: e.reason === 'wrong' ? 'wrong_password' : 'needs_password' }); }
-      else { setErr(getProfile()?.lang === 'hi' ? 'यह फ़ाइल नहीं पढ़ी जा सकी। क्या यह CAS है, या HDFC, SBI, Canara या Axis का स्टेटमेंट?' : 'Couldn’t read this file. Is it a CAS, or a statement from HDFC, SBI, Canara or Axis?'); setStep('intro'); track('cas_read', { result: 'unreadable' }); }
+      else { setErr(getProfile()?.lang === 'hi' ? 'यह फ़ाइल नहीं पढ़ी जा सकी। क्या यह CAS है, या HDFC, SBI, Canara, Federal या Axis का स्टेटमेंट?' : 'Couldn’t read this file. Is it a CAS, or a statement from HDFC, SBI, Canara, Federal Bank or Axis?'); setStep('intro'); track('cas_read', { result: 'unreadable' }); }
     } finally { clearInterval(tick); }
   }
   /** Read one file of a batch: save what reconciles (as the single-file path does) and describe the result in one line. */
@@ -181,7 +181,7 @@ export default function AddCas() {
             <b className="serif" style={{ fontSize: 22, lineHeight: 1.2 }}>{L('Bank, card and mutual fund statements, all at once', 'बैंक, कार्ड और म्यूचुअल फ़ंड स्टेटमेंट, सब एक साथ')}</b>
             <span style={S.sub}>{L('Bank and card statements, and your mutual fund CAS. Choose one or several PDFs together: Munim works out which is which, and checks each against its own totals before using it.', 'बैंक और कार्ड के स्टेटमेंट, और आपका म्यूचुअल फ़ंड CAS। एक या कई PDF एक साथ चुनें: मुनीम ख़ुद पहचान लेता है कि कौन क्या है, और हर एक को इस्तेमाल करने से पहले उसके अपने टोटल से मिलाता है।')}</span>
             <button type="button" onClick={choose} style={S.primary}>{L('Choose files', 'फ़ाइलें चुनें')}</button>
-            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{L('Reads today: HDFC, SBI and Canara savings · HDFC and Axis credit cards · the detailed CAS from CAMS or KFintech. ICICI and other banks: coming next.', 'अभी पढ़ता है: HDFC, SBI और Canara सेविंग्स · HDFC और Axis क्रेडिट कार्ड · CAMS या KFintech का डिटेल्ड CAS। ICICI और दूसरे बैंक: जल्द आ रहे हैं।')}</span>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{L('Reads today: HDFC, SBI, Canara and Federal Bank savings · HDFC and Axis credit cards · the detailed CAS from CAMS or KFintech. ICICI and other banks: coming next.', 'अभी पढ़ता है: HDFC, SBI, Canara और Federal Bank सेविंग्स · HDFC और Axis क्रेडिट कार्ड · CAMS या KFintech का डिटेल्ड CAS। ICICI और दूसरे बैंक: जल्द आ रहे हैं।')}</span>
             <button type="button" onClick={() => setHow(!how)} aria-expanded={how} style={S.link}>{how ? L('Hide', 'छिपाएँ') : L('How do I get my CAS?', 'CAS कैसे मिलेगा?')}</button>
             {how && <ol style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6, fontSize: 14, color: 'var(--ink2)' }}>
               <li>{L('On the CAMS website, open the consolidated account statement (CAS) request for CAMS and KFintech funds.', 'CAMS की वेबसाइट पर CAMS और KFintech फ़ंड का CAS (कंसॉलिडेटेड अकाउंट स्टेटमेंट) माँगने वाला पेज खोलें।')}</li>
@@ -255,7 +255,7 @@ export default function AddCas() {
           </section>
           <section style={{ ...S.card, gap: 8, padding: '14px 16px' }}>
             <b style={{ fontSize: 15, fontWeight: 600 }}>{L('Bank and card statements', 'बैंक और कार्ड स्टेटमेंट')}</b>
-            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{L('HDFC, SBI and Canara savings; HDFC and Axis credit cards', 'HDFC, SBI और Canara सेविंग्स; HDFC और Axis क्रेडिट कार्ड')}</span>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>{L('HDFC, SBI, Canara and Federal Bank savings; HDFC and Axis credit cards', 'HDFC, SBI, Canara और Federal Bank सेविंग्स; HDFC और Axis क्रेडिट कार्ड')}</span>
             <button type="button" onClick={choose} style={{ ...S.inlineLink, padding: 0, justifySelf: 'start' }}>{L('Add a statement', 'स्टेटमेंट जोड़ें')}</button>
           </section>
           <StatementList list={stmts} onDelete={delStmt} hi={lang === 'hi'} />

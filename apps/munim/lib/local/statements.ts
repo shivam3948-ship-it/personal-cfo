@@ -24,7 +24,7 @@ export async function deleteAllStatements() { memory = []; await idbDel(KEY); }
 
 export type AnyRead = { type: 'cas'; cas: ReadResult } | { type: 'bank'; read: BankRead; ok: boolean; saved: boolean } | { type: 'unknown'; diagnostics: string };
 
-/** Read any supported file on the device: a CAS, or an HDFC/SBI/Canara savings or HDFC/Axis card statement. Saves only what reconciles. */
+/** Read any supported file on the device: a CAS, or an HDFC/SBI/Canara/Federal savings or HDFC/Axis card statement. Saves only what reconciles. */
 export async function readAny(file: File, password?: string): Promise<AnyRead> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const isPdf = bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46;

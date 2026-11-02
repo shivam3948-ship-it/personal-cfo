@@ -1,10 +1,10 @@
-// Statement readers for the banks Munim supports first (D-036, D-048): HDFC, SBI and Canara savings accounts; HDFC and Axis credit cards.
+// Statement readers for the banks Munim supports first (D-036, D-048): HDFC, SBI, Canara and Federal Bank savings accounts; HDFC and Axis credit cards.
 // Input: text lines rebuilt by position (pdfLines). Output: transactions plus checks against the statement's OWN totals;
 // a reader only "passes" when every check reconciles to the paisa. Pure TS: runs on the phone, the PDF never leaves it.
 // Only the last 4 digits of an account or card number are kept.
 import type { Account, CardStatement, Check, Paise, Txn } from '../types';
 
-export type BankFormat = 'hdfc_savings' | 'sbi_savings' | 'canara_savings' | 'hdfc_card' | 'axis_card';
+export type BankFormat = 'hdfc_savings' | 'sbi_savings' | 'canara_savings' | 'federal_savings' | 'hdfc_card' | 'axis_card';
 export interface BankRead { format: BankFormat; account: Account; txns: Txn[]; checks: Check[]; stmt?: CardStatement; period?: { from: string; to: string } }
 
 const AMT = /[\d,]+\.\d{2}/;
@@ -22,13 +22,14 @@ export function detectFormat(lines: string[]): BankFormat | null {
   if (/Withdrawal Amt\.?\s+Deposit Amt\.?\s+Closing Balance/i.test(t)) return 'hdfc_savings';
   if (/^Date\s+Particulars\s+Deposits\s+Withdrawals\s+Balance$/im.test(t) && /^Opening Balance\s+-?[\d,]+\.\d{2}$/im.test(t) && /^Chq:/m.test(t)) return 'canara_savings';
   if (/^Axis Bank\b.*Card.*Statement/im.test(t) && /Transaction Summary/i.test(t) && /Debit\/Credit/i.test(t)) return 'axis_card';
+  if (/^Date\s+Value Date\s+Particulars\s+Tran Type\s+Cheque Details\s+Withdrawals\s+Deposits\s+Balance\s+Dr\/Cr$/im.test(t) && /GRAND TOTAL/i.test(lines.join('\n'))) return 'federal_savings';
   if (/STATEMENT OF ACCOUNT/i.test(t) && /\d{2}\/\d{2}\/\d{4}\s+\d{2}\/\d{2}\/\d{4}\s/.test(lines.join('\n')) && /Statement Summary/i.test(lines.join('\n'))) return 'sbi_savings';
   return null;
 }
 
 export function readBank(lines: string[], file: string): BankRead | null {
   const f = detectFormat(lines);
-  const r = f === 'hdfc_savings' ? hdfcSavings(lines, file) : f === 'sbi_savings' ? sbiSavings(lines, file) : f === 'canara_savings' ? canaraSavings(lines, file)
+  const r = f === 'hdfc_savings' ? hdfcSavings(lines, file) : f === 'sbi_savings' ? sbiSavings(lines, file) : f === 'canara_savings' ? canaraSavings(lines, file) : f === 'federal_savings' ? federalSavings(lines, file)
     : f === 'hdfc_card' ? hdfcCard(lines, file) : f === 'axis_card' ? axisCard(lines, file) : null;
   // Axis prints no statement period (its "period" is the rows' own first and last dates), so only the date itself is checked
   if (r) r.checks.push(...dateChecks(r.txns, r.format === 'axis_card' ? undefined : r.period, r.account.kind === 'bank' ? 'bank' : 'card'));
@@ -254,6 +255,43 @@ export function axisCard(lines: string[], file: string): BankRead {
   const dates = txns.map((t) => t.date).sort();
   const stmt: CardStatement = { account: id, file, periodStart: dates[0] ?? '', periodEnd: dates.at(-1) ?? '', dueDate: dm ? D(dm[3], dm[4], dm[5]) : '', prevBalance: opening ?? 0, payments: sum('credit'), purchases: sum('debit'), credits: sum('credit'), charges: 0, totalDue: total ?? 0, minDue };
   return { format: 'axis_card', txns, checks, stmt, period: dates.length ? { from: dates[0], to: dates.at(-1)! } : undefined, account: { id, kind: 'card', label: `Axis credit card ••${card}`, last4: card } };
+}
+
+// ---------- Federal Bank savings ----------
+// Row: "dd/mm/yyyy dd/mm/yyyy PARTICULARS [TRAN TYPE [CHEQUE]] AMOUNT BALANCE Dr|Cr" (owner's statement, 2 Nov 2026). Text
+// keeps one amount, not which column it sat in; the last column says whether the row was a withdrawal (Dr) or a deposit
+// (Cr), and the running balance must agree. Totals: "GRAND TOTAL <withdrawals> <deposits>"; opening: "Opening Balance".
+// No row counts are printed, so the checks are the walk, the totals and opening + deposits − withdrawals = the last balance.
+export function federalSavings(lines: string[], file: string): BankRead {
+  const ROW = /^(\d{2}\/\d{2}\/\d{4})\s+\d{2}\/\d{2}\/\d{4}\s+(.*?)\s+([\d,]+\.\d{2})\s+([\d,]+\.\d{2})\s+(Cr|Dr)$/;
+  const all = lines.join('\n');
+  const acct = last4(/Account Number\s+(\d{6,})/i.exec(all)?.[1]);
+  const id = `bank:${acct || 'federal'}`;
+  const om = /^Opening Balance\s+(-?[\d,]+\.\d{2})/im.exec(all);
+  const opening = om ? paise(om[1]) * (om[1].startsWith('-') ? -1 : 1) : 0;
+  const tm = /GRAND TOTAL\s+([\d,]+\.\d{2})\s+([\d,]+\.\d{2})/i.exec(all);
+  const txns: Txn[] = [];
+  for (const l of lines) {
+    const m = ROW.exec(l); if (!m) continue;
+    const amount = paise(m[3]), balance = paise(m[4]);
+    const dir: Txn['dir'] = m[5] === 'Cr' ? 'credit' : 'debit';
+    // the tran type (TFR, CASH…) and a cheque number print after the particulars; they say nothing the narration doesn't
+    const desc = m[2].replace(/\s+(TFR|CASH|CLG|TRF)(\s+\S+)?$/, '').replace(/\s+/g, ' ').trim();
+    txns.push({ id: `${file}#${txns.length + 1}`, date: yy(m[1]), desc, amount, dir, balance, account: id, source: 'bank_statement', sourceFile: file });
+  }
+  let bad = 0, first = '', bal = opening;
+  for (const t of txns) { bal += t.dir === 'credit' ? t.amount : -t.amount; if (bal !== t.balance) { bad++; if (!first) first = t.date; bal = t.balance!; } }
+  const sum = (d: Txn['dir']) => txns.filter((t) => t.dir === d).reduce((a, t) => a + t.amount, 0);
+  const closing = txns.at(-1)?.balance ?? opening;
+  const checks: Check[] = [
+    check('walk', 'Running balance matches every row', bad === 0 && txns.length > 0, bad ? `${bad} rows off, first on ${first}` : `${txns.length} rows walk from opening to closing`),
+    tm ? check('totals', 'Withdrawal and deposit totals match the grand total', sum('debit') === paise(tm[1]) && sum('credit') === paise(tm[2]), `${rupees(sum('debit'))}/${rupees(sum('credit'))} vs printed ${tm[1]}/${tm[2]}`)
+       : check('totals', 'Grand total found', false, 'no GRAND TOTAL line'),
+    check('closing', 'Opening + deposits − withdrawals = last balance', opening + sum('credit') - sum('debit') === closing, `${rupees(opening + sum('credit') - sum('debit'))} vs ${rupees(closing)}`),
+  ];
+  const pm = /PERIOD\s*:\s*(\d{2})-([A-Za-z]{3})-(\d{4})\s+to\s+(\d{2})-([A-Za-z]{3})-(\d{4})/i.exec(all);
+  const period = pm ? { from: `${pm[3]}-${MON[pm[2].toLowerCase()]}-${pm[1]}`, to: `${pm[6]}-${MON[pm[5].toLowerCase()]}-${pm[4]}` } : undefined;
+  return { format: 'federal_savings', txns, checks, period, account: { id, kind: 'bank', label: `Federal Bank ••${acct}`, last4: acct, opening, closing, closingDate: txns.at(-1)?.date } };
 }
 
 function periodFrom(lines: string[]) {
