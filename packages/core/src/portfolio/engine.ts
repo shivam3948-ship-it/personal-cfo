@@ -98,3 +98,37 @@ export function investingHabits(holdings: Holding[]): { sipGaps: number; sells: 
   }
   return { sipGaps: gaps, sells, since };
 }
+
+/** SIP vs one-time investments (owner, 2 Nov 2026: "is there any actionable insight from fund vs you?"). "Fund vs You"
+ *  only says how timing went; this splits your own money by habit: the yearly return of your steady SIP instalments and
+ *  of your one-time investments, each priced at today's NAV. A SIP is a purchase amount repeated at least 3 times about
+ *  monthly (as investingHabits); everything else bought is one-time, so a step-up SIP (the amount rising each year) partly
+ *  counts as one-time. Funds you have sold from are left out (which units
+ *  were sold would need lot matching), as are purchases the CAS printed without units. Null when either side is empty. */
+export interface HabitSide { invested: Paise; value: Paise; ratePct: number | null; buys: number }
+export function sipVsOneTime(holdings: Holding[], asOf: string): { sip: HabitSide; oneTime: HabitSide; skippedFunds: number } | null {
+  const side = () => ({ flows: [] as Flow[], invested: 0, value: 0, buys: 0 });
+  const sip = side(), one = side(); let skipped = 0;
+  for (const h of holdings) {
+    const buys = h.flows.filter((f) => f.amount < 0);
+    if (!buys.length) continue;
+    if (h.flows.some((f) => f.amount > 0) || buys.some((f) => !f.units)) { skipped++; continue; }
+    const counts = new Map<number, number>(); buys.forEach((f) => counts.set(f.amount, (counts.get(f.amount) ?? 0) + 1));
+    const sipAmts = new Set<number>();
+    for (const [amt, n] of counts) {
+      if (n < 3) continue;
+      const months = [...new Set(buys.filter((f) => f.amount === amt).map((f) => f.date.slice(0, 7)))].sort();
+      const [y0, m0] = months[0].split('-').map(Number), [y1, m1] = months.at(-1)!.split('-').map(Number);
+      if ((y1 - y0) * 12 + (m1 - m0) + 1 <= months.length * 2) sipAmts.add(amt); // about monthly, not a yearly top-up
+    }
+    for (const f of buys) {
+      const g = sipAmts.has(f.amount) ? sip : one;
+      const val = Math.round(f.units! * h.nav * 100);
+      g.flows.push({ date: f.date, amount: f.amount }, { date: asOf, amount: val });
+      g.invested += -f.amount; g.value += val; g.buys++;
+    }
+  }
+  if (!sip.buys || !one.buys) return null;
+  const out = (g: ReturnType<typeof side>): HabitSide => { const r = xirr(g.flows); return { invested: g.invested, value: g.value, ratePct: r === null ? null : round1(r * 100) + 0, buys: g.buys }; };
+  return { sip: out(sip), oneTime: out(one), skippedFunds: skipped };
+}

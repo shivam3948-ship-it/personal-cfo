@@ -68,7 +68,7 @@ describe('Invest and X-ray in Hindi', () => {
   it('standard (English) output is unchanged in its key lines and has no Hindi', () => {
     const i = text(render(Invest, { variant: 'standard', state: 'ready', data: inv }));
     for (const s of ['Invest', 'As of 15 Oct', 'Is your investing working?', '5 things worth acting on', 'Grow your safety net to 6 months',
-      'Ahead of your funds on 3 of 5 · no SIP paused since Jan 2021', 'Test build on sample data. For education only, not investment advice.']) expect(i).toContain(s);
+      `SIPs ${(inv.PF as { habit: { sip: number; one: number } }).habit.sip}% a year, one-time ${(inv.PF as { habit: { sip: number; one: number } }).habit.one}% · no SIP paused since Jan 2021`, 'Test build on sample data. For education only, not investment advice.']) expect(i).toContain(s);
     expect(i).not.toMatch(/[ऀ-ॿ]/);
     for (const mode of MODES) {
       const x = text(render(Xray, { open: 'details', history: 'preview', data: buildXray(ds, { adviceMode: mode }) }));
@@ -76,5 +76,18 @@ describe('Invest and X-ray in Hindi', () => {
         '₹1,25,000 of this year’s tax-free gains limit is unused (lapses 31 Mar)', 'Your money vs your funds', DISCLAIMER[mode].en]) expect(x).toContain(s);
       expect(x).not.toMatch(/[ऀ-ॿ]/);
     }
+  });
+});
+
+describe('SIPs vs one-time investments (2 Nov)', () => {
+  it('the screens show the engine\'s split, and the split adds up from the CAS', async () => {
+    const { sipVsOneTime } = await import('@core/portfolio/engine');
+    const h = sipVsOneTime(ds.portfolio!.holdings, ds.portfolio!.asOf)!;
+    expect(h.sip.buys + h.oneTime.buys).toBe(ds.portfolio!.holdings.flatMap((x) => x.flows).filter((f) => f.amount < 0).length); // every purchase counted once
+    expect(h.sip.invested + h.oneTime.invested).toBe(-ds.portfolio!.holdings.flatMap((x) => x.flows).filter((f) => f.amount < 0).reduce((a, f) => a + f.amount, 0));
+    const x = text(render(Xray, { variant: 'standard', data: buildXray(ds, { adviceMode: 'guided' }) }));
+    expect(x).toContain(`Your SIP instalments have grown ${h.sip.ratePct}% a year so far; one-time investments ${h.oneTime.ratePct}%`);
+    const xh = text(render(Xray, { variant: 'bharat', data: buildXray(ds, { adviceMode: 'guided' }) }));
+    expect(xh).toContain(`नियमित SIP की किश्तें सालाना ${h.sip.ratePct}% बढ़ीं`);
   });
 });
