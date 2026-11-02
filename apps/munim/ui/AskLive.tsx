@@ -12,7 +12,7 @@ import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
 import { disclaimerLast, forSpeech, splitForSpeech } from '@core/agent/lang';
 import { doneNote, type Action } from '@/lib/actionsCore';
-import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type RecorderHandle } from '@/ui/voice';
+import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type RecorderHandle, type Recording } from '@/ui/voice';
 
 // Latency sprint: the moment you stop talking, a short spoken acknowledgement plays while Munim hears and answers, so the
 // first sound comes in about a second instead of after the whole answer. Voiced once per language and reused.
@@ -193,6 +193,23 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     stopSpeaking(); setSpeaking(null); setVoice('idle'); setLevel(0); ackOk.current = false;
     setNote(quiet ? t.talkEnded : null);
   }
+  /** One recorded turn (pushed, hands-free, or cut in over an answer): the acknowledgement plays, the audio becomes text, the text is asked. */
+  async function heardRec(r: Recording | null, ackLang: 'hi' | 'en') {
+    if (!r) { setVoice('idle'); return; }
+    setVoice('hearing');
+    ackOk.current = true; // the answer's own voice turns this off, so a late acknowledgement never talks over it
+    void ackCache.get(ackLang)?.then((a) => { if (a && ackOk.current) void playBase64(a.audioBase64, a.mime); });
+    const tEnd = performance.now(); // speech ended: hearing time runs from here to the transcript
+    try {
+      const form = new FormData(); form.append('file', r.blob, r.mime.includes('wav') ? 'speech.wav' : 'speech.webm'); form.append('lang', 'auto');
+      const res = await fetch('/api/stt', { method: 'POST', body: form }); const j = await res.json();
+      if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice', { mode: 'server', ms: Math.round(performance.now() - tEnd) }); return; }
+      ackOk.current = false; // no transcript: nothing to acknowledge
+      setTalkOn(false);
+      if (j.fallback === 'browser' && browserSttAvailable()) { setSttMode('browser'); setVoice('idle'); setNote(t.sttBusy); return; }
+      setVoice('idle'); setErr(hi ? t.notCaught : j.error ?? t.notCaught);
+    } catch { ackOk.current = false; setTalkOn(false); setVoice('idle'); setErr(t.notCaught); }
+  }
   async function startVoice() {
     if (voice === 'listening' && !talkRef.current) { rec.current?.stop(); return; }
     if (busyRef.current || voice === 'hearing') return;
@@ -212,23 +229,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     if (!ackCache.has(ackLang)) ackCache.set(ackLang, tts(ACK[ackLang], ackLang).catch(() => null)); // voiced while you speak
     try {
       setVoice('listening');
-      const h = await record({ onLevel: setLevel, silenceMs: 1000, noSpeechMs: 8000, onNoSpeech: () => endTalk(true), onDone: async (r) => {
-        rec.current = null;
-        if (!r) { setVoice('idle'); return; }
-        setVoice('hearing');
-        ackOk.current = true; // the answer's own voice turns this off, so a late acknowledgement never talks over it
-        void ackCache.get(ackLang)?.then((a) => { if (a && ackOk.current) void playBase64(a.audioBase64, a.mime); });
-        const tEnd = performance.now(); // speech ended: hearing time runs from here to the transcript
-        try {
-          const form = new FormData(); form.append('file', r.blob, 'speech.webm'); form.append('lang', 'auto');
-          const res = await fetch('/api/stt', { method: 'POST', body: form }); const j = await res.json();
-          if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice', { mode: 'server', ms: Math.round(performance.now() - tEnd) }); return; }
-          ackOk.current = false; // no transcript: nothing to acknowledge
-          setTalkOn(false);
-          if (j.fallback === 'browser' && browserSttAvailable()) { setSttMode('browser'); setVoice('idle'); setNote(t.sttBusy); return; }
-          setVoice('idle'); setErr(hi ? t.notCaught : j.error ?? t.notCaught);
-        } catch { ackOk.current = false; setTalkOn(false); setVoice('idle'); setErr(t.notCaught); }
-      } });
+      const h = await record({ onLevel: setLevel, silenceMs: 1000, noSpeechMs: 8000, onNoSpeech: () => endTalk(true), onDone: (r) => { rec.current = null; void heardRec(r, ackLang); } });
       if (!talkRef.current) { h.cancel(); setVoice('idle'); return; } // ended while the mic was starting: never record with nothing on screen
       rec.current = h;
     } catch { setTalkOn(false); setVoice('idle'); setErr(t.noMic); }
@@ -257,7 +258,12 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     const handsFree = how === 'auto' && talkRef.current;
     let barged = false;
     let watch: Promise<{ stop: () => void } | null> | null = null; // starts at Munim's first sound, so it learns the echo, not the silence before it
-    const startWatch = () => { if (handsFree && !watch) watch = watchForSpeech(() => { barged = true; stopSpeaking(); }).catch(() => null); };
+    const ackLang: 'hi' | 'en' = hi ? 'hi' : 'en';
+    const startWatch = () => { if (handsFree && !watch) watch = watchForSpeech({
+      onSpeech: () => { barged = true; stopSpeaking(); setVoice('listening'); setHeard(''); }, // you cut in: Munim stops and your words, from their start, are this turn
+      onLevel: setLevel,
+      onDone: (r) => { rec.current = null; if (!talkRef.current) { setVoice('idle'); return; } void heardRec(r, ackLang); },
+    }).then((w) => { if (barged || talkRef.current) rec.current = w; return w; }).catch(() => null); };
     if (handsFree) setNote(t.interruptHint);
     try {
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net
@@ -274,8 +280,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     } catch { /* playback failed: the answer is still on screen */ }
     finally {
       setSpeaking((cur) => (cur === idx ? null : cur));
-      void (watch as Promise<{ stop: () => void } | null> | null)?.then((w) => w?.stop());
-      if (handsFree) { setNote(null); if (talkRef.current) setTimeout(() => { if (talkRef.current) void startVoiceRef.current(); }, barged ? 0 : 200); } // listen again for the next question
+      if (!barged) void (watch as Promise<{ stop: () => void } | null> | null)?.then((w) => w?.stop()); // cut in: it keeps recording your turn
+      if (handsFree) { setNote(null); if (talkRef.current && !barged) setTimeout(() => { if (talkRef.current) void startVoiceRef.current(); }, 200); } // listen again for the next question
     }
   }
 
