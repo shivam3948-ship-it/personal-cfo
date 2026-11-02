@@ -132,3 +132,52 @@ export function sipVsOneTime(holdings: Holding[], asOf: string): { sip: HabitSid
   const out = (g: ReturnType<typeof side>): HabitSide => { const r = xirr(g.flows); return { invested: g.invested, value: g.value, ratePct: r === null ? null : round1(r * 100) + 0, buys: g.buys }; };
   return { sip: out(sip), oneTime: out(one), skippedFunds: skipped };
 }
+
+// ---------- Against its index (owner, 3 Nov 2026) ----------
+// For each active equity fund: what the same money, on the same dates (buys and sells), would be worth today in an index
+// fund that tracks the fund's kind of market. The index funds' daily NAVs are public AMFI data; nothing about the user is
+// needed to get them. An index fund's NAV is net of its own small fee, so the comparison slightly favours the active fund.
+export type BenchKey = 'nifty50' | 'nifty500' | 'midcap150' | 'smallcap250';
+export const BENCH_LABEL: Record<BenchKey, { en: string; hi: string }> = {
+  nifty50: { en: 'Nifty 50 index fund', hi: 'निफ़्टी 50 इंडेक्स फ़ंड' }, nifty500: { en: 'Nifty 500 index fund', hi: 'निफ़्टी 500 इंडेक्स फ़ंड' },
+  midcap150: { en: 'Midcap 150 index fund', hi: 'मिडकैप 150 इंडेक्स फ़ंड' }, smallcap250: { en: 'Smallcap 250 index fund', hi: 'स्मॉलकैप 250 इंडेक्स फ़ंड' },
+};
+/** The index each kind of active equity fund is measured against; null for index funds themselves and non-equity funds. */
+export function benchmarkOf(h: Pick<Holding, 'asset' | 'category'>): BenchKey | null {
+  if (h.asset !== 'equity' || h.category === 'Index' || h.category === 'Sector / theme') return null; // a sector or theme fund has no fair broad index
+  if (h.category === 'Large cap') return 'nifty50'; // Nifty 100 is the usual benchmark; a Nifty 50 index fund is the closest common one
+  if (h.category === 'Mid cap') return 'midcap150';
+  if (h.category === 'Small cap') return 'smallcap250';
+  return 'nifty500'; // flexi, multi, ELSS, focused, value and other diversified equity
+}
+/** Daily NAVs as [YYYY-MM-DD, nav] sorted by date. */
+export type NavSeries = [string, number][];
+const navOn = (s: NavSeries, d: string): number | null => { let lo = 0, hi = s.length - 1, ans: number | null = null; while (lo <= hi) { const m = (lo + hi) >> 1; if (s[m][0] <= d) { ans = s[m][1]; lo = m + 1; } else hi = m - 1; } return ans; };
+export interface BenchSkip { fund: string; why: 'too_old' | 'no_data' }
+export interface BenchRow { fund: string; bench: BenchKey; invested: Paise; fundValue: Paise; benchValue: Paise; diff: Paise; fundPct: number | null; benchPct: number | null }
+export function vsBenchmarks(holdings: Holding[], series: Partial<Record<BenchKey, NavSeries>>, asOf: string): { rows: BenchRow[]; notCovered: string[]; noData: string[] } {
+  const rows: BenchRow[] = [], notCovered: string[] = [], noData: string[] = [];
+  for (const h of holdings) {
+    const key = benchmarkOf(h); if (!key || !h.flows.length || h.value <= 0) continue;
+    const s = series[key]; const name = shortName(h.scheme).replace(/ Fund$/, '');
+    if (!s?.length) { noData.push(name); continue; } // the index prices couldn't be fetched
+    if (h.flows.some((f) => f.date < s[0][0])) { notCovered.push(name); continue; } // the index fund's history starts after this fund's first date
+    let units = 0;
+    for (const f of h.flows) units += -f.amount / 100 / navOn(s, f.date)!; // a buy (negative) adds index units, a sell takes them away
+    const end = navOn(s, asOf); if (end === null) { noData.push(name); continue; }
+    const benchValue = Math.round(units * end * 100);
+    const flows = (v: Paise) => [...h.flows.map((f) => ({ date: f.date, amount: f.amount })), { date: asOf, amount: v }];
+    const pct = (v: Paise) => { const r = xirr(flows(v)); return r === null ? null : round1(r * 100) + 0; };
+    rows.push({ fund: name, bench: key, invested: -h.flows.filter((f) => f.amount < 0).reduce((a, f) => a + f.amount, 0), fundValue: h.value, benchValue, diff: h.value - benchValue, fundPct: pct(h.value), benchPct: pct(benchValue) });
+  }
+  return { rows, notCovered, noData };
+}
+
+/** Same-category duplication (owner, 3 Nov 2026): a stand-in for overlap without fund holdings. Two or more active equity
+ *  funds of one kind (say three flexi-cap funds) usually hold many of the same large companies. */
+export function sameCategory(holdings: Holding[]): { category: string; funds: string[]; value: Paise }[] {
+  const by = new Map<string, Holding[]>();
+  for (const h of holdings) if (h.asset === 'equity' && h.value > 0 && !['Index', 'Other', 'Equity (other)', 'Sector / theme'].includes(h.category)) by.set(h.category, [...(by.get(h.category) ?? []), h]);
+  return [...by].filter(([, hs]) => hs.length >= 2).map(([category, hs]) => ({ category, funds: hs.map((h) => shortName(h.scheme).replace(/ Fund$/, '')), value: hs.reduce((a, h) => a + h.value, 0) }))
+    .sort((a, b) => b.value - a.value);
+}

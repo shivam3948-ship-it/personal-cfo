@@ -31,11 +31,12 @@ export function classify(scheme: string): { category: string; asset: AssetClass 
     [/\b(gold|silver)\b/, 'Gold / silver', 'gold'],
     [/\b(elss|tax saver|tax saving)\b/, 'ELSS', 'equity'],
     [/\b(index|nifty|sensex|etf)\b/, 'Index', 'equity'],
+    [/\b(large (and|&) mid ?cap)\b/, 'Large & mid cap', 'equity'], // before mid cap, or "Large & Mid Cap" reads as mid cap
     [/\bsmall ?cap\b/, 'Small cap', 'equity'],
     [/\bmid ?cap\b/, 'Mid cap', 'equity'],
-    [/\b(large (and|&) mid ?cap)\b/, 'Large & mid cap', 'equity'],
     [/\b(large ?cap|bluechip|blue chip|top 100)\b/, 'Large cap', 'equity'],
-    [/\b(flexi ?cap|multi ?cap|focused|value|contra|dividend yield|equity|opportunities|growth fund|thematic|sectoral|infrastructure|technology|pharma|banking)\b/, 'Equity (other)', 'equity'],
+    [/\b(thematic|sectoral|infrastructure|technology|pharma|healthcare|banking|financial services|consumption|psu|manufacturing|international|global|overseas|nasdaq|us equity|fof)\b/, 'Sector / theme', 'equity'], // one industry, theme or country: no broad index to compare with
+    [/\b(flexi ?cap|multi ?cap|focused|value|contra|dividend yield|equity|opportunities|growth fund)\b/, 'Equity (other)', 'equity'],
   ];
   for (const [re, category, asset] of rules) if (re.test(s)) return { category: /flexi ?cap/.test(s) ? 'Flexi cap' : category, asset };
   return { category: 'Other', asset: 'other' };

@@ -9,6 +9,7 @@ import { buildToday } from '@/lib/views/today';
 import { buildTodayMine, dateLineHi } from '@/lib/views/todayMine';
 import { getProfile } from './profile';
 import { emptyDataset } from '@core/types';
+import { vsBenchmarks } from '@core/portfolio/engine';
 // Fold your on-phone CAS into the Invest and X-ray view models, in the browser, with the same code the server uses for the
 // sample family. Overlap needs each fund's holdings, which we don't have for real funds yet (D-OPEN-3), so that card hides.
 
@@ -20,7 +21,10 @@ export async function withMyCasInvest(v: View): Promise<View> {
 export async function withMyCasXray(v: View): Promise<View> {
   const c = await loadCas(); if (!c) return v;
   const x = xrayFrom(c, {}, 'no fund holdings yet');
-  return { ...v, PF: pfFrom(c), XR: gateXR(x.XR, (v.MODE as AdviceMode) ?? 'guided'), X3: x.X3, CAS_SRC: 'yours', _mine: true };
+  // against its index: public index NAVs come from the server; your funds and dates never leave the phone
+  const series = await fetch('/api/benchmarks').then((r) => r.json()).then((j) => j.series ?? {}).catch(() => ({}));
+  const XR = { ...gateXR(x.XR, (v.MODE as AdviceMode) ?? 'guided'), bench: vsBenchmarks(c.holdings, series, c.asOf) };
+  return { ...v, PF: pfFrom(c), XR, X3: x.X3, CAS_SRC: 'yours', _mine: true };
 }
 
 // ---- your bank and card statements → Spends, Transactions, Category (computed here, never sent) ----

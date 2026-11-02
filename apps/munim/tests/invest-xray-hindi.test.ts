@@ -106,3 +106,29 @@ describe('What you own (2 Nov)', () => {
     expect(shares).toBe(v.value);
   });
 });
+
+describe('Against its index and same kind of fund (3 Nov)', () => {
+  it('the index card shows the engine\'s comparison, in English and Hindi', async () => {
+    const { vsBenchmarks } = await import('@core/portfolio/engine');
+    const s: [string, number][] = []; for (let y = 2019; y <= 2026; y++) for (let m = 1; m <= 12; m++) s.push([`${y}-${String(m).padStart(2, '0')}-01`, 100 * Math.pow(1.01, (y - 2019) * 12 + m)]);
+    const bench = vsBenchmarks(ds.portfolio!.holdings, { nifty500: s, smallcap250: s, nifty50: s, midcap150: s }, ds.portfolio!.asOf);
+    expect(bench.rows.length).toBeGreaterThan(0);
+    const data = buildXray(ds, { adviceMode: 'guided' }); (data.XR as Record<string, unknown>).bench = bench;
+    const x = text(render(Xray, { variant: 'standard', open: 'details', data }));
+    const beat = bench.rows.filter((r) => r.diff > 0).length;
+    expect(x).toContain(`${beat} of ${bench.rows.length} funds beat their index on your dates`);
+    const inr = (p: number) => '₹' + Math.round(Math.abs(p) / 100).toLocaleString('en-IN');
+    for (const r of bench.rows) expect(x).toContain(`${r.fund}: ${inr(r.fundValue)}; in the`);
+    expect(x).toContain(inr(bench.rows[0].benchValue));
+    const xh = text(render(Xray, { variant: 'bharat', open: 'details', data }));
+    expect(xh).toContain(`${bench.rows.length} में से ${beat} फ़ंड आपकी तारीख़ों पर अपने इंडेक्स से आगे`);
+  });
+  it('same kind of fund shows when real overlap isn\'t known', () => {
+    const data = buildXray(ds, { adviceMode: 'guided' });
+    const X3 = data.X3 as { overlap: { pairs: unknown[]; top5: unknown[] }; sameCat: unknown };
+    const d2 = { ...data, X3: { ...X3, overlap: { ...X3.overlap, pairs: [], top5: [] }, sameCat: [{ category: 'Flexi cap', funds: ['Kestrel Flexi Cap', 'Other Flexi Cap'], value: 70000000 }] } };
+    const x = text(render(Xray, { variant: 'standard', open: 'details', data: d2 }));
+    expect(x).toContain('You hold 2 flexi cap funds');
+    expect(x).toContain('a sign, not a measure of overlap');
+  });
+});

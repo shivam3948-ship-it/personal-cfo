@@ -210,7 +210,7 @@ class Component extends DCLogic {
       return /^Private test/.test(en) ? 'निजी टेस्ट। मुनीम न SEBI-रजिस्टर्ड निवेश सलाहकार है, न AMFI-रजिस्टर्ड म्यूचुअल फ़ंड डिस्ट्रीब्यूटर; कोई कदम उठाने से पहले किसी रजिस्टर्ड सलाहकार से पूछें।' : /^Investment advice from a SEBI-registered adviser/.test(en) ? 'SEBI-रजिस्टर्ड सलाहकार की निवेश सलाह।' : /^Test build on sample data/.test(en) ? 'टेस्ट वर्ज़न, सैंपल डेटा पर। ' + EDU : /^Test build/.test(en) ? 'टेस्ट वर्ज़न। ' + EDU : EDU; };
     // fund categories and plans come from the engine in English (packages/core classify())
     var HI_FCAT = { 'Flexi cap': 'फ़्लेक्सी कैप', 'ELSS': 'ELSS', 'Index': 'इंडेक्स', 'Debt': 'डेट', 'Small cap': 'स्मॉल कैप', 'Mid cap': 'मिड कैप', 'Large cap': 'लार्ज कैप', 'Large & mid cap': 'लार्ज और मिड कैप',
-      'Liquid': 'लिक्विड', 'Hybrid': 'हाइब्रिड', 'Arbitrage': 'आर्बिट्राज', 'Gold / silver': 'सोना / चाँदी', 'Equity (other)': 'इक्विटी (अन्य)', 'Other': 'अन्य' };
+      'Liquid': 'लिक्विड', 'Hybrid': 'हाइब्रिड', 'Arbitrage': 'आर्बिट्राज', 'Gold / silver': 'सोना / चाँदी', 'Equity (other)': 'इक्विटी (अन्य)', 'Sector / theme': 'सेक्टर / थीम', 'Other': 'अन्य' };
     var HI_PLAN = { 'Regular': 'रेगुलर', 'Direct': 'डायरेक्ट' };
     var CC = hi ? {   // copy (C is the harvest combo below)
       backAria: 'निवेश पर वापस', title: 'पोर्टफ़ोलियो एक्स-रे', saveAria: 'यह रिपोर्ट सेव या शेयर करें', taxTile: 'आगे कम टैक्स · लिमिट 31 मार्च को खत्म', feeTile: 'सालाना रेगुलर प्लान की फ़ीस',
@@ -265,7 +265,7 @@ class Component extends DCLogic {
     var stValue = sum(G.rows.map(function (r) { return r.stValue; }));
     var TAG = { deadline: ['var(--mari-ink)', 'var(--mari-tint)'], est: ['var(--ink2)', 'var(--tint)'], fact: ['var(--link)', 'var(--tint2)'] };
     var added = s.added || {};
-    var opened = s.opened !== undefined ? s.opened : ((this.props.open ?? 'none') === 'details' ? { harvest: 1, direct: 1, overlap: 1, elss: 1, index: 1 } : {});
+    var opened = s.opened !== undefined ? s.opened : ((this.props.open ?? 'none') === 'details' ? { harvest: 1, direct: 1, overlap: 1, samecat: 1, elss: 1, index: 1, bench: 1 } : {});
     var opt = function (t, d, badge, best) { return { t: t, d: d, badge: badge, bg: best ? 'var(--tint)' : 'var(--card)', ring: best ? 'inset 0 0 0 1.5px var(--btn)' : 'inset 0 0 0 1px var(--hair)' }; };
     var bar = function (l, v, max, fill, label) { return { l: l, v: label || R(v), w: Math.round(v / max * 70) + '%', fill: fill }; };
     var card = function (id, n, tag, kind, title, line, extra) {
@@ -302,10 +302,30 @@ class Component extends DCLogic {
               other + ' एक ऐक्टिव ' + (HI_PLAN[of[1]] || of[1]) + ' प्लान है, फिर भी इसका ' + top[2] + '% आपके इंडेक्स फ़ंड जैसा है, यानी इसकी ज़्यादा फ़ीस का एक हिस्सा उसी पर जाता है जो इंडेक्स फ़ंड पहले से दे रहा है।' + (none.length ? ' ' + none.join(' और ') + ' का किसी से ओवरलैप नहीं।' : ''))] : [],
             [/sample/i.test(O.asOf || '') ? T('Holdings here are a synthetic sample; the app uses each fund’s monthly portfolio disclosure.', 'यहाँ की होल्डिंग एक काल्पनिक सैंपल है; app हर फ़ंड की हर महीने जारी होने वाली होल्डिंग लिस्ट इस्तेमाल करता है।') : T('From each fund’s monthly portfolio disclosure.', 'हर फ़ंड की हर महीने जारी होने वाली होल्डिंग लिस्ट से।')]) }]);
     }
+    // same kind of fund (3 Nov): a stand-in for overlap when the funds' own holdings aren't known
+    var SC = (X3 && X3.sameCat) || [], HI_KIND = { 'Flexi cap': 'फ़्लेक्सी कैप', 'Large cap': 'लार्ज कैप', 'Mid cap': 'मिड कैप', 'Small cap': 'स्मॉल कैप', 'ELSS': 'ELSS', 'Multi cap': 'मल्टी कैप' };
+    if (!top && SC.length) specs.push(['samecat', T('Overlap', 'ओवरलैप'), T('Same kind', 'एक ही तरह के'), 'fact',
+        T('You hold ' + SC[0].funds.length + ' ' + (SC[0].category === 'ELSS' ? 'ELSS' : SC[0].category.toLowerCase()) + ' funds', 'आपके पास ' + SC[0].funds.length + ' ' + (HI_KIND[SC[0].category] || SC[0].category) + ' फ़ंड हैं'),
+        T('Funds of one kind usually own many of the same companies, so more of them may not mean more spread.', 'एक ही तरह के फ़ंड अक्सर कई एक जैसी कंपनियों में पैसा लगाते हैं, इसलिए ज़्यादा फ़ंड का मतलब ज़्यादा फैलाव नहीं भी हो सकता।'),
+        { notes: SC.map(function (c) { return T(c.funds.join(', ') + ': ' + R(c.value) + ' together.', c.funds.join(', ') + ': कुल ' + R(c.value) + '।'); })
+            .concat([T('Munim can\'t see each fund\'s stocks yet, so this is a sign, not a measure of overlap.', 'मुनीम अभी हर फ़ंड के शेयर नहीं देख पाता, इसलिए यह ओवरलैप का इशारा है, नाप नहीं।')]) }]);
     if (E && E.freeValue > 0) specs.push(['elss', T('Lock-in', 'लॉक-इन'), T('Unlocked', 'लॉक-इन खत्म'), 'fact', T(R(E.freeValue) + ' of your tax-saver fund is past its 3-year lock-in', 'आपके टैक्स-सेवर फ़ंड के ' + R(E.freeValue) + ' का 3 साल का लॉक-इन खत्म हो चुका है'),
         (E.lockedValue > 0 ? T('Units older than 3 years are free; ' + R(E.lockedValue) + ' is still locked.', '3 साल से पुरानी यूनिट अब निकाली जा सकती हैं; ' + R(E.lockedValue) + ' अभी भी लॉक है।') : T('Every unit is past the 3-year lock-in.', 'हर यूनिट का 3 साल का लॉक-इन खत्म हो चुका है।')) + (E.plan === 'Regular' && G.feeTotal > 0 ? T(' It’s a regular plan, so it counts in card 2.', ' यह रेगुलर प्लान है, इसलिए कार्ड 2 में गिना गया है।') : ''),
         { notes: [(E.freeGain > H.exempt ? T('Its ' + R(E.freeGain) + ' gain alone is more than this year’s tax-free limit. ', 'सिर्फ़ इसका ' + R(E.freeGain) + ' का फ़ायदा ही इस साल की टैक्स-फ़्री लिमिट से ज़्यादा है। ') : '') + T('Buying ELSS again starts a new 3-year lock-in; under the new tax regime ELSS gives no deduction.', 'ELSS दोबारा खरीदने पर नया 3 साल का लॉक-इन शुरू होता है; नई टैक्स व्यवस्था में ELSS पर कोई छूट नहीं मिलती।')] }]);
-    if (M) specs.push(['index', T('Returns', 'रिटर्न'), T('Your dates', 'आपकी तारीख़ें'), 'fact', vk + (M.diff < 0 ? T(' trails a plain index fund by ' + R(-M.diff), ' एक सीधे इंडेक्स फ़ंड से ' + R(-M.diff) + ' पीछे है') : T(' is ahead of a plain index fund by ' + R(M.diff), ' एक सीधे इंडेक्स फ़ंड से ' + R(M.diff) + ' आगे है')),
+    // against its index (3 Nov): each active equity fund vs a matching index fund, same money on the same dates
+    var BN = XR.bench && XR.bench.rows && XR.bench.rows.length ? XR.bench : null, BL = { nifty50: ['Nifty 50 index fund', 'निफ़्टी 50 इंडेक्स फ़ंड'], nifty500: ['Nifty 500 index fund', 'निफ़्टी 500 इंडेक्स फ़ंड'], midcap150: ['Midcap 150 index fund', 'मिडकैप 150 इंडेक्स फ़ंड'], smallcap250: ['Smallcap 250 index fund', 'स्मॉलकैप 250 इंडेक्स फ़ंड'] };
+    if (BN) { var beat = BN.rows.filter(function (r) { return r.diff > 0; }).length;
+      specs.push(['bench', T('Returns', 'रिटर्न'), T('Against its index', 'इंडेक्स के मुक़ाबले'), 'fact',
+        T(beat + ' of ' + BN.rows.length + ' funds beat their index on your dates', BN.rows.length + ' में से ' + beat + ' फ़ंड आपकी तारीख़ों पर अपने इंडेक्स से आगे रहे'),
+        T('The same money, on the same dates, in an index fund that tracks the same kind of market, valued on your statement date.', 'वही पैसा, उन्हीं तारीख़ों पर, उसी तरह के बाज़ार वाले इंडेक्स फ़ंड में, स्टेटमेंट की तारीख़ की क़ीमत पर।'),
+        { hasBars: true, barsLabel: T('Each fund minus its index fund', 'हर फ़ंड, अपने इंडेक्स फ़ंड के मुक़ाबले'),
+          bars: BN.rows.map(function (r) { return bar(first(r.fund) + T(' vs ', ' बनाम ') + T(BL[r.bench][0], BL[r.bench][1]), Math.abs(r.diff), Math.max.apply(null, BN.rows.map(function (q) { return Math.abs(q.diff); })) || 1, r.diff < 0 ? 'var(--warn)' : 'var(--btn)', (r.diff < 0 ? '−' : '+') + R(Math.abs(r.diff))); }),
+          notes: BN.rows.map(function (r) { return T(r.fund + ': ' + R(r.fundValue) + '; in the ' + BL[r.bench][0] + ' it would be ' + R(r.benchValue) + (r.fundPct != null && r.benchPct != null ? ' (' + r.fundPct + '% vs ' + r.benchPct + '% a year).' : '.'),
+              r.fund + ': ' + R(r.fundValue) + '; ' + BL[r.bench][1] + ' में यह ' + R(r.benchValue) + ' होता' + (r.fundPct != null && r.benchPct != null ? ' (सालाना ' + r.fundPct + '% बनाम ' + r.benchPct + '%)।' : '।')); })
+            .concat(BN.noData && BN.noData.length ? [T(BN.noData.join(', ') + ': index prices weren\'t available, so not compared.', BN.noData.join(', ') + ': इंडेक्स की क़ीमतें नहीं मिलीं, इसलिए तुलना नहीं।')] : [])
+            .concat(BN.notCovered.length ? [T(BN.notCovered.join(', ') + ': bought before the index fund\'s history starts, so not compared.', BN.notCovered.join(', ') + ': इंडेक्स फ़ंड का इतिहास शुरू होने से पहले खरीदे गए, इसलिए तुलना नहीं।')] : [])
+            .concat([T('Index fund prices are after its own small fee. This is how it went, not what comes next.', 'इंडेक्स फ़ंड की क़ीमत उसकी अपनी छोटी फ़ीस के बाद है। यह बीता हुआ है, आगे का अनुमान नहीं।')]) }]); }
+    else if (M) specs.push(['index', T('Returns', 'रिटर्न'), T('Your dates', 'आपकी तारीख़ें'), 'fact', vk + (M.diff < 0 ? T(' trails a plain index fund by ' + R(-M.diff), ' एक सीधे इंडेक्स फ़ंड से ' + R(-M.diff) + ' पीछे है') : T(' is ahead of a plain index fund by ' + R(M.diff), ' एक सीधे इंडेक्स फ़ंड से ' + R(M.diff) + ' आगे है')),
         T('Same ' + R(M.invested) + ' on the same ' + M.covered + ' dates.', 'उन्हीं ' + M.covered + ' तारीख़ों पर वही ' + R(M.invested) + '।'),
         { hasBars: true, barsLabel: T('Invested ' + R(M.invested) + ', ' + first(vk) + ' ' + R(M.fundValue) + ', index fund ' + R(M.indexValue), 'लगाए ' + R(M.invested) + ', ' + first(vk) + ' ' + R(M.fundValue) + ', इंडेक्स फ़ंड ' + R(M.indexValue)),
           bars: [[T('You put in', 'आपने लगाए'), M.invested, 'var(--hair2)'], [first(vk) + T(' now', ' अभी'), M.fundValue, M.diff < 0 ? 'var(--warn)' : 'var(--btn)'], [T('Index fund', 'इंडेक्स फ़ंड'), M.indexValue, 'var(--btn)']].map(function (b) { return bar(b[0], b[1], Math.max(M.invested, M.fundValue, M.indexValue), b[2]); }),
