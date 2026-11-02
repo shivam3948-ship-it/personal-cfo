@@ -62,7 +62,7 @@ export const UI = {
     noAnswer: 'Munim could not answer just now.', notCaught: 'Didn’t catch that. Try again or type.',
     noMic: 'Couldn’t use the microphone. Allow it in the browser, or type.', noBrowserVoice: 'Voice typing isn’t working in this browser right now. Type instead.',
     sttBusy: 'Voice service is busy, so your browser will listen instead. Tap the mic again.',
-    consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording. After each answer the mic turns on again by itself. While Munim speaks, your phone listens so you can interrupt; nothing is sent. Tap ■ to stop.',
+    consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording. After each answer the mic turns on again by itself. While Munim speaks, your phone keeps the last 2 seconds of sound on the phone so you can interrupt; your words are sent only when you do. Tap ■ to stop.',
     talkHint: 'Listening… just talk. Tap ■ to end.', interruptHint: 'Talk any time to interrupt.', talkEnded: 'Conversation ended. Tap the mic to talk again.', endTalk: 'End the conversation',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
     aiOff: 'AI off', placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
@@ -80,7 +80,7 @@ export const UI = {
     noAnswer: 'मुनीम अभी जवाब नहीं दे पाया। फिर कोशिश करें।', notCaught: 'सुनाई नहीं दिया। फिर कोशिश करें या लिखकर पूछें।',
     noMic: 'माइक नहीं चल पाया। ब्राउज़र में माइक की इजाज़त दें, या लिखकर पूछें।', noBrowserVoice: 'इस ब्राउज़र में अभी बोलकर पूछना काम नहीं कर रहा। लिखकर पूछें।',
     sttBusy: 'आवाज़ वाली सर्विस अभी व्यस्त है, इसलिए अब आपका ब्राउज़र सुनेगा। माइक फिर से दबाएँ।',
-    consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता। हर जवाब के बाद माइक अपने-आप फिर चालू होता है। मुनीम के बोलते समय आपका फ़ोन सुनता है ताकि आप बीच में बोल सकें; कुछ भेजा नहीं जाता। रोकने के लिए ■ दबाएँ।',
+    consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता। हर जवाब के बाद माइक अपने-आप फिर चालू होता है। मुनीम के बोलते समय आपका फ़ोन आख़िरी 2 सेकंड की आवाज़ फ़ोन पर ही रखता है ताकि आप बीच में बोल सकें; आपकी बात तभी भेजी जाती है जब आप बीच में बोलें। रोकने के लिए ■ दबाएँ।',
     talkHint: 'सुन रहा हूँ… बस बोलिए। ख़त्म करने के लिए ■ दबाएँ।', interruptHint: 'बीच में बोलकर रोक सकते हैं।', talkEnded: 'बातचीत ख़त्म हुई। फिर बात करने के लिए माइक दबाएँ।', endTalk: 'बातचीत ख़त्म करें',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
     aiOff: 'एआई बंद', placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
@@ -263,7 +263,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       onSpeech: () => { barged = true; stopSpeaking(); setVoice('listening'); setHeard(''); }, // you cut in: Munim stops and your words, from their start, are this turn
       onLevel: setLevel,
       onDone: (r) => { rec.current = null; if (!talkRef.current) { setVoice('idle'); return; } void heardRec(r, ackLang); },
-    }).then((w) => { if (barged || talkRef.current) rec.current = w; return w; }).catch(() => null); };
+    }).then((w) => { if (barged) rec.current = w; return w; }).catch(() => null); };
     if (handsFree) setNote(t.interruptHint);
     try {
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net

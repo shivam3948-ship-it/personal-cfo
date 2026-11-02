@@ -143,7 +143,7 @@ export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v:
   };
   const buf = new Uint8Array(an.fftSize); const th = opts.threshold ?? 0.3, hold = opts.holdMs ?? 300, silenceMs = opts.silenceMs ?? 1000, maxMs = opts.maxMs ?? 20000;
   let since = 0, raf = 0, sumL = 0, nL = 0, quietSince = 0, recFrom = 0; const t0 = performance.now();
-  const close = () => { phase = 'done'; cancelAnimationFrame(raf); proc.disconnect(); stream.getTracks().forEach((t) => t.stop()); ctx.close().catch(() => {}); opts.onLevel?.(0); };
+  const close = () => { phase = 'done'; chunks = []; kept = 0; cancelAnimationFrame(raf); proc.disconnect(); stream.getTracks().forEach((t) => t.stop()); ctx.close().catch(() => {}); opts.onLevel?.(0); };
   const finish = () => {
     const from = recFrom - 300; const parts = chunks.filter((c) => c.at >= from).map((c) => c.d); close();
     opts.onDone(parts.length ? { blob: wav(parts, rate), mime: 'audio/wav', ms: Math.round(performance.now() - recFrom) } : null);
