@@ -112,18 +112,20 @@ export function merchantOf(desc: string): string {
 //   a shop: a merchant/QR handle (paytmqr, bharatpe, q123…@ybl, razorpay…) or a shop word in the name ("SHARMA MEDICAL")
 //   a person: a phone-number handle, or a plain name with a plain handle. A tiny shop on a personal UPI ID reads as a
 //   person: "Paid to people" says who was paid, not what for, so it stays in the unsorted bucket (bucketOf)
-const SHOP_HANDLE = /paytmqr|bharatpe|^q\d{5,}|razorpay|\brzp|pinelabs|okbiz|mswipe|ezetap|vyapar|yespay|ibkpos|^paytm-|merchant|^mab\./i;
+const SHOP_HANDLE = /paytmqr|bharatpe|^q\d{5,}|razorpay|\brzp|pinelabs|okbiz|mswipe|ezetap|vyapar|yespay|ibkpos|^paytm-|^gpay-|merchant|^mab\./i;
 const SHOP_WORDS = /\b(stores?|enterprises?|traders?|trading|medicals?|pharma|pharmacy|chemists?|mart|shop|kirana|hotel|restaurant|cafe|dhaba|bakery|bakers|pvt|ltd|llp|agency|agencies|clinic|hospital|salon|parlour|tailors?|electricals?|hardware|mobiles|garments|textiles?|jewell?ers|opticals?|motors|automobiles|petroleum)\b/i;
 export function upiPayee(desc: string): 'shop' | 'person' | null {
-  if (!/^\s*UPI\b/i.test(desc)) return null;
-  const sbi = /^\s*UPI\/(DR|CR)\//i.test(desc); // SBI: UPI/DR/ref/NAME/BANK/handle(cut)/note; others: UPI-NAME-handle@bank-…
+  if (!/^\s*UPI(OUT|IN)?\b/i.test(desc)) return null;
+  const sbi = /^\s*UPI\/(DR|CR)\//i.test(desc); // SBI: UPI/DR/ref/NAME/BANK/handle(cut)/note; HDFC: UPI-NAME-handle@bank-…
+  const fed = /^\s*UPI(OUT|IN)\//i.test(desc); // Federal Bank: UPIOUT/ref/handle@bank/note/… (no payee name)
   const parts = desc.split('/').map((x) => x.trim());
-  const handle = (desc.match(/[\w.]+@[A-Za-z]+/)?.[0] ?? (sbi ? parts[5] ?? '' : '')).toLowerCase();
+  // '-' separates HDFC's fields, but is part of a handle where '/' is the separator ("paytm-1234@ptys")
+  const handle = (desc.match(sbi || fed ? /[\w.\-]+@[A-Za-z]+/ : /[\w.]+@[A-Za-z]+/)?.[0] ?? (sbi ? parts[5] ?? '' : '')).toLowerCase();
   const local = handle.split('@')[0];
-  const name = (sbi ? parts[3] : desc.split(/[-/]/)[1]) ?? '';
+  const name = (sbi ? parts[3] : fed ? '' : desc.split(/[-/]/)[1]) ?? '';
   if (SHOP_HANDLE.test(handle) || SHOP_WORDS.test(name)) return 'shop';
   if (/^(\+?91)?\d{10}$/.test(local)) return 'person';
-  if (/^[a-z][a-z.\-_]*\d{0,4}$/.test(local) && /^[A-Za-z .]{3,}$/.test(name.trim())) return 'person';
+  if (/^[a-z][a-z.\-_]*\d{0,4}$/.test(local) && (fed || /^[A-Za-z .]{3,}$/.test(name.trim()))) return 'person'; // a plain handle; Federal prints no name to check
   return null;
 }
 

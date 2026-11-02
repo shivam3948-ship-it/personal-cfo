@@ -15,7 +15,7 @@ const T = {
     sample: 'Look around first', sampleD: 'See Munim with a made-up family’s money. Add yours any time.', privacy: 'No sign-up. Your statements stay on this phone and you can delete them any time.', usage: 'Munim sends counts of which screens and answers get used, never your numbers. Questions asked about the sample family are kept for 90 days to improve answers.', usageOffBtn: 'Turn off', usageOnBtn: 'Turn on', usageOff: 'Usage counts are off.', usageSignal: 'Your browser asks sites not to track, so Munim sends nothing.',
     nameQ: 'What should Munim call you?', namePh: 'First name', nameNote: 'Only your first name. It stays on this phone.', preview: 'Munim will greet you like this', hello: (n: string) => `Welcome, ${n}`, helloNone: 'Welcome',
     previewSub: 'Here’s your money today.', addQ: 'Add a statement', addSub: 'Start with one. More months make the comparisons better.',
-    bank: 'Bank and card statements', bankD: 'HDFC, SBI and Canara savings · HDFC and Axis credit cards', bankBtn: 'Choose statement PDF',
+    bank: 'Bank and card statements', bankD: 'HDFC, SBI, Canara and Federal Bank savings · HDFC and Axis credit cards', bankBtn: 'Choose statement PDF',
     cas: 'Mutual funds (CAS)', casD: 'CAMS or MF Central, detailed, full history', casBtn: 'Choose CAS PDF', checked: '✓ Each file is checked against its own totals before Munim uses it.',
     later: 'I’ll do this later', cont: 'Continue', skip: 'Skip', back: 'Back',
     you: 'You', langH: 'Language', themeH: 'Look', phone: 'Like my phone', light: 'Light', dark: 'Dark', nameH: 'Name', noName: 'Not given', change: 'Change',
