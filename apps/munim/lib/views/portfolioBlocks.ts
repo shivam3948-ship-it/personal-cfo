@@ -1,7 +1,7 @@
 // Portfolio blocks for Invest and X-ray (PF, XR, X3, XRS), from holdings alone. Pure: no Node APIs, so the phone can
 // compute them from a CAS read on the device (lib/local) with the same code the server uses for the sample family.
 import type { Holding } from '@core/portfolio/cas';
-import { portfolioView, fundGrowth, investingHabits } from '@core/portfolio/engine';
+import { portfolioView, fundGrowth, investingHabits, sipVsOneTime } from '@core/portfolio/engine';
 import { xrayInsights, overlap, fdComparison } from '@core/portfolio/insights';
 import { namesFunds, type AdviceMode } from '../advice';
 
@@ -18,6 +18,7 @@ export function pfFrom(p: Portfolio) {
   const byIsin = new Map(p.holdings.map((h) => [h.isin, h]));
   return {
     asOf: p.asOf, value: v.value, cost: v.cost, xirr: v.xirrPct, sipGaps: habits.sipGaps, sells: habits.sells,
+    habit: (() => { const h = sipVsOneTime(p.holdings, p.asOf); return h && h.sip.ratePct !== null && h.oneTime.ratePct !== null ? { sip: h.sip.ratePct, one: h.oneTime.ratePct, oneBuys: h.oneTime.buys, skipped: h.skippedFunds } : null; })(), // your SIPs vs your one-time investments (2 Nov)
     since: habits.since ? `${MON[Number(habits.since.slice(5, 7)) - 1]} ${habits.since.slice(0, 4)}` : null,
     funds: v.funds.map((f) => { const g = fundGrowth(byIsin.get(f.isin)!, p.asOf);
       return [short(f.shortName), f.plan, f.category, f.asset, f.value, f.xirrPct, g?.firstDate ?? null, g?.navThen ?? null, g?.navNow ?? null, f.estExtraCostPerYear]; }),

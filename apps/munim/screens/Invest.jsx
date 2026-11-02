@@ -94,6 +94,7 @@ class Component extends DCLogic {
     var END = new Date(PF.asOf); // returns up to your statement's date
     var cmp = PF.funds.map(function (f) { var yrs = (END - new Date(f[6])) / (365.25 * 864e5); return { fund: Math.round((Math.pow(f[8] / f[7], 1 / yrs) - 1) * 1000) / 10, you: f[5] }; });
     var ahead = cmp.filter(function (c) { return c.you - c.fund >= 0.5; }).length, behind = cmp.filter(function (c) { return c.fund - c.you >= 0.5; }).length;
+    var HB = PF.habit; // your steady SIPs vs your one-time investments, from your own CAS (2 Nov): says more than ahead/behind a fund
     var regExtra = sum(PF.funds.map(function (f) { return f[9]; }));
     // ---- money path ----
     var ST = { done: ['var(--btn)', 'none', 'var(--ink2)', '400', '✓', 'var(--btn)', 'var(--on-btn)', 'none', 'var(--link)'], wait: ['var(--mari)', 'none', 'var(--ink2)', '400', '2', 'var(--mari-tint)', 'var(--mari-ink)', 'none', 'var(--mari-ink)'],
@@ -140,8 +141,8 @@ class Component extends DCLogic {
       essLink: 'Essentials ' + R(essAvg) + ' a month · what counts',
       essRows: cats.map(function (k) { return { l: k === 'Fixed costs' ? 'Fixed costs (rent, EMIs, insurance)' : k, v: R(Math.round(sum(months.map(function (m) { return ESSM[m][k]; })) / months.length)) }; }),
       xirr: PF.xirr + '%', earnedLine: R(PF.cost) + ' put in → ' + R(PF.value) + ' today', fdLine: R(XRS.fdExtra) + ' more than an FD',
-      verdict: 'Ahead of your funds on ' + ahead + ' of ' + cmp.length + ' · no SIP paused since ' + PF.since, xrayCount: XRS.count, xrayLine: R(XRS.taxSave) + ' less tax · ' + R(XRS.feeYr) + ' a year in fees',
-      verdicts: ['Ahead of your funds\u2019 own growth on ' + ahead + ' of ' + cmp.length + (behind ? '; ' + behind + ' behind' : '') + '.', 'No SIP pauses or sells since ' + PF.since + '.'],
+      verdict: (HB ? 'SIPs ' + HB.sip + '% a year, one-time ' + HB.one + '%' : 'Ahead of your funds on ' + ahead + ' of ' + cmp.length) + ' · no SIP paused since ' + PF.since, xrayCount: XRS.count, xrayLine: R(XRS.taxSave) + ' less tax · ' + R(XRS.feeYr) + ' a year in fees',
+      verdicts: [HB ? 'Your SIP instalments have grown ' + HB.sip + '% a year so far; your one-time investments ' + HB.one + '%.' : 'Ahead of your funds\u2019 own growth on ' + ahead + ' of ' + cmp.length + (behind ? '; ' + behind + ' behind' : '') + '.', 'No SIP pauses or sells since ' + PF.since + '.'],
       regExtra: R(regExtra), pot: R(SAVED_WITH_MUNIM), casLine: (CAS_SRC === 'yours' ? 'Your CAS of ' : 'Sample CAS of ') + (+PF.asOf.slice(8, 10)) + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+PF.asOf.slice(5, 7) - 1] + ' · ' + PF.funds.length + ' funds', casCta: CAS_SRC === 'yours' ? 'Update ›' : 'Add yours ›',
       casSteps: [{ n: '1', t: 'Ask for it', d: 'On the CAMS or KFintech website, or MF Central, request a detailed statement (CAS) for all fund houses, using the email linked to your funds.' },
         { n: '2', t: 'Set a password', d: 'You choose it while asking. The PDF reaches your email within minutes.' },
@@ -160,9 +161,9 @@ class Component extends DCLogic {
         plannedLine: s.pick ? '✓ हर महीने की 1 तारीख़ को ' + R(s.pick) + ' · ' + landing(Math.ceil(gap / s.pick)) + ' तक तैयार' : '',
         essLink: 'ज़रूरी खर्च ' + R(essAvg) + ' महीना · क्या गिना गया',
         earnedLine: R(PF.cost) + ' लगाए → आज ' + R(PF.value), fdLine: 'FD से ' + R(XRS.fdExtra) + ' ज़्यादा',
-        verdict: cmp.length + ' में से ' + ahead + ' फ़ंड में आपका रिटर्न फ़ंड से आगे · ' + monHi(PF.since) + ' से एक भी SIP नहीं रुकी',
+        verdict: (HB ? 'SIP ' + HB.sip + '% सालाना, एक बार का पैसा ' + HB.one + '%' : cmp.length + ' में से ' + ahead + ' फ़ंड में आपका रिटर्न फ़ंड से आगे') + ' · ' + monHi(PF.since) + ' से एक भी SIP नहीं रुकी',
         xrayHead: 'ध्यान देने लायक ' + XRS.count + ' बातें', xrayLine: R(XRS.taxSave) + ' कम टैक्स · फ़ीस में ' + R(XRS.feeYr) + ' सालाना',
-        verdicts: [cmp.length + ' में से ' + ahead + ' फ़ंड में आप फ़ंड की अपनी बढ़त से आगे' + (behind ? '; ' + behind + ' में पीछे' : '') + '।', monHi(PF.since) + ' से न कोई SIP रुकी, न कुछ बेचा गया।'],
+        verdicts: [HB ? 'अब तक नियमित SIP की किश्तें सालाना ' + HB.sip + '% बढ़ीं; एक बार लगाया पैसा ' + HB.one + '%।' : cmp.length + ' में से ' + ahead + ' फ़ंड में आप फ़ंड की अपनी बढ़त से आगे' + (behind ? '; ' + behind + ' में पीछे' : '') + '।', monHi(PF.since) + ' से न कोई SIP रुकी, न कुछ बेचा गया।'],
         casLine: (CAS_SRC === 'yours' ? 'आपका CAS, ' : 'सैंपल CAS, ') + casD + ' · ' + PF.funds.length + ' फ़ंड', casCta: CAS_SRC === 'yours' ? 'अपडेट करें ›' : 'अपना जोड़ें ›',
         casSteps: [{ n: '1', t: 'माँगें', d: 'CAMS या KFintech की वेबसाइट या MF Central पर, सभी फ़ंड हाउस का डिटेल्ड स्टेटमेंट (CAS) माँगें। वही ईमेल डालें जो आपके फ़ंड से जुड़ा है।' },
           { n: '2', t: 'पासवर्ड रखें', d: 'माँगते समय आप खुद पासवर्ड चुनते हैं। कुछ ही मिनट में PDF आपके ईमेल पर आ जाती है।' },
