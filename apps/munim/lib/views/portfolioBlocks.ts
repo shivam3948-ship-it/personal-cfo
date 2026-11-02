@@ -1,7 +1,7 @@
 // Portfolio blocks for Invest and X-ray (PF, XR, X3, XRS), from holdings alone. Pure: no Node APIs, so the phone can
 // compute them from a CAS read on the device (lib/local) with the same code the server uses for the sample family.
 import type { Holding } from '@core/portfolio/cas';
-import { portfolioView, fundGrowth, investingHabits, sipVsOneTime } from '@core/portfolio/engine';
+import { portfolioView, fundGrowth, investingHabits, sipVsOneTime, sameCategory } from '@core/portfolio/engine';
 import { xrayInsights, overlap, fdComparison } from '@core/portfolio/insights';
 import { namesFunds, type AdviceMode } from '../advice';
 
@@ -33,7 +33,7 @@ export function xrayFrom(p: Portfolio, weights: Weights, weightsLabel: string) {
   const c = x.harvest.combo, months = 3;
   return {
     XR: { harvest: x.harvest, regular: x.regular, elss: x.elss, vsIndex: x.vsIndex },
-    X3: { overlap: { ...o, asOf: weightsLabel }, fd,
+    X3: { overlap: { ...o, asOf: weightsLabel }, fd, sameCat: sameCategory(p.holdings), // a stand-in for overlap when fund holdings aren't known (3 Nov)
       // "Did it work?" preview: what the tax and costs cards would show 3 months after acting (labelled Preview; no actions tracked yet)
       did: { months, movedPaise: c.value, feeSavedSoFar: Math.round((c.feeSavedYr * months) / 12), futureTax: c.futureTax, sipDirect: x.regular.sipReg * months } },
     // same conditions as the X-ray screen uses to show each card

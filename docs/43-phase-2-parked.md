@@ -41,7 +41,7 @@ Evidence column key:
 | Item | User need it serves | Evidence | Why parked | Comes back when |
 |---|---|---|---|---|
 | Real fund overlap (shared stocks between your funds) | "Am I paying two fees for the same stocks?" | Direct: owner's own CAS shows no overlap card, because a CAS lists what you hold, not what each fund holds | Needs each scheme's monthly portfolio from every AMC (no central source; SEBI makes each AMC publish its own), a monthly refresh job and a holdings table sent to the phone: about 2–3 days. The X-ray's overlap card works today only on the sample family's made-up holdings. The primary user (D-054) holds no funds yet | After the Bachatt share, if investors (the later stage, D-035) are the next segment |
-| Same-category duplication (a CAS-only stand-in for overlap) | "You hold 3 flexi-cap funds": the likely overlap, without stock data | Owner's ask | About 1–2 h; a weaker signal than real overlap | With the item above, or alone if real overlap stays too costly |
+| ~~Same-category duplication~~ | Built 3 Nov (D-088) | | | |
 | Nominee missing, one scheme spread over several folios, small dormant holdings | Paperwork that bites later (claims, consolidation) | Owner's ask; the CAS prints these | About 1–2 h each | Next X-ray change |
 
 ## Channels
