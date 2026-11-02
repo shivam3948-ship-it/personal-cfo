@@ -93,3 +93,7 @@ The avatar's label already said "language, name and your data", so the You page 
 
 ## Conversation, not commands (D-082, 30 Oct)
 Voice works like a phone call, not a walkie-talkie: one tap starts it, turns hand over on silence, and the user can interrupt. Principle: turn-taking in conversation (Sacks, Schegloff and Jefferson's 1974 paper on turn-taking; the name is from that source): people expect to take the floor by speaking, not by pressing a button, and to cut in when they've heard enough. The 8-second quiet ending is our label: "the call ends when nobody talks".
+
+
+## Show the shape first, then the rows (D-087, 2 Nov)
+"What you own" leads with one bar of the money by type, then each fund with its share, gain and yearly return. Principle: overview first, details on demand (Shneiderman's visual information-seeking mantra, 1996; the name is from that source).

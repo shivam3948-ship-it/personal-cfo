@@ -21,7 +21,7 @@ export function pfFrom(p: Portfolio) {
     habit: (() => { const h = sipVsOneTime(p.holdings, p.asOf); return h && h.sip.ratePct !== null && h.oneTime.ratePct !== null ? { sip: h.sip.ratePct, one: h.oneTime.ratePct, oneBuys: h.oneTime.buys, skipped: h.skippedFunds } : null; })(), // your SIPs vs your one-time investments (2 Nov)
     since: habits.since ? `${MON[Number(habits.since.slice(5, 7)) - 1]} ${habits.since.slice(0, 4)}` : null,
     funds: v.funds.map((f) => { const g = fundGrowth(byIsin.get(f.isin)!, p.asOf);
-      return [short(f.shortName), f.plan, f.category, f.asset, f.value, f.xirrPct, g?.firstDate ?? null, g?.navThen ?? null, g?.navNow ?? null, f.estExtraCostPerYear]; }),
+      return [short(f.shortName), f.plan, f.category, f.asset, f.value, f.xirrPct, g?.firstDate ?? null, g?.navThen ?? null, g?.navNow ?? null, f.estExtraCostPerYear, f.gain]; }), // [10] gain in paise (What you own, 2 Nov)
   };
 }
 

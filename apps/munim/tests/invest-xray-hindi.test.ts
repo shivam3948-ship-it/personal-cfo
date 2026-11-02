@@ -91,3 +91,18 @@ describe('SIPs vs one-time investments (2 Nov)', () => {
     expect(xh).toContain(`नियमित SIP की किश्तें सालाना ${h.sip.ratePct}% बढ़ीं`);
   });
 });
+
+describe('What you own (2 Nov)', () => {
+  it('each fund\'s gain and share on screen equal the engine; the mix covers the whole portfolio', async () => {
+    const { portfolioView } = await import('@core/portfolio/engine');
+    const v = portfolioView(ds.portfolio!.holdings, ds.portfolio!.asOf);
+    const x = text(render(Xray, { variant: 'standard', data: buildXray(ds, { adviceMode: 'guided' }) }));
+    const inr = (p: number) => '₹' + Math.round(Math.abs(p) / 100).toLocaleString('en-IN');
+    for (const f of v.funds) {
+      expect(x, f.shortName).toContain((f.gain >= 0 ? '+' : '−') + inr(f.gain));
+      expect(x, f.shortName).toContain(Math.round(f.value / v.value * 100) + '%');
+    }
+    const shares = v.mix.map((m) => m.value).reduce((a, b) => a + b, 0);
+    expect(shares).toBe(v.value);
+  });
+});
