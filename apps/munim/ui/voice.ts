@@ -124,25 +124,58 @@ export async function speakPieces(pieces: string[], lang: 'hi' | 'en', tts: (pie
 }
 
 /** Hands-free conversation (D-082): while Munim is speaking, listen for the user starting to talk so they can interrupt
- *  ("barge in") instead of waiting or tapping. The phone's echo cancellation removes most of Munim's own voice; a higher
- *  level and a short hold stop its leftover from counting. Calls onSpeech once, then stops itself. */
-export async function watchForSpeech(onSpeech: () => void, opts: { threshold?: number; holdMs?: number } = {}): Promise<{ stop: () => void }> {
+ *  ("barge in"). The phone's echo cancellation removes most of Munim's own voice; the first 0.6 s learn how loud its
+ *  leftover is, and the user must be clearly louder for 0.3 s. The microphone is recorded from the start into a short
+ *  rolling buffer that never leaves the phone, so when the user cuts in, their first words (spoken while it was still
+ *  making sure) are kept: the recording starts 0.3 s before they began, and ends on 1 s of quiet. Before they cut in,
+ *  nothing is kept beyond the last 2 s and nothing is sent. */
+export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v: number) => void; onDone: (r: Recording | null) => void; threshold?: number; holdMs?: number; silenceMs?: number; maxMs?: number }): Promise<{ stop: () => void }> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
-  const ctx = new AudioContext(); const an = ctx.createAnalyser(); an.fftSize = 1024; ctx.createMediaStreamSource(stream).connect(an);
-  const buf = new Uint8Array(an.fftSize); const th = opts.threshold ?? 0.3, hold = opts.holdMs ?? 300;
-  let since = 0, raf = 0, live = true, sumL = 0, nL = 0; const t0 = performance.now();
-  const stop = () => { if (!live) return; live = false; cancelAnimationFrame(raf); stream.getTracks().forEach((t) => t.stop()); ctx.close().catch(() => {}); };
+  const ctx = new AudioContext(); const src = ctx.createMediaStreamSource(stream);
+  const an = ctx.createAnalyser(); an.fftSize = 1024; src.connect(an);
+  const proc = ctx.createScriptProcessor(4096, 1, 1); const mute = ctx.createGain(); mute.gain.value = 0; src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+  const rate = ctx.sampleRate, keep = rate * 2; // rolling 2 s before the user cuts in
+  let chunks: { at: number; d: Float32Array }[] = [], kept = 0, phase: 'watch' | 'rec' | 'done' = 'watch';
+  proc.onaudioprocess = (e) => {
+    if (phase === 'done') return;
+    const d = new Float32Array(e.inputBuffer.getChannelData(0)); chunks.push({ at: performance.now(), d }); kept += d.length;
+    while (phase === 'watch' && kept - chunks[0].d.length > keep) kept -= chunks.shift()!.d.length;
+  };
+  const buf = new Uint8Array(an.fftSize); const th = opts.threshold ?? 0.3, hold = opts.holdMs ?? 300, silenceMs = opts.silenceMs ?? 1000, maxMs = opts.maxMs ?? 20000;
+  let since = 0, raf = 0, sumL = 0, nL = 0, quietSince = 0, recFrom = 0; const t0 = performance.now();
+  const close = () => { phase = 'done'; chunks = []; kept = 0; cancelAnimationFrame(raf); proc.disconnect(); stream.getTracks().forEach((t) => t.stop()); ctx.close().catch(() => {}); opts.onLevel?.(0); };
+  const finish = () => {
+    const from = recFrom - 300; const parts = chunks.filter((c) => c.at >= from).map((c) => c.d); close();
+    opts.onDone(parts.length ? { blob: wav(parts, rate), mime: 'audio/wav', ms: Math.round(performance.now() - recFrom) } : null);
+  };
   const tick = () => {
-    if (!live) return;
+    if (phase === 'done') return;
     an.getByteTimeDomainData(buf);
     let sum = 0; for (const v of buf) sum += (v - 128) * (v - 128);
     const level = Math.min(1, (Math.sqrt(sum / buf.length) / 128) * 6), now = performance.now();
-    // the first 600 ms learn how loud Munim's own voice leaks back on this phone; after that you must be clearly louder
-    if (now - t0 < 600) { sumL += level; nL++; raf = requestAnimationFrame(tick); return; }
-    const need = Math.max(th, Math.min(0.6, (nL ? sumL / nL : 0) * 2)); // capped, so someone already talking can still cut in
-    if (level > need) { if (!since) since = now; if (now - since > hold) { stop(); onSpeech(); return; } } else since = 0;
+    if (phase === 'watch') {
+      if (now - t0 < 600) { sumL += level; nL++; raf = requestAnimationFrame(tick); return; }
+      const need = Math.max(th, Math.min(0.6, (nL ? sumL / nL : 0) * 2)); // capped, so someone already talking can still cut in
+      if (level > need) { if (!since) since = now; if (now - since > hold) { phase = 'rec'; recFrom = since; opts.onSpeech(); } } else since = 0;
+    } else {
+      opts.onLevel?.(level);
+      if (level > 0.12) quietSince = 0; else if (!quietSince) quietSince = now;
+      if ((quietSince && now - quietSince > silenceMs) || now - recFrom > maxMs) { finish(); return; }
+    }
     raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);
-  return { stop };
+  return { stop: () => { if (phase !== 'done') { const wasRec = phase === 'rec'; close(); if (wasRec) opts.onDone(null); } } };
+}
+
+/** 16 kHz mono 16-bit WAV from float samples (smaller upload than the device rate, plenty for speech). */
+function wav(parts: Float32Array[], rate: number): Blob {
+  const n = parts.reduce((a, p) => a + p.length, 0), step = rate / 16000, out = Math.floor(n / step);
+  const all = new Float32Array(n); let o = 0; for (const p of parts) { all.set(p, o); o += p.length; }
+  const b = new DataView(new ArrayBuffer(44 + out * 2));
+  const w = (off: number, str: string) => { for (let i = 0; i < str.length; i++) b.setUint8(off + i, str.charCodeAt(i)); };
+  w(0, 'RIFF'); b.setUint32(4, 36 + out * 2, true); w(8, 'WAVE'); w(12, 'fmt '); b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, 1, true);
+  b.setUint32(24, 16000, true); b.setUint32(28, 32000, true); b.setUint16(32, 2, true); b.setUint16(34, 16, true); w(36, 'data'); b.setUint32(40, out * 2, true);
+  for (let i = 0; i < out; i++) { const a = Math.floor(i * step), z = Math.min(n, Math.floor((i + 1) * step)); let sum = 0; for (let k = a; k < z; k++) sum += all[k]; const v = Math.max(-1, Math.min(1, sum / Math.max(1, z - a))); b.setInt16(44 + i * 2, v < 0 ? v * 0x8000 : v * 0x7fff, true); }
+  return new Blob([b], { type: 'audio/wav' });
 }
