@@ -5,7 +5,7 @@ const PHONE = /(?<!\d)(?:\+91[\s-]?)?[6-9]\d{9}(?!\d)/g;
 const LONG_DIGITS = /(?<![\d,.])\d{9,18}(?![\d,.])/g; // account / card / folio numbers
 const UPI_HANDLE = /\b[\w.-]+@(ok\w+|ybl|ibl|axl|paytm|upi|apl|icici|hdfcbank|sbi|axisbank|kotak)\b/gi;
 const CARD16 = /\b(?:\d{4}[\s-]?){3}\d{4}\b/g;
-const FOLIO = /(?<![\d,.])\d{5,}\s*\/\s*\d{1,4}(?![\d,.])/g; // folio numbers like 12345678/90 (review, 7 Nov)
+const FOLIO = /(?<![\d,.])\d{5,}\s*\/\s*\d{1,4}(?![\d,.]?\d)/g; // a full stop or comma after it still matches // folio numbers like 12345678/90 (review, 7 Nov)
 
 export interface RedactOptions { names?: string[] }
 

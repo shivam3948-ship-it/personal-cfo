@@ -90,6 +90,8 @@ describe('what your own data puts in the owner log', () => {
     const q = scrub('How much did I send Ramesh Sharma? My folio is 12345678/90', names), a = scrub('You sent Ramesh Sharma ₹2,500 by UPI-612345678901 on 10 Oct.', names);
     expect(q).not.toMatch(/Ramesh|12345678\/90/i); expect(a).not.toMatch(/Ramesh|612345678901/i); expect(a).toContain('₹2,500');
     expect(scrub('आशा, आपने खर्च किया', ['आशा'])).toBe('[NAME], आपने खर्च किया');
+    expect(scrub('My folio is 12345678/90.', names)).toBe('My folio is [NUMBER].'); expect(scrub('ref 54321/1, done', names)).toBe('ref [NUMBER], done');
+    expect(scrub('₹1,00,000/12 a month', names)).toBe('₹1,00,000/12 a month'); // an amount with commas is not a folio
   });
   it('draft tests from your own data carry no text', () => {
     const d = draftCase(base({ data: 'mine', vote: 'down', question: 'What did I pay Ramesh?' }), 1);
