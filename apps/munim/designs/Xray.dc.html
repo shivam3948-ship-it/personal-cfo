@@ -53,7 +53,7 @@ button{font:inherit;color:inherit}
         <div style="background: var(--mari-tint); border-radius: 14px; padding: 9px 12px; display: grid; gap: 1px"><b class="serif" style="font-size: 21px; color: var(--mari-ink)">{{d.taxSave}}</b><span style="font-size: 12px; color: var(--mari-ink)">{{c.taxTile}}</span></div>
         <div style="background: var(--tint); border-radius: 14px; padding: 9px 12px; display: grid; gap: 1px"><b class="serif" style="font-size: 21px; color: var(--link)">{{d.feeYr}}</b><span style="font-size: 12px; color: var(--ink2)">{{c.feeTile}}</span></div>
       </div>
-      <span style="font-size: 13px; color: var(--ink2)">{{c.e1}} <b style="font-weight: 600; color: var(--ink)">{{d.xirr}} {{c.aYear}}</b>{{c.e2}}<b style="font-weight: 600; color: var(--ink)">{{d.fdExtra}} {{c.more}}</b>{{c.e3}} {{d.sinceLine}}</span>
+      <span style="font-size: 13px; color: var(--ink2)">{{d.e1}} <b style="font-weight: 600; color: var(--ink)">{{d.xirrAbs}} {{c.aYear}}</b>{{d.e2}}<b style="font-weight: 600; color: var(--ink)">{{d.fdExtra}} {{d.fdMore}}</b>{{c.e3}} {{d.sinceLine}}</span>
     </section>
 
     <section aria-labelledby="moves" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 12px 16px; display: grid; gap: 6px; box-shadow: 0 0 0 1px var(--hair)">
@@ -135,6 +135,7 @@ button{font:inherit;color:inherit}
         <div style="display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--ink2); padding-bottom: 8px">
           <sc-for list="{{d.mix}}" as="m" hint-placeholder-count="3"><span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 9px; height: 9px; border-radius: 2px; background: {{m.fill}}"></span>{{m.label}}</span></sc-for>
         </div>
+        <sc-if value="{{d.hasMissing}}" hint-placeholder-val="{{ false }}"><p style="margin: 0 0 8px; font-size: 12.5px; color: var(--ink2); background: var(--mari-tint); border-radius: 10px; padding: 8px 10px">{{d.missingNote}}</p></sc-if>
         <sc-for list="{{d.funds}}" as="f" hint-placeholder-count="5">
           <div style="display: flex; align-items: center; gap: 10px; min-height: 56px; border-top: 1px solid var(--hair); padding: 6px 0">
             <span style="flex: 1; min-width: 0; display: grid; gap: 2px"><span style="font-size: 14.5px">{{f.name}}</span><span style="font-size: 12.5px; color: var(--muted)">{{f.cat}} · <span style="color: {{f.planInk}}; font-weight: 600">{{f.plan}}</span> · {{f.share}}</span></span>
@@ -247,6 +248,7 @@ class Component extends DCLogic {
     var MODE = 'demo';   // advice mode from the server: only advised shows the named-fund plan (D-051); everyone else gets facts and categories
     var DISC = 'Test build on sample data. For education only, not investment advice.';   // the mode's disclaimer, from the server
     var CAS_SRC = 'sample';   // whose CAS: 'sample' (the demo family) or 'yours' (read on this phone)
+    var MISSING = [];   // funds your CAS starts part-way through (7 Nov): left out of the numbers, and named here
     var END = new Date(PF.asOf || '2026-10-15'), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var rows = PF.funds.map(function (f) { var yrs = (END - new Date(f[6])) / (365.25 * 864e5), fund = Math.round((Math.pow(f[8] / f[7], 1 / yrs) - 1) * 1000) / 10; return { f: f, fund: fund, you: f[5], since: MON[+f[6].slice(5, 7) - 1] + ' ' + f[6].slice(0, 4) }; });
     var maxV = Math.max.apply(null, rows.map(function (r) { return Math.max(r.fund, r.you); }));
@@ -260,6 +262,8 @@ class Component extends DCLogic {
     // the fund compared with an index fund: whichever one has index prices for all its dates (data-driven, any CAS)
     var vk = Object.keys(XR.vsIndex || {})[0] || null, M = vk ? XR.vsIndex[vk] : null;
     var first = function (n) { return String(n).split(' ')[0]; };
+    var upDown = function (x) { return x < 0 ? 'down ' + Math.abs(x) + '%' : 'up ' + x + '%'; }, upDownHi = function (x, fem) { return Math.abs(x) + (x < 0 ? (fem ? '% घटीं' : '% घटा') : (fem ? '% बढ़ीं' : '% बढ़ा')); }; // 7 Nov: 'have grown -5.5%'
+    var MISS = MISSING || [];
     var byFirst = {}; PF.funds.forEach(function (f) { byFirst[first(f[0])] = f; });
     var eqCount = PF.funds.filter(function (f) { return f[3] === 'equity'; }).length;
     var stValue = sum(G.rows.map(function (r) { return r.stValue; }));
@@ -319,7 +323,7 @@ class Component extends DCLogic {
         T(beat + ' of ' + BN.rows.length + ' funds beat their index on your dates', BN.rows.length + ' में से ' + beat + ' फ़ंड आपकी तारीख़ों पर अपने इंडेक्स से आगे रहे'),
         T('The same money, on the same dates, in an index fund that tracks the same kind of market, valued on your statement date.', 'वही पैसा, उन्हीं तारीख़ों पर, उसी तरह के बाज़ार वाले इंडेक्स फ़ंड में, स्टेटमेंट की तारीख़ की क़ीमत पर।'),
         { hasBars: true, barsLabel: T('Each fund minus its index fund', 'हर फ़ंड, अपने इंडेक्स फ़ंड के मुक़ाबले'),
-          bars: BN.rows.map(function (r) { return bar(first(r.fund) + T(' vs ', ' बनाम ') + T(BL[r.bench][0], BL[r.bench][1]), Math.abs(r.diff), Math.max.apply(null, BN.rows.map(function (q) { return Math.abs(q.diff); })) || 1, r.diff < 0 ? 'var(--warn)' : 'var(--btn)', (r.diff < 0 ? '−' : '+') + R(Math.abs(r.diff))); }),
+          bars: BN.rows.map(function (r) { return bar(r.fund + T(' vs ', ' बनाम ') + T(BL[r.bench][0], BL[r.bench][1]).replace(T(' index fund', ' इंडेक्स फ़ंड'), ''), Math.abs(r.diff), Math.max.apply(null, BN.rows.map(function (q) { return Math.abs(q.diff); })) || 1, r.diff < 0 ? 'var(--warn)' : 'var(--btn)', (r.diff < 0 ? '−' : '+') + R(Math.abs(r.diff))); }),
           notes: BN.rows.map(function (r) { return T(r.fund + ': ' + R(r.fundValue) + '; in the ' + BL[r.bench][0] + ' it would be ' + R(r.benchValue) + (r.fundPct != null && r.benchPct != null ? ' (' + r.fundPct + '% vs ' + r.benchPct + '% a year).' : '.'),
               r.fund + ': ' + R(r.fundValue) + '; ' + BL[r.bench][1] + ' में यह ' + R(r.benchValue) + ' होता' + (r.fundPct != null && r.benchPct != null ? ' (सालाना ' + r.fundPct + '% बनाम ' + r.benchPct + '%)।' : '।')); })
             .concat(BN.noData && BN.noData.length ? [T(BN.noData.join(', ') + ': index prices weren\'t available, so not compared.', BN.noData.join(', ') + ': इंडेक्स की क़ीमतें नहीं मिलीं, इसलिए तुलना नहीं।')] : [])
@@ -334,18 +338,21 @@ class Component extends DCLogic {
     var hist = (this.props.history ?? 'none') === 'preview';
     var planOpen = named && (s.plan !== undefined ? s.plan : (this.props.open ?? 'none') === 'plan'); // D-051: the plan sheet names funds, amounts and steps, so only with a licence
     var d = {
-      count: cards.length, countHead: T(cards.length + ' things worth acting on', 'ध्यान देने लायक ' + cards.length + ' बातें'), xirr: PF.xirr + '%', since: PF.since,
-      sinceLine: T('No SIP paused or sold since ' + PF.since + '.', monHi(PF.since) + ' से न कोई SIP रुकी, न कुछ बेचा गया।'), taxSave: R(H.taxSavedLater), feeYr: R(G.feeTotal), fdExtra: R(FD.extra), cards: cards,
+      count: cards.length, countHead: T(cards.length + ' things worth acting on', 'ध्यान देने लायक ' + cards.length + ' बातें'), xirr: PF.xirr + '%', since: PF.since, xirrAbs: Math.abs(PF.xirr) + '%', // 7 Nov: a loss reads 'lost 2%', not 'earned -2%'
+      e1: PF.xirr < 0 ? T('Your money lost', 'आपके पैसे ने') : T('Your money earned', 'आपके पैसे ने'), e2: PF.xirr < 0 ? T(': ', ' गँवाया: उन्हीं तारीख़ों पर 7% FD से ') : T(': ', ' कमाया: उन्हीं तारीख़ों पर 7% FD से '),
+      sinceLine: T('No SIP paused or sold since ' + PF.since + '.', monHi(PF.since) + ' से न कोई SIP रुकी, न कुछ बेचा गया।'), taxSave: R(H.taxSavedLater), feeYr: R(G.feeTotal), fdExtra: R(Math.abs(FD.extra)), fdMore: FD.extra < 0 ? T('less', 'कम') : T('more', 'ज़्यादा'), cards: cards,
       did: [{ what: T('Moved ' + R(DID.movedPaise) + ' to direct plans', R(DID.movedPaise) + ' डायरेक्ट प्लान में ले गए'), when: T(DID.months + ' months ago · card 2', DID.months + ' महीने पहले · कार्ड 2'), v: T(R(DID.feeSavedSoFar) + ' less fees so far', 'अब तक ' + R(DID.feeSavedSoFar) + ' कम फ़ीस') },
         { what: T('Booked gains inside the tax-free limit', 'टैक्स-फ़्री लिमिट के अंदर फ़ायदा बुक किया'), when: T('same move · card 1', 'वही कदम · कार्ड 1'), v: T(R(DID.futureTax) + ' less tax later', 'आगे ' + R(DID.futureTax) + ' कम टैक्स') },
         { what: T('SIPs now go to direct plans', 'SIP अब डायरेक्ट प्लान में जाती हैं'), when: T('since then', 'तब से'), v: T(R(DID.sipDirect) + ' commission-free', R(DID.sipDirect) + ' बिना कमीशन') }],
-      vsVerdict: PF && PF.habit ? T('Your SIP instalments have grown ' + PF.habit.sip + '% a year so far; one-time investments ' + PF.habit.one + '%', 'अब तक नियमित SIP की किश्तें सालाना ' + PF.habit.sip + '% बढ़ीं; एक बार लगाया पैसा ' + PF.habit.one + '%') // your own habit, the part you control (2 Nov)
+      vsVerdict: PF && PF.habit ? T('Your SIP instalments are ' + upDown(PF.habit.sip) + ' a year so far; one-time investments ' + upDown(PF.habit.one), 'अब तक नियमित SIP की किश्तें सालाना ' + upDownHi(PF.habit.sip, true) + '; एक बार लगाया पैसा सालाना ' + upDownHi(PF.habit.one, false)) // your own habit, the part you control (2 Nov)
         : T('Ahead of the fund on ' + ahead + ', about even on ' + even + (behind ? ', behind on ' + behind : ''), ahead + ' में फ़ंड से आगे, ' + even + ' में लगभग बराबर' + (behind ? ', ' + behind + ' में पीछे' : '')),
       rows: rows.map(function (r) { var df = Math.round((r.you - r.fund) * 10) / 10;
         return { name: T(r.f[0] + ' · since ' + r.since, r.f[0] + ' · ' + monHi(r.since) + ' से'), fund: r.fund + '%', you: r.you + '%', fundW: Math.round(r.fund / maxV * 100) + '%', youW: Math.round(r.you / maxV * 100) + '%',
           diff: Math.abs(df) < 0.5 ? T('about even', 'लगभग बराबर') : (df > 0 ? '+' : '−') + Math.abs(df) + T(' pts', ' पॉइंट'), diffInk: Math.abs(df) < 0.5 ? 'var(--muted)' : df > 0 ? 'var(--link)' : 'var(--warn)',
           aria: T(r.f[0] + ': fund ' + r.fund + '% a year, your money ' + r.you + '% a year', r.f[0] + ': फ़ंड ' + r.fund + '% सालाना, आपका पैसा ' + r.you + '% सालाना') }; }),
-      mixLabel: T('Equity ' + Math.round(eq / PF.value * 100) + '% · debt ' + Math.round(dt / PF.value * 100) + '% · ' + PF.funds.length + ' funds · ' + R(PF.value), 'इक्विटी ' + Math.round(eq / PF.value * 100) + '% · डेट ' + Math.round(dt / PF.value * 100) + '% · ' + PF.funds.length + ' फ़ंड · ' + R(PF.value)),
+      mixLabel: MIX.map(function (m) { return m.label; }).join(' · ') + ' · ' + T(PF.funds.length + ' funds · ' + R(PF.value), PF.funds.length + ' फ़ंड · ' + R(PF.value)) + (MISS.length ? T(' · ' + MISS.length + ' not included', ' · ' + MISS.length + ' शामिल नहीं') : ''), // 7 Nov: multi-asset funds were labelled debt
+      hasMissing: MISS.length > 0,
+      missingNote: T('Not included: ' + MISS.join(', ') + '. Your CAS starts after you first bought ' + (MISS.length === 1 ? 'it' : 'them') + ', so cost and returns can’t be worked out. Add a detailed CAS from your first investment to include ' + (MISS.length === 1 ? 'it' : 'them') + '.', 'शामिल नहीं: ' + MISS.join(', ') + '। आपका CAS पहली ख़रीद के बाद से शुरू होता है, इसलिए लागत और रिटर्न नहीं निकलते। ' + (MISS.length === 1 ? 'इसे' : 'इन्हें') + ' जोड़ने के लिए पहले निवेश से डिटेल्ड CAS जोड़ें।'),
       // what you own (2 Nov, owner: "could have shown what you own better"): the mix as a bar, and per fund its share, gain and yearly return
       funds: PF.funds.slice().sort(function (a, b) { return b[4] - a[4]; }).map(function (f) { var g = f[10];
         return { name: f[0], cat: hi ? (HI_FCAT[f[2]] || f[2]) : f[2], plan: hi ? (HI_PLAN[f[1]] || f[1]) : f[1], planInk: f[1] === 'Regular' ? 'var(--warn)' : 'var(--link)', value: R(f[4]),

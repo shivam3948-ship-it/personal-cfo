@@ -44,3 +44,15 @@ describe('sameCategory', () => {
     expect(sameCategory(fs)).toEqual([{ category: 'Flexi cap', funds: ['A Flexi', 'B Flexi'], value: 80000 }]);
   });
 });
+
+// owner's CAS, 7 Nov: funds bought through Groww carry "(Advisor: …/NEXTBILLION TECHNOLOGY PVT LTD)", read as a technology fund
+import { classify } from '../src/portfolio/cas';
+describe('classify reads the fund name only', () => {
+  it('ignores the distributor, registrar and former name', () => {
+    expect(classify('HDFC Focused Fund - Direct Plan - Growth Option (formerly HDFC Core and Satellite Fund) (Advisor: INZ000000000/NEXTBILLION TECHNOLOGY PVT LTD)').category).toBe('Equity (other)');
+    expect(classify('SBI Contra Fund - Direct Plan - Growth (Advisor: INZ000000000/NEXTBILLION TECHNOLOGY PRIVATE LIMITED) Registrar : CAMS').category).toBe('Equity (other)');
+    expect(classify('Some Fund (formerly Some Infrastructure Fund) - Direct Growth').category).toBe('Other');
+    expect(classify('ICICI Prudential Technology Fund - Direct Plan - Growth').category).toBe('Sector / theme'); // a real technology fund still is one
+    expect(classify('DSP Credit Risk Fund - Direct Plan - Growth (formerly DSP Income Opportunities Fund) (Advisor: INZ000000000/NEXTBILLION TECHNOLOGY PRIVATE LIMITED)').category).toBe('Debt');
+  });
+});

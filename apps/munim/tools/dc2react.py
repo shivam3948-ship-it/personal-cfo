@@ -23,7 +23,7 @@ SCREENS = {
     'Category': ('Category', ['DATA', 'META']),
     'Transactions': ('Transactions', ['TX', 'RULES0']),
     'Invest': ('Invest', ['ESSM', 'BANK', 'PF', 'INCOME_M', 'TERM_COVER', 'ENDOW', 'SAVED_WITH_MUNIM', 'XRS', 'DISC', 'CAS_SRC']),
-    'Xray': ('Xray', ['PF', 'XR', 'X3', 'MODE', 'DISC', 'CAS_SRC']),
+    'Xray': ('Xray', ['PF', 'XR', 'X3', 'MODE', 'DISC', 'CAS_SRC', 'MISSING']),
     'Voice': ('Ask', []),
     'SundayCall': ('SundayCall', []),
     'Recaps': ('Recaps', []),
