@@ -5,6 +5,7 @@ const PHONE = /(?<!\d)(?:\+91[\s-]?)?[6-9]\d{9}(?!\d)/g;
 const LONG_DIGITS = /(?<![\d,.])\d{9,18}(?![\d,.])/g; // account / card / folio numbers
 const UPI_HANDLE = /\b[\w.-]+@(ok\w+|ybl|ibl|axl|paytm|upi|apl|icici|hdfcbank|sbi|axisbank|kotak)\b/gi;
 const CARD16 = /\b(?:\d{4}[\s-]?){3}\d{4}\b/g;
+const FOLIO = /(?<![\d,.])\d{5,}\s*\/\s*\d{1,4}(?![\d,.])/g; // folio numbers like 12345678/90 (review, 7 Nov)
 
 export interface RedactOptions { names?: string[] }
 
@@ -14,11 +15,13 @@ export function redact(text: string, opts: RedactOptions = {}): string {
     .replace(UPI_HANDLE, '[UPI-ID]')
     .replace(EMAIL, (m) => (/\.example$/i.test(m) ? m : '[EMAIL]')) // keep fictional business contacts usable for drafts
     .replace(CARD16, '[CARD]')
+    .replace(FOLIO, '[NUMBER]')
     .replace(PHONE, '[PHONE]')
     .replace(LONG_DIGITS, '[NUMBER]');
   for (const n of opts.names ?? []) {
     if (n.trim().length < 3) continue;
-    t = t.replace(new RegExp(`\\b${n.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi'), '[NAME]');
+    // letters and marks of any script on either side, not \b: \b treats Devanagari as non-word, so a Hindi name never matched
+    t = t.replace(new RegExp(`(?<![\\p{L}\\p{M}])${n.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{M}])`, 'giu'), '[NAME]');
   }
   return t;
 }

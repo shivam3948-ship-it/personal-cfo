@@ -62,7 +62,9 @@ export async function upsertTurn(rec: unknown & { id: string }, flags: string[])
 export async function listTurns(limit = 300): Promise<{ rec: unknown; flags: string[] }[] | null> {
   if (!storeConfigured()) return null;
   try {
-    const r = await fetch(`${url()}/rest/v1/owner_turns?select=rec,flags&order=at.desc&limit=${Math.min(1000, Math.max(1, limit))}`, { headers: auth(), cache: 'no-store' });
+    const since = new Date(Date.now() - 90 * 86_400_000).toISOString(); // older rows are deleted below even without pg_cron
+    void fetch(`${url()}/rest/v1/owner_turns?at=lt.${since}`, { method: 'DELETE', headers: { ...auth(), Prefer: 'return=minimal' } }).catch(() => {});
+    const r = await fetch(`${url()}/rest/v1/owner_turns?select=rec,flags&at=gte.${since}&order=at.desc&limit=${Math.min(1000, Math.max(1, limit))}`, { headers: auth(), cache: 'no-store' });
     if (!r.ok) { console.error('[turns] read refused', r.status); return null; }
     return (await r.json()) as { rec: unknown; flags: string[] }[];
   } catch { return null; }

@@ -65,7 +65,7 @@ export const UI = {
     noMic: 'Couldn’t use the microphone. Allow it in the browser, or type.', noBrowserVoice: 'Voice typing isn’t working in this browser right now. Type instead.',
     sttBusy: 'Voice service is busy, so your browser will listen instead. Tap the mic again.',
     consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording. After each answer the mic turns on again by itself. While Munim speaks, your phone keeps the last 2 seconds of sound on the phone so you can interrupt; your words are sent only when you do. Tap ■ to stop.',
-    talkHint: 'Listening… just talk. Tap ■ to end.', interruptHint: 'Talk or tap to interrupt.', cutInTap: 'Tap to talk', talkEnded: 'Conversation ended. Tap the mic to talk again.', endTalk: 'End the conversation',
+    talkHint: 'Listening… just talk. Tap ■ to end.', interruptHint: 'Talk or tap to interrupt.', cutInTap: 'Tap to talk', ownerLog: 'Owner log on', ownerLogTip: 'This browser keeps every question and answer in the owner’s log (names removed)', talkEnded: 'Conversation ended. Tap the mic to talk again.', endTalk: 'End the conversation',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
     aiOff: 'AI off', placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
     lat: (l: Lat) => `Voice: ${[l.stt !== undefined ? `hearing ${sec(l.stt)}` : '', `answer ${sec(l.agent)}`, l.speak !== undefined ? `first word ${sec(l.speak)}` : '', l.cut ? `cut-in ${l.cut.how === 'voice' ? 'heard you' : l.cut.how === 'tap' ? 'by tap' : 'not used'}: bar ${l.cut.need}, loudest ${l.cut.peak}` : ''].filter(Boolean).join(' · ')}`,
@@ -83,7 +83,7 @@ export const UI = {
     noMic: 'माइक नहीं चल पाया। ब्राउज़र में माइक की इजाज़त दें, या लिखकर पूछें।', noBrowserVoice: 'इस ब्राउज़र में अभी बोलकर पूछना काम नहीं कर रहा। लिखकर पूछें।',
     sttBusy: 'आवाज़ वाली सर्विस अभी व्यस्त है, इसलिए अब आपका ब्राउज़र सुनेगा। माइक फिर से दबाएँ।',
     consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता। हर जवाब के बाद माइक अपने-आप फिर चालू होता है। मुनीम के बोलते समय आपका फ़ोन आख़िरी 2 सेकंड की आवाज़ फ़ोन पर ही रखता है ताकि आप बीच में बोल सकें; आपकी बात तभी भेजी जाती है जब आप बीच में बोलें। रोकने के लिए ■ दबाएँ।',
-    talkHint: 'सुन रहा हूँ… बस बोलिए। ख़त्म करने के लिए ■ दबाएँ।', interruptHint: 'बीच में बोलकर या टैप करके रोक सकते हैं।', cutInTap: 'बोलने के लिए टैप करें', talkEnded: 'बातचीत ख़त्म हुई। फिर बात करने के लिए माइक दबाएँ।', endTalk: 'बातचीत ख़त्म करें',
+    talkHint: 'सुन रहा हूँ… बस बोलिए। ख़त्म करने के लिए ■ दबाएँ।', interruptHint: 'बीच में बोलकर या टैप करके रोक सकते हैं।', cutInTap: 'बोलने के लिए टैप करें', ownerLog: 'मालिक का लॉग चालू', ownerLogTip: 'यह ब्राउज़र हर सवाल-जवाब मालिक के लॉग में रखता है (नाम हटाकर)', talkEnded: 'बातचीत ख़त्म हुई। फिर बात करने के लिए माइक दबाएँ।', endTalk: 'बातचीत ख़त्म करें',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
     aiOff: 'एआई बंद', placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
     lat: (l: Lat) => `आवाज़: ${[l.stt !== undefined ? `सुनना ${sec(l.stt, true)}` : '', `जवाब ${sec(l.agent, true)}`, l.speak !== undefined ? `पहला शब्द ${sec(l.speak, true)}` : '', l.cut ? `बीच में बोलना ${l.cut.how === 'voice' ? 'सुना' : l.cut.how === 'tap' ? 'टैप से' : 'नहीं'}: सीमा ${l.cut.need}, सबसे ऊँचा ${l.cut.peak}` : ''].filter(Boolean).join(' · ')}`,
@@ -141,14 +141,15 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   useEffect(() => { fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => setAiOff(j.chat === 'rules' && j.stt === 'browser' && j.tts === 'browser')).catch(() => {}); }, []);
   useEffect(() => { setCanVote(!usageOff()); }, []);
   // the owner's turn log (D-089): only a browser marked with #owner=<key> sends whole turns; the server checks the cookie too
-  const ownerRef = useRef(false);
-  useEffect(() => { fetch('/api/owner', { cache: 'no-store' }).then((r) => r.json()).then((j) => { ownerRef.current = j.owner === true; }).catch(() => {}); }, []);
+  // and not when usage counts are off, or the browser asks sites not to track (Global Privacy Control, Do Not Track)
+  const ownerRef = useRef(false); const [ownerLog, setOwnerLog] = useState(false);
+  useEffect(() => { if (usageOff()) return; fetch('/api/owner', { cache: 'no-store' }).then((r) => r.json()).then((j) => { ownerRef.current = j.owner === true; setOwnerLog(j.owner === true); }).catch(() => {}); }, []);
   const turnsRef = useRef(new Map<string, TurnRecord>());
   const tapCut = useRef(false); // the user tapped "Tap to talk" over the answer playing now
   const costOf = (t: TurnRecord) => turnCost({ model: t.model, llm: t.tokens, judgeModel: t.judge?.model, judge: t.judge, sttMs: t.stt === 'server' ? t.ms.audio : 0, ttsChars: t.ttsChars });
   function logTurn(t: TurnRecord) {
     t = { ...t, cost: costOf(t) }; turnsRef.current.set(t.id, t);
-    if (ownerRef.current) void fetch('/api/turns', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify(t) }).catch(() => {});
+    if (ownerRef.current && !usageOff()) void fetch('/api/turns', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify(t) }).catch(() => {});
   }
   function vote(i: number, id: string | undefined, v: 'up' | 'down', why?: Why) {
     setVotes((cur) => ({ ...cur, [i]: { vote: v, why } }));
@@ -181,7 +182,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     try {
       const t0 = performance.now();
       const turns = next.map(({ role, content, done }) => ({ role, content: done ? `${content}\n\n${done}` : content })); // what Munim already saved travels with its answer
-      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge'] } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed') : await (async () => {
+      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge']; log?: { question: string; answer: string } } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed') : await (async () => {
         const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed' }) });
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
@@ -191,10 +192,9 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       // metadata only: which tools ran, how long, whether the numbers checked out. Never the question or the answer.
       if (j.trace) send('answer', answerProps({ id: j.trace, engine: j.engine, model: j.model, prompt: j.prompt ?? 'unknown', tools: j.tools ?? [], ms: j.ms ?? 0,
         check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified ?? [] }, lang: j.lang ?? (hi ? 'hi' : 'en'), data: local ? 'mine' : 'sample', where: j.where ?? 'server', fallback: j.fallback, repaired: j.repaired, guard: j.guard, guardMs: j.guardMs }));
-      if (j.trace) { // the turn as the owner's log keeps it; on your own data the question is scrubbed here and again on the server
-        const name = local ? getProfile()?.name : null;
+      if (j.trace && (!local || j.log)) { // the turn as the owner's log keeps it; on your own data only askLocal's scrubbed text (D-089)
         logTurn({ id: j.trace, at: new Date().toISOString(), data: local ? 'mine' : 'sample', via: via === 'voice' ? 'voice' : 'typed', lang: j.lang === 'hi' || j.lang === 'en' ? j.lang : hi ? 'hi' : 'en',
-          question: local ? redact(q, { names: name ? [name] : [] }) : q, answer: j.answer, engine: j.engine, ...(j.model ? { model: j.model } : {}), ...(j.prompt ? { prompt: j.prompt } : {}), tools: j.tools ?? [],
+          question: local ? j.log!.question : q, answer: local ? j.log!.answer : j.answer, engine: j.engine, ...(j.model ? { model: j.model } : {}), ...(j.prompt ? { prompt: j.prompt } : {}), tools: j.tools ?? [],
           check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified?.length ?? 0 }, repaired: j.repaired, fallback: j.fallback, guard: j.guard,
           ms: { agent: agentMs, ...(stt?.ms !== undefined ? { stt: stt.ms } : {}), ...(stt?.audioMs ? { audio: stt.audioMs } : {}) }, ...(stt ? { stt: stt.mode } : {}), ...(j.llm ? { tokens: j.llm } : {}), ...(j.judge ? { judge: j.judge } : {}) });
       }
@@ -322,6 +322,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
         <header style={S.head}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--muted)' }}>{t.asking(chips.label)}
             {disc.test && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--mari-ink)', background: 'var(--mari-tint)', borderRadius: 999, padding: '2px 8px' }}>{t.test}</span>}
+            {ownerLog && <span title={t.ownerLogTip} style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink2)', background: 'var(--tint)', borderRadius: 999, padding: '2px 8px' }}>{t.ownerLog}</span>}
             {disc.test && aiOff && <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink2)', background: 'var(--tint)', borderRadius: 999, padding: '2px 8px' }}>{t.aiOff}</span>}</span>
           <a href={back} aria-label={t.close} style={S.close}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></a>
         </header>

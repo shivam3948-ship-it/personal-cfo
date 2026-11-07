@@ -31,7 +31,7 @@ describe('turn log', () => {
     expect(flagsOf({ ...tap, cutIn: { ...tap.cutIn!, peak: 0.05 } })).toEqual(['tapped_to_cut_in']);
   });
   it('turns a bad turn into a draft eval case that compiles as a line of evals/cases.ts', () => {
-    const d = draftCase(base({ vote: 'down', reason: 'wrong_number', question: "What's my SIP?" }), 1);
+    const d = draftCase(base({ data: 'sample', vote: 'down', reason: 'wrong_number', question: "What's my SIP?" }), 1);
     expect(d).toContain("c('real-2026-11-07-1', 'routing_en', 'What\\'s my SIP?', ['spending_breakdown']");
     expect(d).toContain('thumbs_down, wrong_number');
   });
@@ -75,5 +75,36 @@ describe('owner browsers', () => {
     const mine = await post(`${OWNER_COOKIE}=${ownerToken({ MUNIM_OWNER_KEY: KEY })}`, base({ question: 'My PAN is ABCDE1234F, mail me at a.b@example.com' }));
     expect(mine.status).toBe(200); expect(sent).toHaveLength(1);
     expect(sent[0]).not.toMatch(/ABCDE1234F|a\.b@example\.com/); expect(sent[0]).toContain('"flags":[]');
+  });
+});
+
+// review blocker (7 Nov): on your own data the log keeps only the scrubbed question and answer, payees included
+import { scrub } from '../lib/local/scrub';
+import { counterpartyNames } from '@core/privacy/counterparties';
+import { categorizeAll } from '@core/finance/categorize';
+import type { Txn } from '@core/types';
+describe('what your own data puts in the owner log', () => {
+  const txns = categorizeAll([{ id: 'x#1', date: '2026-10-10', desc: 'UPI-RAMESH SHARMA-ramesh.s@okaxis-HDFC0001234-612345678901-50100012345678', amount: 250000, dir: 'debit', account: 'bank:x', source: 'pdf' } as unknown as Txn]);
+  const names = ['Asha', ...counterpartyNames(txns)];
+  it('removes payee names from the question and the answer, and your own name in Hindi too', () => {
+    const q = scrub('How much did I send Ramesh Sharma? My folio is 12345678/90', names), a = scrub('You sent Ramesh Sharma ₹2,500 by UPI-612345678901 on 10 Oct.', names);
+    expect(q).not.toMatch(/Ramesh|12345678\/90/i); expect(a).not.toMatch(/Ramesh|612345678901/i); expect(a).toContain('₹2,500');
+    expect(scrub('आशा, आपने खर्च किया', ['आशा'])).toBe('[NAME], आपने खर्च किया');
+  });
+  it('draft tests from your own data carry no text', () => {
+    const d = draftCase(base({ data: 'mine', vote: 'down', question: 'What did I pay Ramesh?' }), 1);
+    expect(d).not.toMatch(/Ramesh|₹4,200/); expect(d).toContain("['spending_breakdown']");
+    expect(draftCase(base({ data: 'sample', vote: 'down' }), 2)).toContain('What did I spend on food?');
+  });
+  it('an owner key equal to the advice key marks no browser', () => {
+    expect(ownerToken({ MUNIM_OWNER_KEY: KEY, MUNIM_ADVICE_KEY: KEY })).toBeNull();
+    expect(ownerKeyValid(KEY, { MUNIM_OWNER_KEY: KEY, MUNIM_ADVICE_KEY: KEY })).toBe(false);
+  });
+  it('the table is locked to the server: RLS on, public roles revoked, service role only, 90-day retention', async () => {
+    const sql = (await import('node:fs')).readFileSync(new URL('../../../supabase/migrations/20261107_owner_turns.sql', import.meta.url), 'utf8');
+    expect(sql).toMatch(/alter table public\.owner_turns enable row level security/);
+    expect(sql).toMatch(/revoke all on public\.owner_turns from anon, authenticated/);
+    expect(sql).toMatch(/grant select, insert, update, delete on public\.owner_turns to service_role/);
+    expect(sql).not.toMatch(/create policy/i); expect(sql).toMatch(/interval '90 days'/);
   });
 });

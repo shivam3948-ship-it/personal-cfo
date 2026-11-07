@@ -48,8 +48,12 @@ export function draftCase(t: TurnRecord, n: number): string {
   const cat = t.lang === 'hi' ? 'routing_hi' : 'routing_en';
   const tools = t.tools.length ? `[${[...new Set(t.tools)].map((x) => `'${esc(x)}'`).join(', ')}]` : 'undefined';
   const why = [...flagsOf(t), ...(t.reason ? [t.reason] : [])].join(', ');
-  return `  // real turn ${t.at.slice(0, 10)} (${t.data} data, ${t.via}): ${why}. Munim said: "${esc(t.answer).slice(0, 140)}"\n` +
-    `  c('real-${t.at.slice(0, 10)}-${n}', '${cat}', '${esc(t.question).slice(0, 300)}', ${tools}, { /* TODO: sample-family wording; must / mustNot */ }),`;
+  // your own data never goes into the repo (rule 4): the draft keeps only what went wrong and which tools ran
+  const mine = t.data === 'mine';
+  const said = mine ? '' : ` Munim said: "${esc(t.answer).slice(0, 140)}"`;
+  const q = mine ? 'TODO: the question, reworded for the sample family' : esc(t.question).slice(0, 300);
+  return `  // real turn ${t.at.slice(0, 10)} (${t.data} data, ${t.via}): ${why}.${said}\n` +
+    `  c('real-${t.at.slice(0, 10)}-${n}', '${cat}', '${q}', ${tools}, { /* TODO: sample-family wording; must / mustNot */ }),`;
 }
 
 const pct = (xs: number[], p: number) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor((s.length - 1) * p + 0.5))]; };

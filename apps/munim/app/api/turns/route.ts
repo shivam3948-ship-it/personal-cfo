@@ -1,7 +1,8 @@
 // The owner's turn log (D-089). Only a browser holding the owner cookie (lib/ownerUnlock.ts) can write, read or clear it;
-// anyone else gets 204 with x-munim-log: off and nothing is kept. The question and answer are redacted again here
-// (names, PAN, account and phone numbers, emails, UPI ids) before they are stored, as a last net: on your own data the
-// phone has already scrubbed the answer (askLocal). Kept 90 days (supabase/migrations/20261107_owner_turns.sql).
+// anyone else gets 204 with x-munim-log: off and nothing is kept. On your own data the phone sends only askLocal's
+// scrubbed question and answer (your name, every payee and sender, UPI/NEFT/IMPS references removed). Here they are
+// redacted again for PAN, card, account, folio and phone numbers, emails and UPI ids, as a last net; the server has no
+// names list. Kept 90 days (supabase/migrations/20261107_owner_turns.sql, and listTurns deletes older rows).
 import { NextResponse } from 'next/server';
 import { redact } from '@core/privacy/redact';
 import { isOwner } from '@/lib/ownerUnlock';

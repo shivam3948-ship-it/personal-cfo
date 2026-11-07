@@ -28,6 +28,7 @@ import { getProfile } from './profile';
 import { idbGet, idbPut } from './idb';
 import { PROMPT_VERSION } from '@/lib/agent/prompt';
 import { traceId } from '@/lib/telemetryCore';
+import { scrub } from './scrub';
 
 /** Your statements and CAS as one dataset, or null when nothing has been added on this phone. */
 export async function myData(): Promise<Dataset | null> {
@@ -71,7 +72,9 @@ export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en';
   /** The advice mode this answer was given in (the server's, when the relay answered): the footer follows it (review 2, N9). */
   mode: AdviceMode; guard?: AgentReply['guard']; guardMs?: number;
   /** token counts only (D-089): what the owner's log turns into a cost */
-  llm?: AgentReply['llm']; judge?: AgentReply['judgeLlm'] }
+  llm?: AgentReply['llm']; judge?: AgentReply['judgeLlm'];
+  /** the question and answer with your name and payees removed: the only text the owner's log may keep from your data */
+  log: { question: string; answer: string } }
 
 /** On your own data the advice mode is 'guided' (no fund picks, the SEBI line), whatever the public test switch says:
  *  'demo' never reads real data, and 'internal' needs a server-side allow-list we don't have yet (compliance review, D-050). */
@@ -105,7 +108,8 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed'): Promis
     if (seen.mode === 'guided' && adviceMode !== 'guided') r = { ...r, answer: guardAnswer(r.answer, 'guided', fundLabels(ds.portfolio?.holdings ?? [], lang), knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? [], [], history.filter((t) => t.role === 'user').map((t) => t.content)), lang) };
   }
   catch (e) { fallback = !(e instanceof NoKey); r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
-  const spoken = redact(r.answer, { names }).replace(/\b(UPI|NEFT|IMPS)[-/][^\s,.।]+/gi, 'a payment'); // what may go to the voice service
+  const spoken = scrub(r.answer, names); // what may go to the voice service
+  const log = { question: scrub(last, names), answer: spoken }; // and to the owner's log (D-089): your name and every payee removed
   return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where,
-    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback, mode: seen.mode === 'guided' ? 'guided' : adviceMode, guard: r.guard, guardMs: r.guardMs, llm: r.llm, judge: r.judgeLlm };
+    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback, mode: seen.mode === 'guided' ? 'guided' : adviceMode, guard: r.guard, guardMs: r.guardMs, llm: r.llm, judge: r.judgeLlm, log };
 }

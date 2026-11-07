@@ -7,7 +7,8 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 
 export const OWNER_COOKIE = 'munim_owner';
 const digest = (s: string) => createHash('sha256').update(s).digest();
-const keyOf = (env: Record<string, string | undefined>) => { const k = env.MUNIM_OWNER_KEY; return k && k.length >= 16 ? k : null; };
+// the same value as the advice key would let anyone given an advice link read the log: then no browser is the owner's
+const keyOf = (env: Record<string, string | undefined>) => { const k = env.MUNIM_OWNER_KEY; return k && k.length >= 16 && k !== env.MUNIM_ADVICE_KEY ? k : null; };
 
 export function ownerKeyValid(candidate: unknown, env: Record<string, string | undefined> = process.env): boolean {
   const key = keyOf(env);
