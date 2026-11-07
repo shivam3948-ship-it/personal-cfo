@@ -8,6 +8,8 @@
 //   #advice=<key> | off          — turn advice on for this browser with the owner's key (D-066), or off again. After the #,
 //                                  so the key is never sent in a page request or kept in server logs; the page sends it once
 //                                  to /api/advice and removes it from the address bar. (?advice= is ignored and removed.)
+//   #owner=<key> | off           — mark this browser as the owner's (D-089): its Ask turns go to the owner's log at /owner.
+//                                  Same handling as #advice: sent once to /api/owner, then removed from the address bar.
 // They run before the screen mounts, so the first paint already uses them.
 import { useLayoutEffect } from 'react';
 import { getProfile, saveProfile } from '@/lib/local/profile';
@@ -19,6 +21,7 @@ export function TestSwitches() {
     const h = new URLSearchParams(location.hash.slice(1));
     // read the raw value: URLSearchParams would turn a '+' in the key into a space (review 2, N11)
     const raw = /(?:^#|&)advice=([^&]*)/.exec(location.hash)?.[1]; let advice: string | null = null; try { advice = raw ? decodeURIComponent(raw) : null; } catch { advice = null; }
+    const rawOwner = /(?:^#|&)owner=([^&]*)/.exec(location.hash)?.[1]; let owner: string | null = null; try { owner = rawOwner ? decodeURIComponent(rawOwner) : null; } catch { owner = null; }
     try {
       if (theme === 'dark' || theme === 'light') sessionStorage.setItem('munim_theme', theme);
       else if (theme === 'auto') sessionStorage.removeItem('munim_theme');
@@ -28,6 +31,13 @@ export function TestSwitches() {
     if (ai === 'off') document.cookie = 'munim_ai=off; path=/; max-age=2592000; samesite=lax';
     else if (ai === 'on') document.cookie = 'munim_ai=; path=/; max-age=0; samesite=lax';
     if (q.has('advice')) { q.delete('advice'); history.replaceState(null, '', location.pathname + (q.toString() ? `?${q}` : '') + location.hash); } // a key in the query string has already reached the server's logs: don't use it, change it
+    if (q.has('owner')) { q.delete('owner'); history.replaceState(null, '', location.pathname + (q.toString() ? `?${q}` : '') + location.hash); } // in the query string it has reached the server's logs: change the key
+    if (owner) {
+      h.delete('owner');
+      history.replaceState(null, '', location.pathname + location.search + (h.toString() ? `#${h}` : ''));
+      void fetch('/api/owner', owner === 'off' ? { method: 'DELETE' } : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: owner }) })
+        .then(() => { if (!advice) location.reload(); }).catch(() => {});
+    }
     if (advice) {
       h.delete('advice'); // never leave the key in the address bar, history or a shared screenshot
       history.replaceState(null, '', location.pathname + location.search + (h.toString() ? `#${h}` : ''));

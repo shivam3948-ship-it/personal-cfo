@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     const r = await respond(messages, sid, await session.dataset(), body.lang ?? 'auto', !!body.offline || ai.chat === 'rules', session.adviceMode, body.via === 'voice' && VOICE_MODEL ? { model: VOICE_MODEL } : {}); // voice turns may use the faster model (D-075)
     // the client gets the answer, which engine answered, the number check and any drafted actions; tool names only, no raw results
     const trace = traceId(); // lets a thumbs up or down point at this answer
-    const res = json({ answer: r.answer, lang: r.lang, engine: r.engine, model: r.model, prompt: PROMPT_VERSION, ms: r.ms, llm: r.llm, check: r.check, actions: r.actions, tools: r.trace.map((t) => t.tool), fallback: !!r.fallbackReason, repaired: !!r.repaired, guard: r.guard ?? 'none', guardMs: r.guardMs ?? 0, trace, disclaimer: DISCLAIMER[session.adviceMode][r.lang] });
+    const res = json({ answer: r.answer, lang: r.lang, engine: r.engine, model: r.model, prompt: PROMPT_VERSION, ms: r.ms, llm: r.llm, judge: r.judgeLlm, check: r.check, actions: r.actions, tools: r.trace.map((t) => t.tool), fallback: !!r.fallbackReason, repaired: !!r.repaired, guard: r.guard ?? 'none', guardMs: r.guardMs ?? 0, trace, disclaimer: DISCLAIMER[session.adviceMode][r.lang] });
     // Sample family only (synthetic data): keep the redacted question, answer and tool calls to debug the agent (D-057).
     // Only when the phone sent its install id (usage counts on, notice shown) and the browser sends no privacy signal,
     // so turning usage off deletes these too. Saved after the reply is sent. Real statement data never reaches this route.

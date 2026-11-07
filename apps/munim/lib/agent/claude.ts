@@ -60,6 +60,8 @@ export interface AgentReply { answer: string; lang: 'hi' | 'en'; trace: TraceSte
   guard?: 'ai' | 'rules' | 'rules_fallback' | 'none'; guardMs?: number;
   /** Model calls behind this answer, for the latency work: count, total ms, and prompt tokens read from / written to the cache. */
   llm?: LlmStats;
+  /** The AI advice check's tokens, summed over its calls (for the cost, D-089). */
+  judgeLlm?: { model: string; input: number; output: number };
   /** The advice check found something (and forced a rewrite or removed it). On an ordinary question this is a false alarm. */
   adviceFired?: boolean }
 
@@ -95,7 +97,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   // the saved-actions note (doneNote) is a record, not Munim's words: a "?" in a saved title must never read as an offer (review, 29 Oct)
   const prevAssistant = (history.slice(0, -1).filter((t) => t.role === 'assistant').at(-1)?.content ?? '').replace(/\s*\(Already saved in this answer: [^\n]*\)\s*$/, '');
   let emptyRetried = false; const llm = newStats(); const model = ctx.model || MODEL; let usedModel = model;
-  let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0;
+  let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0; let judgeLlm: AgentReply['judgeLlm'];
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
   for (let step = 0; step < 7; step++) {
     const tc = Date.now();
@@ -128,7 +130,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       if (!known) known = knownProducts(ctx.ds.portfolio?.holdings ?? [], ctx.ds.policies ?? [], namesFunds(ctx.adviceMode) && ctx.picks ? pickNames(await ctx.picks().catch(() => NO_PICKS)) : [], history.filter((t) => t.role === 'user').map((t) => t.content));
       const said = known.said; // product names the user mentioned, not their raw words (review 6: their words can carry orders to the check)
       const g = await checkAdvice(answer, ctx, funds, known, said);
-      guard = g.by === 'none' ? 'rules' : g.by; guardMs += g.ms; // the word patterns always run, so 'none' only means nothing touched investments
+      guard = g.by === 'none' ? 'rules' : g.by; guardMs += g.ms; if (g.judge) judgeLlm = { model: g.judge.model, input: (judgeLlm?.input ?? 0) + g.judge.input, output: (judgeLlm?.output ?? 0) + g.judge.output }; // the word patterns always run, so 'none' only means nothing touched investments
       if (g.flagged.length && !fundsRepaired) {
         fundsRepaired = true;
         messages.push({ role: 'assistant', content: res.content });
@@ -137,7 +139,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
         continue;
       }
       const final = g.flagged.length ? removeFlagged(answer, g.flagged, ctx.adviceMode, ctx.lang, funds) : answer;
-      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: usedModel, ms: Date.now() - t0, llm, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
+      return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: usedModel, ms: Date.now() - t0, llm, judgeLlm, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
     }
     messages.push({ role: 'assistant', content: res.content });
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
@@ -157,7 +159,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
     messages.push({ role: 'user', content: toolResults });
   }
   const answer = ctx.lang === 'hi' ? 'माफ़ कीजिए, मैं इसका जवाब पूरा नहीं कर पाया। क्या आप सवाल थोड़ा छोटा करके पूछेंगे?' : "Sorry, I couldn't finish that one. Could you ask it a bit more simply?";
-  return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'claude', model: usedModel, ms: Date.now() - t0, llm, guard, guardMs };
+  return { answer, lang: ctx.lang, trace, actions, check: checkNumbers(answer, results), engine: 'claude', model: usedModel, ms: Date.now() - t0, llm, judgeLlm, guard, guardMs };
 }
 
 /** What the guard objects to in an answer (D-051, D-066). */
@@ -186,7 +188,7 @@ type Flag = { i: number; s: string; why: 'trade' | 'product'; name?: boolean };
  *  check, when it is on and can run, may only ADD sentences (review 6: a missed sell call without a licence is a regulatory
  *  event, a false alarm is a stiffer sentence, and the AI check hasn't been measured yet). Positions, not text, so a
  *  repeated sentence loses the right copy. */
-export async function checkAdvice(answer: string, ctx: Pick<ToolCtx, 'adviceMode' | 'lang' | 'judge'>, funds: ReturnType<typeof fundLabels>, known: Known, said: string[]): Promise<{ flagged: Flag[]; by: 'ai' | 'rules' | 'rules_fallback' | 'none'; ms: number }> {
+export async function checkAdvice(answer: string, ctx: Pick<ToolCtx, 'adviceMode' | 'lang' | 'judge'>, funds: ReturnType<typeof fundLabels>, known: Known, said: string[]): Promise<{ flagged: Flag[]; by: 'ai' | 'rules' | 'rules_fallback' | 'none'; ms: number; judge?: { model: string; input: number; output: number } }> {
   const t0 = Date.now();
   const list = judgeSentences(answer);
   const held = heldNames(funds), guarded = !namesFunds(ctx.adviceMode);
@@ -199,7 +201,7 @@ export async function checkAdvice(answer: string, ctx: Pick<ToolCtx, 'adviceMode
   const v: Verdict | null = await ctx.judge(input).catch(() => null);
   if (!v) return { flagged, by: 'rules_fallback', ms: Date.now() - t0 }; // the AI check was asked and couldn't answer: measurable once it is on
   for (const r of v.remove) if (!flagged.some((f) => f.i === r.i)) flagged.push({ i: r.i, s: list[r.i], why: r.why });
-  return { flagged, by: 'ai', ms: Date.now() - t0 };
+  return { flagged, by: 'ai', ms: Date.now() - t0, judge: { model: v.model, input: v.input ?? 0, output: v.output ?? 0 } };
 }
 /** Remove the flagged sentences (by position) and say once why something is missing (no-licence line, or no pick set up). */
 export function removeFlagged(answer: string, flagged: Flag[], mode: AdviceMode, lang: 'hi' | 'en', funds: ReturnType<typeof fundLabels>) {

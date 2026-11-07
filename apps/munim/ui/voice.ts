@@ -1,4 +1,5 @@
 'use client';
+import { CutInDetector, type CutInDiag, type CutInOpts } from './cutIn';
 // Browser voice I/O: MediaRecorder with simple silence detection (for Sarvam STT), Web Speech fallbacks for STT and TTS.
 
 export interface Recording { blob: Blob; mime: string; ms: number }
@@ -124,14 +125,16 @@ export async function speakPieces(pieces: string[], lang: 'hi' | 'en', tts: (pie
 }
 
 /** Hands-free conversation (D-082): while Munim is speaking, listen for the user starting to talk so they can interrupt
- *  ("barge in"). The phone's echo cancellation removes most of Munim's own voice; the first 0.6 s learn how loud its
- *  leftover is, and the user must be clearly louder for 0.3 s. The microphone is recorded from the start into a short
- *  rolling buffer that never leaves the phone, so when the user cuts in, their first words (spoken while it was still
- *  making sure) are kept: the recording starts 0.3 s before they began, and ends on 1 s of quiet. Before they cut in,
- *  nothing is kept beyond the last 2 s and nothing is sent. */
-export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v: number) => void; onDone: (r: Recording | null) => void; threshold?: number; holdMs?: number; silenceMs?: number; maxMs?: number }): Promise<{ stop: () => void }> {
+ *  ("barge in"). The phone's echo cancellation removes most of Munim's own voice; CutInDetector (D-090) decides when the
+ *  user is talking over what's left. The microphone is recorded from the start into a short rolling buffer that never
+ *  leaves the phone, so when the user cuts in, their first words (spoken while it was still making sure) are kept: the
+ *  recording starts 0.3 s before they began, and ends on 1 s of quiet. Before they cut in, nothing is kept beyond the
+ *  last 2 s and nothing is sent. diag() reports the levels it saw and the bar it set, for the owner's log. */
+export interface CutInWatch { stop: () => void; diag: () => CutInDiag & { ctx: string } }
+export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v: number) => void; onDone: (r: Recording | null) => void; detector?: CutInOpts; silenceMs?: number; maxMs?: number }): Promise<CutInWatch> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
-  const ctx = new AudioContext(); const src = ctx.createMediaStreamSource(stream);
+  const ctx = new AudioContext(); await ctx.resume().catch(() => {}); // a context made outside a tap can start paused: then it hears nothing
+  const src = ctx.createMediaStreamSource(stream);
   const an = ctx.createAnalyser(); an.fftSize = 1024; src.connect(an);
   const proc = ctx.createScriptProcessor(4096, 1, 1); const mute = ctx.createGain(); mute.gain.value = 0; src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
   const rate = ctx.sampleRate, keep = rate * 2; // rolling 2 s before the user cuts in
@@ -141,9 +144,10 @@ export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v:
     const d = new Float32Array(e.inputBuffer.getChannelData(0)); chunks.push({ at: performance.now(), d }); kept += d.length;
     while (phase === 'watch' && kept - chunks[0].d.length > keep) kept -= chunks.shift()!.d.length;
   };
-  const buf = new Uint8Array(an.fftSize); const th = opts.threshold ?? 0.3, hold = opts.holdMs ?? 300, silenceMs = opts.silenceMs ?? 1000, maxMs = opts.maxMs ?? 20000;
-  let since = 0, raf = 0, sumL = 0, nL = 0, quietSince = 0, recFrom = 0; const t0 = performance.now();
-  const close = () => { phase = 'done'; chunks = []; kept = 0; cancelAnimationFrame(raf); proc.disconnect(); stream.getTracks().forEach((t) => t.stop()); ctx.close().catch(() => {}); opts.onLevel?.(0); };
+  const det = new CutInDetector(opts.detector); const ctxState = ctx.state;
+  const buf = new Uint8Array(an.fftSize); const silenceMs = opts.silenceMs ?? 1000, maxMs = opts.maxMs ?? 20000;
+  let raf = 0, quietSince = 0, recFrom = 0, endedAt = 0;
+  const close = () => { phase = 'done'; endedAt = endedAt || performance.now(); chunks = []; kept = 0; cancelAnimationFrame(raf); proc.disconnect(); stream.getTracks().forEach((t) => t.stop()); ctx.close().catch(() => {}); opts.onLevel?.(0); };
   const finish = () => {
     const from = recFrom - 300; const parts = chunks.filter((c) => c.at >= from).map((c) => c.d); close();
     opts.onDone(parts.length ? { blob: wav(parts, rate), mime: 'audio/wav', ms: Math.round(performance.now() - recFrom) } : null);
@@ -154,9 +158,7 @@ export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v:
     let sum = 0; for (const v of buf) sum += (v - 128) * (v - 128);
     const level = Math.min(1, (Math.sqrt(sum / buf.length) / 128) * 6), now = performance.now();
     if (phase === 'watch') {
-      if (now - t0 < 600) { sumL += level; nL++; raf = requestAnimationFrame(tick); return; }
-      const need = Math.max(th, Math.min(0.6, (nL ? sumL / nL : 0) * 2)); // capped, so someone already talking can still cut in
-      if (level > need) { if (!since) since = now; if (now - since > hold) { phase = 'rec'; recFrom = since; opts.onSpeech(); } } else since = 0;
+      if (det.push(level, now)) { phase = 'rec'; recFrom = det.startedAt; endedAt = now; opts.onSpeech(); }
     } else {
       opts.onLevel?.(level);
       if (level > 0.12) quietSince = 0; else if (!quietSince) quietSince = now;
@@ -165,7 +167,10 @@ export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v:
     raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);
-  return { stop: () => { if (phase !== 'done') { const wasRec = phase === 'rec'; close(); if (wasRec) opts.onDone(null); } } };
+  return {
+    stop: () => { if (phase !== 'done') { const wasRec = phase === 'rec'; close(); if (wasRec) opts.onDone(null); } },
+    diag: () => ({ ...det.diag(endedAt || performance.now()), ctx: ctxState }),
+  };
 }
 
 /** 16 kHz mono 16-bit WAV from float samples (smaller upload than the device rate, plenty for speech). */
