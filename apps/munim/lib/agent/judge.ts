@@ -20,7 +20,7 @@ export const MAX_SENTENCES = 40, MAX_SENTENCE = 600, MAX_TOTAL = 4_000;
 export const TOUCHES_INVESTMENTS = /\b(?:funds?|SIPs?|schemes?|polic(?:y|ies)|insur\w*|insurer|units|redeem\w*|portfolio|invest\w*|ELSS|equity|stocks?|shares|NPS|ULIP|surrender\w*|premium|term plan|health plan|cover|MFs?|ETFs?|caps?|holdings?|bima|beema|nikal\w*|chho?d\w*|exit\w*|sell\w*|switch\w*)\b|फ़ंड|फंड|पॉलिसी|बीमा|निवेश|एसआईपी|बेच|सरेंडर|रिडीम|प्रीमियम|निकल|निकाल|छोड़|कैप|\b(?:bech\w*)\b/i;
 
 export interface JudgeInput { sentences: string[]; held: string[]; picks: string[]; said: string[]; lang: 'hi' | 'en'; advice: boolean }
-export interface Verdict { remove: { i: number; why: 'trade' | 'product' }[]; model: string; ms: number }
+export interface Verdict { remove: { i: number; why: 'trade' | 'product' }[]; model: string; ms: number; input?: number; output?: number } // tokens, for the cost (D-089)
 
 const TOOL: Anthropic.Tool = {
   name: 'report', description: 'Report the sentences that break the rules. An empty list if none do.',
@@ -73,7 +73,7 @@ export async function runJudge(input: JudgeInput, client: LlmClient | null, time
       if (!Number.isInteger(i) || i < 0 || i >= input.sentences.length || (why !== 'trade' && why !== 'product')) return null;
       remove.push({ i, why });
     }
-    return { remove: input.advice ? remove.filter((r) => r.why === 'product') : remove, model: JUDGE_MODEL, ms: Date.now() - t0 };
+    return { remove: input.advice ? remove.filter((r) => r.why === 'product') : remove, model: JUDGE_MODEL, ms: Date.now() - t0, input: res.usage?.input_tokens ?? 0, output: res.usage?.output_tokens ?? 0 };
   } catch { return null; } finally { clearTimeout(timer); }
 }
 

@@ -57,5 +57,6 @@ export const PROPS: Record<EventName | 'answer' | 'feedback' | 'voice_turn', Rec
     lang: ['hi', 'en'], data: ['sample', 'mine'], where: ['server', 'phone', 'phone+relay'], fallback: 'bool', repaired: 'bool',
     guard: ['ai', 'rules', 'rules_fallback', 'none'], guard_ms: 'num' }, // which advice check ran (D-069) and how long it took
   feedback: { id: 'token', vote: ['up', 'down'], reason: ['wrong_number', 'not_answered', 'hard_to_follow'], data: ['sample', 'mine'] },
-  voice_turn: { id: 'token', stt: ['server', 'browser', 'none'], stt_ms: 'num', agent_ms: 'num', speak_ms: 'num', total_ms: 'num', voice: ['sarvam', 'browser', 'none'], pieces: 'num', lang: ['hi', 'en'], data: ['sample', 'mine'] },
+  voice_turn: { id: 'token', stt: ['server', 'browser', 'none'], stt_ms: 'num', agent_ms: 'num', speak_ms: 'num', total_ms: 'num', voice: ['sarvam', 'browser', 'none'], pieces: 'num', lang: ['hi', 'en'], data: ['sample', 'mine'],
+    cost_uinr: 'num', cut_in: ['voice', 'tap', 'none'], cut_need: 'num', cut_peak: 'num' }, // D-089 cost estimate in micro-rupees; D-090 cut-in listener
 };

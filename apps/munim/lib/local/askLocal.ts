@@ -69,7 +69,9 @@ let judgeOff = false; // the AI check said 503 (off or no key): the word pattern
 export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay';
   trace: string; model?: string; prompt: string; ms: number; repaired: boolean; fallback: boolean;
   /** The advice mode this answer was given in (the server's, when the relay answered): the footer follows it (review 2, N9). */
-  mode: AdviceMode; guard?: AgentReply['guard']; guardMs?: number }
+  mode: AdviceMode; guard?: AgentReply['guard']; guardMs?: number;
+  /** token counts only (D-089): what the owner's log turns into a cost */
+  llm?: AgentReply['llm']; judge?: AgentReply['judgeLlm'] }
 
 /** On your own data the advice mode is 'guided' (no fund picks, the SEBI line), whatever the public test switch says:
  *  'demo' never reads real data, and 'internal' needs a server-side allow-list we don't have yet (compliance review, D-050). */
@@ -105,5 +107,5 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed'): Promis
   catch (e) { fallback = !(e instanceof NoKey); r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
   const spoken = redact(r.answer, { names }).replace(/\b(UPI|NEFT|IMPS)[-/][^\s,.।]+/gi, 'a payment'); // what may go to the voice service
   return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where,
-    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback, mode: seen.mode === 'guided' ? 'guided' : adviceMode, guard: r.guard, guardMs: r.guardMs };
+    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback, mode: seen.mode === 'guided' ? 'guided' : adviceMode, guard: r.guard, guardMs: r.guardMs, llm: r.llm, judge: r.judgeLlm };
 }

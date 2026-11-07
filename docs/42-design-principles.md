@@ -97,3 +97,7 @@ Voice works like a phone call, not a walkie-talkie: one tap starts it, turns han
 
 ## Show the shape first, then the rows (D-087, 2 Nov)
 "What you own" leads with one bar of the money by type, then each fund with its share, gain and yearly return. Principle: overview first, details on demand (Shneiderman's visual information-seeking mantra, 1996; the name is from that source).
+
+
+## A button for every voice action (D-090, 7 Nov)
+While Munim speaks in a conversation, the text box becomes one wide "Tap to talk" button: cutting in no longer depends on the microphone noticing you. Principle: user control and freedom, the "clearly marked emergency exit" (Nielsen's 10 usability heuristics, 1994; the name is from that source). It sits where the thumb already is and is as wide as the bar, so it is quick to hit (Fitts's law, 1954; the name is from that source). Voice stays the first way to cut in; the button is the one that always works (our label: "voice first, tap always").

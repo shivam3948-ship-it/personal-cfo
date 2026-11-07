@@ -12,7 +12,9 @@ import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
 import { disclaimerLast, forSpeech, splitForSpeech } from '@core/agent/lang';
 import { doneNote, type Action } from '@/lib/actionsCore';
-import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type RecorderHandle, type Recording } from '@/ui/voice';
+import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type CutInWatch, type RecorderHandle, type Recording } from '@/ui/voice';
+import { turnCost } from '@/lib/cost';
+import type { CutIn, TurnRecord } from '@/lib/turnLog';
 
 // Latency sprint: the moment you stop talking, a short spoken acknowledgement plays while Munim hears and answers, so the
 // first sound comes in about a second instead of after the whole answer. Voiced once per language and reused.
@@ -20,8 +22,8 @@ const ACK = { hi: 'एक सेकंड, देख रहा हूँ।', en
 const ackCache = new Map<'hi' | 'en', Promise<Audio64 | null>>();
 type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; done?: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string; id?: string }; lat?: Lat };
 /** Seconds-level timings of one voice turn (D-058): hearing (speech to text), answering, and until the first word is heard. */
-type Lat = { stt?: number; agent: number; speak?: number };
-type SttTiming = { mode: 'server' | 'browser'; ms?: number };
+type Lat = { stt?: number; agent: number; speak?: number; cut?: { need: number; peak: number; how: CutIn['how'] } };
+type SttTiming = { mode: 'server' | 'browser'; ms?: number; audioMs?: number };
 const sec = (ms: number, hi = false) => `${(ms / 1000).toFixed(1)} ${hi ? 'सेकंड' : 's'}`;
 type Why = 'wrong_number' | 'not_answered' | 'hard_to_follow';
 const WHY: Why[] = ['wrong_number', 'not_answered', 'hard_to_follow'];
@@ -63,10 +65,10 @@ export const UI = {
     noMic: 'Couldn’t use the microphone. Allow it in the browser, or type.', noBrowserVoice: 'Voice typing isn’t working in this browser right now. Type instead.',
     sttBusy: 'Voice service is busy, so your browser will listen instead. Tap the mic again.',
     consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording. After each answer the mic turns on again by itself. While Munim speaks, your phone keeps the last 2 seconds of sound on the phone so you can interrupt; your words are sent only when you do. Tap ■ to stop.',
-    talkHint: 'Listening… just talk. Tap ■ to end.', interruptHint: 'Talk any time to interrupt.', talkEnded: 'Conversation ended. Tap the mic to talk again.', endTalk: 'End the conversation',
+    talkHint: 'Listening… just talk. Tap ■ to end.', interruptHint: 'Talk or tap to interrupt.', cutInTap: 'Tap to talk', talkEnded: 'Conversation ended. Tap the mic to talk again.', endTalk: 'End the conversation',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
     aiOff: 'AI off', placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
-    lat: (l: Lat) => `Voice: ${[l.stt !== undefined ? `hearing ${sec(l.stt)}` : '', `answer ${sec(l.agent)}`, l.speak !== undefined ? `first word ${sec(l.speak)}` : ''].filter(Boolean).join(' · ')}`,
+    lat: (l: Lat) => `Voice: ${[l.stt !== undefined ? `hearing ${sec(l.stt)}` : '', `answer ${sec(l.agent)}`, l.speak !== undefined ? `first word ${sec(l.speak)}` : '', l.cut ? `cut-in ${l.cut.how === 'voice' ? 'heard you' : l.cut.how === 'tap' ? 'by tap' : 'not used'}: bar ${l.cut.need}, loudest ${l.cut.peak}` : ''].filter(Boolean).join(' · ')}`,
     helped: 'Did this help?', up: 'Yes, it helped', down: 'No, it didn’t help', whatWrong: 'What went wrong?', thanks: 'Thanks. This helps Munim get better.',
     why: { wrong_number: 'A number looks wrong', not_answered: 'Didn’t answer my question', hard_to_follow: 'Hard to follow' } as Record<Why, string>,
   },
@@ -81,10 +83,10 @@ export const UI = {
     noMic: 'माइक नहीं चल पाया। ब्राउज़र में माइक की इजाज़त दें, या लिखकर पूछें।', noBrowserVoice: 'इस ब्राउज़र में अभी बोलकर पूछना काम नहीं कर रहा। लिखकर पूछें।',
     sttBusy: 'आवाज़ वाली सर्विस अभी व्यस्त है, इसलिए अब आपका ब्राउज़र सुनेगा। माइक फिर से दबाएँ।',
     consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता। हर जवाब के बाद माइक अपने-आप फिर चालू होता है। मुनीम के बोलते समय आपका फ़ोन आख़िरी 2 सेकंड की आवाज़ फ़ोन पर ही रखता है ताकि आप बीच में बोल सकें; आपकी बात तभी भेजी जाती है जब आप बीच में बोलें। रोकने के लिए ■ दबाएँ।',
-    talkHint: 'सुन रहा हूँ… बस बोलिए। ख़त्म करने के लिए ■ दबाएँ।', interruptHint: 'बीच में बोलकर रोक सकते हैं।', talkEnded: 'बातचीत ख़त्म हुई। फिर बात करने के लिए माइक दबाएँ।', endTalk: 'बातचीत ख़त्म करें',
+    talkHint: 'सुन रहा हूँ… बस बोलिए। ख़त्म करने के लिए ■ दबाएँ।', interruptHint: 'बीच में बोलकर या टैप करके रोक सकते हैं।', cutInTap: 'बोलने के लिए टैप करें', talkEnded: 'बातचीत ख़त्म हुई। फिर बात करने के लिए माइक दबाएँ।', endTalk: 'बातचीत ख़त्म करें',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
     aiOff: 'एआई बंद', placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
-    lat: (l: Lat) => `आवाज़: ${[l.stt !== undefined ? `सुनना ${sec(l.stt, true)}` : '', `जवाब ${sec(l.agent, true)}`, l.speak !== undefined ? `पहला शब्द ${sec(l.speak, true)}` : ''].filter(Boolean).join(' · ')}`,
+    lat: (l: Lat) => `आवाज़: ${[l.stt !== undefined ? `सुनना ${sec(l.stt, true)}` : '', `जवाब ${sec(l.agent, true)}`, l.speak !== undefined ? `पहला शब्द ${sec(l.speak, true)}` : '', l.cut ? `बीच में बोलना ${l.cut.how === 'voice' ? 'सुना' : l.cut.how === 'tap' ? 'टैप से' : 'नहीं'}: सीमा ${l.cut.need}, सबसे ऊँचा ${l.cut.peak}` : ''].filter(Boolean).join(' · ')}`,
     helped: 'क्या इससे मदद मिली?', up: 'हाँ, मदद मिली', down: 'नहीं, मदद नहीं मिली', whatWrong: 'क्या गड़बड़ हुई?', thanks: 'धन्यवाद। इससे मुनीम बेहतर बनता है।',
     why: { wrong_number: 'कोई आँकड़ा गलत लगता है', not_answered: 'मेरे सवाल का जवाब नहीं मिला', hard_to_follow: 'समझना मुश्किल था' } as Record<Why, string>,
   },
@@ -138,9 +140,20 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const [aiOff, setAiOff] = useState(false); // the no-model version (D-062): rules engine + browser voice
   useEffect(() => { fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => setAiOff(j.chat === 'rules' && j.stt === 'browser' && j.tts === 'browser')).catch(() => {}); }, []);
   useEffect(() => { setCanVote(!usageOff()); }, []);
+  // the owner's turn log (D-089): only a browser marked with #owner=<key> sends whole turns; the server checks the cookie too
+  const ownerRef = useRef(false);
+  useEffect(() => { fetch('/api/owner', { cache: 'no-store' }).then((r) => r.json()).then((j) => { ownerRef.current = j.owner === true; }).catch(() => {}); }, []);
+  const turnsRef = useRef(new Map<string, TurnRecord>());
+  const tapCut = useRef(false); // the user tapped "Tap to talk" over the answer playing now
+  const costOf = (t: TurnRecord) => turnCost({ model: t.model, llm: t.tokens, judgeModel: t.judge?.model, judge: t.judge, sttMs: t.stt === 'server' ? t.ms.audio : 0, ttsChars: t.ttsChars });
+  function logTurn(t: TurnRecord) {
+    t = { ...t, cost: costOf(t) }; turnsRef.current.set(t.id, t);
+    if (ownerRef.current) void fetch('/api/turns', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify(t) }).catch(() => {});
+  }
   function vote(i: number, id: string | undefined, v: 'up' | 'down', why?: Why) {
     setVotes((cur) => ({ ...cur, [i]: { vote: v, why } }));
     if (id) send('feedback', { id, vote: v, ...(why ? { reason: why } : {}), data: local ? 'mine' : 'sample' });
+    const prev = id ? turnsRef.current.get(id) : undefined; if (prev) logTurn({ ...prev, vote: v, reason: why });
   }
   const rec = useRef<RecorderHandle | { stop: () => void } | null>(null);
   const msgsRef = useRef(msgs); msgsRef.current = msgs;
@@ -168,7 +181,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     try {
       const t0 = performance.now();
       const turns = next.map(({ role, content, done }) => ({ role, content: done ? `${content}\n\n${done}` : content })); // what Munim already saved travels with its answer
-      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[] } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed') : await (async () => {
+      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge'] } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed') : await (async () => {
         const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed' }) });
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
@@ -178,6 +191,13 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       // metadata only: which tools ran, how long, whether the numbers checked out. Never the question or the answer.
       if (j.trace) send('answer', answerProps({ id: j.trace, engine: j.engine, model: j.model, prompt: j.prompt ?? 'unknown', tools: j.tools ?? [], ms: j.ms ?? 0,
         check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified ?? [] }, lang: j.lang ?? (hi ? 'hi' : 'en'), data: local ? 'mine' : 'sample', where: j.where ?? 'server', fallback: j.fallback, repaired: j.repaired, guard: j.guard, guardMs: j.guardMs }));
+      if (j.trace) { // the turn as the owner's log keeps it; on your own data the question is scrubbed here and again on the server
+        const name = local ? getProfile()?.name : null;
+        logTurn({ id: j.trace, at: new Date().toISOString(), data: local ? 'mine' : 'sample', via: via === 'voice' ? 'voice' : 'typed', lang: j.lang === 'hi' || j.lang === 'en' ? j.lang : hi ? 'hi' : 'en',
+          question: local ? redact(q, { names: name ? [name] : [] }) : q, answer: j.answer, engine: j.engine, ...(j.model ? { model: j.model } : {}), ...(j.prompt ? { prompt: j.prompt } : {}), tools: j.tools ?? [],
+          check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified?.length ?? 0 }, repaired: j.repaired, fallback: j.fallback, guard: j.guard,
+          ms: { agent: agentMs, ...(stt?.ms !== undefined ? { stt: stt.ms } : {}), ...(stt?.audioMs ? { audio: stt.audioMs } : {}) }, ...(stt ? { stt: stt.mode } : {}), ...(j.llm ? { tokens: j.llm } : {}), ...(j.judge ? { judge: j.judge } : {}) });
+      }
       if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang }); // asked by voice → answered by voice; typed → stays quiet
     } catch (e) { ackOk.current = false; setTalkOn(false); setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
     finally { setBusy(false); input.current?.focus(); }
@@ -203,7 +223,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     try {
       const form = new FormData(); form.append('file', r.blob, r.mime.includes('wav') ? 'speech.wav' : 'speech.webm'); form.append('lang', 'auto');
       const res = await fetch('/api/stt', { method: 'POST', body: form }); const j = await res.json();
-      if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice', { mode: 'server', ms: Math.round(performance.now() - tEnd) }); return; }
+      if (res.ok && j.transcript) { setVoice('idle'); ask(j.transcript, 'voice', { mode: 'server', ms: Math.round(performance.now() - tEnd), audioMs: r.ms }); return; }
       ackOk.current = false; // no transcript: nothing to acknowledge
       setTalkOn(false);
       if (j.fallback === 'browser' && browserSttAvailable()) { setSttMode('browser'); setVoice('idle'); setNote(t.sttBusy); return; }
@@ -257,30 +277,39 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     // hands-free: while Munim speaks, talking over it stops the answer and Munim listens (barge-in)
     const handsFree = how === 'auto' && talkRef.current;
     let barged = false;
-    let watch: Promise<{ stop: () => void } | null> | null = null; // starts at Munim's first sound, so it learns the echo, not the silence before it
+    let watch: Promise<CutInWatch | null> | null = null; tapCut.current = false; // starts at Munim's first sound, so it learns the echo, not the silence before it
     const ackLang: 'hi' | 'en' = hi ? 'hi' : 'en';
     const startWatch = () => { if (handsFree && !watch) watch = watchForSpeech({
       onSpeech: () => { barged = true; stopSpeaking(); setVoice('listening'); setHeard(''); }, // you cut in: Munim stops and your words, from their start, are this turn
       onLevel: setLevel,
       onDone: (r) => { rec.current = null; if (!talkRef.current) { setVoice('idle'); return; } void heardRec(r, ackLang); },
     }).then((w) => { if (barged) rec.current = w; return w; }).catch(() => null); };
+    let chars = 0; // characters Sarvam actually voiced for this answer: the cost (D-089)
+    const voiced = async (p: string) => { const a = await tts(p, lang); if (a) chars += p.length; return a; };
     if (handsFree) setNote(t.interruptHint);
     try {
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net
       const spoken = local ? redact(textToSay) : textToSay;
       // piece by piece (D-058): the first sentence plays while the next is being made
-      const run = await speakPieces(splitForSpeech(disclaimerLast(spoken), { firstMax: 90 }), lang, (p) => tts(p, lang), (p) => forSpeech(p, lang), startWatch);
+      const run = await speakPieces(splitForSpeech(disclaimerLast(spoken), { firstMax: 90 }), lang, voiced, (p) => forSpeech(p, lang), startWatch);
       track('answer_listened', { ctx, how, pieces: run.pieces, voice: run.voice, ...(run.firstMs !== null ? { first_ms: run.firstMs } : {}) });
+      const wp = watch as Promise<CutInWatch | null> | null; // set inside a callback, so TypeScript can't see it change
+      const w = handsFree && wp ? await wp : null, d = w?.diag(); // what the cut-in listener heard (D-090)
+      const cutHow: CutIn['how'] = barged ? 'voice' : tapCut.current ? 'tap' : 'none';
+      const prev = turn?.id ? turnsRef.current.get(turn.id) : undefined;
+      if (prev) logTurn({ ...prev, voice: run.voice, ttsChars: chars, ...(d ? { cutIn: { ...d, how: cutHow } } : {}),
+        ms: { ...prev.ms, ...(run.firstMs !== null ? { firstWord: run.firstMs, total: (prev.ms.stt ?? 0) + prev.ms.agent + run.firstMs } : {}) } });
       if (turn && run.firstMs !== null) {
         const speak = run.firstMs, stt = turn.stt?.ms;
-        setMsgs((cur) => cur.map((m, i) => (i === idx ? { ...m, lat: { stt, agent: turn.agentMs, speak } } : m)));
+        setMsgs((cur) => cur.map((m, i) => (i === idx ? { ...m, lat: { stt, agent: turn.agentMs, speak, ...(d ? { cut: { need: d.need, peak: d.peak, how: cutHow } } : {}) } } : m)));
         if (turn.id) send('voice_turn', { id: turn.id, stt: turn.stt?.mode ?? 'none', ...(stt !== undefined ? { stt_ms: stt } : {}), agent_ms: turn.agentMs, speak_ms: speak,
-          total_ms: (stt ?? 0) + turn.agentMs + speak, voice: run.voice, pieces: run.pieces, lang: turn.lang ?? lang, data: local ? 'mine' : 'sample' });
+          total_ms: (stt ?? 0) + turn.agentMs + speak, voice: run.voice, pieces: run.pieces, lang: turn.lang ?? lang, data: local ? 'mine' : 'sample',
+          ...(turnsRef.current.get(turn.id)?.cost ? { cost_uinr: turnsRef.current.get(turn.id)!.cost!.total } : {}), ...(d ? { cut_in: cutHow, cut_need: d.need, cut_peak: d.peak } : {}) });
       }
     } catch { /* playback failed: the answer is still on screen */ }
     finally {
       setSpeaking((cur) => (cur === idx ? null : cur));
-      if (!barged) void (watch as Promise<{ stop: () => void } | null> | null)?.then((w) => w?.stop()); // cut in: it keeps recording your turn
+      if (!barged) void (watch as Promise<CutInWatch | null> | null)?.then((w) => w?.stop()); // cut in: it keeps recording your turn
       if (handsFree) { setNote(null); if (talkRef.current && !barged) setTimeout(() => { if (talkRef.current) void startVoiceRef.current(); }, 200); } // listen again for the next question
     }
   }
@@ -374,6 +403,9 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
                   ? <><span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 3, height: 20 }}>{[0.5, 0.8, 1, 0.8, 0.5].map((k, i) => <span key={i} style={{ width: 3, borderRadius: 2, background: 'var(--link)', height: `${Math.max(4, Math.round(level * k * 20))}px` }} />)}</span>{heard || (talk ? t.talkHint : t.listening)}</>
                   : <><span className="dot" /><span className="dot dot2" /><span className="dot dot3" />{t.hearing}</>}
               </span>
+            : talk && speaking !== null
+            ? <button type="button" onClick={() => { tapCut.current = true; stopSpeaking(); }} style={{ ...S.input, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--link)', fontWeight: 600, cursor: 'pointer' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>{t.cutInTap}</button>
             : <textarea id="q" ref={input} rows={1} value={text} placeholder={t.placeholder} maxLength={500} onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(text); } }} style={S.input} />}
           {text.trim() && voice === 'idle'

@@ -43,3 +43,31 @@ export async function deleteInstall(install: string): Promise<boolean> {
   const [a, b] = await Promise.all([del('events'), del('sample_traces')]);
   return a && b;
 }
+
+// ---- the owner's turn log (D-089): owner browsers only, checked by the route; table owner_turns ----
+/** One row per answer: the whole cleaned record, and its flags for filtering. Sent again as the turn completes (spoken,
+ *  voted), so it is an upsert on the answer's id. */
+export async function upsertTurn(rec: unknown & { id: string }, flags: string[]): Promise<boolean> {
+  if (!storeConfigured()) return false;
+  try {
+    const r = await fetch(`${url()}/rest/v1/owner_turns?on_conflict=id`, {
+      method: 'POST', headers: { ...auth(), 'content-type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ id: rec.id, rec, flags }]),
+    });
+    if (!r.ok) console.error('[turns] store refused', r.status); // status only: never the turn
+    return r.ok;
+  } catch { console.error('[turns] store unreachable'); return false; }
+}
+/** Newest first. null when the store can't be read (not set up, or the table hasn't been created yet). */
+export async function listTurns(limit = 300): Promise<{ rec: unknown; flags: string[] }[] | null> {
+  if (!storeConfigured()) return null;
+  try {
+    const r = await fetch(`${url()}/rest/v1/owner_turns?select=rec,flags&order=at.desc&limit=${Math.min(1000, Math.max(1, limit))}`, { headers: auth(), cache: 'no-store' });
+    if (!r.ok) { console.error('[turns] read refused', r.status); return null; }
+    return (await r.json()) as { rec: unknown; flags: string[] }[];
+  } catch { return null; }
+}
+export async function deleteTurns(): Promise<boolean> {
+  if (!storeConfigured()) return false;
+  try { const r = await fetch(`${url()}/rest/v1/owner_turns?at=gte.1970-01-01`, { method: 'DELETE', headers: { ...auth(), Prefer: 'return=minimal' } }); return r.ok; } catch { return false; }
+}
