@@ -146,6 +146,15 @@ describe('X-ray on a portfolio like the owner\'s (7 Nov)', () => {
     expect(x).toContain('Your SIP instalments are down 5.5% a year so far; one-time investments up 4.8%');
     expect(x).toContain('₹52,532 less');
     expect(x).not.toMatch(/₹-|grown -/);
+    const neg = text(render(Xray, { variant: 'standard', data: { ...data, PF: { ...PF, xirr: -2 }, X3 } }));
+    expect(neg).toMatch(/Your money lost\s+2%\s+a year/); expect(neg).not.toContain('earned -2%');
+    const negHi = text(render(Xray, { variant: 'bharat', data: { ...data, PF: { ...PF, xirr: -2 }, X3 } }));
+    expect(negHi).toMatch(/आपके पैसे ने\s+2%\s+सालाना\s+गँवाया/); expect(negHi).not.toMatch(/-2%\s+सालाना\s+कमाया/);
+    const inv = buildInvest(ds) as Record<string, any>;
+    const iv = text(render(Invest, { variant: 'standard', data: { ...inv, XRS: { ...inv.XRS, fdExtra: -5253200 } } }));
+    expect(iv).toContain('₹52,532 less than an FD'); expect(iv).not.toMatch(/₹-/);
+    const ivh = text(render(Invest, { variant: 'bharat', data: { ...inv, XRS: { ...inv.XRS, fdExtra: -5253200 } } }));
+    expect(ivh).toContain('FD से ₹52,532 कम');
     expect(x).toMatch(/Hybrid \d+%/); expect(x).not.toMatch(/· debt \d+%/);
     expect(x).toContain('2 not included');
     expect(x).toContain('Not included: Parag Parikh Flexi Cap, Canara Robeco Large Cap.');

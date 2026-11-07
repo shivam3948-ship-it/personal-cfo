@@ -53,7 +53,7 @@ button{font:inherit;color:inherit}
         <div style="background: var(--mari-tint); border-radius: 14px; padding: 9px 12px; display: grid; gap: 1px"><b class="serif" style="font-size: 21px; color: var(--mari-ink)">{{d.taxSave}}</b><span style="font-size: 12px; color: var(--mari-ink)">{{c.taxTile}}</span></div>
         <div style="background: var(--tint); border-radius: 14px; padding: 9px 12px; display: grid; gap: 1px"><b class="serif" style="font-size: 21px; color: var(--link)">{{d.feeYr}}</b><span style="font-size: 12px; color: var(--ink2)">{{c.feeTile}}</span></div>
       </div>
-      <span style="font-size: 13px; color: var(--ink2)">{{c.e1}} <b style="font-weight: 600; color: var(--ink)">{{d.xirr}} {{c.aYear}}</b>{{c.e2}}<b style="font-weight: 600; color: var(--ink)">{{d.fdExtra}} {{d.fdMore}}</b>{{c.e3}} {{d.sinceLine}}</span>
+      <span style="font-size: 13px; color: var(--ink2)">{{d.e1}} <b style="font-weight: 600; color: var(--ink)">{{d.xirrAbs}} {{c.aYear}}</b>{{d.e2}}<b style="font-weight: 600; color: var(--ink)">{{d.fdExtra}} {{d.fdMore}}</b>{{c.e3}} {{d.sinceLine}}</span>
     </section>
 
     <section aria-labelledby="moves" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 12px 16px; display: grid; gap: 6px; box-shadow: 0 0 0 1px var(--hair)">
@@ -338,7 +338,8 @@ class Component extends DCLogic {
     var hist = (this.props.history ?? 'none') === 'preview';
     var planOpen = named && (s.plan !== undefined ? s.plan : (this.props.open ?? 'none') === 'plan'); // D-051: the plan sheet names funds, amounts and steps, so only with a licence
     var d = {
-      count: cards.length, countHead: T(cards.length + ' things worth acting on', 'ध्यान देने लायक ' + cards.length + ' बातें'), xirr: PF.xirr + '%', since: PF.since,
+      count: cards.length, countHead: T(cards.length + ' things worth acting on', 'ध्यान देने लायक ' + cards.length + ' बातें'), xirr: PF.xirr + '%', since: PF.since, xirrAbs: Math.abs(PF.xirr) + '%', // 7 Nov: a loss reads 'lost 2%', not 'earned -2%'
+      e1: PF.xirr < 0 ? T('Your money lost', 'आपके पैसे ने') : T('Your money earned', 'आपके पैसे ने'), e2: PF.xirr < 0 ? T(': ', ' गँवाया: उन्हीं तारीख़ों पर 7% FD से ') : T(': ', ' कमाया: उन्हीं तारीख़ों पर 7% FD से '),
       sinceLine: T('No SIP paused or sold since ' + PF.since + '.', monHi(PF.since) + ' से न कोई SIP रुकी, न कुछ बेचा गया।'), taxSave: R(H.taxSavedLater), feeYr: R(G.feeTotal), fdExtra: R(Math.abs(FD.extra)), fdMore: FD.extra < 0 ? T('less', 'कम') : T('more', 'ज़्यादा'), cards: cards,
       did: [{ what: T('Moved ' + R(DID.movedPaise) + ' to direct plans', R(DID.movedPaise) + ' डायरेक्ट प्लान में ले गए'), when: T(DID.months + ' months ago · card 2', DID.months + ' महीने पहले · कार्ड 2'), v: T(R(DID.feeSavedSoFar) + ' less fees so far', 'अब तक ' + R(DID.feeSavedSoFar) + ' कम फ़ीस') },
         { what: T('Booked gains inside the tax-free limit', 'टैक्स-फ़्री लिमिट के अंदर फ़ायदा बुक किया'), when: T('same move · card 1', 'वही कदम · कार्ड 1'), v: T(R(DID.futureTax) + ' less tax later', 'आगे ' + R(DID.futureTax) + ' कम टैक्स') },
@@ -351,7 +352,7 @@ class Component extends DCLogic {
           aria: T(r.f[0] + ': fund ' + r.fund + '% a year, your money ' + r.you + '% a year', r.f[0] + ': फ़ंड ' + r.fund + '% सालाना, आपका पैसा ' + r.you + '% सालाना') }; }),
       mixLabel: MIX.map(function (m) { return m.label; }).join(' · ') + ' · ' + T(PF.funds.length + ' funds · ' + R(PF.value), PF.funds.length + ' फ़ंड · ' + R(PF.value)) + (MISS.length ? T(' · ' + MISS.length + ' not included', ' · ' + MISS.length + ' शामिल नहीं') : ''), // 7 Nov: multi-asset funds were labelled debt
       hasMissing: MISS.length > 0,
-      missingNote: T('Not included: ' + MISS.join(', ') + '. Your CAS starts after you first bought ' + (MISS.length === 1 ? 'it' : 'them') + ', so cost and returns can’t be worked out. Add a detailed CAS from your first investment to include ' + (MISS.length === 1 ? 'it' : 'them') + '.', 'शामिल नहीं: ' + MISS.join(', ') + '। आपका CAS पहली ख़रीद के बाद से शुरू होता है, इसलिए लागत और रिटर्न नहीं निकलते। इन्हें जोड़ने के लिए पहले निवेश से डिटेल्ड CAS जोड़ें।'),
+      missingNote: T('Not included: ' + MISS.join(', ') + '. Your CAS starts after you first bought ' + (MISS.length === 1 ? 'it' : 'them') + ', so cost and returns can’t be worked out. Add a detailed CAS from your first investment to include ' + (MISS.length === 1 ? 'it' : 'them') + '.', 'शामिल नहीं: ' + MISS.join(', ') + '। आपका CAS पहली ख़रीद के बाद से शुरू होता है, इसलिए लागत और रिटर्न नहीं निकलते। ' + (MISS.length === 1 ? 'इसे' : 'इन्हें') + ' जोड़ने के लिए पहले निवेश से डिटेल्ड CAS जोड़ें।'),
       // what you own (2 Nov, owner: "could have shown what you own better"): the mix as a bar, and per fund its share, gain and yearly return
       funds: PF.funds.slice().sort(function (a, b) { return b[4] - a[4]; }).map(function (f) { var g = f[10];
         return { name: f[0], cat: hi ? (HI_FCAT[f[2]] || f[2]) : f[2], plan: hi ? (HI_PLAN[f[1]] || f[1]) : f[1], planInk: f[1] === 'Regular' ? 'var(--warn)' : 'var(--link)', value: R(f[4]),

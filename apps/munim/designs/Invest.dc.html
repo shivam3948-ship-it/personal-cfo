@@ -431,7 +431,7 @@ class Component extends DCLogic {
       plannedLine: s.pick ? '✓ ' + R(s.pick) + ' every 1st · ready by ' + landing(Math.ceil(gap / s.pick)) : '',
       essLink: 'Essentials ' + R(essAvg) + ' a month · what counts',
       essRows: cats.map(function (k) { return { l: k === 'Fixed costs' ? 'Fixed costs (rent, EMIs, insurance)' : k, v: R(Math.round(sum(months.map(function (m) { return ESSM[m][k]; })) / months.length)) }; }),
-      xirr: PF.xirr + '%', earnedLine: R(PF.cost) + ' put in → ' + R(PF.value) + ' today', fdLine: R(XRS.fdExtra) + ' more than an FD',
+      xirr: PF.xirr + '%', earnedLine: R(PF.cost) + ' put in → ' + R(PF.value) + ' today', fdLine: R(Math.abs(XRS.fdExtra)) + (XRS.fdExtra < 0 ? ' less than an FD' : ' more than an FD'), // 7 Nov: never '₹-52,532 more'
       verdict: (HB ? 'SIPs ' + HB.sip + '% a year, one-time ' + HB.one + '%' : 'Ahead of your funds on ' + ahead + ' of ' + cmp.length) + ' · no SIP paused since ' + PF.since, xrayCount: XRS.count, xrayLine: R(XRS.taxSave) + ' less tax · ' + R(XRS.feeYr) + ' a year in fees',
       verdicts: [HB ? 'Your SIP instalments are ' + upDown(HB.sip) + ' a year so far; your one-time investments ' + upDown(HB.one) + '.' : 'Ahead of your funds\u2019 own growth on ' + ahead + ' of ' + cmp.length + (behind ? '; ' + behind + ' behind' : '') + '.', 'No SIP pauses or sells since ' + PF.since + '.'],
       regExtra: R(regExtra), pot: R(SAVED_WITH_MUNIM), casLine: (CAS_SRC === 'yours' ? 'Your CAS of ' : 'Sample CAS of ') + (+PF.asOf.slice(8, 10)) + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+PF.asOf.slice(5, 7) - 1] + ' · ' + PF.funds.length + ' funds', casCta: CAS_SRC === 'yours' ? 'Update ›' : 'Add yours ›',
@@ -451,7 +451,7 @@ class Component extends DCLogic {
         cta: s.pick ? 'हर महीने ' + R(s.pick) + ' तय करें' : 'एक रक़म चुनें',
         plannedLine: s.pick ? '✓ हर महीने की 1 तारीख़ को ' + R(s.pick) + ' · ' + landing(Math.ceil(gap / s.pick)) + ' तक तैयार' : '',
         essLink: 'ज़रूरी खर्च ' + R(essAvg) + ' महीना · क्या गिना गया',
-        earnedLine: R(PF.cost) + ' लगाए → आज ' + R(PF.value), fdLine: 'FD से ' + R(XRS.fdExtra) + ' ज़्यादा',
+        earnedLine: R(PF.cost) + ' लगाए → आज ' + R(PF.value), fdLine: 'FD से ' + R(Math.abs(XRS.fdExtra)) + (XRS.fdExtra < 0 ? ' कम' : ' ज़्यादा'),
         verdict: (HB ? 'SIP ' + HB.sip + '% सालाना, एक बार का पैसा ' + HB.one + '%' : cmp.length + ' में से ' + ahead + ' फ़ंड में आपका रिटर्न फ़ंड से आगे') + ' · ' + monHi(PF.since) + ' से एक भी SIP नहीं रुकी',
         xrayHead: 'ध्यान देने लायक ' + XRS.count + ' बातें', xrayLine: R(XRS.taxSave) + ' कम टैक्स · फ़ीस में ' + R(XRS.feeYr) + ' सालाना',
         verdicts: [HB ? 'अब तक नियमित SIP की किश्तें सालाना ' + upDownHi(HB.sip, true) + '; एक बार लगाया पैसा सालाना ' + upDownHi(HB.one, false) + '।' : cmp.length + ' में से ' + ahead + ' फ़ंड में आप फ़ंड की अपनी बढ़त से आगे' + (behind ? '; ' + behind + ' में पीछे' : '') + '।', monHi(PF.since) + ' से न कोई SIP रुकी, न कुछ बेचा गया।'],
