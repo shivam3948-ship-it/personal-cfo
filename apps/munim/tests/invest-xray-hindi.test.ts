@@ -1,5 +1,6 @@
 // Invest and Portfolio x-ray in Hindi (variant 'bharat'): every state, sheet and advice mode reads in Hindi; only data names
 // (funds, stocks, the sample family's policies and lender) and the allowed Latin terms stay in English. English is unchanged.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -86,7 +87,8 @@ describe('SIPs vs one-time investments (2 Nov)', () => {
     expect(h.sip.buys + h.oneTime.buys).toBe(ds.portfolio!.holdings.flatMap((x) => x.flows).filter((f) => f.amount < 0).length); // every purchase counted once
     expect(h.sip.invested + h.oneTime.invested).toBe(-ds.portfolio!.holdings.flatMap((x) => x.flows).filter((f) => f.amount < 0).reduce((a, f) => a + f.amount, 0));
     const x = text(render(Xray, { variant: 'standard', data: buildXray(ds, { adviceMode: 'guided' }) }));
-    expect(x).toContain(`Your SIP instalments have grown ${h.sip.ratePct}% a year so far; one-time investments ${h.oneTime.ratePct}%`);
+    const ud = (v: number) => (v < 0 ? `down ${Math.abs(v)}%` : `up ${v}%`);
+    expect(x).toContain(`Your SIP instalments are ${ud(h.sip.ratePct!)} a year so far; one-time investments ${ud(h.oneTime.ratePct!)}`);
     const xh = text(render(Xray, { variant: 'bharat', data: buildXray(ds, { adviceMode: 'guided' }) }));
     expect(xh).toContain(`नियमित SIP की किश्तें सालाना ${h.sip.ratePct}% बढ़ीं`);
   });
@@ -130,5 +132,32 @@ describe('Against its index and same kind of fund (3 Nov)', () => {
     const x = text(render(Xray, { variant: 'standard', open: 'details', data: d2 }));
     expect(x).toContain('You hold 2 flexi cap funds');
     expect(x).toContain('a sign, not a measure of overlap');
+  });
+});
+
+// owner's CAS, 7 Nov: falls read as falls, a worse-than-FD gap says "less", multi-asset funds aren't "debt", two HDFC funds
+// get their own bar labels, the funds a CAS starts part-way through are named, and your own data is never in demo mode
+describe('X-ray on a portfolio like the owner\'s (7 Nov)', () => {
+  it('reads correctly when things went down', () => {
+    const data = buildXray(ds, { adviceMode: 'guided' }) as Record<string, any>;
+    const PF = { ...data.PF, habit: { sip: -5.5, one: 4.8 } }, X3 = { ...data.X3, fd: { ...data.X3.fd, extra: -5253200 } };
+    const fundsMix = PF.funds.map((f: unknown[], i: number) => (i === 0 ? [...f.slice(0, 3), 'hybrid', ...f.slice(4)] : f));
+    const x = text(render(Xray, { variant: 'standard', data: { ...data, PF: { ...PF, funds: fundsMix }, X3, MISSING: ['Parag Parikh Flexi Cap', 'Canara Robeco Large Cap'] } }));
+    expect(x).toContain('Your SIP instalments are down 5.5% a year so far; one-time investments up 4.8%');
+    expect(x).toContain('₹52,532 less');
+    expect(x).not.toMatch(/₹-|grown -/);
+    expect(x).toMatch(/Hybrid \d+%/); expect(x).not.toMatch(/· debt \d+%/);
+    expect(x).toContain('2 not included');
+    expect(x).toContain('Not included: Parag Parikh Flexi Cap, Canara Robeco Large Cap.');
+    const xh = text(render(Xray, { variant: 'bharat', data: { ...data, PF, X3 } }));
+    expect(xh).toContain('किश्तें सालाना 5.5% घटीं'); expect(xh).toContain('पैसा सालाना 4.8% बढ़ा');
+  });
+  it('names each fund on its index bar', async () => {
+    const { vsBenchmarks } = await import('@core/portfolio/engine');
+    const s: [string, number][] = [['2015-01-01', 10], ['2026-12-31', 20]];
+    const bench = vsBenchmarks(ds.portfolio!.holdings, { nifty500: s, smallcap250: s, nifty50: s, midcap150: s }, ds.portfolio!.asOf);
+    const data = buildXray(ds, { adviceMode: 'guided' }); (data.XR as Record<string, unknown>).bench = bench;
+    const x = text(render(Xray, { variant: 'standard', open: 'details', data }));
+    for (const r of bench.rows) expect(x).toContain(`${r.fund} vs `);
   });
 });

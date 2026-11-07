@@ -1,7 +1,11 @@
 'use client';
 import { loadCas } from './cas';
 import { pfFrom, xrayFrom, xrsFrom, gateXR } from '@/lib/views/portfolioBlocks';
-import type { AdviceMode } from '@/lib/advice';
+import { DISCLAIMER, type AdviceMode } from '@/lib/advice';
+
+/** Your own data is never 'demo' (AGENTS 1a): guided, or private when the owner switched advice on for this browser (D-066).
+ *  Before 7 Nov the X-ray on your CAS kept the sample's mode and its footer said 'Test build on sample data'. */
+const ownMode = (v: View) => { const m: AdviceMode = v.MODE === 'private' ? 'private' : 'guided'; return { MODE: m, DISC: DISCLAIMER[m].en }; };
 import { myDataset, loadStatements } from './statements';
 import { buildSpendsMain } from '@/lib/views/spendsMain';
 import { buildTransactions, buildCategory } from '@/lib/views/spends';
@@ -16,15 +20,16 @@ import { vsBenchmarks } from '@core/portfolio/engine';
 type View = Record<string, unknown>;
 export async function withMyCasInvest(v: View): Promise<View> {
   const c = await loadCas(); if (!c) return v;
-  return { ...v, PF: pfFrom(c), XRS: xrsFrom(xrayFrom(c, {}, 'no fund holdings yet')), CAS_SRC: 'yours', _mine: true };
+  return { ...v, ...ownMode(v), PF: pfFrom(c), XRS: xrsFrom(xrayFrom(c, {}, 'no fund holdings yet')), CAS_SRC: 'yours', MISSING: c.midway ?? [], _mine: true };
 }
 export async function withMyCasXray(v: View): Promise<View> {
   const c = await loadCas(); if (!c) return v;
   const x = xrayFrom(c, {}, 'no fund holdings yet');
   // against its index: public index NAVs come from the server; your funds and dates never leave the phone
   const series = await fetch('/api/benchmarks').then((r) => r.json()).then((j) => j.series ?? {}).catch(() => ({}));
-  const XR = { ...gateXR(x.XR, (v.MODE as AdviceMode) ?? 'guided'), bench: vsBenchmarks(c.holdings, series, c.asOf) };
-  return { ...v, PF: pfFrom(c), XR, X3: x.X3, CAS_SRC: 'yours', _mine: true };
+  const own = ownMode(v);
+  const XR = { ...gateXR(x.XR, own.MODE), bench: vsBenchmarks(c.holdings, series, c.asOf) };
+  return { ...v, ...own, PF: pfFrom(c), XR, X3: x.X3, CAS_SRC: 'yours', MISSING: c.midway ?? [], _mine: true };
 }
 
 // ---- your bank and card statements → Spends, Transactions, Category (computed here, never sent) ----

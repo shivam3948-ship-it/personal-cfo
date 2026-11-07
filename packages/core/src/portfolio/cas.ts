@@ -21,8 +21,12 @@ const num = (s: string): number => { const neg = /^\(.*\)$/.test(s) || s.startsW
 const paise = (rupees: number): Paise => Math.round(rupees * 100);
 
 /** Category and asset class from the scheme name (SEBI category words). */
+/** The fund's own name from a scheme line, which also carries the distributor ("(Advisor: …/NEXTBILLION TECHNOLOGY PVT LTD)",
+ *  Groww's company, once read as a technology fund), the registrar, and an old name ("(formerly … Long Term Value Fund)"). */
+export const fundName = (scheme: string) => scheme.replace(/\(\s*advisor\s*:[^)]*\)/gi, ' ').replace(/\(\s*formerly[^)]*\)/gi, ' ').replace(/registrar\s*:.*$/i, ' ').replace(/\s+/g, ' ').trim();
+
 export function classify(scheme: string): { category: string; asset: AssetClass } {
-  const s = scheme.toLowerCase();
+  const s = fundName(scheme).toLowerCase();
   const rules: [RegExp, string, AssetClass][] = [
     [/\b(liquid|overnight|money market)\b/, 'Liquid', 'debt'],
     [/\b(gilt|short duration|short term|low duration|ultra short|corporate bond|banking (and|&) psu|credit risk|floater|dynamic bond|medium duration|long duration|debt|income|bond)\b/, 'Debt', 'debt'],
@@ -100,7 +104,7 @@ export function parseCas(text: string): CasResult {
       asOf = casDate(c[5]) > asOf ? casDate(c[5]) : asOf;
       const h: Holding = { isin: cur.isin, scheme: cur.scheme, amc: cur.amc, plan: cur.plan, category: cur.category, asset: cur.asset, units, nav, navDate: casDate(c[2]), cost: paise(num(c[4])), value, flows: cur.flows };
       const walkOk = Math.abs(cur.walk - units) < 0.002 * Math.max(1, cur.flows.length);
-      checks.push({ id: `units:${h.isin}`, label: `${h.scheme}: unit balance walk`, ok: walkOk, detail: walkOk ? `${cur.flows.length} transactions add up to ${units.toFixed(3)} units` : `transactions add up to ${cur.walk.toFixed(3)} units, statement says ${units.toFixed(3)}` });
+      checks.push({ id: `units:${h.isin}`, label: `${h.scheme}: unit balance walk`, ok: walkOk, detail: walkOk ? `${cur.flows.length} transaction${cur.flows.length === 1 ? '' : 's'} ${cur.flows.length === 1 ? 'adds' : 'add'} up to ${units.toFixed(3)} units` : `transactions add up to ${cur.walk.toFixed(3)} units, statement says ${units.toFixed(3)}` });
       const valOk = Math.abs(Math.round(units * nav * 100) - value) <= 100; // ₹1 tolerance (rounding)
       checks.push({ id: `value:${h.isin}`, label: `${h.scheme}: units × NAV = market value`, ok: valOk, detail: `${units.toFixed(3)} × ${nav} vs ₹${(value / 100).toFixed(2)}` });
       if (units > 0.0005) holdings.push(h);

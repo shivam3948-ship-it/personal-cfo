@@ -1,14 +1,17 @@
 'use client';
 // Your CAS, on this phone only. Read in the browser (pdf.js), checked by the same parser as the server's sample, saved in
 // this browser's IndexedDB without name, PAN, email, address or folio number. The server never receives it.
-import { parseCas, type CasResult, type Holding } from '@core/portfolio/cas';
+import { fundName, parseCas, type CasResult, type Holding } from '@core/portfolio/cas';
+import { shortName } from '@core/portfolio/engine';
 import { pdfLines, PdfPasswordError } from '@core/ingest/pdfLines';
 import type { Portfolio } from '@/lib/views/portfolioBlocks';
 import { idbGet, idbPut, idbDel } from './idb';
 import { switchToMyData } from './profile';
 
 export { PdfPasswordError };
-export interface LocalCas extends Portfolio { checks: CasResult['checks']; addedAt: string; skipped: string[] }
+export interface LocalCas extends Portfolio { checks: CasResult['checks']; addedAt: string; skipped: string[];
+  /** funds this CAS starts part-way through (opening units not zero): left out, and named so nobody thinks that's everything (7 Nov) */
+  midway?: string[] }
 
 const KEY = 'cas';
 export async function loadCas(): Promise<LocalCas | null> { return (await idbGet<LocalCas>(KEY)) ?? null; }
@@ -37,7 +40,8 @@ export async function readCasLines(lines: string[], r: CasResult, pages = 0): Pr
   const failed = r.checks.filter((c) => !c.ok);
   const badIsins = new Set(failed.filter((c) => c.id.startsWith('units:') || c.id.startsWith('value:')).map((c) => c.id.split(':')[1]));
   const holdings = r.holdings.filter((h) => !badIsins.has(h.isin)).map(clean); // a fund that doesn't add up is left out, never guessed
-  const cas: LocalCas | null = holdings.length ? { asOf: r.asOf, holdings, checks: r.checks, addedAt: new Date().toISOString(), skipped: r.holdings.filter((h) => badIsins.has(h.isin)).map((h) => h.scheme) } : null;
+  const cas: LocalCas | null = holdings.length ? { asOf: r.asOf, holdings, checks: r.checks, addedAt: new Date().toISOString(), skipped: r.holdings.filter((h) => badIsins.has(h.isin)).map((h) => h.scheme),
+    midway: r.checks.filter((c) => c.id.startsWith('start:')).map((c) => shortName(fundName(c.label.replace(/: statement starts mid-way$/, '')))) } : null;
   return { kind: r.kind, cas, failed, diagnostics: diagnose(lines, pages, r) };
 }
 
