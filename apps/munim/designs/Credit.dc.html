@@ -140,25 +140,27 @@ class Component extends DCLogic {
     var hi = (this.props.variant ?? 'standard') === 'bharat';
     var T = function (en, h) { return hi ? h : en; };
     var CR = this.props.data && this.props.data.CR;
+    var anyData = !!(CR && CR.anyData);
     var C = hi ? {
       title: 'उधार', oweLabel: 'आप पर कुल उधार', dueTitle: 'आगे क्या भरना है', cardsTitle: 'आपके कार्ड', loansTitle: 'आपके लोन',
       seenTitle: 'आपके बैंक से जाती EMI', seenNote: 'बाक़ी रक़म देखने के लिए लोन के काग़ज़ जोड़ना: जल्द आ रहा है।',
       scoreTitle: 'क्रेडिट स्कोर', tag: 'जल्द आ रहा है', reportHead: 'आपकी क्रेडिट रिपोर्ट', reportSub: 'स्कोर क्यों बदला, कौन-सा आवेदन या देरी असर डाल रही है: रिपोर्ट जोड़ने पर।',
       notify: 'तैयार होने पर बताएँ', notified: '✓ तैयार होने पर बताएँगे',
-      emptyHead: 'अभी दिखाने को कुछ नहीं', emptySub: 'कार्ड या बैंक स्टेटमेंट जोड़ें: मुनीम आपके कार्ड, EMI और आगे क्या भरना है, यहाँ दिखाएगा।', trySample: 'सैंपल डेटा से देखें',
+      emptyHead: anyData ? 'आपके स्टेटमेंट में अभी कोई कार्ड या EMI नहीं' : 'अभी दिखाने को कुछ नहीं', emptySub: anyData ? 'क्रेडिट कार्ड का स्टेटमेंट जोड़ें, या जिस बैंक खाते से EMI जाती है उसका: मुनीम उन्हें यहाँ दिखाएगा।' : 'कार्ड या बैंक स्टेटमेंट जोड़ें: मुनीम आपके कार्ड, EMI और आगे क्या भरना है, यहाँ दिखाएगा।', trySample: 'सैंपल डेटा से देखें',
       foot: 'आपके स्टेटमेंट से। मुनीम पैसे नहीं भेजता और कोई लोन या कार्ड नहीं सुझाता।'
     } : {
       title: 'Credit', oweLabel: 'What you owe', dueTitle: 'Due next', cardsTitle: 'Your cards', loansTitle: 'Your loans',
       seenTitle: 'EMIs leaving your bank', seenNote: 'To see what’s left on them, adding loan papers is coming soon.',
       scoreTitle: 'Credit score', tag: 'Coming soon', reportHead: 'Your credit report', reportSub: 'Why your score moved, and which application or late payment is weighing on it: once you can add your report.',
       notify: 'Tell me when it’s ready', notified: '✓ We’ll tell you when it’s ready',
-      emptyHead: 'Nothing to show yet', emptySub: 'Add a credit card or bank statement and Munim lists your cards, your EMIs and what’s due next.', trySample: 'See it with sample data',
+      emptyHead: anyData ? 'No cards or EMIs in your statements yet' : 'Nothing to show yet', emptySub: anyData ? 'Add a credit card statement, or the bank account your EMIs leave from, and Munim lists them here.' : 'Add a credit card or bank statement and Munim lists your cards, your EMIs and what’s due next.', trySample: 'See it with sample data',
       foot: 'From your statements. Munim never moves money or suggests a lender or card.'
     };
     var has = !!(CR && CR.has);
     var d = !CR ? { hasScore: false, noScore: true } : {
       owe: CR.owe,
-      oweSplit: CR.hasLoans ? T(CR.oweCards + ' on cards · ' + CR.oweLoans + ' on loans', 'कार्ड पर ' + CR.oweCards + ' · लोन पर ' + CR.oweLoans) : T(CR.oweCards + ' on cards, still to pay', 'कार्ड पर ' + CR.oweCards + ', अभी भरना है'),
+      oweSplit: (CR.hasLoans ? T(CR.oweCards + ' on card bills · ' + CR.oweLoans + ' on loans', 'कार्ड बिल पर ' + CR.oweCards + ' · लोन पर ' + CR.oweLoans) : T(CR.oweCards + ' on card bills, still to pay', 'कार्ड बिल पर ' + CR.oweCards + ', अभी भरना है'))
+        + (CR.unseenLoans ? T(' · plus ' + CR.unseenLoans + ' loan' + (CR.unseenLoans === 1 ? '' : 's') + ' whose balance Munim can’t see yet', ' · और ' + CR.unseenLoans + ' लोन जिनकी बाक़ी रक़म अभी नहीं दिखती') : ''),
       hasMonthly: !!CR.monthly,
       monthly: CR.monthly ? T('EMIs: ' + CR.monthly + ' a month' + (CR.share !== null ? ' · ' + CR.share + '% of your salary' : ''), 'EMI: हर महीने ' + CR.monthly + (CR.share !== null ? ' · आपकी सैलरी का ' + CR.share + '%' : '')) : '',
       hasDue: CR.due.length > 0,

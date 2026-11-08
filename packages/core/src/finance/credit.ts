@@ -15,10 +15,10 @@ export interface CardInfo extends CardBill {
   carried: number; cyclesChecked: number;
 }
 export interface SeenEmi { payee: string; amount: Paise; day: number; months: number; last: string }
-export interface DueItem { date: string; kind: 'card' | 'emi'; label: string; amount: Paise }
+export interface DueItem { date: string; kind: 'card' | 'emi'; label: string; amount: Paise; /** a date guessed from the usual day, not printed anywhere */ approx?: boolean }
 export interface CreditPicture {
   cards: CardInfo[]; loans: LoanStatus[]; seenEmis: SeenEmi[];
-  owe: { cards: Paise; loans: Paise; total: Paise };
+  owe: { cards: Paise; loans: Paise; total: Paise; /** loans seen only as EMIs: their balance isn't known, so it isn't in the total */ unseenLoans: number };
   monthlyEmi: Paise;
   /** EMIs as a share of the average monthly salary, one decimal; null without a salary in the statements */
   emiShareOfSalary: number | null;
@@ -30,19 +30,26 @@ export interface CreditPicture {
 const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : 0; };
 const RUPEE = 100;
 
-/** EMIs seen leaving your bank that no loan paper explains: the same payee in two or more months, by the usual amount. */
-function seenEmis(ds: Dataset, docEmis: Paise[]): SeenEmi[] {
-  const byPayee = new Map<string, Txn[]>();
-  for (const t of ds.txns) {
-    if (t.dir !== 'debit' || t.category !== 'Loan EMI' || !t.account.startsWith('bank:')) continue;
-    if (docEmis.some((e) => Math.abs(e - t.amount) <= RUPEE)) continue; // a loan paper already covers it
-    const k = merchantKey(t) || t.desc.slice(0, 20).toLowerCase();
-    byPayee.set(k, [...(byPayee.get(k) ?? []), t]);
+/** EMIs seen leaving your bank that no loan paper explains: the same payee and about the same amount (within 5%) in two or
+ *  more months, still running (the last one within 40 days of the end of your bank statements). Grouped by payee and amount,
+ *  so a car loan and a personal loan from one bank stay two EMIs; linked to a loan paper by amount or by lender name. */
+function seenEmis(ds: Dataset, docs: { emi: Paise; lender: string }[]): SeenEmi[] {
+  const bankTxns = ds.txns.filter((t) => t.account.startsWith('bank:') && t.source !== 'sms');
+  const bankTo = bankTxns.reduce((m, t) => (t.date > m ? t.date : m), '');
+  const docKeys = new Set(docs.map((d) => merchantKey({ desc: d.lender } as Txn)).filter(Boolean));
+  const groups: { key: string; amount: Paise; ts: Txn[] }[] = [];
+  for (const t of bankTxns) {
+    if (t.dir !== 'debit' || t.category !== 'Loan EMI') continue;
+    const key = merchantKey(t) || t.desc.slice(0, 20).toLowerCase();
+    if (docs.some((d) => Math.abs(d.emi - t.amount) <= RUPEE) || docKeys.has(key)) continue; // a loan paper already covers it
+    const g = groups.find((x) => x.key === key && Math.abs(x.amount - t.amount) <= x.amount * 0.05);
+    if (g) g.ts.push(t); else groups.push({ key, amount: t.amount, ts: [t] });
   }
   const out: SeenEmi[] = [];
-  for (const ts of byPayee.values()) {
+  for (const { ts } of groups) {
     const months = new Set(ts.map((t) => t.date.slice(0, 7))).size;
-    if (months < 2) continue;
+    const lastDate = ts.map((t) => t.date).sort().at(-1)!;
+    if (months < 2 || (bankTo && (Date.parse(bankTo) - Date.parse(lastDate)) / 86_400_000 > 40)) continue; // stopped: not a current EMI
     const last = ts.map((t) => t.date).sort().at(-1)!;
     out.push({ payee: ts[0].merchant ?? ts[0].desc, amount: median(ts.map((t) => t.amount)), day: median(ts.map((t) => +t.date.slice(8, 10))), months, last });
   }
@@ -62,22 +69,24 @@ export function creditPicture(ds: Dataset, today?: string): CreditPicture {
   const label = (id: string) => ds.accounts.find((a) => a.id === id)?.label ?? `Card ••${id.split(':')[1] ?? ''}`;
   const cards: CardInfo[] = cardBills(ds, asOf, today).map((b) => {
     const st = ds.cardStatements.filter((s) => s.account === b.account).sort((x, y) => x.periodEnd.localeCompare(y.periodEnd));
-    // a cycle carried a balance when the next statement shows payments below the previous balance, or charges (as advice.ts reads it)
+    // an earlier bill was not paid in full when the next statement's payments are below its previous balance; charges are
+    // reported on their own (a fee or GST line isn't proof of a carried balance) (review, 8 Nov)
     const later = st.slice(1);
     return { ...b, label: label(b.account), charges: st.reduce((a, s) => a + s.charges, 0), statements: st.length,
-      carried: later.filter((s) => s.charges > 0 || s.payments < s.prevBalance - RUPEE).length, cyclesChecked: later.length };
+      carried: later.filter((s) => s.payments < s.prevBalance - RUPEE).length, cyclesChecked: later.length };
   });
   const loans = (ds.loans ?? []).map((l) => loanStatus(l, asOf)).filter((l) => l.emisLeft > 0);
-  const seen = seenEmis(ds, loans.map((l) => l.emi));
-  const cardsOwe = cards.filter((c) => c.status !== 'paid_full').reduce((a, c) => a + Math.max(0, c.totalDue - c.paid), 0);
+  const seen = seenEmis(ds, loans.map((l) => ({ emi: l.emi, lender: l.lender })));
+  // bills still ahead or part-paid; a bill whose payment Munim simply can't see (not_seen, unknown) isn't counted as owed
+  const cardsOwe = cards.filter((c) => ['due', 'paid_min', 'paid_part'].includes(c.status)).reduce((a, c) => a + Math.max(0, c.totalDue - c.paid), 0);
   const loansOwe = loans.reduce((a, l) => a + l.outstanding, 0);
   const monthlyEmi = loans.reduce((a, l) => a + l.emi, 0) + seen.reduce((a, e) => a + e.amount, 0);
   const salary = monthlyIncome(ds);
   const due: DueItem[] = [
     ...cards.filter((c) => c.status !== 'paid_full' && c.dueDate >= now).map((c): DueItem => ({ date: c.dueDate, kind: 'card', label: c.label, amount: Math.max(0, c.totalDue - c.paid) })),
     ...loans.filter((l) => l.nextEmiDate).map((l): DueItem => { const d = l.nextEmiDate! >= now ? l.nextEmiDate! : nextOnDay(now, +l.nextEmiDate!.slice(8, 10)); return { date: d, kind: 'emi', label: l.lender, amount: l.emi }; }),
-    ...seen.map((e): DueItem => ({ date: nextOnDay(now, e.day), kind: 'emi', label: e.payee, amount: e.amount })),
+    ...seen.map((e): DueItem => ({ date: nextOnDay(now, e.day), kind: 'emi', label: e.payee, amount: e.amount, approx: true })),
   ].sort((a, b) => a.date.localeCompare(b.date));
-  return { cards, loans, seenEmis: seen, owe: { cards: cardsOwe, loans: loansOwe, total: cardsOwe + loansOwe }, monthlyEmi,
+  return { cards, loans, seenEmis: seen, owe: { cards: cardsOwe, loans: loansOwe, total: cardsOwe + loansOwe, unseenLoans: seen.length }, monthlyEmi,
     emiShareOfSalary: salary && monthlyEmi ? Math.round((monthlyEmi / salary) * 1000) / 10 : null, due, score: creditView(ds), asOf };
 }

@@ -5,6 +5,7 @@ import type { Dataset } from '@core/types';
 import { creditPicture } from '@core/finance/credit';
 import { inr } from '@core/money';
 import { billLines } from './todayMine';
+import { cleanMerchant } from './spends';
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const MON_HI = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
@@ -21,21 +22,21 @@ export function buildCredit(ds: Dataset, _s?: unknown, today?: string) {
   const cards = c.cards.map((b) => {
     const l = billLines(b, b.label);
     const cost = b.charges > 0 || b.carried > 0
-      ? { en: `${b.charges > 0 ? `${R0(b.charges)} in interest and fees on your last ${b.statements} statement${b.statements === 1 ? '' : 's'}` : 'No interest charged'}${b.carried ? ` · bill not paid in full in ${b.carried} of ${b.cyclesChecked} months` : ''}`,
-        hi: `${b.charges > 0 ? `पिछले ${b.statements} स्टेटमेंट में ${R0(b.charges)} ब्याज और फ़ीस` : 'कोई ब्याज नहीं लगा'}${b.carried ? ` · ${b.cyclesChecked} में से ${b.carried} महीने पूरा बिल नहीं भरा` : ''}` }
-      : b.cyclesChecked ? { en: `Paid in full every month we can see (${b.cyclesChecked} of ${b.cyclesChecked}), no interest`, hi: `जितने महीने दिखते हैं (${b.cyclesChecked}), हर बार पूरा बिल भरा, कोई ब्याज नहीं` } : null;
+      ? { en: `${b.charges > 0 ? `${R0(b.charges)} in interest and fees on your last ${b.statements} statement${b.statements === 1 ? '' : 's'}` : 'No interest charged'}${b.carried ? ` · ${b.carried} of the last ${b.cyclesChecked} bills not paid in full` : ''}`,
+        hi: `${b.charges > 0 ? `पिछले ${b.statements} स्टेटमेंट में ${R0(b.charges)} ब्याज और फ़ीस` : 'कोई ब्याज नहीं लगा'}${b.carried ? ` · पिछले ${b.cyclesChecked} में से ${b.carried} बिल पूरे नहीं भरे` : ''}` }
+      : b.cyclesChecked ? { en: `Earlier bills paid in full (${b.cyclesChecked} of ${b.cyclesChecked} we can see), no interest charged`, hi: `पिछले बिल पूरे भरे (जितने दिखते हैं, ${b.cyclesChecked} में से ${b.cyclesChecked}), कोई ब्याज नहीं लगा` } : null;
     return { ...l, nameHi: l.name.replace(/credit card/i, 'क्रेडिट कार्ड'), warnCost: b.charges > 0 || b.carried > 0, cost: cost?.en ?? '', costHi: cost?.hi ?? '', hasCost: !!cost };
   });
   const loans = c.loans.map((l) => ({
     name: l.lender, kind: LOAN[l.type][0], kindHi: LOAN[l.type][1], emi: `${R0(l.emi)} a month`, emiHi: `${R0(l.emi)} हर महीने`,
     left: `${R0(l.outstanding)} left · ${l.emisLeft} EMIs · ends ${my(l.endDate)}`, leftHi: `${R0(l.outstanding)} बाक़ी · ${l.emisLeft} EMI · ${myHi(l.endDate)} तक`,
     rate: `${l.ratePct}% a year`, rateHi: `${l.ratePct}% सालाना`,
-    interest: `${R0(l.interestLeft)} of interest still to pay`, interestHi: `अभी ${R0(l.interestLeft)} ब्याज और देना है`,
+    interest: `about ${R0(l.interestLeft)} of interest still to pay, if every EMI is paid on time at today’s rate`, interestHi: `लगभग ${R0(l.interestLeft)} ब्याज और, अगर हर EMI समय पर और इसी दर पर भरें`,
   }));
   const seen = c.seenEmis.map((e) => ({
-    name: e.payee, line: `${R0(e.amount)} every month, around the ${ord(e.day)} · seen in ${e.months} months`, lineHi: `हर महीने करीब ${e.day} तारीख़ को ${R0(e.amount)} · ${e.months} महीनों में दिखा`,
+    name: cleanMerchant(e.payee).replace(/\b\d{6,}\b/g, '').trim(), line: `${R0(e.amount)} every month, around the ${ord(e.day)} · seen in ${e.months} months`, lineHi: `हर महीने क़रीब ${e.day} तारीख़ को ${R0(e.amount)} · ${e.months} महीनों में दिखा`,
   }));
-  const due = c.due.map((d) => ({ date: dm(d.date), dateHi: dmHi(d.date), label: d.label, what: d.kind === 'card' ? 'Card bill' : 'EMI', whatHi: d.kind === 'card' ? 'कार्ड बिल' : 'EMI', amount: inr(d.amount, 'auto') }));
+  const due = c.due.map((d) => ({ date: `${d.approx ? '~' : ''}${dm(d.date)}`, dateHi: `${d.approx ? '~' : ''}${dmHi(d.date)}`, label: d.kind === 'emi' && d.approx ? cleanMerchant(d.label).replace(/\b\d{6,}\b/g, '').trim() : d.label, what: d.kind === 'card' ? 'Card bill' : 'EMI', whatHi: d.kind === 'card' ? 'कार्ड बिल' : 'EMI', amount: inr(d.amount, 'auto') }));
   const sc = c.score;
   const score = sc ? {
     score: sc.score, asOf: sc.asOf,
@@ -48,7 +49,7 @@ export function buildCredit(ds: Dataset, _s?: unknown, today?: string) {
   } : null;
   return {
     CR: {
-      has: cards.length + loans.length + seen.length > 0,
+      has: cards.length + loans.length + seen.length > 0, anyData: ds.txns.length > 0, unseenLoans: c.owe.unseenLoans,
       owe: R0(c.owe.total), oweCards: R0(c.owe.cards), oweLoans: R0(c.owe.loans), hasLoans: c.owe.loans > 0,
       monthly: c.monthlyEmi ? R0(c.monthlyEmi) : '', share: c.emiShareOfSalary,
       due, cards, loans, seen, score, asOf: c.asOf,
