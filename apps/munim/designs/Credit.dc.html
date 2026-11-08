@@ -34,26 +34,85 @@ button{font:inherit;color:inherit}
 </style>
 </helmet>
 <div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
-  <div style="position: absolute; inset: 0 0 80px 0; overflow-y: auto; padding: 18px 16px 24px; box-sizing: border-box; display: grid; gap: 14px; align-content: start">
+  <div style="position: absolute; inset: 0 0 80px 0; overflow-y: auto; padding: 18px 16px 24px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-content: start">
     <h1 class="serif" style="margin: 0; font-size: 28px">{{c.title}}</h1>
-    <section style="background: var(--card); border-radius: 22px; box-shadow: 0 0 0 1px var(--hair); padding: 20px 18px; display: grid; gap: 12px">
-      <span style="justify-self: start; font-size: 12px; font-weight: 600; color: var(--mari-ink); background: var(--mari-tint); border-radius: 999px; padding: 3px 10px">{{c.tag}}</span>
-      <b class="serif" style="font-size: 24px; line-height: 1.2">{{c.head}}</b>
-      <span style="font-size: 15px; color: var(--ink2)">{{c.sub}}</span>
-      <div style="display: grid; gap: 10px; margin-top: 4px">
-        <sc-for list="{{c.items}}" as="it" hint-placeholder-count="3">
-          <div style="display: flex; gap: 12px; align-items: flex-start">
-            <span aria-hidden="true" style="flex: none; width: 32px; height: 32px; border-radius: 10px; background: var(--tint); color: var(--link); display: grid; place-items: center; font-weight: 700; font-size: 14px">{{it.n}}</span>
-            <span style="display: grid; gap: 2px"><b style="font-size: 15px; font-weight: 600">{{it.t}}</b><span style="font-size: 13.5px; color: var(--muted)">{{it.d}}</span></span>
-          </div>
+    <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+      <section style="background: var(--card); border-radius: 22px; box-shadow: 0 0 0 1px var(--hair); padding: 20px 18px; display: grid; gap: 12px">
+        <b class="serif" style="font-size: 22px; line-height: 1.2">{{c.emptyHead}}</b>
+        <span style="font-size: 15px; color: var(--ink2)">{{c.emptySub}}</span>
+        <button type="button" onClick="{{trySample}}" style="min-height: 48px; border-radius: 999px; border: 0; background: var(--btn); color: var(--on-btn); font-size: 15px; font-weight: 600; cursor: pointer">{{c.trySample}}</button>
+      </section>
+    </sc-if>
+    <sc-if value="{{has}}" hint-placeholder-val="{{ true }}">
+      <section aria-label="{{c.oweLabel}}" style="background: var(--band); border-radius: 22px; padding: 18px; display: grid; gap: 6px">
+        <span style="font-size: 14px; color: var(--ink2)">{{c.oweLabel}}</span>
+        <b class="serif" style="font-size: 34px; line-height: 1.1">{{d.owe}}</b>
+        <span style="font-size: 14.5px; color: var(--ink2)">{{d.oweSplit}}</span>
+        <sc-if value="{{d.hasMonthly}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14.5px; color: var(--ink2)">{{d.monthly}}</span></sc-if>
+      </section>
+      <sc-if value="{{d.hasDue}}" hint-placeholder-val="{{ true }}">
+        <section style="background: var(--card); border-radius: 22px; box-shadow: 0 0 0 1px var(--hair); padding: 16px 18px; display: grid; gap: 4px">
+          <h2 style="margin: 0 0 4px; font-size: 17px">{{c.dueTitle}}</h2>
+          <sc-for list="{{d.due}}" as="x" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid var(--hair)">
+              <span style="flex: none; min-width: 56px; font-size: 13px; font-weight: 600; color: var(--link); background: var(--tint); border-radius: 10px; padding: 6px 8px; text-align: center">{{x.date}}</span>
+              <span style="flex: 1; display: grid; gap: 1px; min-width: 0"><b style="font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{x.label}}</b><span style="font-size: 13px; color: var(--muted)">{{x.what}}</span></span>
+              <b style="font-size: 15px">{{x.amount}}</b>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+      <sc-if value="{{d.hasCards}}" hint-placeholder-val="{{ true }}">
+        <h2 style="margin: 4px 0 0; font-size: 17px">{{c.cardsTitle}}</h2>
+        <sc-for list="{{d.cards}}" as="k" hint-placeholder-count="1">
+          <section style="background: var(--card); border-radius: 18px; box-shadow: 0 0 0 1px var(--hair); padding: 14px 16px; display: grid; gap: 6px">
+            <span style="font-size: 13px; color: var(--muted)">{{k.name}}</span>
+            <b style="font-size: 18px">{{k.head}}</b>
+            <span style="font-size: 14.5px; line-height: 1.45; color: {{k.ink}}">{{k.line}}</span>
+            <span style="font-size: 13.5px; color: var(--muted)">{{k.used}}</span>
+            <sc-if value="{{k.hasCost}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13.5px; color: {{k.costInk}}">{{k.cost}}</span></sc-if>
+          </section>
         </sc-for>
-      </div>
-      <button type="button" onClick="{{notify}}" aria-pressed="{{asked}}" style="margin-top: 6px; min-height: 48px; border-radius: 999px; border: 0; background: {{btnBg}}; color: {{btnInk}}; box-shadow: {{btnRing}}; font-size: 15px; font-weight: 600; cursor: pointer">{{btnText}}</button>
-    </section>
-    <a href="Voice.dc.html" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--card); border-radius: 18px; box-shadow: 0 0 0 1px var(--hair); padding: 14px 16px; text-decoration: none">
-      <span style="display: grid; gap: 2px"><b style="font-size: 15px; font-weight: 600">{{c.askT}}</b><span style="font-size: 13.5px; color: var(--muted)">{{c.askD}}</span></span>
-      <span aria-hidden="true" style="color: var(--link); font-size: 20px">›</span>
-    </a>
+      </sc-if>
+      <sc-if value="{{d.hasLoans}}" hint-placeholder-val="{{ true }}">
+        <h2 style="margin: 4px 0 0; font-size: 17px">{{c.loansTitle}}</h2>
+        <sc-for list="{{d.loans}}" as="l" hint-placeholder-count="2">
+          <section style="background: var(--card); border-radius: 18px; box-shadow: 0 0 0 1px var(--hair); padding: 14px 16px; display: grid; gap: 4px">
+            <span style="font-size: 13px; color: var(--muted)">{{l.kind}} · {{l.name}}</span>
+            <b style="font-size: 18px">{{l.emi}}</b>
+            <span style="font-size: 14.5px; color: var(--ink2)">{{l.left}}</span>
+            <span style="font-size: 13.5px; color: var(--muted)">{{l.rate}} · {{l.interest}}</span>
+          </section>
+        </sc-for>
+      </sc-if>
+      <sc-if value="{{d.hasSeen}}" hint-placeholder-val="{{ false }}">
+        <section style="background: var(--card); border-radius: 18px; box-shadow: 0 0 0 1px var(--hair); padding: 14px 16px; display: grid; gap: 8px">
+          <h2 style="margin: 0; font-size: 17px">{{c.seenTitle}}</h2>
+          <sc-for list="{{d.seen}}" as="e" hint-placeholder-count="1">
+            <span style="display: grid; gap: 2px"><b style="font-size: 15px; font-weight: 600">{{e.name}}</b><span style="font-size: 13.5px; color: var(--ink2)">{{e.line}}</span></span>
+          </sc-for>
+          <span style="font-size: 13px; color: var(--muted)">{{c.seenNote}}</span>
+        </section>
+      </sc-if>
+    </sc-if>
+    <sc-if value="{{d.hasScore}}" hint-placeholder-val="{{ true }}">
+      <section style="background: var(--card); border-radius: 18px; box-shadow: 0 0 0 1px var(--hair); padding: 14px 16px; display: grid; gap: 4px">
+        <span style="font-size: 13px; color: var(--muted)">{{c.scoreTitle}}</span>
+        <b class="serif" style="font-size: 30px">{{d.score}}</b>
+        <span style="font-size: 14.5px; color: {{d.changeInk}}">{{d.change}}</span>
+        <span style="font-size: 13.5px; color: var(--muted)">{{d.util}}</span>
+        <span style="font-size: 13.5px; color: var(--muted)">{{d.enq}}</span>
+      </section>
+    </sc-if>
+    <sc-if value="{{d.noScore}}" hint-placeholder-val="{{ false }}">
+      <section style="background: var(--card); border-radius: 18px; box-shadow: 0 0 0 1px var(--hair); padding: 14px 16px; display: grid; gap: 8px">
+        <span style="justify-self: start; font-size: 12px; font-weight: 600; color: var(--mari-ink); background: var(--mari-tint); border-radius: 999px; padding: 3px 10px">{{c.tag}}</span>
+        <b style="font-size: 16px">{{c.reportHead}}</b>
+        <span style="font-size: 14px; color: var(--ink2)">{{c.reportSub}}</span>
+        <button type="button" onClick="{{notify}}" aria-pressed="{{asked}}" style="min-height: 44px; border-radius: 999px; border: 0; background: {{btnBg}}; color: {{btnInk}}; font-size: 14.5px; font-weight: 600; cursor: pointer">{{btnText}}</button>
+      </section>
+    </sc-if>
+    <span style="font-size: 12.5px; color: var(--muted); padding: 0 4px">{{c.foot}}</span>
   </div>
   <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: var(--card); border-top: 1px solid var(--hair)">
     <div style="height: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center">
@@ -79,20 +138,48 @@ class Component extends DCLogic {
   renderVals() {
     var self = this, s = this.state;
     var hi = (this.props.variant ?? 'standard') === 'bharat';
-    // Fake door (19 Oct: missing integrations show "coming soon"). The tap is the signal: how many want Credit next.
+    var T = function (en, h) { return hi ? h : en; };
+    var CR = this.props.data && this.props.data.CR;
+    var anyData = !!(CR && CR.anyData);
     var C = hi ? {
-      title: 'उधार', tag: 'जल्द आ रहा है', head: 'आपका क्रेडिट, एक जगह', sub: 'स्कोर, कार्ड और लोन: क्या बदला, पहले क्या ठीक करें, और कब सस्ता लोन लेना फ़ायदे का है।',
-      items: [{ n: '1', t: 'स्कोर क्यों बदला', d: 'हर बदलाव की वजह, आसान भाषा में' }, { n: '2', t: 'कार्ड का इस्तेमाल', d: 'लिमिट का 30% से कम रखने में मदद' }, { n: '3', t: 'सस्ता लोन', d: 'फ़ीस जोड़कर भी फ़ायदा हो, तभी बदलें' }],
-      notify: 'तैयार होने पर बताएँ', notified: '✓ तैयार होने पर बताएँगे', askT: 'तब तक मुनीम से पूछें', askD: 'अपने लोन और सिबिल स्कोर के बारे में'
+      title: 'उधार', oweLabel: 'आप पर कुल उधार', dueTitle: 'आगे क्या भरना है', cardsTitle: 'आपके कार्ड', loansTitle: 'आपके लोन',
+      seenTitle: 'आपके बैंक से जाती EMI', seenNote: 'बाक़ी रक़म देखने के लिए लोन के काग़ज़ जोड़ना: जल्द आ रहा है।',
+      scoreTitle: 'क्रेडिट स्कोर', tag: 'जल्द आ रहा है', reportHead: 'आपकी क्रेडिट रिपोर्ट', reportSub: 'स्कोर क्यों बदला, कौन-सा आवेदन या देरी असर डाल रही है: रिपोर्ट जोड़ने पर।',
+      notify: 'तैयार होने पर बताएँ', notified: '✓ तैयार होने पर बताएँगे',
+      emptyHead: anyData ? 'आपके स्टेटमेंट में अभी कोई कार्ड या EMI नहीं' : 'अभी दिखाने को कुछ नहीं', emptySub: anyData ? 'क्रेडिट कार्ड का स्टेटमेंट जोड़ें, या जिस बैंक खाते से EMI जाती है उसका: मुनीम उन्हें यहाँ दिखाएगा।' : 'कार्ड या बैंक स्टेटमेंट जोड़ें: मुनीम आपके कार्ड, EMI और आगे क्या भरना है, यहाँ दिखाएगा।', trySample: 'सैंपल डेटा से देखें',
+      foot: 'आपके स्टेटमेंट से। मुनीम पैसे नहीं भेजता और कोई लोन या कार्ड नहीं सुझाता।'
     } : {
-      title: 'Credit', tag: 'Coming soon', head: 'Your credit, in one place', sub: 'Score, cards and loans: what changed, what to fix first, and when a cheaper loan is really worth it.',
-      items: [{ n: '1', t: 'Why your score moved', d: 'Every change explained in plain words' }, { n: '2', t: 'Card usage', d: 'Help keeping it under 30% of your limit' }, { n: '3', t: 'Cheaper loans', d: 'Switch only if it still pays after fees' }],
-      notify: 'Tell me when it’s ready', notified: '✓ We’ll tell you when it’s ready', askT: 'Meanwhile, ask Munim', askD: 'About your loans and credit score'
+      title: 'Credit', oweLabel: 'What you owe', dueTitle: 'Due next', cardsTitle: 'Your cards', loansTitle: 'Your loans',
+      seenTitle: 'EMIs leaving your bank', seenNote: 'To see what’s left on them, adding loan papers is coming soon.',
+      scoreTitle: 'Credit score', tag: 'Coming soon', reportHead: 'Your credit report', reportSub: 'Why your score moved, and which application or late payment is weighing on it: once you can add your report.',
+      notify: 'Tell me when it’s ready', notified: '✓ We’ll tell you when it’s ready',
+      emptyHead: anyData ? 'No cards or EMIs in your statements yet' : 'Nothing to show yet', emptySub: anyData ? 'Add a credit card statement, or the bank account your EMIs leave from, and Munim lists them here.' : 'Add a credit card or bank statement and Munim lists your cards, your EMIs and what’s due next.', trySample: 'See it with sample data',
+      foot: 'From your statements. Munim never moves money or suggests a lender or card.'
+    };
+    var has = !!(CR && CR.has);
+    var d = !CR ? { hasScore: false, noScore: true } : {
+      owe: CR.owe,
+      oweSplit: (CR.hasLoans ? T(CR.oweCards + ' on card bills · ' + CR.oweLoans + ' on loans', 'कार्ड बिल पर ' + CR.oweCards + ' · लोन पर ' + CR.oweLoans) : T(CR.oweCards + ' on card bills, still to pay', 'कार्ड बिल पर ' + CR.oweCards + ', अभी भरना है'))
+        + (CR.unseenLoans ? T(' · plus ' + CR.unseenLoans + ' loan' + (CR.unseenLoans === 1 ? '' : 's') + ' whose balance Munim can’t see yet', ' · और ' + CR.unseenLoans + (CR.unseenLoans === 1 ? ' लोन जिसकी' : ' लोन जिनकी') + ' बाक़ी रक़म अभी नहीं दिखती') : ''),
+      hasMonthly: !!CR.monthly,
+      monthly: CR.monthly ? T('EMIs: ' + CR.monthly + ' a month' + (CR.share !== null ? ' · ' + CR.share + '% of your salary' : ''), 'EMI: हर महीने ' + CR.monthly + (CR.share !== null ? ' · आपकी सैलरी का ' + CR.share + '%' : '')) : '',
+      hasDue: CR.due.length > 0,
+      due: CR.due.map(function (x) { return { date: hi ? x.dateHi : x.date, label: hi ? x.label.replace(/credit card/i, 'क्रेडिट कार्ड') : x.label, what: hi ? x.whatHi : x.what, amount: x.amount }; }),
+      hasCards: CR.cards.length > 0,
+      cards: CR.cards.map(function (k) { return { name: hi && k.nameHi ? k.nameHi : k.name, head: hi ? k.headHi : k.head, line: hi ? k.lineHi : k.line, ink: k.warn ? 'var(--warn)' : 'var(--ink2)', used: hi ? k.usedHi : k.used, hasCost: k.hasCost, cost: hi ? k.costHi : k.cost, costInk: k.warnCost ? 'var(--warn)' : 'var(--muted)' }; }),
+      hasLoans: CR.loans.length > 0,
+      loans: CR.loans.map(function (l) { return { name: l.name, kind: hi ? l.kindHi : l.kind, emi: hi ? l.emiHi : l.emi, left: hi ? l.leftHi : l.left, rate: hi ? l.rateHi : l.rate, interest: hi ? l.interestHi : l.interest }; }),
+      hasSeen: CR.seen.length > 0,
+      seen: CR.seen.map(function (e) { return { name: e.name, line: hi ? e.lineHi : e.line }; }),
+      hasScore: !!CR.score, noScore: !CR.score,
+      score: CR.score ? String(CR.score.score) : '', change: CR.score ? (hi ? CR.score.changeHi : CR.score.change) : '', changeInk: CR.score && CR.score.down ? 'var(--warn)' : 'var(--ink2)',
+      util: CR.score ? (hi ? CR.score.utilHi : CR.score.util) : '', enq: CR.score ? (hi ? CR.score.enqHi : CR.score.enq) : ''
     };
     return {
-      theme: this.props.theme ?? 'light', c: C, asked: s.asked,
-      btnText: s.asked ? C.notified : C.notify, btnBg: s.asked ? 'var(--tint)' : 'var(--btn)', btnInk: s.asked ? 'var(--link)' : 'var(--on-btn)', btnRing: 'none',
+      theme: this.props.theme ?? 'light', c: C, d: d, has: has, empty: !!CR && !has, asked: s.asked,
+      btnText: s.asked ? C.notified : C.notify, btnBg: s.asked ? 'var(--tint)' : 'var(--btn)', btnInk: s.asked ? 'var(--link)' : 'var(--on-btn)',
       notify: function () { if (self.props.onNotify) self.props.onNotify(); self.setState({ asked: true }); },
+      trySample: function () { if (self.props.onTrySample) self.props.onTrySample(); },
       nav: hi ? { today: 'आज', invest: 'निवेश', spends: 'खर्च', credit: 'उधार', ask: 'मुनीम से पूछें' } : { today: 'Today', invest: 'Invest', spends: 'Spends', credit: 'Credit', ask: 'Ask Munim' }
     };
   }

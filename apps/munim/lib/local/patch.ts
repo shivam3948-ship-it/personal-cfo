@@ -2,6 +2,7 @@
 import { loadCas } from './cas';
 import { pfFrom, xrayFrom, xrsFrom, gateXR } from '@/lib/views/portfolioBlocks';
 import { DISCLAIMER, type AdviceMode } from '@/lib/advice';
+import { buildCredit } from '@/lib/views/credit';
 
 /** Your own data is never 'demo' (AGENTS 1a): guided, or private when the owner switched advice on for this browser (D-066).
  *  Before 7 Nov the X-ray on your CAS kept the sample's mode and its footer said 'Test build on sample data'. */
@@ -77,4 +78,11 @@ export async function withMyToday(v: View): Promise<View> {
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   if (td.bill && td.bill.dueIso < todayIso) td.bill = null; // its due date has passed on this phone's calendar
   return { ...v, ...t, NAME: p?.name ?? '', TD: { ...td, inv: !!cas, dateLine: `${DAYS[now.getDay()]}, ${now.getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()]}`, dateLineHi: dateLineHi(now) }, _mine: true };
+}
+
+/** Credit on your own statements (D-094): cards, EMIs seen leaving your bank; the phone's date decides what's still ahead. */
+export async function withMyStatementsCredit(v: View): Promise<View> {
+  const ds = await myDataset();
+  if (!ds) return getProfile()?.start === 'mine' ? { ...v, CR: { ...(v.CR as object), has: false, score: null }, _state: 'empty', _mine: true } : v;
+  return { ...v, ...buildCredit(ds, undefined, ds.today), _mine: true };
 }

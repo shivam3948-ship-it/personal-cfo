@@ -105,3 +105,7 @@ While Munim speaks in a conversation, the text box becomes one wide "Tap to talk
 
 ## One row, one sheet per card (D-092, 8 Nov)
 Today keeps a single "Card bill" row (the total left to pay across cards, the earliest due date, whether the bank balance covers it); tapping it opens one block per card. Principle: progressive disclosure, the summary first and the detail on request (Nielsen Norman Group's term; the name is from that source). The minimum-only cost sits next to the minimum itself, at the moment of choosing what to pay, because a cost is weighed when it is visible at the decision point (our label: "the price beside the button"). Nothing alarming is said before it is true: no interest or late-fee warning until the due date has passed, and "not seen" instead of "missed" when Munim can't see every account.
+
+
+## Credit: the total first, then what's due, then each thing (D-094, 8 Nov)
+The Credit tab opens on one number, what you owe, then the next few payments by date, then each card and loan. Principle: answer the question the user came with before the detail (our label: "the total, the next step, the parts"), the same inverted pyramid used in news writing (the name is a common journalism term, not from a UX source). Due dates are chips at the start of each row because the date is what decides urgency (recognition over recall, Nielsen's heuristic; the name is from that source). The share of salary going to EMIs is shown without a verdict: no sourced threshold fits this user, so Munim states the fact and doesn't grade it.
