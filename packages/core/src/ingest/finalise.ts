@@ -55,7 +55,10 @@ function cardPayments(ds: Dataset) {
     if (sum(paid) === s.payments) continue;
     const others = credits.filter(notCb), refunds = credits.filter((t) => t.category === 'Refund');
     // some cards print payments alone, some payments and credits together (ICICI): either total, to the paisa
-    if (others.length && (sum(paid) + sum(others) === s.payments || sum(paid) + sum(others) + sum(refunds) === s.payments)) others.forEach(label);
+    const cashback = credits.filter((t) => t.category === 'Cashback');
+    // printed payments may include refunds (ICICI) and cashback (HDFC: payments 34,807.57 = a 32,758 payment + 2,049.57 cashback)
+    const totals = [0, sum(refunds), sum(cashback), sum(refunds) + sum(cashback)].map((x) => sum(paid) + sum(others) + x);
+    if (others.length && totals.includes(s.payments)) others.forEach(label);
   }
 }
 
