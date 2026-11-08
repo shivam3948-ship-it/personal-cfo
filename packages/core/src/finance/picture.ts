@@ -1,5 +1,6 @@
 import type { Dataset, Paise, Txn } from '../types';
 import { CATEGORIES, groupOf } from './categorize';
+import { merchantKey } from './cards';
 import { addDays, addMonths, daysBetween, monthKey, spokenDate } from '../dates';
 import { groupIndian, inr, pct, sum } from '../money';
 import { monthName } from '../dates';
@@ -33,7 +34,9 @@ export const asOfDate = (ds: Dataset): string => (typeof process !== 'undefined'
 
 // ---------- refunds net against the original category ----------
 export function refundCategory(ds: Dataset, r: Txn): string {
-  const prior = ds.txns.filter((t) => t.dir === 'debit' && t.merchant === r.merchant && t.date <= r.date && groupOf(t.category ?? 'Other') === 'spend').sort((a, b) => b.date.localeCompare(a.date));
+  // the same merchant by name, or by its first meaningful word when the refund is worded differently ("IBIBO GROUP PRIVATE LIMITED" vs "IBIBO GROUP PVT LTD", D-092)
+  const k = merchantKey(r);
+  const prior = ds.txns.filter((t) => t.dir === 'debit' && (t.merchant === r.merchant || (!!k && merchantKey(t) === k)) && t.date <= r.date && groupOf(t.category ?? 'Other') === 'spend').sort((a, b) => b.date.localeCompare(a.date));
   return prior.find((t) => t.amount === r.amount)?.category ?? prior[0]?.category ?? 'Other';
 }
 
@@ -275,8 +278,9 @@ export function upcoming(ds: Dataset, days = 21): Due[] {
   }
   for (const s of ds.cardStatements) {
     if (s.dueDate < asOf || s.dueDate > until) continue;
-    const paid = ds.txns.some((t) => t.category === 'Card bill payment' && t.dir === 'debit' && t.date > s.periodEnd && t.date <= s.dueDate && t.amount >= s.minDue);
-    if (!paid) out.push({ date: s.dueDate, title: 'Credit card bill', titleHi: 'क्रेडिट कार्ड बिल', amount: s.totalDue, kind: 'card', source: s.file, fromBank: true, note: `minimum due ₹${Math.round(s.minDue / 100)}` });
+    // paid only when the whole bill is: paying just the minimum leaves interest running on all of it (D-092; was "≥ minimum")
+    const paid = ds.txns.filter((t) => t.category === 'Card bill payment' && t.dir === 'debit' && t.date > s.periodEnd && t.date <= s.dueDate).reduce((a, t) => a + t.amount, 0);
+    if (paid < s.totalDue - 100) out.push({ date: s.dueDate, title: 'Credit card bill', titleHi: 'क्रेडिट कार्ड बिल', amount: s.totalDue - paid, kind: 'card', source: s.file, fromBank: true, note: paid > 0 ? `₹${Math.round(paid / 100)} paid so far` : `minimum due ₹${Math.round(s.minDue / 100)}` });
   }
   for (const p of ds.policies) {
     const d = nextDueDate(p, asOf);

@@ -6,6 +6,7 @@ import { loanStatus } from '../finance/loans';
 import { annualPremium } from '../finance/insurance';
 import { daysBetween } from '../dates';
 import { inr } from '../money';
+import { merchantKey } from '../finance/cards';
 
 /** Categorise, learn categories for terse SMS narrations from history, and run cross-document checks. */
 export function finalise(ds: Dataset) {
@@ -20,6 +21,7 @@ export function finalise(ds: Dataset) {
   }
   ds.txns.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id, undefined, { numeric: true }));
   regularPayments(ds);
+  cardRefunds(ds);
   cardPayments(ds);
   crossChecks(ds);
 }
@@ -28,6 +30,17 @@ export function finalise(ds: Dataset) {
  *  (found on a real HDFC card statement, 28 Oct). On a card account, a credit worded like a payment that isn't cashback
  *  or a refund IS the bill payment. Unworded credits are re-labelled only when they add up, to the paisa, to the payments
  *  total the statement prints (some cards print one combined Payments/Credits figure, so that alone can't be used). */
+/** A credit on a card from a merchant you bought from before (same merchant, within a year, at least as much) is a refund,
+ *  whatever the narration says: "IBIBO GROUP PRIVATE LIMITED" crediting ₹8,551 after a ₹19,600 booking (D-092). Labelled before
+ *  the payment check below, which on cards printing one combined Payments/Credits figure would otherwise call it a payment. */
+function cardRefunds(ds: Dataset) {
+  for (const t of ds.txns) {
+    if (!t.account.startsWith('card:') || t.dir !== 'credit' || ['Cashback', 'Refund', 'Card bill payment'].includes(t.category ?? '') || PAYMENT_WORDS.test(t.desc)) continue;
+    const k = merchantKey(t); if (!k) continue;
+    const bought = ds.txns.some((p) => p.dir === 'debit' && p.date <= t.date && daysBetween(p.date, t.date) <= 365 && p.amount >= t.amount && merchantKey(p) === k);
+    if (bought) t.category = 'Refund';
+  }
+}
 const PAYMENT_WORDS = /\b(bppy|bbps|payment|paymt|pymt|neft|imps|upi|autopay|auto ?debit|net ?banking|netbanking|thank you)\b/i;
 function cardPayments(ds: Dataset) {
   const label = (t: Txn) => { if (t.category !== 'Card bill payment') { t.category = 'Card bill payment'; t.merchant = undefined; t.matched = 'card_payment'; } };
@@ -39,8 +52,9 @@ function cardPayments(ds: Dataset) {
     const sum = (xs: Txn[]) => xs.reduce((a, t) => a + t.amount, 0);
     const paid = credits.filter((t) => t.category === 'Card bill payment');
     if (sum(paid) === s.payments) continue;
-    const others = credits.filter(notCb);
-    if (others.length && sum(paid) + sum(others) === s.payments) others.forEach(label);
+    const others = credits.filter(notCb), refunds = credits.filter((t) => t.category === 'Refund');
+    // some cards print payments alone, some payments and credits together (ICICI): either total, to the paisa
+    if (others.length && (sum(paid) + sum(others) === s.payments || sum(paid) + sum(others) + sum(refunds) === s.payments)) others.forEach(label);
   }
 }
 

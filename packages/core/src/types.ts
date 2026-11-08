@@ -44,6 +44,8 @@ export interface CardStatement {
   totalDue: Paise;
   minDue: Paise;
   limit?: Paise;
+  /** available credit printed on the statement (D-092) */
+  available?: Paise;
 }
 
 export interface Loan {

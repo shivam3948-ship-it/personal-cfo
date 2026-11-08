@@ -41,7 +41,7 @@ class Component extends DCLogic {
     var rows = TX.map(function (t, i) {
       var cat = s.over[i] || ruleFor(t[3]) || t[4], f = s.flags[i] || null;
       var bucket = f && (f.kind === 'copy' || f.kind === 'fraud') ? 'not' : bucketOf(cat, t[1]);
-      return { i: i, date: t[0], dir: t[1], amt: t[2], merchant: t[3], name: nameOf(t[3], t[4]), cat: cat, acct: t[5], bucket: bucket, flag: f };
+      return { i: i, date: t[0], dir: t[1], amt: t[2], merchant: t[3], name: nameOf(t[3], t[4]), cat: cat, acct: t[5], bucket: bucket, flag: f, refund: t[6] || null };
     });
     var FILTERS = ['all', 'everyday', 'fixed', 'others', 'not', 'income'];
     var chips = FILTERS.map(function (f) {
@@ -63,17 +63,17 @@ class Component extends DCLogic {
     });
     days.forEach(function (g) { g.total = g.out ? (hi ? 'खर्च ' : 'Spent ') + R(g.out) : ''; g.rows.forEach(function (t, k) { t.rule = k < g.rows.length - 1 ? '1px solid var(--hair)' : '0'; }); });
 
-    var C = hi ? { title: 'सारे लेन-देन', back: 'खर्च पर वापस', search: 'खोजें', soon: 'जल्द', filterLabel: 'छाँटें', noRows: 'इसमें कोई लेन-देन नहीं।', close: 'बंद करें', backSheet: 'वापस', category: 'कैटेगरी', change: 'बदलें', countsAs: 'गिनती में', yourShare: 'आपका हिस्सा', note: 'नोट', undo: 'वापस लें', sheetNote: 'आपके सुधार सिर्फ़ आपके डेटा पर लागू होते हैं। नियम बनाने से पहले मुनीम पूछेगा।',
+    var C = hi ? { title: 'सारे लेन-देन', back: 'खर्च पर वापस', search: 'खोजें', soon: 'जल्द', filterLabel: 'छाँटें', noRows: 'इसमें कोई लेन-देन नहीं।', close: 'बंद करें', backSheet: 'वापस', refundFor: 'किसका रिफ़ंड', category: 'कैटेगरी', change: 'बदलें', countsAs: 'गिनती में', yourShare: 'आपका हिस्सा', note: 'नोट', undo: 'वापस लें', sheetNote: 'आपके सुधार सिर्फ़ आपके डेटा पर लागू होते हैं। नियम बनाने से पहले मुनीम पूछेगा।',
         onlyThis: 'सिर्फ़ यह भुगतान', makesRule: 'एक नियम बनेगा; "आपके नियम" में कभी भी बदलें', sharedQ: 'इसमें आपका हिस्सा कितना था?', sharedNote: 'आपके खर्च में सिर्फ़ आपका हिस्सा गिना जाएगा। बाक़ी पैसा आने पर मुनीम उसे इससे मिलाएगा।',
         leaveCopyOut: 'दूसरी बार वाला खर्च में न गिनें', backToPayment: 'भुगतान पर वापस', notePh: 'जैसे: राहुल का जन्मदिन', saveNote: 'नोट सेव करें', notePrivacy: 'नोट आपके फ़ोन पर रहते हैं और कभी AI को नहीं भेजे जाते।',
         fraud1: 'बैंक ऐप में कार्ड या UPI ब्लॉक करें, या कार्ड के पीछे लिखे नंबर पर कॉल करें।', fraud2: 'नेशनल साइबर फ़्रॉड हेल्पलाइन 1930 पर या cybercrime.gov.in पर शिकायत करें।', fraud3: 'बैंक को लिखकर विवाद दर्ज करें; जल्दी करने से पैसा वापस मिलने की संभावना बढ़ती है।', call1930: '1930 पर कॉल करें', markNotMine: 'मेरा नहीं · खर्च में न गिनें' }
-      : { title: 'All transactions', back: 'Back to Spends', search: 'Search', soon: 'Soon', filterLabel: 'Filter', noRows: 'Nothing here.', close: 'Close', backSheet: 'Back', category: 'Category', change: 'Change', countsAs: 'Counts as', yourShare: 'Your share', note: 'Note', undo: 'Undo', sheetNote: 'Fixes change only your data. Munim asks before making a rule.',
+      : { title: 'All transactions', back: 'Back to Spends', search: 'Search', soon: 'Soon', filterLabel: 'Filter', noRows: 'Nothing here.', close: 'Close', backSheet: 'Back', refundFor: 'Refund for', category: 'Category', change: 'Change', countsAs: 'Counts as', yourShare: 'Your share', note: 'Note', undo: 'Undo', sheetNote: 'Fixes change only your data. Munim asks before making a rule.',
         onlyThis: 'Only this payment', makesRule: 'Makes a rule; change it any time in Your rules', sharedQ: 'How much of it was yours?', sharedNote: 'Only your share counts as your spending. When the rest comes back, Munim matches it to this payment.',
         leaveCopyOut: 'Leave the second charge out', backToPayment: 'Back to the payment', notePh: 'e.g. Rahul’s birthday', saveNote: 'Save note', notePrivacy: 'Notes stay on your phone and are never sent to the AI.',
         fraud1: 'Block the card or UPI in your bank’s app, or call the number on the back of your card.', fraud2: 'Report it to the national cyber fraud helpline, 1930, or at cybercrime.gov.in.', fraud3: 'Raise a written dispute with your bank. Acting fast improves the chance of getting money back.', call1930: 'Call 1930', markNotMine: 'Not mine · leave it out of my spending' };
     C.rules = (hi ? 'आपके नियम · ' : 'Your rules · ') + (RULES0 + s.rules.length);
 
-    var x = { name: '', when: '', amt: '', amtPlain: '', ink: 'var(--ink)', acct: '', cat: '', bucket: '', hasDone: false, done: '', hasShare: false, share: '', hasNote: false, note: '' };
+    var x = { name: '', when: '', amt: '', amtPlain: '', ink: 'var(--ink)', acct: '', cat: '', bucket: '', hasDone: false, done: '', hasShare: false, share: '', hasNote: false, note: '', hasRefund: false, refund: '' };
     var v = { title: '', isDetail: true, isPick: false, isScope: false, isShared: false, isTwice: false, isNote: false, isFraud: false, scopeQ: '', canRule: false, ruleLabel: '', twiceHead: '', twiceBody: '', twiceFound: false };
     var groups = [], shares = [], actions = [], r = null, twin = null;
     var setV = function (view, extra) { return function () { self.setState(Object.assign({ view: view }, extra || {})); }; };
@@ -81,7 +81,7 @@ class Component extends DCLogic {
       r = rows[s.open];
       x = { name: r.name, when: Number(r.date.slice(8)) + ' ' + mo(r.date) + ' ' + r.date.slice(0, 4), amt: (r.dir === 'credit' ? '+' : '') + R(r.amt), amtPlain: R(r.amt), ink: r.dir === 'credit' ? 'var(--link)' : 'var(--ink)', acct: acctOf(r.acct), cat: catName(r.cat), bucket: BL[r.bucket],
         hasDone: !!s.last, done: s.last ? s.last.text : '', hasShare: !!(r.flag && r.flag.kind === 'shared'), share: r.flag && r.flag.kind === 'shared' ? R(r.flag.mine) + (hi ? ' · ' + R(r.amt - r.flag.mine) + ' वापस आना है' : ' · ' + R(r.amt - r.flag.mine) + ' to come back') : '',
-        hasNote: !!s.notes[r.i], note: s.notes[r.i] || '' };
+        hasNote: !!s.notes[r.i], note: s.notes[r.i] || '', hasRefund: !!r.refund, refund: r.refund ? (hi ? r.refund.hi : r.refund.en) : '' }; // the purchase this refund goes with (D-092)
       ['Detail', 'Pick', 'Scope', 'Shared', 'Twice', 'Note', 'Fraud'].forEach(function (k) { v['is' + k] = s.view === k.toLowerCase(); });
       var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
       var p2p = r.merchant === 'Person-to-person' || r.merchant === 'OWN A';
@@ -169,6 +169,8 @@ export default function Transactions(props) {
                   <div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center", "minHeight": "44px", "borderTop": "1px solid var(--hair)"}}><span style={{"fontSize": "14.5px", "color": "var(--muted)"}}>{V.c?.yourShare}</span><b style={{"fontSize": "15px", "fontWeight": "600"}}>{V.x?.share}</b></div>
                 </>)}{!!(V.x?.hasNote) && (<>
                   <div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center", "gap": "12px", "minHeight": "44px", "borderTop": "1px solid var(--hair)"}}><span style={{"fontSize": "14.5px", "color": "var(--muted)"}}>{V.c?.note}</span><span style={{"fontSize": "14.5px", "textAlign": "right"}}>{V.x?.note}</span></div>
+                </>)}{!!(V.x?.hasRefund) && (<>
+                  <div style={{"display": "flex", "justifyContent": "space-between", "alignItems": "center", "gap": "12px", "minHeight": "44px", "borderTop": "1px solid var(--hair)"}}><span style={{"fontSize": "14.5px", "color": "var(--muted)"}}>{V.c?.refundFor}</span><span style={{"fontSize": "14.5px", "textAlign": "right"}}>{V.x?.refund}</span></div>
                 </>)}</div>
               <div style={{"display": "grid"}}>{(V.actions || []).map((ac, i4) => (<Fragment key={i4}>
                   <button type="button" onClick={ac?.go} style={{"minHeight": "48px", "border": "0", "borderBottom": "1px solid var(--hair)", "background": "transparent", "textAlign": "left", "fontSize": "15px", "color": ac?.ink, "cursor": "pointer", "display": "flex", "justifyContent": "space-between", "alignItems": "center"}}>{ac?.label}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg></button>
