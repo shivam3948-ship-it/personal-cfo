@@ -22,8 +22,8 @@ describe('card bills', () => {
     expect(cardBills(ds([stmt({ totalDue: 2863951 })], [tx({ date: '2026-11-02', amount: 2864000, category: 'Card bill payment' })]), '2026-11-10')[0].status).toBe('paid_full');
     expect(cardBills(ds([stmt({})], [tx({ date: '2026-11-02', amount: 50000, category: 'Card bill payment' })]), '2026-11-10')[0].status).toBe('paid_part');
   });
-  it('past the due date: missed only from the card’s own later statement; bank statements alone say not seen', () => {
-    expect(cardBills(ds([stmt({})], [tx({ account: 'card:8747', date: '2026-11-08' })]), '2026-11-08')[0].status).toBe('missed');
+  it('past the due date: never "missed" (not even after a card SMS); bank statements covering it say not seen', () => {
+    expect(cardBills(ds([stmt({})], [tx({ account: 'card:8747', source: 'sms', date: '2026-11-08' })]), '2026-11-08')[0].status).toBe('unknown');
     expect(cardBills(ds([stmt({})], [tx({ date: '2026-11-08' })]), '2026-11-08')[0].status).toBe('not_seen'); // paid from another account? CRED?
     expect(cardBills(ds([stmt({})], [tx({ date: '2026-10-30' })]), '2026-11-08')[0].status).toBe('unknown');
   });
@@ -71,7 +71,7 @@ describe('refunds', () => {
     const shopBank = tx({ date: '2026-09-01', desc: 'ACME STORE', amount: 90000, category: 'Shopping' });
     const backCard = tx({ account: 'card:7001', dir: 'credit', date: '2026-09-05', desc: 'ACME STORE', amount: 90000, category: 'Refund' });
     const m = matchRefunds(ds([], [credBank, credCard, shopBank, backCard]));
-    expect(m).toHaveLength(1); expect(m[0]).toMatchObject({ kind: 'none' }); // only the ACME refund; its purchase was not on a card
+    expect(m).toHaveLength(1); expect(m[0]).toMatchObject({ kind: 'full', purchase: { id: shopBank.id } }); // only the ACME refund, matched to its purchase on the bank
   });
   it('says so when no purchase matches, and never matches a later or smaller purchase', () => {
     const later = tx({ account: 'card:1', date: '2026-10-10', desc: 'ACME STORE', amount: 50000 });
@@ -97,6 +97,21 @@ describe('a refund on a card with a combined payments figure', () => {
     expect(cat('IBIBO GROUP PRIVATE LIMITED')).toBe('Refund');
     expect(cat('BBPS PAYMENT RECEIVED 12345')).toBe('Card bill payment');
     expect(cat('CLICK TO PAY')).toBe('Card bill payment');
+  });
+  it('the phone’s date decides whether the due date has passed', () => {
+    const [b] = cardBills(ds([stmt({})], [tx({ date: '2026-10-20' })]), '2026-10-20', '2026-11-08');
+    expect(b).toMatchObject({ status: 'unknown', pastDue: true });
+  });
+  it('an unworded Amazon refund on a card with a combined Payments/Credits figure stays a refund', () => {
+    const card = 'card:7001';
+    const d = ds([stmt({ account: card, file: 'icici.pdf', periodEnd: '2026-10-18', payments: 1500000 + 249900 })], [
+      tx({ account: card, sourceFile: 'icici-sep.pdf', date: '2026-09-02', desc: 'AMAZON PAY INDIA PRIVATE LIMITED', amount: 499900 }),
+      tx({ account: card, sourceFile: 'icici.pdf', dir: 'credit', date: '2026-10-01', desc: 'AMAZON PAY INDIA PRIVATE LIMITED', amount: 249900 }),
+      tx({ account: card, sourceFile: 'icici.pdf', dir: 'credit', date: '2026-10-06', desc: 'BBPS PAYMENT RECEIVED', amount: 1500000 }),
+    ]);
+    finalise(d);
+    expect(d.txns.find((t) => t.dir === 'credit' && t.desc.startsWith('AMAZON'))!.category).toBe('Refund');
+    expect(cardBills(d, '2026-10-20')[0].paid).toBe(0); // the refund isn't counted as a payment towards this bill
   });
   it('an unworded CRED credit is never relabelled a refund', () => {
     const card = 'card:8747';

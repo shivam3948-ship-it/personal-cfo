@@ -11,10 +11,12 @@ export type BillStatus =
   | 'paid_min'     // at least the minimum, less than the total: interest on the whole bill, and new purchases lose their free days
   | 'paid_part'    // something, but less than the minimum: a late fee too
   | 'due'          // due date still ahead and no payment seen yet
-  | 'missed'       // due date passed, and this card's own later statement covers it and shows no payment
   | 'not_seen'     // due date passed; your bank statements cover it, but no payment to this card is in them (it may have gone
                    //   from an account you didn't add, or through an app like CRED that the bank names differently)
   | 'unknown';     // due date passed, but your statements stop before it: can't tell
+// No "missed": the bill shown is always the card's newest, so no later statement of that card can prove a payment didn't happen
+// (an SMS purchase after the due date isn't proof either). A bill left unpaid shows on the next statement as carried-over debt,
+// which the advice engine already flags (review, 8 Nov).
 export interface CardBill {
   account: string; last4: string; file: string; periodEnd: string; dueDate: string;
   totalDue: Paise; minDue: Paise; paid: Paise; status: BillStatus;
@@ -39,22 +41,22 @@ function paidTowards(s: CardStatement, ds: Dataset, due: CardStatement[]): Paise
   return mine.reduce((a, t) => a + t.amount, 0);
 }
 
-/** The latest bill of every card, newest due date first. `asOf` is the last day your statements cover. */
-export function cardBills(ds: Dataset, asOf: string): CardBill[] {
+/** The latest bill of every card, newest due date first. `asOf` is the last day your statements cover; `today` (the phone's
+ *  date, when later) decides whether the due date has passed, so an old statement never says "pay by 5 Nov" on 8 Nov. */
+export function cardBills(ds: Dataset, asOf: string, today?: string): CardBill[] {
+  const now = today && today > asOf ? today : asOf;
   const latest = new Map<string, CardStatement>();
   for (const s of ds.cardStatements) { if (!s.dueDate) continue; const p = latest.get(s.account); if (!p || s.periodEnd > p.periodEnd) latest.set(s.account, s); }
   const due = [...latest.values()];
   const bankTo = ds.txns.filter((t) => t.account.startsWith('bank:')).reduce((m, t) => (t.date > m ? t.date : m), '');
   return due.map((s): CardBill => {
     const paid = s.totalDue <= 0 ? 0 : paidTowards(s, ds, due);
-    const ownTo = ds.txns.filter((t) => t.account === s.account && t.date > s.periodEnd).reduce((m, t) => (t.date > m ? t.date : m), '');
-    // "missed" only from the card's own later statement; bank statements alone can miss a payment made from another account
     const status: BillStatus = s.totalDue <= 0 || paid >= s.totalDue - RUPEE ? 'paid_full'
       : paid > 0 ? (paid >= s.minDue - RUPEE ? 'paid_min' : 'paid_part')
-      : s.dueDate >= asOf ? 'due' : ownTo >= s.dueDate ? 'missed' : bankTo >= s.dueDate ? 'not_seen' : 'unknown';
+      : s.dueDate >= now ? 'due' : bankTo >= s.dueDate ? 'not_seen' : 'unknown';
     const limit = s.limit ?? ds.accounts.find((x) => x.id === s.account)?.limit;
     const usedPct = limit && limit > 0 ? Math.round((Math.max(0, s.totalDue) / limit) * 1000) / 10 : undefined;
-    return { account: s.account, last4: s.account.split(':')[1] ?? '', file: s.file, periodEnd: s.periodEnd, dueDate: s.dueDate, totalDue: s.totalDue, minDue: s.minDue, paid, status, pastDue: s.dueDate < asOf,
+    return { account: s.account, last4: s.account.split(':')[1] ?? '', file: s.file, periodEnd: s.periodEnd, dueDate: s.dueDate, totalDue: s.totalDue, minDue: s.minDue, paid, status, pastDue: s.dueDate < now,
       ...(limit ? { limit } : {}), ...(s.available !== undefined ? { available: s.available } : {}), ...(usedPct !== undefined ? { usedPct } : {}) };
   }).sort((a, b) => b.dueDate.localeCompare(a.dueDate));
 }
@@ -71,10 +73,11 @@ export function merchantKey(t: Txn): string {
   return words[0] ?? '';
 }
 const NOT_REFUND = new Set(['Card bill payment', 'Cashback', 'Salary', 'Interest', 'Self transfer', 'Family support']);
-/** Apps and rails that pay card bills: a credit from one is a payment, never a refund, and they are never "the purchase" (review, 8 Nov). */
-export const BILL_PAY = new Set(['cred', 'billdesk', 'paytm', 'phonepe', 'amazon', 'bbps', 'mobikwik', 'gpay', 'googlepay', 'razorpay', 'payu', 'bharatbillpay', 'bhim']);
-/** What a refund can reverse: a spending debit on a card, from a merchant that isn't a bill-pay app. */
-export const isPurchase = (t: Txn) => t.dir === 'debit' && t.account.startsWith('card:') && groupOf(t.category ?? 'Other') === 'spend' && !BILL_PAY.has(merchantKey(t));
+/** Rails that only pay bills: a credit from one is a payment, never a refund (review, 8 Nov). Amazon, Paytm and PhonePe are
+ *  not here: they are also the shops refunds most often come from, and their bill payments are worded as payments. */
+export const BILL_PAY = new Set(['cred', 'billdesk', 'bbps', 'bharatbillpay']);
+/** What a refund can reverse: a spending debit (any account; the same account is preferred), never a bill payment or transfer. */
+export const isPurchase = (t: Txn) => t.dir === 'debit' && groupOf(t.category ?? 'Other') === 'spend' && !BILL_PAY.has(merchantKey(t));
 /** A credit that gives money back for a purchase: anything labelled Refund, and any other credit on a card that isn't the
  *  bill payment or cashback (a merchant crediting a card is a refund, whatever the narration says). */
 export const isRefundCredit = (t: Txn) => t.dir === 'credit' && !BILL_PAY.has(merchantKey(t)) && (t.category === 'Refund' || (t.account.startsWith('card:') && !NOT_REFUND.has(t.category ?? '')));
