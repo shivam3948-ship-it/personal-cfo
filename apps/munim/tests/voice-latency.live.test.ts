@@ -4,6 +4,7 @@
 // top and is fixed. Run before and after every latency change:
 //   npm run voice:latency                         (live site; LATENCY_URL=http://localhost:3000 for a local build)
 //   LATENCY_REPS=5 npm run voice:latency          (more repeats; default 3)
+//   LATENCY_PREFETCH=1 npm run voice:latency      (ask for one-call answers, D-095; needs MUNIM_PREFETCH=test on the site)
 // Writes evals/results/<date>-latency.md. Skipped unless RUN_LIVE=1, so `npm test` never calls the services.
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
@@ -28,7 +29,7 @@ async function turn(clip: string): Promise<Row> {
   const [stt, sttMs] = await timed(async () => (await fetch(`${URL_}/api/stt`, { method: 'POST', body: form })).json() as Promise<{ transcript?: string; lang?: string }>);
   const q = stt.transcript ?? '';
   const [ask, askMs] = await timed(async () => (await fetch(`${URL_}/api/ask`, { method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ messages: [{ role: 'user', content: q }], lang: 'auto' }) })).json() as Promise<{ answer?: string; spoken?: string; lang?: string; ms?: number; engine?: string; guard?: string; llm?: { calls: number; ms: number; cacheRead: number; input: number } }>);
+    body: JSON.stringify({ messages: [{ role: 'user', content: q }], lang: 'auto', ...(process.env.LATENCY_PREFETCH === '1' ? { prefetch: true } : {}) }) })).json() as Promise<{ answer?: string; spoken?: string; lang?: string; ms?: number; engine?: string; guard?: string; llm?: { calls: number; ms: number; cacheRead: number; input: number } }>);
   const lang = /[ऀ-ॿ]/.test(ask.spoken ?? ask.answer ?? '') ? 'hi' : 'en';
   const first = splitForSpeech(ask.spoken ?? ask.answer ?? '')[0] ?? '';
   const [, ttsMs] = await timed(async () => (await fetch(`${URL_}/api/tts`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: first, lang }) })).json());

@@ -12,6 +12,7 @@
     "eval": "EVAL_WRITE=1 vitest run tests/evals.test.ts",
     "eval:live": "RUN_LIVE=1 EVAL_WRITE=1 vitest run tests/evals.live.test.ts",
     "eval:judge": "RUN_LIVE=1 EVAL_WRITE=1 vitest run tests/judge.live.test.ts",
+    "eval:site": "EVAL_WRITE=1 vitest run tests/evals.site.test.ts",
     "voice:latency": "RUN_LIVE=1 EVAL_WRITE=1 vitest run tests/voice-latency.live.test.ts"
   },
   "dependencies": {

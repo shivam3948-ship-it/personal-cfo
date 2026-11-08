@@ -183,7 +183,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const t0 = performance.now();
       const turns = next.map(({ role, content, done }) => ({ role, content: done ? `${content}\n\n${done}` : content })); // what Munim already saved travels with its answer
       const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge']; log?: { question: string; answer: string } } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed') : await (async () => {
-        const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed' }) });
+        const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed', ...(/(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie) ? { prefetch: true } : {}) }) });
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
       const agentMs = Math.round(performance.now() - t0);

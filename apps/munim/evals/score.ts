@@ -33,7 +33,9 @@ export interface CaseResult { id: string; cat: Category; q: string; answer: stri
 export interface Scorecard { engine: string; when: string; n: number; passed: number; byCat: Record<string, { n: number; passed: number }>; dims: Record<string, { n: number; passed: number }>; results: CaseResult[] }
 
 /** phone: run tools the way the phone does, every result through forLlm before the model sees it (the red-team set). */
-export async function runEval(ds: Dataset, opts: { offline: boolean; cases?: EvalCase[]; phone?: boolean } = { offline: true }): Promise<Scorecard> {
+/** A stand-in for respond(): the site eval (D-095) answers through the deployed /api/ask, where the keys live. */
+export type Responder = (history: { role: 'user' | 'assistant'; content: string }[], k: EvalCase) => Promise<Awaited<ReturnType<typeof respond>>>;
+export async function runEval(ds: Dataset, opts: { offline: boolean; cases?: EvalCase[]; phone?: boolean; respond?: Responder } = { offline: true }): Promise<Scorecard> {
   // two words ("Kestrel Flexi"), not one: the sample's car-loan lender is "Kestrel Auto Finance"
   const results: CaseResult[] = [];
   let engine = 'offline';
@@ -46,7 +48,7 @@ export async function runEval(ds: Dataset, opts: { offline: boolean; cases?: Eva
     const tools: string[] = []; let last: Awaited<ReturnType<typeof respond>> | null = null; const t0 = Date.now();
     for (const q of k.turns) {
       history.push({ role: 'user', content: q });
-      last = await respond(history, `eval-${k.id}`, ds, 'auto', opts.offline, k.mode ?? 'demo', opts.phone ? { sanitize: (x) => forLlm(x, payees) } : {});
+      last = opts.respond ? await opts.respond(history, k) : await respond(history, `eval-${k.id}`, ds, 'auto', opts.offline, k.mode ?? 'demo', opts.phone ? { sanitize: (x) => forLlm(x, payees) } : {});
       history.push({ role: 'assistant', content: last.answer });
       tools.push(...last.trace.map((t) => t.tool));
     }

@@ -53,6 +53,16 @@ const INTENTS: [string, RegExp][] = [
   ['spend', /where|kahan|kahaan|kharch|spend|spent|money go|paisa|खर्च|कहाँ|कहां|पैसा/i],
 ];
 
+// Voice speed (D-095): the read-only tool each intent needs, run before the first model call so the model can answer in one
+// call instead of asking for the tool first. Only tools that take no input and change nothing: never an action, a calculator
+// that needs numbers, or the owner's picks. A wrong guess costs nothing but tokens: the model can still call any tool.
+const PREFETCH: Record<string, string> = {
+  briefing: 'sunday_briefing', spend: 'spending_breakdown', subscriptions: 'subscriptions_and_leaks', advice: 'advice_plan', unusual: 'unusual_spending',
+  upcoming: 'upcoming_dues', loans: 'loans_overview', loanleft: 'loans_overview', audit: 'money_audit', market: 'portfolio_xray', portfolio: 'portfolio_xray',
+  overview: 'money_overview', insurance: 'insurance_overview', credit: 'credit_health', invest: 'emergency_fund', emergency: 'emergency_fund',
+};
+export const prefetchTool = (text: string): string | null => PREFETCH[intentOf(text)] ?? null;
+
 export function intentOf(text: string): string {
   for (const [k, re] of INTENTS) if (re.test(text)) return k;
   return 'help';
