@@ -34,7 +34,9 @@ export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMo
    *  /api/ask/judge. Absent, or returning null, means the word-pattern guard decides. */
   judge?: (input: JudgeInput) => Promise<Verdict | null>;
   /** Names to scrub from the user's own words before they leave (e.g. the first name given at onboarding). */
-  names?: string[] }
+  names?: string[];
+  /** Voice speed (D-095): run the question's likely tool before the first model call, so most answers take one call, not two. */
+  prefetch?: boolean }
 export interface ToolOutput { result: Record<string, unknown>; action?: Action }
 
 // Rupees, no paise: these are spoken aloud. The guard tolerates the ≤₹0.50 rounding.

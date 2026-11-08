@@ -12,6 +12,7 @@ import { exitIndices, sentences, tellsToExit } from './tradeWords';
 import { knownProducts, strangerProducts, type Known } from './brands';
 import { NO_PICKS, pickNames } from '@/lib/advicePicks';
 import { TOUCHES_INVESTMENTS, judgeSentences, type JudgeInput, type Verdict } from './judge';
+import { prefetchTool } from './offline';
 export { enforceNoTrade, fundLabels, namedFunds, scrubFunds };
 
 const ACTION_TOOLS = new Set(['create_reminder', 'draft_email', 'create_savings_goal', 'save_prepayment_plan']);
@@ -99,6 +100,18 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   let emptyRetried = false; const llm = newStats(); const model = ctx.model || MODEL; let usedModel = model;
   let repaired = false, fundsRepaired = false; let known: Known | undefined; let guard: AgentReply['guard'] = 'none', guardMs = 0; let judgeLlm: AgentReply['judgeLlm'];
   const funds = namesFunds(ctx.adviceMode) ? [] : fundLabels(ctx.ds.portfolio?.holdings ?? [], ctx.lang);
+  // Voice speed (D-095): the likely tool's result goes in as if the model had asked for it, through the same sanitize and number
+  // check as any tool call, so most answers take one model call instead of two. Off unless the server turns it on.
+  const pre = ctx.prefetch && history.at(-1)?.role === 'user' ? prefetchTool(lastUser) : null;
+  if (pre && TOOLS.some((t) => t.name === pre)) {
+    const s = Date.now(); let out: Awaited<ReturnType<typeof runTool>>;
+    try { out = await runTool(pre, {}, ctx); } catch (e) { out = { result: { error: (e as Error).message } }; }
+    trace.push({ tool: pre, input: {}, result: out.result, ms: Date.now() - s });
+    const shown = ctx.sanitize ? ctx.sanitize(out.result) : out.result; results.push(shown);
+    const id = `prefetch_${pre}`;
+    messages.push({ role: 'assistant', content: [{ type: 'tool_use', id, name: pre, input: {} }] });
+    messages.push({ role: 'user', content: [{ type: 'tool_result', tool_use_id: id, content: JSON.stringify(shown), is_error: 'error' in shown }] });
+  }
   for (let step = 0; step < 7; step++) {
     const tc = Date.now();
     const res = await client.messages.create(cacheOn() ? { model, max_tokens: 700, system: cachedSystem(system), tools: TOOLS, messages: withCacheMark(messages) } : { model, max_tokens: 700, system, tools: TOOLS, messages });

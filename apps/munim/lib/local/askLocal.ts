@@ -78,6 +78,10 @@ export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en';
 
 /** On your own data the advice mode is 'guided' (no fund picks, the SEBI line), whatever the public test switch says:
  *  'demo' never reads real data, and 'internal' needs a server-side allow-list we don't have yet (compliance review, D-050). */
+/** Whether the server turned prefetch on for everyone (D-095): asked once per page load. */
+let prefetchAsk: Promise<'on' | 'test' | 'off'> | null = null;
+const prefetchOnServer = () => (prefetchAsk ??= fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => (j.prefetch === 'on' || j.prefetch === 'test' ? j.prefetch : 'off') as 'on' | 'test' | 'off').catch(() => 'off' as const));
+
 export async function askLocal(history: Turn[], via?: 'voice' | 'typed'): Promise<LocalReply> {
   const ds = await myData(); if (!ds) throw new Error('Add a statement first.');
   await loadActions();
@@ -96,7 +100,10 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed'): Promis
     if (r?.status === 503) judgeOff = true; // switched off or no key: don't ask again this visit
     return r && r.ok ? (r.json() as Promise<Verdict>) : null; // any failure: the word patterns decide (they always run)
   };
-  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, ...(picks ? { picks } : {}) };
+  // D-095: the server decides; a browser's #prefetch=on only counts while the server is in test mode (review, 8 Nov)
+  const server = await prefetchOnServer();
+  const prefetch = server === 'on' || (server === 'test' && /(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie));
+  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, ...(picks ? { picks } : {}), ...(prefetch ? { prefetch } : {}) };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;
   const t0 = Date.now();
   if (/(?:^|;\s*)munim_ai=off(?:;|$)/.test(document.cookie)) noKey = true; // ?ai=off (D-062): don't even ask the relay

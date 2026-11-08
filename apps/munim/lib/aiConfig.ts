@@ -15,6 +15,7 @@ export interface AiConfig {
   chat: 'claude' | 'rules'; model: string | null;
   stt: 'sarvam' | 'browser'; tts: 'sarvam' | 'browser';
   why: string; // in plain words, for test mode and the status route
+  prefetch: 'on' | 'test' | 'off'; // D-095: on = every answer; test = only browsers or requests that ask; off = never
 }
 
 const offByLink = (req?: Request) => /(?:^|;\s*)munim_ai=off(?:;|$)/.test(req?.headers.get('cookie') ?? '');
@@ -30,5 +31,5 @@ export function aiConfig(req?: Request, env: Record<string, string | undefined> 
   const tts = sarvam && env.MUNIM_TTS !== 'browser' ? 'sarvam' : 'browser';
   const why = off ? 'AI switched off on the server (MUNIM_AI=off)' : link ? 'AI switched off for this browser (?ai=off)'
     : !env.ANTHROPIC_API_KEY ? 'No Claude key: the rules engine answers' : 'Claude answers; numbers come from the rules engine';
-  return { chat: claude ? 'claude' : 'rules', model: claude ? (env.MUNIM_CHAT_MODEL || MODEL) : null, stt, tts, why };
+  return { chat: claude ? 'claude' : 'rules', model: claude ? (env.MUNIM_CHAT_MODEL || MODEL) : null, stt, tts, why, prefetch: env.MUNIM_PREFETCH === 'on' ? 'on' : env.MUNIM_PREFETCH === 'test' ? 'test' : 'off' };
 }

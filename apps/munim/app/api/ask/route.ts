@@ -15,6 +15,8 @@ import { redact } from '@core/privacy/redact';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/** D-095: MUNIM_PREFETCH=on for everyone; =test only for requests that ask (the latency benchmark, the site eval, #prefetch=on). */
+const prefetchOn = (asked: unknown) => process.env.MUNIM_PREFETCH === 'on' || (process.env.MUNIM_PREFETCH === 'test' && asked === true);
 const json = (b: unknown, status = 200) => NextResponse.json(b, { status, headers: { 'Cache-Control': 'no-store' } });
 
 /** The disclaimer for this session's advice mode, so the screen shows the right one before the first answer. */
@@ -30,7 +32,7 @@ export async function POST(req: Request) {
   const cookie = /(?:^|;\s*)munim_chat=([a-f0-9-]{36})/.exec(req.headers.get('cookie') ?? '')?.[1];
   const chat = cookie ?? randomUUID();
   const sid = `${session.id}:${chat}`;
-  const body = (await req.json().catch(() => ({}))) as { messages?: Turn[]; lang?: 'hi' | 'en' | 'auto'; offline?: boolean; reset?: boolean; install?: unknown; via?: unknown };
+  const body = (await req.json().catch(() => ({}))) as { messages?: Turn[]; lang?: 'hi' | 'en' | 'auto'; offline?: boolean; reset?: boolean; install?: unknown; via?: unknown; prefetch?: unknown };
   if (body.reset) { clearPending(sid); return json({ ok: true }); }
   const messages = (body.messages ?? [])
     .filter((m) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
@@ -38,10 +40,10 @@ export async function POST(req: Request) {
   if (!messages.length || messages.at(-1)!.role !== 'user') return json({ error: 'Ask a question first.' }, 400);
   try {
     const ai = aiConfig(req); // ?ai=off or MUNIM_AI=off: the rules engine answers, no model is called (D-062)
-    const r = await respond(messages, sid, await session.dataset(), body.lang ?? 'auto', !!body.offline || ai.chat === 'rules', session.adviceMode, body.via === 'voice' && VOICE_MODEL ? { model: VOICE_MODEL } : {}); // voice turns may use the faster model (D-075)
+    const r = await respond(messages, sid, await session.dataset(), body.lang ?? 'auto', !!body.offline || ai.chat === 'rules', session.adviceMode, { ...(body.via === 'voice' && VOICE_MODEL ? { model: VOICE_MODEL } : {}), ...(prefetchOn(body.prefetch) ? { prefetch: true } : {}) }); // voice turns may use the faster model (D-075)
     // the client gets the answer, which engine answered, the number check and any drafted actions; tool names only, no raw results
     const trace = traceId(); // lets a thumbs up or down point at this answer
-    const res = json({ answer: r.answer, lang: r.lang, engine: r.engine, model: r.model, prompt: PROMPT_VERSION, ms: r.ms, llm: r.llm, judge: r.judgeLlm, check: r.check, actions: r.actions, tools: r.trace.map((t) => t.tool), fallback: !!r.fallbackReason, repaired: !!r.repaired, guard: r.guard ?? 'none', guardMs: r.guardMs ?? 0, trace, disclaimer: DISCLAIMER[session.adviceMode][r.lang] });
+    const res = json({ answer: r.answer, lang: r.lang, engine: r.engine, model: r.model, prompt: PROMPT_VERSION, ms: r.ms, llm: r.llm, judge: r.judgeLlm, check: r.check, actions: r.actions, tools: r.trace.map((t) => t.tool), fallback: !!r.fallbackReason, repaired: !!r.repaired, adviceFired: !!r.adviceFired, guard: r.guard ?? 'none', guardMs: r.guardMs ?? 0, trace, disclaimer: DISCLAIMER[session.adviceMode][r.lang] });
     // Sample family only (synthetic data): keep the redacted question, answer and tool calls to debug the agent (D-057).
     // Only when the phone sent its install id (usage counts on, notice shown) and the browser sends no privacy signal,
     // so turning usage off deletes these too. Saved after the reply is sent. Real statement data never reaches this route.

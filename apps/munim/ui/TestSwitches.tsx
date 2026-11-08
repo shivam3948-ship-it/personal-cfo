@@ -8,6 +8,7 @@
 //   #advice=<key> | off          — turn advice on for this browser with the owner's key (D-066), or off again. After the #,
 //                                  so the key is never sent in a page request or kept in server logs; the page sends it once
 //                                  to /api/advice and removes it from the address bar. (?advice= is ignored and removed.)
+//   #prefetch=on | off           — run the likely tool before the first model call, on this browser's own-data answers (D-095)
 //   #owner=<key> | off           — mark this browser as the owner's (D-089): its Ask turns go to the owner's log at /owner.
 //                                  Same handling as #advice: sent once to /api/owner, then removed from the address bar.
 // They run before the screen mounts, so the first paint already uses them.
@@ -28,6 +29,9 @@ export function TestSwitches() {
     } catch { /* private mode: falls back to the phone's setting */ }
     if (mode === 'guided') document.cookie = 'munim_mode=guided; path=/; max-age=86400; samesite=lax';
     else if (mode === 'test') document.cookie = 'munim_mode=; path=/; max-age=0; samesite=lax';
+    const pf = /(?:^|[#&?])prefetch=(on|off)/.exec(location.hash + location.search)?.[1]; // D-095: test one-call answers in this browser
+    if (pf === 'on') document.cookie = 'munim_prefetch=on; path=/; max-age=2592000; samesite=lax';
+    else if (pf === 'off') document.cookie = 'munim_prefetch=; path=/; max-age=0; samesite=lax';
     if (ai === 'off') document.cookie = 'munim_ai=off; path=/; max-age=2592000; samesite=lax';
     else if (ai === 'on') document.cookie = 'munim_ai=; path=/; max-age=0; samesite=lax';
     if (q.has('advice')) { q.delete('advice'); history.replaceState(null, '', location.pathname + (q.toString() ? `?${q}` : '') + location.hash); } // a key in the query string has already reached the server's logs: don't use it, change it
