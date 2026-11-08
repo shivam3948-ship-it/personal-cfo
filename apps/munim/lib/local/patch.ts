@@ -72,7 +72,8 @@ export async function withMyToday(v: View): Promise<View> {
   if (cas) mine.portfolio = { asOf: cas.asOf, holdings: cas.holdings, checks: [], source: 'Your CAS' };
   const t = buildToday(mine, { kind: 'user', memberLabel: 'Me', displayName: p?.name ?? null });
   const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], now = new Date();
-  const td = buildTodayMine(ds ?? mine);
+  const n = new Date(), today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+  const td = buildTodayMine(ds ?? mine, today); // the phone's date decides whether a card's due date has passed
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   if (td.bill && td.bill.dueIso < todayIso) td.bill = null; // its due date has passed on this phone's calendar
   return { ...v, ...t, NAME: p?.name ?? '', TD: { ...td, inv: !!cas, dateLine: `${DAYS[now.getDay()]}, ${now.getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()]}`, dateLineHi: dateLineHi(now) }, _mine: true };

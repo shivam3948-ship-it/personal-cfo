@@ -230,11 +230,11 @@ button{font:inherit;color:inherit}
     </section>
 
     <sc-if value="{{billRow}}" hint-placeholder-val="{{ true }}">
-      <a href="#" style="flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 48px; box-sizing: border-box; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); text-decoration: none; color: var(--ink)">
+      <button type="button" onClick="{{openBills}}" aria-haspopup="dialog" style="flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; min-height: 48px; width: 100%; box-sizing: border-box; border: 0; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--hair); color: var(--ink); font: inherit; text-align: left; cursor: pointer">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
         <span style="font-size: 15px; flex: 1"><b>{{c.cardBill}} {{bp.card}}</b> · {{bp.due}}</span>
         <span style="font-size: 14px; font-weight: 600; color: {{bp.okInk}}">{{bp.ok}}</span>
-      </a>
+      </button>
     </sc-if>
 
     <sc-if value="{{showRecaps}}" hint-placeholder-val="{{ true }}">
@@ -501,6 +501,28 @@ button{font:inherit;color:inherit}
             <button type="button" onClick="{{offUndo}}" style="min-height: 44px; border: 0; background: transparent; font-size: 14.5px; color: var(--muted); cursor: pointer">{{c.undo}}</button>
           </div>
         </sc-if>
+      </section>
+    </div>
+  </sc-if>
+  <sc-if value="{{billsOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: var(--scrim)">
+      <section class="sheet" role="dialog" aria-label="{{c.billsTitle}}" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 88%; overflow-y: auto; background: var(--card); border-radius: 26px 26px 0 0; padding: 12px 20px 28px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2)"></span>
+          <button type="button" aria-label="{{c.close}}" onClick="{{closeBills}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+          </button>
+        </div>
+        <h2 style="margin: 0; font-family: {{df}}; font-size: 26px; font-weight: 700; line-height: 1.15">{{c.billsTitle}}</h2>
+        <sc-for list="{{billList}}" as="b" hint-placeholder-count="2">
+          <div style="display: grid; gap: 6px; padding: 12px 14px; border-radius: 16px; box-shadow: 0 0 0 1px var(--hair)">
+            <span style="font-size: 13px; color: var(--muted)">{{b.name}}</span>
+            <b style="font-size: 18px">{{b.head}}</b>
+            <span style="font-size: 14.5px; line-height: 1.45; color: {{b.ink}}">{{b.line}}</span>
+            <span style="font-size: 13.5px; color: var(--muted)">{{b.used}}</span>
+          </div>
+        </sc-for>
+        <span style="font-size: 12.5px; color: var(--muted)">{{c.billsFoot}}</span>
       </section>
     </div>
   </sc-if>
@@ -894,7 +916,7 @@ class Component extends DCLogic {
       verdictAria: 'आज का हाल', rdNote: 'यह आज का चेक-इन गिना जाएगा। ' + rdv.until + ' तक खुला है।', doDaily: 'इसकी जगह आज के 3 कार्ड करें', checkin: 'आज का चेक-इन', allDone: 'सब हो गया', why: 'यह क्यों?',
       dailyAmount: 'रोज़ की रक़म', topupA: 'कल आपने आम दिन से', topupB: 'कम खर्च किया। यह फ़र्क बचाएँ?', saveTopup: m.topup + ' बचाएँ', notToday: 'आज नहीं', pause: 'रोकें', changeAmount: 'रक़म बदलें',
       youChose: 'आपने चुना', change: 'बदलें', allDoneToday: 'आज का काम पूरा', summaryLine: 'लगातार दिन: ' + aftText + '। कल मिलते हैं।', reviewAnswers: 'आज के जवाब देखें या बदलें',
-      bigPicture: 'आपकी पूरी तस्वीर · नेट वर्थ', mathHead: 'निवेश + बैंक − बाक़ी लोन', cardBill: 'कार्ड बिल', recaps: 'हिसाब-किताब', recapsLine: 'पिछले रविवार की कॉल · सितंबर ✓', paidLine: 'इस महीने भर दिया · कार्ड बिल',
+      bigPicture: 'आपकी पूरी तस्वीर · नेट वर्थ', mathHead: 'निवेश + बैंक − बाक़ी लोन', billsTitle: 'आपके कार्ड बिल', billsFoot: 'आपके स्टेटमेंट से। भुगतान आपके बैंक या कार्ड ऐप में होता है; मुनीम पैसे नहीं भेजता।', cardBill: 'कार्ड बिल', recaps: 'हिसाब-किताब', recapsLine: 'पिछले रविवार की कॉल · सितंबर ✓', paidLine: 'इस महीने भर दिया · कार्ड बिल',
       getStarted: 'शुरू करें', emptySub: 'एक स्टेटमेंट जोड़ें, बाक़ी मुनीम कर देगा।', firstCheckin: 'आपका पहला चेक-इन', emptyTitle2: 'देखें पिछले महीने पैसा कहाँ गया',
       emptyBody: 'बैंक स्टेटमेंट की PDF जोड़ें। करीब 1 मिनट लगता है, और यह आपके फ़ोन पर ही पढ़ी जाती है।', step1: 'बैंक स्टेटमेंट · खर्च और बिल', step2: 'म्यूचुअल फ़ंड स्टेटमेंट (CAS) · नेट वर्थ', step3: 'बैंक से अपने आप जुड़ना · जल्द आ रहा है',
       addBank: 'बैंक स्टेटमेंट जोड़ें', trySample: 'सैंपल डेटा से देखें', bigPictureLater: 'पहले स्टेटमेंट के बाद दिखेगी।', tools: 'टूल', navMain: 'मुख्य',
@@ -915,7 +937,7 @@ class Component extends DCLogic {
       verdictAria: "Today's verdict", rdNote: "Counts as today's check-in. Available until " + rdv.until + '.', doDaily: "Do today's 3 cards instead", checkin: "Today's check-in", allDone: 'All done', why: 'Why this?',
       dailyAmount: 'Daily amount', topupA: 'Yesterday you spent', topupB: 'less than a usual day. Save the difference?', saveTopup: 'Save ' + m.topup, notToday: 'Not today', pause: 'Pause', changeAmount: 'Change amount',
       youChose: 'You chose', change: 'Change', allDoneToday: 'All done for today', summaryLine: 'Your streak is ' + aftText + '. See you tomorrow.', reviewAnswers: "See or change today's answers",
-      bigPicture: 'Your big picture · net worth', mathHead: 'Investments + Bank − Loans outstanding', cardBill: 'Card bill', recaps: 'Recaps', recapsLine: "Last Sunday's call · September ✓", paidLine: 'Paid this month · card bill',
+      bigPicture: 'Your big picture · net worth', mathHead: 'Investments + Bank − Loans outstanding', billsTitle: 'Your card bills', billsFoot: 'From your statements. You pay in your bank or card app; Munim never moves money.', cardBill: 'Card bill', recaps: 'Recaps', recapsLine: "Last Sunday's call · September ✓", paidLine: 'Paid this month · card bill',
       getStarted: 'Get started', emptySub: 'Add one statement and Munim does the rest.', firstCheckin: 'Your first check-in', emptyTitle2: 'See where your money went last month',
       emptyBody: "Add a bank statement PDF. Takes about 1 minute; it's read on your phone.", step1: 'Bank statement · spends and bills', step2: 'Mutual fund statement (CAS) · net worth', step3: 'Auto-sync with your bank · coming soon',
       addBank: 'Add bank statement', trySample: 'Try with sample data', bigPictureLater: 'Appears after your first statement.', tools: 'Tools', navMain: 'Main',
@@ -949,7 +971,7 @@ class Component extends DCLogic {
       avatar: (NAME || '·').charAt(0).toUpperCase(),
       bp: TD ? { gainLine: TD.inv ? T('Investments ' + m.gain + ' above what you put in', 'निवेश आपके लगाए पैसे से ' + m.gain + ' ज़्यादा') : T('Add your CAS to include your mutual funds', 'म्यूचुअल फ़ंड जोड़ने के लिए अपना CAS जोड़ें'),
           invLbl: TD.inv ? T('Investments (your CAS)', 'निवेश (आपका CAS)') : T('Investments (none added)', 'निवेश (नहीं जोड़ा)'), bankLbl: T('Bank (latest statement balance)', 'बैंक (आख़िरी स्टेटमेंट का बैलेंस)'), loanLbl: T('Loans (none added)', 'लोन (नहीं जोड़ा)'),
-          card: TD.bill ? v(fmtR(TD.bill.amount)) : '', due: TD.bill ? (hi ? 'तारीख़ ' + TD.bill.dueHi : 'due ' + TD.bill.due) : '', ok: TD.bill ? (TD.bill.covered === null ? T('Add a bank statement to check', 'जाँचने के लिए बैंक स्टेटमेंट जोड़ें') : TD.bill.covered ? T('Covered ✓', 'बैंक में पैसा है ✓') : T('Bank falls short', 'बैंक में कम है')) : '',
+          card: TD.bill ? (TD.bill.paidAll ? T('paid', 'भर दिया') : v(fmtR(TD.bill.amount)) + (TD.bill.count > 1 ? T(' · ' + TD.bill.count + ' cards', ' · ' + TD.bill.count + ' कार्ड') : '')) : '', due: TD.bill ? (TD.bill.paidAll ? T('all cards', 'सभी कार्ड') : hi ? 'तारीख़ ' + TD.bill.dueHi : 'due ' + TD.bill.due) : '', ok: TD.bill ? (TD.bill.paidAll ? T('✓', '✓') : TD.bill.covered === null ? T('Add a bank statement to check', 'जाँचने के लिए बैंक स्टेटमेंट जोड़ें') : TD.bill.covered ? T('Covered ✓', 'बैंक में पैसा है ✓') : T('Bank falls short', 'बैंक में कम है')) : '',
           okInk: TD.bill && TD.bill.covered === false ? 'var(--warn)' : 'var(--link)' }
         : { card: m.card, gainLine: T('Investments ' + m.gain + ' above what you put in · 14.2% a year', 'निवेश आपके लगाए पैसे से ' + m.gain + ' ज़्यादा · 14.2% सालाना'), invLbl: T('Investments (CAS, 15 Oct)', 'निवेश (CAS, 15 अक्टूबर)'), bankLbl: T('Bank statement', 'बैंक स्टेटमेंट'), loanLbl: T('Loans outstanding (2)', 'बाक़ी लोन (2)'), due: T('due 24 Oct', 'तारीख़ 24 अक्टूबर'), ok: T('Covered ✓', 'बैंक में पैसा है ✓'), okInk: 'var(--link)' },
       billRow: TD ? !!TD.bill : billsMode === 'pending' && !(mstep === 'debt' && (sc === 'new' || sc === 'day4')),
@@ -971,6 +993,7 @@ class Component extends DCLogic {
       streakBg: allDone ? '#F2A93B' : 'var(--card)', streakInk: allDone ? '#2B1D00' : 'var(--warn)',
       streakLabel: hi ? 'लगातार दिन: ' + shown + '। खोलें' : 'Streak: ' + shown + (shown === 1 ? ' day' : ' days') + '. Open streak',
       streakDays: shown + T(shown === 1 ? ' day' : ' days', ' दिन'), weekCount: wk,
+      billsOpen: !!s.bills, billList: ((TD && TD.bills) || []).map(function (b) { return { name: b.name, head: hi ? b.headHi : b.head, line: hi ? b.lineHi : b.line, used: hi ? b.usedHi : b.used, ink: b.warn ? 'var(--warn)' : 'var(--ink2)' }; }),
       streakOpen: s.streak, sheetOpen: !!s.sheet, sh: sh, notified: s.notified, notNotified: !s.notified, pick: pick,
       shSoon: (s.sheet || 'autopay') !== 'ins', shMoney: (s.sheet || 'autopay') !== 'ins' && !/^tool_/.test(s.sheet || ''),
       whyOpen: !!s.why, whySteps: whySteps, openWhy: openWhy, closeWhy: function () { self.setState({ why: false }); },
@@ -988,6 +1011,8 @@ class Component extends DCLogic {
       dismissTopup: function () { self.setState({ topupGone: true }); },
       openStreak: function () { self.setState({ streak: true }); },
       closeStreak: function () { self.setState({ streak: false }); },
+      openBills: function () { if (TD && TD.bills && TD.bills.length) { self.setState({ bills: true }); } },
+      closeBills: function () { self.setState({ bills: false }); },
       notify: function () { self.setState({ notified: true }); if (self.props.onIntent && s.sheet) self.props.onIntent(s.sheet, 'notify'); },
       sheetDone: function () { if (sh.doneKey) { self.complete(sh.doneKey, sh.doneLabel); } else { self.setState({ sheet: null, notified: false, topupGone: true }); } },
       closeSheet: function () { self.setState({ sheet: null }); },

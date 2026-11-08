@@ -101,3 +101,7 @@ Voice works like a phone call, not a walkie-talkie: one tap starts it, turns han
 
 ## A button for every voice action (D-090, 7 Nov)
 While Munim speaks in a conversation, the text box becomes one wide "Tap to talk" button: cutting in no longer depends on the microphone noticing you. Principle: user control and freedom, the "clearly marked emergency exit" (Nielsen's 10 usability heuristics, 1994; the name is from that source). It sits where the thumb already is and is as wide as the bar, so it is quick to hit (Fitts's law, 1954; the name is from that source). Voice stays the first way to cut in; the button is the one that always works (our label: "voice first, tap always").
+
+
+## One row, one sheet per card (D-092, 8 Nov)
+Today keeps a single "Card bill" row (the total left to pay across cards, the earliest due date, whether the bank balance covers it); tapping it opens one block per card. Principle: progressive disclosure, the summary first and the detail on request (Nielsen Norman Group's term; the name is from that source). The minimum-only cost sits next to the minimum itself, at the moment of choosing what to pay, because a cost is weighed when it is visible at the decision point (our label: "the price beside the button"). Nothing alarming is said before it is true: no interest or late-fee warning until the due date has passed, and "not seen" instead of "missed" when Munim can't see every account.
