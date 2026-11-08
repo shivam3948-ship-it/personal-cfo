@@ -65,8 +65,9 @@ const RULES: Rule[] = [
   { cat: 'Family support', re: /\b(papa|mummy|maa|mom|dad|father|mother)\b/i, dir: 'debit' },
   { cat: 'Fees & charges', re: /\b(annual fee|charges?|chg|chgs|gst on|late fee|penal)\b/i, dir: 'debit' },
   { cat: 'Cash withdrawal', re: /\batm\b.*\bwdl\b|\batm wdl\b|\bcash withdrawal\b/i, dir: 'debit' },
+  // quick commerce first: "Swiggy Instamart" is groceries, not food delivery (owner's HDFC card, 8 Nov); Blink Commerce is Blinkit's company
+  { cat: 'Quick commerce', re: /\bblinkit\b|\bblink commerce\b|\bzepto\b|\binstamart\b|\bbigbasket now\b/i },
   { cat: 'Food delivery', re: /\bswiggy\b|\bzomato\b|\beatsure\b/i },
-  { cat: 'Quick commerce', re: /\bblinkit\b|\bzepto\b|\binstamart\b|\bbigbasket now\b/i },
   { cat: 'Groceries', re: /\bdmart\b|\bbigbasket\b|\bjiomart\b|\bnature'?s basket\b|\bgrocer/i },
   // local shops a first-time saver pays by UPI (D-055): words in the shop's name, not chains
   { cat: 'Groceries', re: /\bkirana\b|\bgeneral stores?\b|\bprovisions?( stores?)?\b|\bsuper ?market\b|\bvegetables?\b|\bsabzi\b|\bsabji\b|\bdairy\b|\bmilk\b|\bfruits?\b|\bration\b/i, dir: 'debit' },
@@ -77,7 +78,7 @@ const RULES: Rule[] = [
   { cat: 'Electronics', re: /\bcroma\b|\breliance digital\b|\bvijay sales\b|\bapple store\b/i },
   { cat: 'Travel', re: /\bmakemytrip\b|\bgoibibo\b|\bindigo\b|\birctc\b|\bresort\b|\bhotel\b|\boyo\b|\bairbnb\b|\bcleartrip\b/i },
   { cat: 'Dining', re: /\btea\b|\bchai\b|\bbakery\b|\bbakers\b|\bsweets?\b|\bmithai\b|\bdhaba\b|\bcafe\b|\brestaurant\b|\bbiryani\b|\bsocial\b|\bchaayos\b|\bstarbucks\b|\bdominos\b|\bpos\b/i },
-  { cat: 'Shopping', re: /\bamazon\b|\bflipkart\b|\bmyntra\b|\bajio\b|\bnykaa\b|\bmeesho\b/i },
+  { cat: 'Shopping', re: /\bamazon\b|\bflipkart\b|\bmyntra\b|\bajio\b|\bnykaa\b|\bmeesho\b|\bnike\b|\badidas\b|\bpuma\b|\bzara\b|\buniqlo\b|\bdecathlon\b|\bskechers\b|\bbata\b/i }, // brands: the owner's Nike purchase, 8 Nov
   { cat: 'Education', re: /\bcoursera\b|\budemy\b|\bschool\b|\bcollege\b|\btuition\b/i },
 ];
 

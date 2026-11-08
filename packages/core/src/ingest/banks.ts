@@ -143,6 +143,19 @@ export function sbiSavings(lines: string[], file: string): BankRead {
 // ---------- HDFC credit card ----------
 // Row: "dd/mm/yyyy| hh:mm DESCRIPTION [+] ₹ AMOUNT [flag]" — "+" marks a payment, refund or cashback.
 // Summary: PREVIOUS DUES − PAYMENTS/CREDITS + PURCHASES/DEBITS + FINANCE CHARGES = TOTAL AMOUNT DUE.
+// HDFC's card PDF runs words together ("CREDIT CARD PAYMENTNet Banking", "SwiggyBENGALURU", "NETFLIXMUMBAI") and tags purchases
+// that are only *eligible* for EMI with a leading "EMI" (the statement's legend: "Eligible for EMI · CONVERT TO EMI"). Read on the
+// owner's own statement, 8 Nov: his bill payment was taken as income, a ₹9,995 purchase as a loan EMI, and 8 rows went unsorted.
+const CITIES = 'BENGALURU|BANGALORE|MUMBAI|GURGAON|GURUGRAM|NEW DELHI|DELHI|NOIDA|HYDERABAD|CHENNAI|PUNE|KOLKATA|AHMEDABAD|JAIPUR|LUCKNOW|INDORE|BHOPAL|CHANDIGARH|KOCHI|THANE';
+export function deglue(desc: string): string {
+  return desc
+    .replace(/^EMI\s+(?!.*(?:\b\d{1,2}\s*\/\s*\d{1,3}\b|INSTAL+MENT|PRINCIPAL|INTEREST|\bEMI\b))/i, '') // an offer, not a loan; a real instalment line keeps it ("EMI 3/12", "PRINCIPAL")
+    .replace(/([A-Z]{2,})(?=[A-Z][a-z])/g, '$1 ')    // PAYMENTNet → PAYMENT Net
+    .replace(/([a-z])(?=[A-Z]{3,})/g, '$1 ')         // SwiggyBENGALURU → Swiggy BENGALURU
+    .replace(new RegExp(`(?<=[A-Za-z*])(${CITIES})$`, 'i'), ' $1') // NETFLIXMUMBAI → NETFLIX MUMBAI, ZeptoBengaluru → Zepto Bengaluru
+    .replace(/\s+/g, ' ').trim();
+}
+
 export function hdfcCard(lines: string[], file: string): BankRead {
   const ROW = /^(\d{2}\/\d{2}\/\d{4})\|\s*\d{2}:\d{2}\s+(.*?)\s+(\+\s*)?\D{0,2}\s?([\d,]+\.\d{2})(?:\s+\S{1,3})?$/;
   const all = lines.join('\n');
@@ -153,7 +166,7 @@ export function hdfcCard(lines: string[], file: string): BankRead {
     const m = ROW.exec(l);
     if (!m) continue;
     const credit = !!m[3];
-    txns.push({ id: `${file}#${txns.length + 1}`, date: yy(m[1]), desc: m[2].replace(/\(Ref#[^)]*\)/i, '').trim(), amount: paise(m[4]), dir: credit ? 'credit' : 'debit', account: id, source: 'card_statement', sourceFile: file });
+    txns.push({ id: `${file}#${txns.length + 1}`, date: yy(m[1]), desc: deglue(m[2].replace(/\(Ref#[^)]*\)/i, '').trim()), amount: paise(m[4]), dir: credit ? 'credit' : 'debit', account: id, source: 'card_statement', sourceFile: file });
   }
   // the summary row: five amounts joined by + and =
   const sumLine = lines.find((l) => /[\d,]+\.\d{2}.*\+.*[\d,]+\.\d{2}.*\+.*[\d,]+\.\d{2}.*=.*[\d,]+\.\d{2}/.test(l)) ?? '';
@@ -163,6 +176,10 @@ export function hdfcCard(lines: string[], file: string): BankRead {
   const minDue = dueLine ? paise(dueLine.match(/[\d,]+\.\d{2}/)![0]) : 0;
   const dueDate = longDate(dueLine);
   const stmtDate = longDate(/Statement Date\s+(.{6,14}\d{4})/i.exec(all)?.[1] ?? '');
+  // the limits: three whole-rupee amounts a few lines under "TOTAL CREDIT LIMIT" (total, available, cash) (D-092)
+  const limIdx = lines.findIndex((l) => /TOTAL CREDIT LIMIT/i.test(l));
+  const limLine = limIdx >= 0 ? lines.slice(limIdx + 1, limIdx + 8).find((l) => /^\D?[\d,]{3,}(?:\.\d{2})?\s+\D?[\d,]{3,}(?:\.\d{2})?\s+\D?[\d,]{3,}(?:\.\d{2})?$/.test(l.trim())) : undefined;
+  const lims = limLine ? (limLine.trim().match(/[\d,]{3,}(?:\.\d{2})?/g) ?? []).map(paise) : [];
   const bp = /Billing Period\s+(\d{1,2}\s+[A-Za-z]{3},?\s+\d{4})\s*-\s*(\d{1,2}\s+[A-Za-z]{3},?\s+\d{4})/i.exec(all);
   const sum = (d: Txn['dir']) => txns.filter((t) => t.dir === d).reduce((a, t) => a + t.amount, 0);
   const ok = total !== undefined;
@@ -171,7 +188,7 @@ export function hdfcCard(lines: string[], file: string): BankRead {
     check('debits', 'Purchase rows add up to the printed purchases', sum('debit') === purch, `${rupees(sum('debit'))} vs printed ${rupees(purch)}`),
     check('credits', 'Payment and credit rows add up to the printed credits', sum('credit') === pay, `${rupees(sum('credit'))} vs printed ${rupees(pay)}`),
   ] : [check('summary', 'Statement summary found', false, 'no total-due line')];
-  const stmt: CardStatement = { account: id, file, periodStart: bp ? longDate(bp[1]) : '', periodEnd: bp ? longDate(bp[2]) : stmtDate, dueDate, prevBalance: prev ?? 0, payments: pay ?? 0, purchases: purch ?? 0, credits: pay ?? 0, charges: fin ?? 0, totalDue: total ?? 0, minDue };
+  const stmt: CardStatement = { account: id, file, periodStart: bp ? longDate(bp[1]) : '', periodEnd: bp ? longDate(bp[2]) : stmtDate, dueDate, prevBalance: prev ?? 0, payments: pay ?? 0, purchases: purch ?? 0, credits: pay ?? 0, charges: fin ?? 0, totalDue: total ?? 0, minDue, ...(lims.length === 3 && lims[0] > 0 ? { limit: lims[0], available: lims[1] } : {}) };
   return { format: 'hdfc_card', txns, checks, stmt, period: { from: stmt.periodStart, to: stmt.periodEnd }, account: { id, kind: 'card', label: `HDFC credit card ••${card}`, last4: card } };
 }
 
