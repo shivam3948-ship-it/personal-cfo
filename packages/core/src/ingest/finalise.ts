@@ -6,7 +6,7 @@ import { loanStatus } from '../finance/loans';
 import { annualPremium } from '../finance/insurance';
 import { daysBetween } from '../dates';
 import { inr } from '../money';
-import { merchantKey } from '../finance/cards';
+import { BILL_PAY, isPurchase, merchantKey } from '../finance/cards';
 
 /** Categorise, learn categories for terse SMS narrations from history, and run cross-document checks. */
 export function finalise(ds: Dataset) {
@@ -36,8 +36,9 @@ export function finalise(ds: Dataset) {
 function cardRefunds(ds: Dataset) {
   for (const t of ds.txns) {
     if (!t.account.startsWith('card:') || t.dir !== 'credit' || ['Cashback', 'Refund', 'Card bill payment'].includes(t.category ?? '') || PAYMENT_WORDS.test(t.desc)) continue;
-    const k = merchantKey(t); if (!k) continue;
-    const bought = ds.txns.some((p) => p.dir === 'debit' && p.date <= t.date && daysBetween(p.date, t.date) <= 365 && p.amount >= t.amount && merchantKey(p) === k);
+    const k = merchantKey(t); if (!k || BILL_PAY.has(k)) continue; // a credit from CRED, BillDesk, Paytm… is a payment
+    // only a spending debit on a card can be the purchase: never a bank-side debit or a bill payment (review, 8 Nov)
+    const bought = ds.txns.some((p) => isPurchase(p) && p.date <= t.date && daysBetween(p.date, t.date) <= 365 && p.amount >= t.amount && merchantKey(p) === k);
     if (bought) t.category = 'Refund';
   }
 }

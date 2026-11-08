@@ -62,3 +62,14 @@ describe('the Today screen shows the engine’s bills', () => {
     }
   });
 });
+
+describe('bill copy before and after the due date (review, 8 Nov)', () => {
+  it('no interest or late fee is claimed while there is still time', async () => {
+    const { billLines } = await import('@/lib/views/todayMine');
+    const b = { account: 'card:8747', last4: '8747', file: 'h.pdf', periodEnd: '2026-10-16', dueDate: '2026-11-05', totalDue: 2864000, minDue: 144000, paid: 144000, status: 'paid_min' as const, pastDue: false };
+    expect(billLines(b).line).toBe('₹1,440 paid so far, the minimum. Pay the other ₹27,200 by 5 Nov to avoid interest.');
+    expect(billLines({ ...b, pastDue: true }).line).toContain('On most cards interest is now running');
+    expect(billLines({ ...b, status: 'paid_part', paid: 50000 }).line).not.toMatch(/late fee/);
+    expect(billLines({ ...b, status: 'due', paid: 0 }).line).toContain('on most cards');
+  });
+});

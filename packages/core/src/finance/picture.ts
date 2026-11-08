@@ -1,6 +1,6 @@
 import type { Dataset, Paise, Txn } from '../types';
 import { CATEGORIES, groupOf } from './categorize';
-import { merchantKey } from './cards';
+import { cardBills, merchantKey } from './cards';
 import { addDays, addMonths, daysBetween, monthKey, spokenDate } from '../dates';
 import { groupIndian, inr, pct, sum } from '../money';
 import { monthName } from '../dates';
@@ -276,11 +276,11 @@ export function upcoming(ds: Dataset, days = 21): Due[] {
     if (st.nextEmiDate && st.nextEmiDate > asOf && st.nextEmiDate <= until) out.push({ date: st.nextEmiDate, title: `${l.lender} EMI`, titleHi: `${l.lender} की EMI`, amount: l.emi, kind: 'emi', source: l.file, fromBank: true });
     // EMI dates that fall within the window but were already debited (asOf on the EMI date) are skipped by the > asOf check.
   }
-  for (const s of ds.cardStatements) {
-    if (s.dueDate < asOf || s.dueDate > until) continue;
-    // paid only when the whole bill is: paying just the minimum leaves interest running on all of it (D-092; was "≥ minimum")
-    const paid = ds.txns.filter((t) => t.category === 'Card bill payment' && t.dir === 'debit' && t.date > s.periodEnd && t.date <= s.dueDate).reduce((a, t) => a + t.amount, 0);
-    if (paid < s.totalDue - 100) out.push({ date: s.dueDate, title: 'Credit card bill', titleHi: 'क्रेडिट कार्ड बिल', amount: s.totalDue - paid, kind: 'card', source: s.file, fromBank: true, note: paid > 0 ? `₹${Math.round(paid / 100)} paid so far` : `minimum due ₹${Math.round(s.minDue / 100)}` });
+  // each card's latest bill, matched to its own payments (cardBills): paid only when the whole bill is, so paying just the
+  // minimum no longer hides it, and one card's payment no longer clears another's reminder (D-092)
+  for (const b of cardBills(ds, asOf)) {
+    if (b.dueDate < asOf || b.dueDate > until || b.status === 'paid_full') continue;
+    out.push({ date: b.dueDate, title: 'Credit card bill', titleHi: 'क्रेडिट कार्ड बिल', amount: b.totalDue - b.paid, kind: 'card', source: b.file, fromBank: true, note: b.paid > 0 ? `₹${Math.round(b.paid / 100)} paid so far` : `minimum due ₹${Math.round(b.minDue / 100)}` });
   }
   for (const p of ds.policies) {
     const d = nextDueDate(p, asOf);

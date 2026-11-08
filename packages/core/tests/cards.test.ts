@@ -22,9 +22,22 @@ describe('card bills', () => {
     expect(cardBills(ds([stmt({ totalDue: 2863951 })], [tx({ date: '2026-11-02', amount: 2864000, category: 'Card bill payment' })]), '2026-11-10')[0].status).toBe('paid_full');
     expect(cardBills(ds([stmt({})], [tx({ date: '2026-11-02', amount: 50000, category: 'Card bill payment' })]), '2026-11-10')[0].status).toBe('paid_part');
   });
-  it('past the due date: missed only when the statements cover that day, else unknown', () => {
-    expect(cardBills(ds([stmt({})], [tx({ date: '2026-11-08' })]), '2026-11-08')[0].status).toBe('missed');
+  it('past the due date: missed only from the card’s own later statement; bank statements alone say not seen', () => {
+    expect(cardBills(ds([stmt({})], [tx({ account: 'card:8747', date: '2026-11-08' })]), '2026-11-08')[0].status).toBe('missed');
+    expect(cardBills(ds([stmt({})], [tx({ date: '2026-11-08' })]), '2026-11-08')[0].status).toBe('not_seen'); // paid from another account? CRED?
     expect(cardBills(ds([stmt({})], [tx({ date: '2026-10-30' })]), '2026-11-08')[0].status).toBe('unknown');
+  });
+  it('minimum or part paid before the due date is not yet past due', () => {
+    const [b] = cardBills(ds([stmt({})], [tx({ date: '2026-10-25', amount: 144000, category: 'Card bill payment' })]), '2026-10-28');
+    expect(b).toMatchObject({ status: 'paid_min', pastDue: false });
+  });
+  it('a payment on the statement day counts', () => {
+    expect(cardBills(ds([stmt({})], [tx({ date: '2026-10-16', amount: 2864000, category: 'Card bill payment' })]), '2026-10-20')[0].status).toBe('paid_full');
+  });
+  it('with two cards due, a payment matching neither bill is credited to neither', () => {
+    const icici = stmt({ account: 'card:7001', file: 'icici.pdf', periodEnd: '2026-10-18', totalDue: 774355, minDue: 39000 });
+    const bills = cardBills(ds([stmt({}), icici], [tx({ date: '2026-11-03', amount: 1000000, category: 'Card bill payment' })]), '2026-11-04');
+    expect(bills.map((b) => b.status)).toEqual(['due', 'due']);
   });
   it('with two cards due together, a bank payment counts towards the card whose bill it matches', () => {
     const icici = stmt({ account: 'card:7001', file: 'icici.pdf', periodEnd: '2026-10-18', totalDue: 774355, minDue: 39000, limit: 30000000 });
@@ -52,6 +65,14 @@ describe('refunds', () => {
     expect(m[1]).toMatchObject({ kind: 'full', purchase: { id: shoe.id } });
     expect(merchantKey(booking)).toBe('ibibo');
   });
+  it('a CRED credit is a payment, and a bank-side debit is never the purchase', () => {
+    const credBank = tx({ date: '2026-10-01', desc: 'CRED CLUB', amount: 500000, category: 'Card bill payment' });
+    const credCard = tx({ account: 'card:7001', dir: 'credit', date: '2026-10-02', desc: 'CRED', amount: 500000 });
+    const shopBank = tx({ date: '2026-09-01', desc: 'ACME STORE', amount: 90000, category: 'Shopping' });
+    const backCard = tx({ account: 'card:7001', dir: 'credit', date: '2026-09-05', desc: 'ACME STORE', amount: 90000, category: 'Refund' });
+    const m = matchRefunds(ds([], [credBank, credCard, shopBank, backCard]));
+    expect(m).toHaveLength(1); expect(m[0]).toMatchObject({ kind: 'none' }); // only the ACME refund; its purchase was not on a card
+  });
   it('says so when no purchase matches, and never matches a later or smaller purchase', () => {
     const later = tx({ account: 'card:1', date: '2026-10-10', desc: 'ACME STORE', amount: 50000 });
     const small = tx({ account: 'card:1', date: '2026-09-01', desc: 'ACME STORE', amount: 10000 });
@@ -76,5 +97,14 @@ describe('a refund on a card with a combined payments figure', () => {
     expect(cat('IBIBO GROUP PRIVATE LIMITED')).toBe('Refund');
     expect(cat('BBPS PAYMENT RECEIVED 12345')).toBe('Card bill payment');
     expect(cat('CLICK TO PAY')).toBe('Card bill payment');
+  });
+  it('an unworded CRED credit is never relabelled a refund', () => {
+    const card = 'card:8747';
+    const d = ds([stmt({ payments: 500000 })], [
+      tx({ date: '2026-09-20', desc: 'CRED CLUB', amount: 500000 }),
+      tx({ account: card, sourceFile: 'hdfc.pdf', dir: 'credit', date: '2026-10-05', desc: 'CRED', amount: 500000 }),
+    ]);
+    finalise(d);
+    expect(d.txns.find((t) => t.desc === 'CRED')!.category).toBe('Card bill payment'); // found by the printed payments total
   });
 });

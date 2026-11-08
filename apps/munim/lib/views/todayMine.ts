@@ -109,7 +109,7 @@ export function buildTodayMine(ds: Dataset): TodayMine {
   const cat = f?.kind === 'pace' ? f.title.split(' up ')[0] : null;
   // every card's latest bill (D-092): what's left to pay on the ones still ahead, and each card's state for the bills sheet.
   // Before 8 Nov only the single latest bill showed, so a second card due the same day disappeared.
-  const all = cardBills(ds, asOf).filter((b) => b.dueDate >= asOf || b.status === 'missed' || b.status === 'unknown');
+  const all = cardBills(ds, asOf).filter((b) => b.dueDate >= asOf || b.status === 'missed' || b.status === 'not_seen' || b.status === 'unknown');
   const open = all.filter((b) => b.dueDate >= asOf && b.status !== 'paid_full');
   const left = open.reduce((a, b) => a + Math.max(0, b.totalDue - b.paid), 0);
   const bank = latestBankBalance(ds);
@@ -129,27 +129,35 @@ export function buildTodayMine(ds: Dataset): TodayMine {
 
 const R = (p: number) => inr(p, 'auto'); // a card bill to the paisa, as printed (₹7,743.55)
 /** One card in the bills sheet (D-092): its bill, where it stands, the minimum-only warning, and how much of the limit it uses.
- *  "Interest on the whole bill": when the total isn't paid by the due date, Indian card issuers charge interest on the full
- *  outstanding (usually from each purchase date) and new purchases lose their interest-free days. */
+ *  Card rules are said as "most cards" (review, 8 Nov): most Indian cards charge interest on the whole bill when it isn't paid in
+ *  full, but not every card's terms are the same. Interest and fees are only mentioned once the due date has passed. */
 export function billLines(b: CardBill, label?: string) {
   const name = label ? `${label.replace(/\s*[•·*x]+\s*\d{4}$/i, '')} ••${b.last4}` : `Card ••${b.last4}`;
   const left = Math.max(0, b.totalDue - b.paid);
-  const head = { en: `${R(b.totalDue)} · due ${dm(b.dueDate)}`, hi: `${R(b.totalDue)} · तारीख़ ${dmHi(b.dueDate)}` };
+  const head = { en: `${R(b.totalDue)} · due ${dm(b.dueDate)}`, hi: `${R(b.totalDue)} · आख़िरी तारीख़ ${dmHi(b.dueDate)}` };
+  const beforeDue = !b.pastDue;
   const st: Record<CardBill['status'], { en: string; hi: string; warn: boolean }> = {
-    due: { en: `Minimum ${R(b.minDue)}. Pay the full ${R(b.totalDue)}: pay only the minimum and the card charges interest on the whole bill, and new purchases stop being interest-free.`,
-      hi: `कम से कम ${R(b.minDue)}। पूरे ${R(b.totalDue)} भरें: सिर्फ़ कम से कम रक़म भरने पर पूरे बिल पर ब्याज लगता है, और नई ख़रीद पर ब्याज-मुक्त दिन नहीं मिलते।`, warn: false },
-    paid_min: { en: `You paid ${R(b.paid)}, the minimum. Interest is running on the whole bill: pay the other ${R(left)} to stop it.`,
-      hi: `आपने ${R(b.paid)} भरे, यानी कम से कम रक़म। पूरे बिल पर ब्याज लग रहा है: इसे रोकने के लिए बाक़ी ${R(left)} भरें।`, warn: true },
-    paid_part: { en: `You paid ${R(b.paid)}, less than the ${R(b.minDue)} minimum: expect a late fee and interest. Pay the other ${R(left)}.`,
-      hi: `आपने ${R(b.paid)} भरे, जो कम से कम ${R(b.minDue)} से भी कम है: लेट फ़ीस और ब्याज लग सकता है। बाक़ी ${R(left)} भरें।`, warn: true },
+    due: { en: `Minimum ${R(b.minDue)}. Pay the full ${R(b.totalDue)} by ${dm(b.dueDate)}: on most cards, paying only the minimum means interest on the whole bill, and new purchases stop being interest-free (check your card’s terms).`,
+      hi: `कम से कम ${R(b.minDue)}। ${dmHi(b.dueDate)} तक पूरे ${R(b.totalDue)} भरें: ज़्यादातर कार्ड पर सिर्फ़ कम से कम रक़म भरने से पूरे बिल पर ब्याज लगता है, और नई ख़रीद पर ब्याज-मुक्त दिन नहीं मिलते (अपने कार्ड की शर्तें देखें)।`, warn: false },
+    paid_min: beforeDue
+      ? { en: `${R(b.paid)} paid so far, the minimum. Pay the other ${R(left)} by ${dm(b.dueDate)} to avoid interest.`, hi: `अब तक ${R(b.paid)} भरे, यानी कम से कम रक़म। ब्याज से बचने के लिए ${dmHi(b.dueDate)} तक बाक़ी ${R(left)} भरें।`, warn: false }
+      : { en: `You paid ${R(b.paid)}, the minimum. On most cards interest is now running on the whole bill: pay the other ${R(left)} to stop it (interest already charged shows on the next bill).`,
+        hi: `आपने ${R(b.paid)} भरे, यानी कम से कम रक़म। ज़्यादातर कार्ड पर अब पूरे बिल पर ब्याज लग रहा है: इसे रोकने के लिए बाक़ी ${R(left)} भरें (लग चुका ब्याज अगले बिल में दिखेगा)।`, warn: true },
+    paid_part: beforeDue
+      ? { en: `${R(b.paid)} paid so far, less than the ${R(b.minDue)} minimum. Pay at least the minimum by ${dm(b.dueDate)}, and the full ${R(left)} left to avoid interest.`,
+        hi: `अब तक ${R(b.paid)} भरे, जो कम से कम ${R(b.minDue)} से कम है। ${dmHi(b.dueDate)} तक कम से कम इतना भरें, और ब्याज से बचने के लिए बाक़ी पूरे ${R(left)}।`, warn: true }
+      : { en: `You paid ${R(b.paid)}, less than the ${R(b.minDue)} minimum: a late fee and interest can apply. Pay the other ${R(left)}.`,
+        hi: `आपने ${R(b.paid)} भरे, जो कम से कम ${R(b.minDue)} से भी कम है: लेट फ़ीस और ब्याज लग सकता है। बाक़ी ${R(left)} भरें।`, warn: true },
     paid_full: { en: 'Paid in full ✓', hi: 'पूरा भर दिया ✓', warn: false },
-    missed: { en: `No payment to this card by ${dm(b.dueDate)} in your statements. Pay it now: a late fee and interest apply.`,
-      hi: `आपके स्टेटमेंट में ${dmHi(b.dueDate)} तक इस कार्ड का भुगतान नहीं दिखा। अभी भरें: लेट फ़ीस और ब्याज लगता है।`, warn: true },
+    missed: { en: `This card’s next statement shows no payment by ${dm(b.dueDate)}. Pay it now: a late fee and interest usually apply.`,
+      hi: `इस कार्ड के अगले स्टेटमेंट में ${dmHi(b.dueDate)} तक कोई भुगतान नहीं दिखा। अभी भरें: आमतौर पर लेट फ़ीस और ब्याज लगता है।`, warn: true },
+    not_seen: { en: `No payment to this card by ${dm(b.dueDate)} in the statements you added. If you paid from another account or an app like CRED, you’re fine; if not, pay it now.`,
+      hi: `आपके जोड़े स्टेटमेंट में ${dmHi(b.dueDate)} तक इस कार्ड का भुगतान नहीं दिखा। अगर किसी और खाते या CRED जैसे ऐप से भरा है, तो ठीक है; नहीं तो अभी भरें।`, warn: true },
     unknown: { en: `Your statements end before ${dm(b.dueDate)}, so Munim can’t see whether it was paid. Check that it was.`,
       hi: `आपके स्टेटमेंट ${dmHi(b.dueDate)} से पहले ख़त्म होते हैं, इसलिए दिख नहीं रहा कि भरा या नहीं। एक बार देख लें।`, warn: false },
   };
   const s = st[b.status];
-  const used = b.usedPct !== undefined && b.limit ? { en: `This bill uses ${b.usedPct}% of your ${R(b.limit)} limit${b.usedPct > 30 ? ': above 30% can lower your credit score' : ''}`,
-    hi: `यह बिल आपकी ${R(b.limit)} की लिमिट का ${b.usedPct}% है${b.usedPct > 30 ? ': 30% से ज़्यादा इस्तेमाल से क्रेडिट स्कोर घट सकता है' : ''}` } : { en: 'Munim couldn’t read the credit limit from this statement', hi: 'मुनीम इस स्टेटमेंट से क्रेडिट लिमिट नहीं पढ़ पाया' };
+  const used = b.usedPct !== undefined && b.limit ? { en: `This bill uses ${b.usedPct}% of your ${R(b.limit)} limit${b.usedPct > 30 ? ': a common rule of thumb is that above 30% can lower your credit score' : ''}`,
+    hi: `यह बिल आपकी ${R(b.limit)} की लिमिट का ${b.usedPct}% है${b.usedPct > 30 ? ': आम तौर पर माना जाता है कि 30% से ज़्यादा इस्तेमाल से क्रेडिट स्कोर घट सकता है' : ''}` } : { en: 'Munim couldn’t read the credit limit from this statement', hi: 'मुनीम इस स्टेटमेंट से क्रेडिट लिमिट नहीं पढ़ पाया' };
   return { name, head: head.en, headHi: head.hi, line: s.en, lineHi: s.hi, warn: s.warn, used: used.en, usedHi: used.hi, status: b.status };
 }
