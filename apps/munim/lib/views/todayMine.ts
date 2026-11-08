@@ -141,7 +141,7 @@ export function billLines(b: CardBill, label?: string) {
     due: { en: `Minimum ${R(b.minDue)}. Pay the full ${R(b.totalDue)} by ${dm(b.dueDate)}: on most cards, paying only the minimum means interest on the whole bill, and new purchases stop being interest-free (check your card’s terms).`,
       hi: `कम से कम ${R(b.minDue)}। ${dmHi(b.dueDate)} तक पूरे ${R(b.totalDue)} भरें: ज़्यादातर कार्ड पर सिर्फ़ कम से कम रक़म भरने से पूरे बिल पर ब्याज लगता है, और नई ख़रीद पर ब्याज-मुक्त दिन नहीं मिलते (अपने कार्ड की शर्तें देखें)।`, warn: false },
     paid_min: beforeDue
-      ? { en: `${R(b.paid)} paid so far, at least the minimum. Pay the other ${R(left)} by ${dm(b.dueDate)} to avoid interest.`, hi: `अब तक ${R(b.paid)} भरे, कम से कम रक़म से ज़्यादा या बराबर। ब्याज से बचने के लिए ${dmHi(b.dueDate)} तक बाक़ी ${R(left)} भरें।`, warn: false }
+      ? { en: `${R(b.paid)} paid so far, at least the minimum. Pay the other ${R(left)} by ${dm(b.dueDate)} to avoid interest.`, hi: `अब तक ${R(b.paid)} भरे, न्यूनतम रक़म या उससे ज़्यादा। ब्याज से बचने के लिए ${dmHi(b.dueDate)} तक बाक़ी ${R(left)} भरें।`, warn: false }
         : { en: `You paid ${R(b.paid)}, not the full bill. On most cards interest is now running on the whole bill: pay the other ${R(left)} to stop it (interest already charged shows on the next bill).`,
         hi: `आपने ${R(b.paid)} भरे, पूरा बिल नहीं। ज़्यादातर कार्ड पर अब पूरे बिल पर ब्याज लग रहा है: इसे रोकने के लिए बाक़ी ${R(left)} भरें (लग चुका ब्याज अगले बिल में दिखेगा)।`, warn: true },
     paid_part: beforeDue

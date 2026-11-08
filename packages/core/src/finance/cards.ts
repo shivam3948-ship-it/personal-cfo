@@ -48,7 +48,8 @@ export function cardBills(ds: Dataset, asOf: string, today?: string): CardBill[]
   const latest = new Map<string, CardStatement>();
   for (const s of ds.cardStatements) { if (!s.dueDate) continue; const p = latest.get(s.account); if (!p || s.periodEnd > p.periodEnd) latest.set(s.account, s); }
   const due = [...latest.values()];
-  const bankTo = ds.txns.filter((t) => t.account.startsWith('bank:')).reduce((m, t) => (t.date > m ? t.date : m), '');
+  const bankTo = ds.txns.filter((t) => t.account.startsWith('bank:') && t.source !== 'sms').reduce( // statements only: an SMS isn't a full record
+   (m, t) => (t.date > m ? t.date : m), '');
   return due.map((s): CardBill => {
     const paid = s.totalDue <= 0 ? 0 : paidTowards(s, ds, due);
     const status: BillStatus = s.totalDue <= 0 || paid >= s.totalDue - RUPEE ? 'paid_full'
