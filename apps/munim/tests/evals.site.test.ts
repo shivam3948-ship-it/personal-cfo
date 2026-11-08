@@ -24,7 +24,7 @@ const viaSite: Responder = async (history) => {
     if (r.status !== 429) break;
     await new Promise((res) => setTimeout(res, 20_000));
   }
-  return { answer: j.answer ?? '', lang: j.lang ?? 'en', engine: j.engine ?? 'rules', check: j.check ?? { ok: false, checked: 0, unverified: ['no answer'] }, actions: [],
+  return { answer: j.answer ?? '', lang: j.lang ?? 'en', engine: j.engine ?? 'rules', check: j.check ?? { ok: false, checked: 0, unverified: ['no answer'] }, actions: Array.isArray(j.actions) ? j.actions : [],
     trace: (j.tools ?? []).map((tool: string) => ({ tool, input: {}, result: {}, ms: 0 })), ms: j.ms ?? 0, llm: j.llm, adviceFired: !!j.adviceFired,
     ...(j.fallback ? { fallbackReason: 'site fell back to rules' } : {}) } as never;
 };
@@ -35,7 +35,7 @@ describe.skipIf(!on)(`Ask Munim eval set, through ${URL_}${prefetch ? ' (prefetc
     s = await runEval(await loadDemo(), { offline: false, cases, respond: viaSite });
     const llm = s.results.map((r) => r.ms);
     const p50 = [...llm].sort((a, b) => a - b)[Math.floor(llm.length / 2)] ?? 0;
-    const note = `\n\n**Site:** ${URL_} · prefetch ${prefetch ? 'asked' : 'not asked'} · ${cases.length} cases (private-mode cases left out) · p50 per case ${(p50 / 1000).toFixed(1)} s`;
+    const note = `\n\n**Site:** ${URL_} · prefetch ${prefetch ? 'asked' : 'not asked'} · ${cases.length} cases (private-mode cases left out) · p50 per case ${(p50 / 1000).toFixed(1)} s · numbers scored by the server's own check (tool results aren't returned to the eval)`;
     if (process.env.EVAL_WRITE) {
       const dir = path.join(__dirname, '..', 'evals', 'results'); fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, `${s.when}-site${prefetch ? '-prefetch' : ''}.md`), toMarkdown(s) + note);
