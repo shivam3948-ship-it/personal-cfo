@@ -160,7 +160,7 @@ class Component extends DCLogic {
     var d = !CR ? { hasScore: false, noScore: true } : {
       owe: CR.owe,
       oweSplit: (CR.hasLoans ? T(CR.oweCards + ' on card bills · ' + CR.oweLoans + ' on loans', 'कार्ड बिल पर ' + CR.oweCards + ' · लोन पर ' + CR.oweLoans) : T(CR.oweCards + ' on card bills, still to pay', 'कार्ड बिल पर ' + CR.oweCards + ', अभी भरना है'))
-        + (CR.unseenLoans ? T(' · plus ' + CR.unseenLoans + ' loan' + (CR.unseenLoans === 1 ? '' : 's') + ' whose balance Munim can’t see yet', ' · और ' + CR.unseenLoans + ' लोन जिनकी बाक़ी रक़म अभी नहीं दिखती') : ''),
+        + (CR.unseenLoans ? T(' · plus ' + CR.unseenLoans + ' loan' + (CR.unseenLoans === 1 ? '' : 's') + ' whose balance Munim can’t see yet', ' · और ' + CR.unseenLoans + (CR.unseenLoans === 1 ? ' लोन जिसकी' : ' लोन जिनकी') + ' बाक़ी रक़म अभी नहीं दिखती') : ''),
       hasMonthly: !!CR.monthly,
       monthly: CR.monthly ? T('EMIs: ' + CR.monthly + ' a month' + (CR.share !== null ? ' · ' + CR.share + '% of your salary' : ''), 'EMI: हर महीने ' + CR.monthly + (CR.share !== null ? ' · आपकी सैलरी का ' + CR.share + '%' : '')) : '',
       hasDue: CR.due.length > 0,

@@ -47,6 +47,8 @@ describe('credit picture review fixes (8 Nov)', () => {
     const extra = [t('2026-09-05', kestrel.emi + 5000, 'KESTREL AUTO FINANCE'), t('2026-10-05', kestrel.emi + 5000, 'KESTREL AUTO FINANCE')];
     const c = creditPicture({ ...ds, txns: [...ds.txns, ...extra] });
     expect(c.seenEmis).toEqual([]); // not counted twice
+    const other = [t('2026-09-12', 300000, 'KESTREL AUTO FINANCE'), t('2026-10-12', 300000, 'KESTREL AUTO FINANCE')]; // a second loan, same lender
+    expect(creditPicture({ ...ds, txns: [...ds.txns, ...other] }).seenEmis.map((e) => e.amount)).toEqual([300000]);
   });
   it('charges alone are not a carried balance; a bill whose payment Munim can’t see is not counted as owed', async () => {
     const ds = await loadDemo();

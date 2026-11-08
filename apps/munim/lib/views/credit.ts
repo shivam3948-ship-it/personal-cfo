@@ -31,12 +31,12 @@ export function buildCredit(ds: Dataset, _s?: unknown, today?: string) {
     name: l.lender, kind: LOAN[l.type][0], kindHi: LOAN[l.type][1], emi: `${R0(l.emi)} a month`, emiHi: `${R0(l.emi)} हर महीने`,
     left: `${R0(l.outstanding)} left · ${l.emisLeft} EMIs · ends ${my(l.endDate)}`, leftHi: `${R0(l.outstanding)} बाक़ी · ${l.emisLeft} EMI · ${myHi(l.endDate)} तक`,
     rate: `${l.ratePct}% a year`, rateHi: `${l.ratePct}% सालाना`,
-    interest: `about ${R0(l.interestLeft)} of interest still to pay, if every EMI is paid on time at today’s rate`, interestHi: `लगभग ${R0(l.interestLeft)} ब्याज और, अगर हर EMI समय पर और इसी दर पर भरें`,
+    interest: `about ${R0(l.interestLeft)} of interest still to pay, if every EMI is paid on time at today’s rate`, interestHi: `लगभग ${R0(l.interestLeft)} ब्याज और देना होगा, अगर हर EMI समय पर और इसी दर पर भरें`,
   }));
   const seen = c.seenEmis.map((e) => ({
-    name: cleanMerchant(e.payee).replace(/\b\d{6,}\b/g, '').trim(), line: `${R0(e.amount)} every month, around the ${ord(e.day)} · seen in ${e.months} months`, lineHi: `हर महीने क़रीब ${e.day} तारीख़ को ${R0(e.amount)} · ${e.months} महीनों में दिखा`,
+    name: cleanMerchant(e.payee).replace(/[A-Z]{0,4}\d{6,}/gi, '').replace(/\s+/g, ' ').trim(), line: `${R0(e.amount)} every month, around the ${ord(e.day)} · seen in ${e.months} months`, lineHi: `हर महीने क़रीब ${e.day} तारीख़ को ${R0(e.amount)} · ${e.months} महीनों में दिखा`,
   }));
-  const due = c.due.map((d) => ({ date: `${d.approx ? '~' : ''}${dm(d.date)}`, dateHi: `${d.approx ? '~' : ''}${dmHi(d.date)}`, label: d.kind === 'emi' && d.approx ? cleanMerchant(d.label).replace(/\b\d{6,}\b/g, '').trim() : d.label, what: d.kind === 'card' ? 'Card bill' : 'EMI', whatHi: d.kind === 'card' ? 'कार्ड बिल' : 'EMI', amount: inr(d.amount, 'auto') }));
+  const due = c.due.map((d) => ({ date: `${d.approx ? '~' : ''}${dm(d.date)}`, dateHi: `${d.approx ? '~' : ''}${dmHi(d.date)}`, label: d.kind === 'emi' && d.approx ? cleanMerchant(d.label).replace(/[A-Z]{0,4}\d{6,}/gi, '').replace(/\s+/g, ' ').trim() : d.label, what: d.kind === 'card' ? 'Card bill' : 'EMI', whatHi: d.kind === 'card' ? 'कार्ड बिल' : 'EMI', amount: inr(d.amount, 'auto') }));
   const sc = c.score;
   const score = sc ? {
     score: sc.score, asOf: sc.asOf,

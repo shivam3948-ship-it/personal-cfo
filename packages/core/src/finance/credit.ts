@@ -36,12 +36,13 @@ const RUPEE = 100;
 function seenEmis(ds: Dataset, docs: { emi: Paise; lender: string }[]): SeenEmi[] {
   const bankTxns = ds.txns.filter((t) => t.account.startsWith('bank:') && t.source !== 'sms');
   const bankTo = bankTxns.reduce((m, t) => (t.date > m ? t.date : m), '');
-  const docKeys = new Set(docs.map((d) => merchantKey({ desc: d.lender } as Txn)).filter(Boolean));
+  const docKey = (d: { lender: string }) => merchantKey({ desc: d.lender } as Txn);
   const groups: { key: string; amount: Paise; ts: Txn[] }[] = [];
   for (const t of bankTxns) {
     if (t.dir !== 'debit' || t.category !== 'Loan EMI') continue;
     const key = merchantKey(t) || t.desc.slice(0, 20).toLowerCase();
-    if (docs.some((d) => Math.abs(d.emi - t.amount) <= RUPEE) || docKeys.has(key)) continue; // a loan paper already covers it
+    // a loan paper covers it: the same amount, or the same lender at a nearby amount (a reset EMI) — not every EMI from that lender
+    if (docs.some((d) => Math.abs(d.emi - t.amount) <= RUPEE || (docKey(d) === key && Math.abs(d.emi - t.amount) <= d.emi * 0.2))) continue;
     const g = groups.find((x) => x.key === key && Math.abs(x.amount - t.amount) <= x.amount * 0.05);
     if (g) g.ts.push(t); else groups.push({ key, amount: t.amount, ts: [t] });
   }
