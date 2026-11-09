@@ -57,11 +57,14 @@ const INTENTS: [string, RegExp][] = [
 // call instead of asking for the tool first. Only tools that take no input and change nothing: never an action, a calculator
 // that needs numbers, or the owner's picks. A wrong guess costs nothing but tokens: the model can still call any tool.
 const PREFETCH: Record<string, string> = {
-  briefing: 'sunday_briefing', spend: 'spending_breakdown', subscriptions: 'subscriptions_and_leaks', advice: 'advice_plan', unusual: 'unusual_spending',
+  briefing: 'sunday_briefing', spend: 'spending_breakdown', subscriptions: 'subscriptions_and_leaks', unusual: 'unusual_spending', // not advice_plan: on
+  // advice questions the model chooses its own tools (site eval 9 Nov: a prefetched plan pulled "just tell me which fund" off the no-licence reply)
   upcoming: 'upcoming_dues', loans: 'loans_overview', loanleft: 'loans_overview', audit: 'money_audit', market: 'portfolio_xray', portfolio: 'portfolio_xray',
   overview: 'money_overview', insurance: 'insurance_overview', credit: 'credit_health', invest: 'emergency_fund', emergency: 'emergency_fund',
 };
-export const prefetchTool = (text: string): string | null => PREFETCH[intentOf(text)] ?? null;
+// prepaying or closing a loan needs the simulator with the user's amount: a prefetched loan list made the model skip it (site eval 9 Nov)
+const PREPAY = /prepay|pre-pay|part.?pay|foreclos|close (?:it|the loan|(?:my |the )?(?:car |home |personal )?loan) early|loan band kar|pay (?:it )?off early|jaldi chuka|जल्दी चुका|पहले चुका|प्रीपे/i;
+export const prefetchTool = (text: string): string | null => (PREPAY.test(text) ? null : PREFETCH[intentOf(text)] ?? null);
 
 export function intentOf(text: string): string {
   for (const [k, re] of INTENTS) if (re.test(text)) return k;

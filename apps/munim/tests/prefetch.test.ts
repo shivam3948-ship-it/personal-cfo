@@ -15,6 +15,12 @@ describe('prefetch (D-095)', () => {
     expect(prefetchTool('मेरा पैसा कहाँ जा रहा है?')).toBe('spending_breakdown');
     expect(prefetchTool('Remind me to pay rent on 1st')).toBeNull();
     expect(prefetchTool('What is my PAN?')).toBeNull();
+    expect(prefetchTool('क्या कार लोन जल्दी चुका दूँ?')).toBeNull(); // the simulator needs the amount: the model calls it
+    expect(prefetchTool('Should I prepay ₹50,000 on my car loan?')).toBeNull();
+    expect(prefetchTool('car loan jaldi chuka du kya? 50 hazaar extra hai')).toBeNull();
+    expect(prefetchTool('Can I close my car loan early?')).toBeNull();
+    expect(prefetchTool('How much is left on my car loan?')).toBe('loans_overview');
+    expect(prefetchTool('Just tell me which fund to buy, I insist')).toBeNull(); // advice: the model picks its own tools
   });
   it('answers in one model call, with the prefetched figures trusted by the number check', async () => {
     const ds = await loadDemo();

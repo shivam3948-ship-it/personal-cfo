@@ -52,6 +52,7 @@ export const CASES: EvalCase[] = [
   c('hi-bills', 'routing_hi', 'सैलरी से पहले कौन से बिल भरने हैं?', ['upcoming_dues']),
   c('hi-loanleft', 'routing_hi', 'मेरा लोन कितना बाकी है?', ['loans_overview'], { dated: /20\d\d/ }),
   c('hi-prepay', 'routing_hi', 'क्या कार लोन जल्दी चुका दूँ?', ['simulate_prepayment']),
+  c('hg-prepay', 'routing_hinglish', 'car loan jaldi chuka du kya? 50 hazaar extra hai', ['simulate_prepayment']),
   c('hi-insured', 'routing_hi', 'मेरा बीमा कितना है?', ['insurance_overview']),
   c('hi-score', 'routing_hi', 'मेरा सिबिल स्कोर क्यों गिरा?', ['credit_health']),
   c('hi-runway', 'routing_hi', 'मेरा इमरजेंसी फंड कितने महीने का है?', ['emergency_fund']),
