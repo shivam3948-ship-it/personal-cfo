@@ -16,9 +16,9 @@ jobs:
         with: { node-version: 20 }
       - working-directory: apps/munim
         run: npm ci --no-audit --no-fund
-      - run: sleep 240
       - working-directory: apps/munim
         run: |
           if [ "${{ matrix.prefetch }}" = "1" ]; then export EVAL_PREFETCH=1; fi
-          RUN_SITE=1 npx vitest run tests/evals.site.test.ts > site.txt 2>&1 || true
-          sed 's/\x1b\[[0-9;]*m//g' site.txt | grep -E "^\||^\*\*|Tests |Assertion" | head -60
+          RUN_SITE=1 EVAL_WRITE=1 npx vitest run tests/evals.site.test.ts > site.txt 2>&1 || true
+          tail -5 site.txt
+          cat evals/results/*-site*.md
