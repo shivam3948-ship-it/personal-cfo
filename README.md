@@ -1,11 +1,45 @@
-# Personal CFO (working name)
+# Munim: a personal CFO for India
 
-An AI personal CFO for Indian investors. Upload your mutual fund statement (CAS), see what's really in your portfolio, and get plain-language explanations you can verify, with no commissions behind the answers.
+A Hindi/English money app for first-time savers in tier-2 and tier-3 India: a quick daily check-in, where your money went, whether your investing is really working, and an assistant you can ask by voice or text.
 
-**Status:** Phase 0 docs complete. First working code: `apps/voice-cfo` (Munim), a Hindi/English voice CFO built for the Bachatt × Digia buildathon (docs/16–18).
-**Regulatory stance (D-021):** before the licence, invite-only users get guidance with a disclaimer (*not SEBI-registered investment advice*), category level only, free, with no public marketing. **Go-to-market only after a SEBI RIA licence** (see `docs/03-regulatory-compliance.md`, `docs/12-advice-engine.md`).
+**Live demo:** https://personal-cfo-ruddy.vercel.app (sample data by default; you can try your own statements)
 
-## Phases
+## What it does
+- **Today:** a daily check-in, one action at a time, with the next step on your money path (starter buffer → costly debt → emergency fund → insurance → investing)
+- **Spends:** reads bank and card statements and sorts spending automatically, including UPI to people and small shops
+- **Invest:** a portfolio x-ray from your CAS: true cost, regular vs direct, your return vs your funds' return
+- **Credit:** what you owe, what's due next, card bills with limit used, loans and EMIs seen in your statements
+- **Ask Munim:** one voice/text button on every screen, in Hindi or English
+
+Reads HDFC, SBI, Canara and Federal Bank savings statements, HDFC and Axis credit card statements, and CAMS/KFintech CAS.
+
+## How it treats your data and money advice
+- Statements are read on the phone; only computed, filtered totals go to the AI (D-036, D-050)
+- Every number is computed in code, never by the model
+- A second model reviews answers about investments against the advice rules (D-069)
+- A browser-only mode runs with no AI model at all
+- Not SEBI-registered: answers are for education, not investment advice
+
+## Repo map
+| Path | What |
+|---|---|
+| `apps/munim` | The current app (Next.js, mobile-first) |
+| `packages/core` | Statement readers and the money engine |
+| `apps/munim/evals` | Offline, live and red-team evals; dated results in `evals/results` |
+| [DECISIONS.md](DECISIONS.md) | Every decision and trade-off, with the options rejected |
+| [docs/42-design-principles.md](docs/42-design-principles.md) | Design principles and the UX reasoning behind each screen |
+| `apps/voice-cfo`, `apps/web` | Earlier versions, incl. the Bachatt × Digia buildathon build |
+
+## Run it
+```bash
+cd apps/munim
+npm install
+npm run dev   # http://localhost:3002
+npm test
+```
+Works without API keys in browser-only mode; add your Anthropic and Sarvam keys in `apps/munim/.env.local` for AI answers and voice.
+
+## Original phase plan
 1. **Portfolio X-ray + Ask your CFO**: overlap, true cost, asset mix, XIRR, grounded AI explanations
 2. **Savings insights**: bank and card statements → leakage and investable surplus
 3. **Goal-based planning**: RIA required
