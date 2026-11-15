@@ -24,12 +24,14 @@ export function isEcho(heard: string, saying: string): boolean {
 /** End of turn (D-106): does this transcript read as a finished question or request? A pause after a statement ("मेरा स्मॉल
  *  कैप फंड गिर रहा है।") usually means more is coming ("क्या मुझे बेच देना चाहिए?"), so Munim waits a moment instead of answering
  *  half the question (teardown, 15 Nov: both runs answered the first half). Short replies ("हाँ", "ok") are complete. */
-const ASKS = /[?？]|\b(?:what|where|when|why|how|which|who|whom|whose|should|shall|can|could|would|will|is|are|am|was|do|does|did|tell|show|give|help|explain|check|list|remind|kya|kyaa|kahan|kahaan|kitna|kitni|kitne|kaise|kab|kyun|kyon|kaun|batao|bataiye|bataye|dikhao|dikhaiye|samjhao)\b|क्या|कहाँ|कहां|कितन|कैसे|कैसा|कब|क्यों|कौन|बताओ|बताइए|बताइये|बताएं|बताएँ|बताना|बता दो|दिखाओ|दिखाइए|समझाओ|समझाइए|चाहिए|सकता|सकती|सकते/i;
+const WH = /\b(?:what|where|when|why|how|which|who|whom|whose|tell|show|give|help|explain|check|list|remind|kya|kyaa|kahan|kahaan|kitna|kitni|kitne|kaise|kab|kyun|kyon|kaun|batao|bataiye|bataye|dikhao|dikhaiye|samjhao)\b/i;
+const AUX_FIRST = /^(?:is|are|am|was|were|do|does|did|will|can|could|would|should|shall|may)\b/i; // "Is it safe", not "It is falling"
+const HI = /(?<![\p{L}\p{M}])(?:क्या|कहाँ|कहां|कितना|कितनी|कितने|कैसे|कैसा|कैसी|कब|क्यों|कौन|बताओ|बताइए|बताइये|बताएं|बताएँ|बताना|बता|दिखाओ|दिखाइए|समझाओ|समझाइए|चाहिए|सकता|सकती|सकते)(?![\p{L}\p{M}])/u;
 export function turnComplete(text: string): boolean {
   const t = text.trim(); if (!t) return false;
   if (t.split(/\s+/).length <= 2) return true;
-  const last = t.split(/(?<=[.?!।])\s+/).filter(Boolean).at(-1) ?? t;
-  return ASKS.test(last);
+  const last = (t.split(/(?<=[.?!।])\s+/).filter(Boolean).at(-1) ?? t).trim();
+  return /[?？]/.test(last) || WH.test(last) || AUX_FIRST.test(last) || HI.test(last);
 }
 export const TURN_WAIT_MS = 900; // how long a statement waits for the rest of the question
 

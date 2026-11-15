@@ -41,3 +41,12 @@ describe('end of turn (D-106)', () => {
     expect(turnComplete('ok thanks')).toBe(true);
   });
 });
+describe('end of turn: statements in English and Hindi (D-106 review)', () => {
+  it('a statement with "is" or a Hindi word containing a question stem still waits', () => {
+    expect(turnComplete('My small cap fund is falling.')).toBe(false);
+    expect(turnComplete('It is down twenty percent this month.')).toBe(false);
+    expect(turnComplete('Is it safe to keep money in a liquid fund')).toBe(true);
+    expect(turnComplete('Can you check my card bill')).toBe(true);
+    expect(turnComplete('मैं कबाड़ी की दुकान चलाता हूँ।')).toBe(false); // "कब" inside a word
+  });
+});
