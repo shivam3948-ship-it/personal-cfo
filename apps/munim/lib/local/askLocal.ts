@@ -31,6 +31,9 @@ import { traceId } from '@/lib/telemetryCore';
 import { scrub } from './scrub';
 
 /** Your statements and CAS as one dataset, or null when nothing has been added on this phone. */
+/** On your own data with nothing added yet: Munim asks for a statement, never answers about the sample family (15 Nov). */
+export const NO_DATA = 'Add a statement first: on your own data, Munim answers only from what you add.';
+export const NO_DATA_HI = 'पहले एक स्टेटमेंट जोड़ें: आपके अपने डेटा पर मुनीम सिर्फ़ उसी से जवाब देता है जो आप जोड़ते हैं।';
 export async function myData(): Promise<Dataset | null> {
   const [ds, cas] = await Promise.all([myDataset(), loadCas()]);
   if (!ds && !cas) return null;
@@ -83,7 +86,7 @@ let prefetchAsk: Promise<'on' | 'test' | 'off'> | null = null;
 const prefetchOnServer = () => (prefetchAsk ??= fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => (j.prefetch === 'on' || j.prefetch === 'test' ? j.prefetch : 'off') as 'on' | 'test' | 'off').catch(() => 'off' as const));
 
 export async function askLocal(history: Turn[], via?: 'voice' | 'typed'): Promise<LocalReply> {
-  const ds = await myData(); if (!ds) throw new Error('Add a statement first.');
+  const ds = await myData(); if (!ds) throw new Error(NO_DATA);
   await loadActions();
   const p = getProfile();
   const last = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';

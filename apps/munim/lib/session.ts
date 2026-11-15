@@ -1,6 +1,6 @@
 // Who is asking and whose money. v2 starts with the sample family only; sign-in and real uploads plug in here last
 // (D-031) without any screen changing: screens only ever see a Session.
-import type { Dataset } from '@core/types';
+import { emptyDataset, type Dataset } from '@core/types';
 import { loadDemo } from '@core/demo';
 import { adviceUnlocked } from './adviceUnlock';
 
@@ -29,3 +29,7 @@ export async function getSession(req: Request): Promise<Session> {
   if (adviceUnlocked(req)) return { ...sample, adviceMode: 'private' };
   return preview ? { ...sample, adviceMode: 'guided' } : sample;
 }
+
+/** The frame your own data is folded into (/api/view/<screen>?base=empty): an empty dataset, so no sample figure can sit beside
+ *  yours (the owner, 15 Nov). Your own data is never 'demo' (AGENTS 1a): guided, or private when the owner unlocked advice. */
+export const ownFrame = (s: Session): Session => ({ ...s, id: 'mine', kind: 'user', displayName: null, adviceMode: s.adviceMode === 'private' ? 'private' : 'guided', dataset: async () => emptyDataset('Your statements') });

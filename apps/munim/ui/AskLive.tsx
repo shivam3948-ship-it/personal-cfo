@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
 import { send, usageInstall, usageOff } from '@/lib/telemetry';
 import { answerProps } from '@/lib/telemetryCore';
-import { askLocal } from '@/lib/local/askLocal';
+import { askLocal, NO_DATA, NO_DATA_HI } from '@/lib/local/askLocal';
 import { DISCLAIMER } from '@/lib/advice';
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
@@ -199,7 +199,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           ms: { agent: agentMs, ...(stt?.ms !== undefined ? { stt: stt.ms } : {}), ...(stt?.audioMs ? { audio: stt.audioMs } : {}) }, ...(stt ? { stt: stt.mode } : {}), ...(j.llm ? { tokens: j.llm } : {}), ...(j.judge ? { judge: j.judge } : {}) });
       }
       if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang }); // asked by voice → answered by voice; typed → stays quiet
-    } catch (e) { ackOk.current = false; setTalkOn(false); setErr(hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
+    } catch (e) { ackOk.current = false; setTalkOn(false); setErr((e as Error).message === NO_DATA ? (hi ? NO_DATA_HI : NO_DATA) : hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
     finally { setBusy(false); input.current?.focus(); }
   }
   const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content;

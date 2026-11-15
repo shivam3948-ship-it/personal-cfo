@@ -15,14 +15,23 @@ import { buildTodayMine, dateLineHi } from '@/lib/views/todayMine';
 import { getProfile } from './profile';
 import { emptyDataset } from '@core/types';
 import { vsBenchmarks } from '@core/portfolio/engine';
+import { latestBankBalance } from '@core/finance/picture';
+import { essentialsByMonth, monthlyIncome } from '@core/finance/essentials';
 // Fold your on-phone CAS into the Invest and X-ray view models, in the browser, with the same code the server uses for the
 // sample family. Overlap needs each fund's holdings, which we don't have for real funds yet (D-OPEN-3), so that card hides.
 
 type View = Record<string, unknown>;
 export async function withMyCasInvest(v: View): Promise<View> {
-  const c = await loadCas(); if (!c) return v;
-  return { ...v, ...ownMode(v), PF: pfFrom(c), XRS: xrsFrom(xrayFrom(c, {}, 'no fund holdings yet')), CAS_SRC: 'yours', MISSING: c.midway ?? [], _mine: true };
+  // v is the empty frame (?base=empty), never the sample family's view (15 Nov): the safety net comes from your bank statements
+  const [c, ds] = await Promise.all([loadCas(), myDataset()]);
+  if (!c && !ds) return { ...v, ...ownMode(v), _state: 'empty', _mine: true };
+  const bank = ds ? latestBankBalance(ds) : null;
+  return { ...v, ...ownMode(v), ...(ds ? { ESSM: essentialsByMonth(ds), BANK: bank?.balance ?? 0, BANK_ASOF: bank?.date || null, INCOME_M: monthlyIncome(ds) } : {}),
+    ...(c ? { PF: pfFrom(c), XRS: xrsFrom(xrayFrom(c, {}, 'no fund holdings yet'), await benchRows(c)), MISSING: c.midway ?? [] } : {}), CAS_SRC: 'yours', _mine: true };
 }
+/** How many of your funds can be set against their index (public index NAVs from the server; your funds never leave the phone). */
+const benchSeries = () => fetch('/api/benchmarks').then((r) => r.json()).then((j) => j.series ?? {}).catch(() => ({}));
+async function benchRows(c: NonNullable<Awaited<ReturnType<typeof loadCas>>>) { return vsBenchmarks(c.holdings, await benchSeries(), c.asOf)?.rows?.length ?? 0; }
 export async function withMyCasXray(v: View): Promise<View> {
   const c = await loadCas(); if (!c) return v;
   const x = xrayFrom(c, {}, 'no fund holdings yet');

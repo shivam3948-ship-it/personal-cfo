@@ -32,13 +32,17 @@ export function Screen({ C, view, props = {}, check, patch, sample = false }: { 
   const [err, setErr] = useState<string | null>(null);
   const [n, setN] = useState(0);
   useEffect(() => {
+    // The two modes never mix (the owner, 15 Nov): the sample family is only ever the sample family, and on your own data a
+    // screen is folded into an EMPTY frame (?base=empty), so no sample figure can sit beside yours. A screen that can't show
+    // your data yet says so instead of falling back to the sample.
+    const mine = getProfile()?.start === 'mine';
+    if (mine && (sample || !view || !patch)) { setData({ _notMine: sample ? 'later' : 'add' }); track('screen_viewed', { screen: view ?? 'static', mine: true }); return; }
     if (!view) { track('screen_viewed', { screen: 'static' }); return; }
     let live = true;
-    fetch(`/api/view/${view}`, { cache: 'no-store' }).then(async (r) => {
+    fetch(`/api/view/${view}${mine ? '?base=empty' : ''}`, { cache: 'no-store' }).then(async (r) => {
       const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'Could not load this screen.');
-      // the sample family stays the sample family even when this phone also holds your statements (they stay saved)
-      const v = patch && getProfile()?.start !== 'sample' ? await patch(j.view).catch(() => j.view) : j.view;
-      if (live) { setData(v); setErr(null); track('screen_viewed', { screen: view }); }
+      const v = mine ? await patch!(j.view) : j.view; // an error shows the error state, never the sample
+      if (live) { setData(mine && !(v as Record<string, unknown>)._mine ? { _notMine: 'add' } : v); setErr(null); track('screen_viewed', { screen: view }); }
     }).catch((e) => { if (live) { setErr((e as Error).message); track('view_load_failed', { screen: view }); } });
     return () => { live = false; };
   }, [view, n]);
@@ -46,6 +50,7 @@ export function Screen({ C, view, props = {}, check, patch, sample = false }: { 
   const bad = check?.(data);
   if (bad) return <Failed message={bad} onRetry={() => { location.href = '/spends'; }} retryLabel="Back" />;
   const d = data as Record<string, unknown>;
+  if (d._notMine) return <NotOnYourData kind={d._notMine as 'later' | 'add'} hi={prof?.lang === 'hi'} />;
   const showsSample = sample || (!!view && !d._mine);
   const screen = <C {...props} variant={props.variant ?? variantOf(prof)} theme={theme} state={(d._state as string) ?? 'ready'} data={data} />;
   if (!showsSample) return screen;
@@ -60,6 +65,22 @@ export function SampleBar({ hi }: { hi: boolean }) {
       <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mari)', flex: 'none' }} />
       <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><b style={{ fontWeight: 600 }}>{hi ? 'नमूना डेटा' : 'Sample data'}</b>{hi ? ' · रोहन, एक काल्पनिक परिवार' : ' · Rohan, a made-up family'}</span>
       <a href="/invest/add" onClick={() => track('sample_bar_add_tapped')} style={{ flex: 'none', fontWeight: 600, color: 'var(--link)', textDecoration: 'none', minHeight: 40, display: 'inline-flex', alignItems: 'center' }}>{hi ? 'अपना जोड़ें ›' : 'Add yours ›'}</a>
+    </div>
+  );
+}
+
+/** On your own data, a screen with nothing of yours to show: never the sample family in its place (15 Nov). `later`: the screen
+ *  only exists for the sample so far; `add`: it needs a statement or a CAS you haven't added. */
+export function NotOnYourData({ kind, hi }: { kind: 'later' | 'add'; hi: boolean }) {
+  const t = kind === 'later'
+    ? (hi ? ['यह पेज अभी सिर्फ़ नमूना परिवार के लिए है', 'आपके अपने डेटा पर यह जल्द आएगा। नमूना देखने के लिए "आप" पेज पर नमूना परिवार चुनें।'] : ['This page only works on the sample family so far', 'It isn’t built for your own data yet. To look at it, switch to the sample family on the You page.'])
+    : (hi ? ['इसके लिए आपका स्टेटमेंट चाहिए', 'बैंक या कार्ड स्टेटमेंट, या म्यूचुअल फ़ंड CAS जोड़ें। सब कुछ आपके फ़ोन पर पढ़ा जाता है।'] : ['This needs your statement', 'Add a bank or card statement, or your mutual fund CAS. Everything is read on your phone.']);
+  return (
+    <div role="status" style={{ maxWidth: 480, margin: '0 auto', padding: '48px 20px', display: 'grid', gap: 12, textAlign: 'center' }}>
+      <b style={{ fontSize: 18, fontWeight: 600 }}>{t[0]}</b>
+      <span style={{ fontSize: 14.5, color: 'var(--muted)' }}>{t[1]}</span>
+      {kind === 'add' && <a href="/invest/add" style={{ justifySelf: 'center', fontWeight: 600, color: 'var(--link)', textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>{hi ? 'स्टेटमेंट जोड़ें ›' : 'Add a statement ›'}</a>}
+      <a href="/" style={{ justifySelf: 'center', color: 'var(--link)', textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>{hi ? 'आज पर वापस' : 'Back to Today'}</a>
     </div>
   );
 }

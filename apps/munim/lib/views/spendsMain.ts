@@ -52,7 +52,9 @@ export interface SpendsOpts { reportFrom?: string | null }
 
 export function buildSpendsMain(ds: Dataset, opts: SpendsOpts = { reportFrom: 'September' }) {
   const asOf = asOfDate(ds), d = day(asOf);
-  const cov = coverage(ds);
+  const cov0 = coverage(ds);
+  // no statements yet (the empty frame for your own data, ?base=empty): one empty month, so the screen can show its get-started state
+  const cov = cov0.length ? cov0 : [{ key: asOf.slice(0, 7), from: `${asOf.slice(0, 7)}-01`, to: asOf, complete: false }];
   // this month is the LATEST month in the statements (a partial first month, e.g. a statement starting 30 Oct last year, is
   // not "now"); past months are the complete ones before it, at most 11, so two Octobers never share a key (keys are MM)
   const cur = cov.at(-1)!, done = cov.filter((c) => c.complete && c.key !== cur.key).slice(-11);

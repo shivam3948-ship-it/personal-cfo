@@ -87,10 +87,12 @@ button{font:inherit;color:inherit}
 
       <sc-if value="{{x.isNext}}" hint-placeholder-val="{{ true }}">
         <section aria-labelledby="next" style="flex: none; position: relative; background: var(--card); border-radius: 22px; padding: 16px; display: grid; gap: 8px; box-shadow: 0 0 0 1px var(--hair)">
-          <button type="button" onClick="{{openPath}}" aria-haspopup="dialog" style="justify-self: start; min-height: 28px; padding: 0; border: 0; background: transparent; font-size: 13px; font-weight: 600; color: var(--link); cursor: pointer; text-align: left">{{d.nextKicker}} · {{c.step3}} ›</button>
+<sc-if value="{{d.showPath}}" hint-placeholder-val="{{ true }}">
+                    <button type="button" onClick="{{openPath}}" aria-haspopup="dialog" style="justify-self: start; min-height: 28px; padding: 0; border: 0; background: transparent; font-size: 13px; font-weight: 600; color: var(--link); cursor: pointer; text-align: left">{{d.nextKicker}} · {{c.step3}} ›</button>
           <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px">
             <sc-for list="{{d.steps}}" as="s" hint-placeholder-count="5"><span style="height: 4px; border-radius: 2px; background: {{s.seg}}; box-shadow: {{s.segRing}}"></span></sc-for>
           </div>
+          </sc-if>
           <h2 id="next" class="serif" style="margin: 0; font-size: 21px; line-height: 1.15">{{c.nextTitle}}</h2>
           <div role="img" aria-label="{{d.efLabel}}" style="display: flex; gap: 2px; height: 10px; border-radius: 5px; overflow: hidden; background: var(--tint); margin-top: 2px">
             <span style="width: {{d.bankW}}; background: var(--btn)"></span>
@@ -171,7 +173,7 @@ button{font:inherit;color:inherit}
         <span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 2px; background: var(--hair2); justify-self: center"></span>
         <div style="display: flex; justify-content: space-between; align-items: center"><h2 class="serif" style="margin: 0; font-size: 24px">{{c.planTitle}}</h2>
           <button type="button" aria-label="{{c.close}}" onClick="{{closeSheets}}" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button></div>
-        <span style="font-size: 14px; color: var(--ink2); margin-top: -4px">{{d.gapLine}} {{c.orbitNote}}</span>
+        <span style="font-size: 14px; color: var(--ink2); margin-top: -4px">{{d.gapLine}} {{d.orbitNote}}</span>
         <b id="amt" style="font-size: 15px; font-weight: 600">{{c.amtHead}}</b>
         <div role="radiogroup" aria-labelledby="amt" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
           <sc-for list="{{d.pills}}" as="p" hint-placeholder-count="3">
@@ -370,12 +372,20 @@ class Component extends DCLogic {
     var DISC = 'Test build on sample data. For education only, not investment advice.';   // the advice mode's disclaimer, from the server
     var CAS_SRC = 'sample';   // whose CAS: 'sample' (the demo family) or 'yours' (read on this phone)
     var XRS = { count: 5, taxSave: 1562500, feeYr: 834902, fdExtra: 23908946 };   // from the x-ray (xray_v2/v3_numbers.py): things to act on, tax saved later, regular-plan fees/yr, extra vs a 7% FD   // the savings pot: nothing saved through Munim yet in this scenario
+    // ---- your own data (15 Nov, "never mix sample data with uploaded data"): only what you added, never a sample figure or line ----
+    var own = CAS_SRC === 'yours';
+    var bankOn = !!ESSM && Object.keys(ESSM).length > 0;
+    if (own) casOn = !!PF;
+    if (!bankOn) ESSM = {};
+    if (!PF) PF = { asOf: (this.props.data && this.props.data.BANK_ASOF) || new Date().toISOString().slice(0, 10), value: 0, cost: 0, xirr: 0, funds: [], sipGaps: 0, sells: 0, since: '' };
+    if (!XRS) XRS = { count: 0, taxSave: 0, feeYr: 0, fdExtra: 0 };
+    if (!ENDOW) ENDOW = { irrLo: 0, irrHi: 0 };
     // ---- safety net (D-040) ----
-    var months = Object.keys(ESSM), cats = Object.keys(ESSM[months[0]]);
-    var essAvg = Math.round(sum(months.map(function (m) { return sum(cats.map(function (k) { return ESSM[m][k]; })); })) / months.length), target = 6 * essAvg;
+    var months = Object.keys(ESSM), cats = months.length ? Object.keys(ESSM[months[0]]) : [];
+    var essAvg = months.length ? Math.round(sum(months.map(function (m) { return sum(cats.map(function (k) { return ESSM[m][k]; })); })) / months.length) : 0, target = 6 * essAvg;
     var debtFund = casOn ? sum(PF.funds.filter(function (f) { return f[3] === 'debt'; }).map(function (f) { return f[4]; })) : 0;
-    var have = BANK + debtFund, gap = Math.max(0, target - have), mCov = Math.round(have / essAvg * 10) / 10;
-    var pct = function (v) { return Math.min(100, Math.round(v / target * 1000) / 10) + '%'; };
+    var have = BANK + debtFund, gap = Math.max(0, target - have), mCov = essAvg ? Math.round(have / essAvg * 10) / 10 : 0;
+    var pct = function (v) { return target ? Math.min(100, Math.round(v / target * 1000) / 10) + '%' : '0%'; };
     var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var BASE = (this.props.data && this.props.data.BANK_ASOF) || PF.asOf; var landing = function (n) { var i = (+BASE.slice(5, 7) - 1) + n; return (hi ? MONHI : MON)[i % 12] + ' ' + (+BASE.slice(0, 4) + Math.floor(i / 12)); }; // counted from your bank statement's month (the safety net is bank money), not a fixed October
     var chip = function (on) { return { bg: on ? 'var(--btn)' : 'var(--card)', ink: on ? 'var(--on-btn)' : 'var(--ink)', ring: on ? 'none' : 'inset 0 0 0 1px var(--hair2)' }; };
@@ -403,7 +413,8 @@ class Component extends DCLogic {
       ['और निवेश', 'और निवेश करें', 'बाद में', 'आप पहले से हर महीने ₹10,000 निवेश करते हैं। कदम 1–4 पूरे होने के बाद और बढ़ाएँ।']].forEach(function (h, i) { Object.assign(steps[i], { short: h[0], t: h[1], st: h[2], d: h[3] }); });
     // ---- section order (D-041): investing first for anyone with investments (P0), then spare money (P1), then cover (P2); no CAS yet = next move first.
     //      Guard from option A: the spare-money card always shows the money-path position, so an open safety step stays visible under the investing card ----
-    var order = casOn ? ['invest', 'next', 'cover'] : ['next', 'addcas', 'cover'];
+    //      Your own data: no money path or policies (written for the sample family); the safety net only from your bank statements
+    var order = own ? (casOn ? ['invest', bankOn && 'next'] : [bankOn && 'next', 'addcas']).filter(Boolean) : casOn ? ['invest', 'next', 'cover'] : ['next', 'addcas', 'cover'];
     var sections = order.map(function (k) { return { isPath: k === 'path', isNext: k === 'next', isInvest: k === 'invest', isAddCas: k === 'addcas', isCover: k === 'cover' }; });
     var policies = [
       { name: 'Term life · Tarang · ₹1 crore', sub: 'Next premium 2 Nov', fact: TERM_X + '× your yearly income. A common rule of thumb is 10×.', hasAct: true, actHead: 'To reach 10×:', act: 'about ' + R(termGap) + ' more cover (' + R(termNeed) + ' in all on ' + R(INCOME_M * 12) + ' a year). Pure term plans are the category to compare.', tag: 'Below rule of thumb', tagInk: 'var(--mari-ink)', tagBg: 'var(--mari-tint)' },
@@ -432,14 +443,15 @@ class Component extends DCLogic {
       essLink: 'Essentials ' + R(essAvg) + ' a month · what counts',
       essRows: cats.map(function (k) { return { l: k === 'Fixed costs' ? 'Fixed costs (rent, EMIs, insurance)' : k, v: R(Math.round(sum(months.map(function (m) { return ESSM[m][k]; })) / months.length)) }; }),
       xirr: PF.xirr + '%', earnedLine: R(PF.cost) + ' put in → ' + R(PF.value) + ' today', fdLine: R(Math.abs(XRS.fdExtra)) + (XRS.fdExtra < 0 ? ' less than an FD' : ' more than an FD'), // 7 Nov: never '₹-52,532 more'
-      verdict: (HB ? 'SIPs ' + HB.sip + '% a year, one-time ' + HB.one + '%' : 'Ahead of your funds on ' + ahead + ' of ' + cmp.length) + ' · no SIP paused since ' + PF.since, xrayCount: XRS.count, xrayLine: R(XRS.taxSave) + ' less tax · ' + R(XRS.feeYr) + ' a year in fees',
+      verdict: (HB ? 'SIPs ' + HB.sip + '% a year, one-time ' + HB.one + '%' : 'Ahead of your funds on ' + ahead + ' of ' + cmp.length) + ' · no SIP paused since ' + PF.since, xrayCount: XRS.count, xrayLine: R(XRS.taxSave) + ' less tax' + (XRS.feeYr > 0 ? ' · ' + R(XRS.feeYr) + ' a year in fees' : ''), // all direct plans: no '₹0 in fees' (15 Nov)
       verdicts: [HB ? 'Your SIP instalments are ' + upDown(HB.sip) + ' a year so far; your one-time investments ' + upDown(HB.one) + '.' : 'Ahead of your funds\u2019 own growth on ' + ahead + ' of ' + cmp.length + (behind ? '; ' + behind + ' behind' : '') + '.', 'No SIP pauses or sells since ' + PF.since + '.'],
       regExtra: R(regExtra), pot: R(SAVED_WITH_MUNIM), casLine: (CAS_SRC === 'yours' ? 'Your CAS of ' : 'Sample CAS of ') + (+PF.asOf.slice(8, 10)) + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+PF.asOf.slice(5, 7) - 1] + ' · ' + PF.funds.length + ' funds', casCta: CAS_SRC === 'yours' ? 'Update ›' : 'Add yours ›',
       casSteps: [{ n: '1', t: 'Ask for it', d: 'On the CAMS or KFintech website, or MF Central, request a detailed statement (CAS) for all fund houses, using the email linked to your funds.' },
         { n: '2', t: 'Set a password', d: 'You choose it while asking. The PDF reaches your email within minutes.' },
         { n: '3', t: 'Choose it here', d: 'Munim reads it on your phone and shows your real return.' }],
       wrongOpts: wrongOpts, hasWrong: !!s.wrong, wrongHelp: s.wrong ? WRONG[s.wrong] : '',
-      endowRange: ENDOW.irrLo.toFixed(1) + '–' + ENDOW.irrHi.toFixed(1) + '%/yr', steps: steps, policies: policies
+      endowRange: ENDOW.irrLo.toFixed(1) + '–' + ENDOW.irrHi.toFixed(1) + '%/yr', steps: own ? [] : steps, policies: own ? [] : policies, showPath: !own,
+      orbitNote: own ? '' : C.orbitNote // the sample family's loan, never on your data (D-097)
     };
     d.xrayHead = XRS.count + ' things worth acting on';
     if (hi) {
@@ -453,7 +465,7 @@ class Component extends DCLogic {
         essLink: 'ज़रूरी खर्च ' + R(essAvg) + ' महीना · क्या गिना गया',
         earnedLine: R(PF.cost) + ' लगाए → आज ' + R(PF.value), fdLine: 'FD से ' + R(Math.abs(XRS.fdExtra)) + (XRS.fdExtra < 0 ? ' कम' : ' ज़्यादा'),
         verdict: (HB ? 'SIP ' + HB.sip + '% सालाना, एक बार का पैसा ' + HB.one + '%' : cmp.length + ' में से ' + ahead + ' फ़ंड में आपका रिटर्न फ़ंड से आगे') + ' · ' + monHi(PF.since) + ' से एक भी SIP नहीं रुकी',
-        xrayHead: 'ध्यान देने लायक ' + XRS.count + ' बातें', xrayLine: R(XRS.taxSave) + ' कम टैक्स · फ़ीस में ' + R(XRS.feeYr) + ' सालाना',
+        xrayHead: 'ध्यान देने लायक ' + XRS.count + ' बातें', xrayLine: R(XRS.taxSave) + ' कम टैक्स' + (XRS.feeYr > 0 ? ' · फ़ीस में ' + R(XRS.feeYr) + ' सालाना' : ''),
         verdicts: [HB ? 'अब तक नियमित SIP की किश्तें सालाना ' + upDownHi(HB.sip, true) + '; एक बार लगाया पैसा सालाना ' + upDownHi(HB.one, false) + '।' : cmp.length + ' में से ' + ahead + ' फ़ंड में आप फ़ंड की अपनी बढ़त से आगे' + (behind ? '; ' + behind + ' में पीछे' : '') + '।', monHi(PF.since) + ' से न कोई SIP रुकी, न कुछ बेचा गया।'],
         casLine: (CAS_SRC === 'yours' ? 'आपका CAS, ' : 'सैंपल CAS, ') + casD + ' · ' + PF.funds.length + ' फ़ंड', casCta: CAS_SRC === 'yours' ? 'अपडेट करें ›' : 'अपना जोड़ें ›',
         casSteps: [{ n: '1', t: 'माँगें', d: 'CAMS या KFintech की वेबसाइट या MF Central पर, सभी फ़ंड हाउस का डिटेल्ड स्टेटमेंट (CAS) माँगें। वही ईमेल डालें जो आपके फ़ंड से जुड़ा है।' },
