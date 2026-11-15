@@ -114,3 +114,7 @@ The Credit tab opens on one number, what you owe, then the next few payments by 
 ## Two modes, never mixed (D-097, 15 Nov)
 On your own data, every screen starts from an empty frame and shows only what you added; a screen with nothing of yours says what to add, and a screen built only for the sample family says so, instead of quietly filling the gap with the sample. Principle: data provenance must be unambiguous; a reader should never have to work out which numbers are theirs (our label: "every figure is yours or none is"). It follows the match between system and the real world and error-prevention heuristics (Nielsen's; the names are from that source): a stranger's balance beside your fund returns is an error the user can't detect. The Sample data bar still marks every sample screen, so the sample can never pass for your money either.
 
+
+## The disclaimer is read, not heard (D-099, 15 Nov)
+In voice, Munim says only the answer; the disclaimer stays written under the conversation. Principle: in a voice interface every second of speech costs attention, so spoken output carries only what the listener needs to act on now, and standing information lives on screen (our label: "say the answer, show the small print"). It applies the aesthetic and minimalist design heuristic (Nielsen's; the name is from that source): repeated boilerplate competes with the answer for the listener's short-term memory.
+

@@ -41,6 +41,19 @@ export function disclaimerLast(text: string): string {
   return disc.length && rest.length ? [...rest, ...disc].join(' ') : text;
 }
 
+/** What Munim says aloud: the answer without its disclaimer, which stays on screen as the footnote under every answer
+ *  (the owner, 15 Nov: "do not give disclaimer in the voice mode, just keep it as a footnote"; D-099). Drops the education
+ *  line and the test-build line wherever they sit, and any exact line passed in `exact` (each advice mode's disclaimer,
+ *  apps/munim/lib/advice.ts, the private-mode one included). A "no licence" refusal is the answer, so it is still said. If
+ *  nothing else is left, the text is said as it is. */
+export function withoutDisclaimer(text: string, exact: string[] = []): string {
+  let t = text;
+  for (const e of [...exact].sort((a, b) => b.length - a.length)) if (e) t = t.split(e).join(' ');
+  t = t.replace(/\(\s*\)/g, ' '); // a line that sat in brackets
+  const rest = t.split(/(?<=[.!?।]\)?)\s+|\n+/).map((x) => x.trim()).filter(Boolean).filter((x) => !DISCLAIMER_SENT.test(x));
+  return rest.length ? rest.join(' ').replace(/\s{2,}/g, ' ') : text;
+}
+
 export function splitForSpeech(text: string, opts: { minFirst?: number; max?: number; firstMax?: number } = {}): string[] {
   const minFirst = opts.minFirst ?? 25, max = opts.max ?? 320;
   const raw = text.replace(/\s+/g, ' ').trim();

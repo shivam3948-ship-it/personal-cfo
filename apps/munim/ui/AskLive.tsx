@@ -8,9 +8,11 @@ import { send, usageInstall, usageOff } from '@/lib/telemetry';
 import { answerProps } from '@/lib/telemetryCore';
 import { askLocal, NO_DATA, NO_DATA_HI } from '@/lib/local/askLocal';
 import { DISCLAIMER } from '@/lib/advice';
+/** Every mode's disclaimer, in both languages: kept out of what Munim says aloud (D-099). */
+const DISC_LINES = Object.values(DISCLAIMER).flatMap((d) => [d.en, d.hi]);
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
-import { disclaimerLast, forSpeech, splitForSpeech } from '@core/agent/lang';
+import { withoutDisclaimer, forSpeech, splitForSpeech } from '@core/agent/lang';
 import { doneNote, type Action } from '@/lib/actionsCore';
 import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type CutInWatch, type RecorderHandle, type Recording } from '@/ui/voice';
 import { turnCost } from '@/lib/cost';
@@ -291,7 +293,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net
       const spoken = local ? redact(textToSay) : textToSay;
       // piece by piece (D-058): the first sentence plays while the next is being made
-      const run = await speakPieces(splitForSpeech(disclaimerLast(spoken), { firstMax: 90 }), lang, voiced, (p) => forSpeech(p, lang), startWatch);
+      // the disclaimer is not said aloud: it is the footnote under the answer (owner, 15 Nov; D-099)
+      const run = await speakPieces(splitForSpeech(withoutDisclaimer(spoken, DISC_LINES), { firstMax: 90 }), lang, voiced, (p) => forSpeech(p, lang), startWatch);
       track('answer_listened', { ctx, how, pieces: run.pieces, voice: run.voice, ...(run.firstMs !== null ? { first_ms: run.firstMs } : {}) });
       const wp = watch as Promise<CutInWatch | null> | null; // set inside a callback, so TypeScript can't see it change
       const w = handsFree && wp ? await wp : null, d = w?.diag(); // what the cut-in listener heard (D-090)
