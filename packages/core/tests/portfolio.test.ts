@@ -69,6 +69,14 @@ describe('CAS edge cases', () => {
     expect(h.plan).toBe('Direct'); expect(h.category).toBe('Liquid'); expect(h.asset).toBe('debt');
     expect(r.checks.every((c) => c.ok)).toBe(true);
   });
+  it('a fund name that wraps onto the line above keeps its name, plan and kind (the owner\'s CAS, 15 Nov)', () => {
+    const wrapped = mini.replace('A12-Alpha Liquid Fund - Direct Plan - Growth - ISIN: INF000A12AB9(Advisor: DIRECT) Registrar : KFINTECH',
+      'A12-Alpha Multi Asset Allocation Fund - Direct Plan - Growth (formerly Alpha Mutual Fund - Dynamic Plan) (Non Registrar : CAMS\n-Demat) - ISIN: INF000A12AB9(Advisor: INZ000000001)');
+    const h = parseCas(wrapped).holdings[0];
+    expect(h.plan).toBe('Direct');
+    expect(h.scheme).toMatch(/^Alpha Multi Asset Allocation Fund - Direct Plan - Growth/);
+    expect(h.category).toBe('Hybrid');
+  });
   it('flags a unit walk that does not add up instead of fixing it', () => {
     const r = parseCas(mini.replace('Closing Unit Balance: 60.000', 'Closing Unit Balance: 61.000').replace('INR 6,720.00', 'INR 6,832.00'));
     expect(r.checks.find((c) => c.id.startsWith('units:'))!.ok).toBe(false);

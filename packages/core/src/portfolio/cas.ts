@@ -67,7 +67,10 @@ export function parseCas(text: string): CasResult {
     if (/^Folio No/i.test(l)) { amc = lines[i - 1] && !/ISIN|Folio|Closing/i.test(lines[i - 1]) ? lines[i - 1] : amc; continue; }
     const isinM = /ISIN:\s*([A-Z]{2}[A-Z0-9]{9}\d)/.exec(l);
     if (isinM) {
-      const raw = l.slice(0, l.indexOf('ISIN:')).replace(/\s*-\s*$/, '');
+      let raw = l.slice(0, l.indexOf('ISIN:')).replace(/\s*-\s*$/, '');
+      // a long name wraps: "P8004-ICICI Prudential … Fund - Direct Plan - Growth (… ) (Non Registrar : CAMS" on the line above and
+      // "-Demat) - ISIN: …" here. Read alone, the fund had no name and counted as a Regular plan (the owner's CAS, 15 Nov).
+      if (/^-|^\(?non\b/i.test(raw) || !/[a-z]{3,}/i.test(raw.replace(/\b(?:non|demat)\b/gi, ''))) raw = (lines[i - 1] ?? '').replace(/\s*Registrar\s*:.*$/i, '') + raw;
       const scheme = raw.replace(/^[A-Z0-9]{2,12}-(?=\S)/, '').trim(); // drop the RTA scheme code prefix
       const plan: Holding['plan'] = /\bdirect\b/i.test(scheme) || /\(Advisor:\s*DIRECT/i.test(l) ? 'Direct' : 'Regular';
       cur = { isin: isinM[1], scheme, amc, plan, ...classify(scheme), flows: [], walk: 0, opening: 0 };

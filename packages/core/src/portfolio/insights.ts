@@ -131,8 +131,11 @@ export function overlap(holdings: Holding[], weights: Record<string, Record<stri
 
 /** What an FD would be worth today on the same purchase dates and amounts (compounded yearly at `rate`, before tax). */
 export function fdComparison(holdings: Holding[], asOf: string, rate = FD_RATE) {
-  const buys = holdings.flatMap((h) => h.flows.filter((f) => f.amount < 0));
-  const fdValue = Math.round(sum(buys.map((f) => -f.amount * Math.pow(1 + rate, days(f.date, asOf) / 365))));
+  const flows = holdings.flatMap((h) => h.flows), buys = flows.filter((f) => f.amount < 0);
+  // the same money in an FD: every purchase goes in on its date and every redemption comes out on its date (an FD can't grow
+  // money you took out). Counting purchases only made a portfolio returning well above 7% look behind a 7% FD (the owner's
+  // since-inception CAS, 15 Nov, D-098: its redemptions were left out).
+  const fdValue = Math.round(sum(flows.map((f) => -f.amount * Math.pow(1 + rate, days(f.date, asOf) / 365))));
   const actual = sum(holdings.map((h) => h.value));
   return { rate: rate * 100, invested: -sum(buys.map((f) => f.amount)), fdValue, actual, extra: actual - fdValue };
 }

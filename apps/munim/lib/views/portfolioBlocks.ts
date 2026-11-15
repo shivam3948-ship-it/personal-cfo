@@ -37,7 +37,10 @@ export function xrayFrom(p: Portfolio, weights: Weights, weightsLabel: string) {
       // "Did it work?" preview: what the tax and costs cards would show 3 months after acting (labelled Preview; no actions tracked yet)
       did: { months, movedPaise: c.value, feeSavedSoFar: Math.round((c.feeSavedYr * months) / 12), futureTax: c.futureTax, sipDirect: x.regular.sipReg * months } },
     // same conditions as the X-ray screen uses to show each card
-    count: [x.harvest.harvest > 0, x.regular.feeTotal > 0, o.pairs.some((q) => q[2] > 0), !!x.elss?.freeValue, Object.keys(x.vsIndex).length > 0].filter(Boolean).length,
+    // same conditions as the X-ray screen: overlap, or same-kind funds when holdings aren't known; against its index (needs the
+    // public index series, added by xrsFrom), or against a plain index fund (15 Nov, D-098: Invest and the X-ray counted differently)
+    count: [x.harvest.harvest > 0, x.regular.feeTotal > 0, o.pairs.some((q) => q[2] > 0) || sameCategory(p.holdings).length > 0, !!x.elss?.freeValue, Object.keys(x.vsIndex).length > 0].filter(Boolean).length,
+    hasIndexCard: Object.keys(x.vsIndex).length > 0,
   };
 }
 
@@ -47,4 +50,5 @@ export function gateXR<T extends { harvest: { combo: { funds: string[] } } }>(XR
 }
 
 /** The Invest summary row for the X-ray. */
-export const xrsFrom = (xr: ReturnType<typeof xrayFrom>) => ({ count: xr.count, taxSave: xr.XR.harvest.taxSavedLater, feeYr: xr.XR.regular.feeTotal, fdExtra: xr.X3.fd.extra });
+/** `benchRows`: funds compared with their index (vsBenchmarks), which the X-ray shows as a card when the plain-index one is absent. */
+export const xrsFrom = (xr: ReturnType<typeof xrayFrom>, benchRows = 0) => ({ count: xr.count + (!xr.hasIndexCard && benchRows > 0 ? 1 : 0), taxSave: xr.XR.harvest.taxSavedLater, feeYr: xr.XR.regular.feeTotal, fdExtra: xr.X3.fd.extra });
