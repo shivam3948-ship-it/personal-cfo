@@ -9,6 +9,7 @@
 //                                  so the key is never sent in a page request or kept in server logs; the page sends it once
 //                                  to /api/advice and removes it from the address bar. (?advice= is ignored and removed.)
 //   #prefetch=on | off           — run the likely tool before the first model call, on this browser's own-data answers (D-095)
+//   #stream=off | on             — streaming voice through the relay (D-100) off for this browser, or back on
 //   #owner=<key> | off           — mark this browser as the owner's (D-089): its Ask turns go to the owner's log at /owner.
 //                                  Same handling as #advice: sent once to /api/owner, then removed from the address bar.
 // They run before the screen mounts, so the first paint already uses them.
@@ -32,6 +33,9 @@ export function TestSwitches() {
     const pf = /(?:^|[#&?])prefetch=(on|off)/.exec(location.hash + location.search)?.[1]; // D-095: test one-call answers in this browser
     if (pf === 'on') document.cookie = 'munim_prefetch=on; path=/; max-age=2592000; samesite=lax';
     else if (pf === 'off') document.cookie = 'munim_prefetch=; path=/; max-age=0; samesite=lax';
+    const sv = /(?:^|[#&?])stream=(on|off)/.exec(location.hash + location.search)?.[1]; // D-100: streaming voice on or off here
+    if (sv === 'off') document.cookie = 'munim_stream=off; path=/; max-age=2592000; samesite=lax';
+    else if (sv === 'on') document.cookie = 'munim_stream=; path=/; max-age=0; samesite=lax';
     if (ai === 'off') document.cookie = 'munim_ai=off; path=/; max-age=2592000; samesite=lax';
     else if (ai === 'on') document.cookie = 'munim_ai=; path=/; max-age=0; samesite=lax';
     if (q.has('advice')) { q.delete('advice'); history.replaceState(null, '', location.pathname + (q.toString() ? `?${q}` : '') + location.hash); } // a key in the query string has already reached the server's logs: don't use it, change it

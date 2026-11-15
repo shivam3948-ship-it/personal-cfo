@@ -15,7 +15,7 @@ export interface TurnRecord {
   repaired?: boolean; fallback?: boolean; guard?: string; adviceFired?: boolean;
   /** ms: speech to text, the answer (model + tools + checks), Munim's first word after the answer, and the three together */
   ms: { stt?: number; agent: number; firstWord?: number; total?: number; audio?: number };
-  stt?: 'server' | 'browser'; voice?: 'sarvam' | 'browser' | 'none';
+  stt?: 'server' | 'browser' | 'stream'; voice?: 'sarvam' | 'browser' | 'none' | 'stream';
   tokens?: { calls: number; input: number; cacheRead: number; cacheWrite: number; output: number };
   judge?: { model: string; input: number; output: number };
   ttsChars?: number; cost?: TurnCost; cutIn?: CutIn;
@@ -106,8 +106,8 @@ export function cleanTurn(b: unknown): TurnRecord | null {
   for (const k of ['stt', 'firstWord', 'total', 'audio'] as const) { const v = num(ms[k]); if (v !== undefined) t.ms[k] = v; }
   for (const k of ['repaired', 'fallback', 'adviceFired'] as const) if (x[k] === true) t[k] = true;
   if (tok(x.guard)) t.guard = x.guard;
-  const stt = oneOf(x.stt, ['server', 'browser'] as const); if (stt) t.stt = stt;
-  const voice = oneOf(x.voice, ['sarvam', 'browser', 'none'] as const); if (voice) t.voice = voice;
+  const stt = oneOf(x.stt, ['server', 'browser', 'stream'] as const); if (stt) t.stt = stt;
+  const voice = oneOf(x.voice, ['sarvam', 'browser', 'none', 'stream'] as const); if (voice) t.voice = voice;
   if (x.tokens && typeof x.tokens === 'object') { const k = obj(x.tokens); t.tokens = { calls: num(k.calls) ?? 0, input: num(k.input) ?? 0, cacheRead: num(k.cacheRead) ?? 0, cacheWrite: num(k.cacheWrite) ?? 0, output: num(k.output) ?? 0 }; }
   const j = obj(x.judge); if (tok(j.model)) t.judge = { model: j.model, input: num(j.input) ?? 0, output: num(j.output) ?? 0 };
   const chars = num(x.ttsChars); if (chars !== undefined) t.ttsChars = chars;

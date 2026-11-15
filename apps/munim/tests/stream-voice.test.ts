@@ -1,0 +1,20 @@
+import { describe, it, expect } from 'vitest';
+import { isEcho, toPcm16, pcm16ToFloat } from '@/ui/streamVoice';
+
+// D-100: streaming voice helpers.
+describe('streaming voice', () => {
+  it('Munim heard back through the mic is echo; a new question is not', () => {
+    const saying = 'अगस्त में आपने ₹5,874 ख़र्च किए, सबसे ज़्यादा खाने पर।';
+    expect(isEcho('अगस्त में आपने ख़र्च किए', saying)).toBe(true);
+    expect(isEcho('रुको, मेरा लोन कितना बाकी है', saying)).toBe(false);
+    expect(isEcho('stop, how much is left on my loan', 'You spent 5,874 in August, most of it on food.')).toBe(false);
+    expect(isEcho('', saying)).toBe(false);
+  });
+  it('PCM in and out round-trips, and a WAV header is skipped', () => {
+    const f = new Float32Array([0, 0.5, -0.5, 1, -1]);
+    const back = pcm16ToFloat(new Uint8Array(toPcm16(f)));
+    back.forEach((v, i) => expect(v).toBeCloseTo(f[i], 3));
+    const wav = new Uint8Array(44 + 4); wav.set([0x52, 0x49, 0x46, 0x46]); new DataView(wav.buffer).setInt16(44, 16384, true);
+    expect(pcm16ToFloat(wav)[0]).toBeCloseTo(0.5, 3);
+  });
+});

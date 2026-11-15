@@ -13,6 +13,7 @@ const DISC_LINES = Object.values(DISCLAIMER).flatMap((d) => [d.en, d.hi]);
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
 import { withoutDisclaimer, forSpeech, splitForSpeech } from '@core/agent/lang';
+import { StreamVoice, isEcho } from '@/ui/streamVoice';
 import { doneNote, type Action } from '@/lib/actionsCore';
 import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type CutInWatch, type RecorderHandle, type Recording } from '@/ui/voice';
 import { turnCost } from '@/lib/cost';
@@ -25,7 +26,7 @@ const ackCache = new Map<'hi' | 'en', Promise<Audio64 | null>>();
 type Msg = { role: 'user' | 'assistant'; content: string; spoken?: string; done?: string; meta?: { checked: number; ok: boolean; tools: string[]; engine: string; id?: string }; lat?: Lat };
 /** Seconds-level timings of one voice turn (D-058): hearing (speech to text), answering, and until the first word is heard. */
 type Lat = { stt?: number; agent: number; speak?: number; cut?: { need: number; peak: number; how: CutIn['how'] } };
-type SttTiming = { mode: 'server' | 'browser'; ms?: number; audioMs?: number };
+type SttTiming = { mode: 'server' | 'browser' | 'stream'; ms?: number; audioMs?: number };
 const sec = (ms: number, hi = false) => `${(ms / 1000).toFixed(1)} ${hi ? 'सेकंड' : 's'}`;
 type Why = 'wrong_number' | 'not_answered' | 'hard_to_follow';
 const WHY: Why[] = ['wrong_number', 'not_answered', 'hard_to_follow'];
@@ -66,7 +67,7 @@ export const UI = {
     noAnswer: 'Munim could not answer just now.', notCaught: 'Didn’t catch that. Try again or type.',
     noMic: 'Couldn’t use the microphone. Allow it in the browser, or type.', noBrowserVoice: 'Voice typing isn’t working in this browser right now. Type instead.',
     sttBusy: 'Voice service is busy, so your browser will listen instead. Tap the mic again.',
-    consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). Munim doesn’t keep the recording. After each answer the mic turns on again by itself. While Munim speaks, your phone keeps the last 2 seconds of sound on the phone so you can interrupt; your words are sent only when you do. Tap ■ to stop.',
+    consentAria: 'Turn on voice', consent: 'Your voice is turned into text by a speech service (Sarvam, or your browser’s). During a conversation the mic stays on, including while Munim speaks so you can interrupt, and its sound goes through Munim’s voice server to Sarvam; nothing is recorded or kept. The conversation ends when you tap ■ or after 8 seconds of quiet.',
     talkHint: 'Listening… just talk. Tap ■ to end.', interruptHint: 'Talk or tap to interrupt.', cutInTap: 'Tap to talk', ownerLog: 'Owner log on', ownerLogTip: 'This browser keeps every question and answer in the owner’s log (names removed)', talkEnded: 'Conversation ended. Tap the mic to talk again.', endTalk: 'End the conversation',
     micOn: 'Turn on mic', type: 'Type instead', label: 'Your question', listening: 'Listening… Hindi or English', hearing: 'Turning it into text…',
     aiOff: 'AI off', placeholder: 'Ask, or tap the mic', send: 'Ask', stopSend: 'Stop and send', speak: 'Speak your question',
@@ -84,7 +85,7 @@ export const UI = {
     noAnswer: 'मुनीम अभी जवाब नहीं दे पाया। फिर कोशिश करें।', notCaught: 'सुनाई नहीं दिया। फिर कोशिश करें या लिखकर पूछें।',
     noMic: 'माइक नहीं चल पाया। ब्राउज़र में माइक की इजाज़त दें, या लिखकर पूछें।', noBrowserVoice: 'इस ब्राउज़र में अभी बोलकर पूछना काम नहीं कर रहा। लिखकर पूछें।',
     sttBusy: 'आवाज़ वाली सर्विस अभी व्यस्त है, इसलिए अब आपका ब्राउज़र सुनेगा। माइक फिर से दबाएँ।',
-    consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। मुनीम रिकॉर्डिंग नहीं रखता। हर जवाब के बाद माइक अपने-आप फिर चालू होता है। मुनीम के बोलते समय आपका फ़ोन आख़िरी 2 सेकंड की आवाज़ फ़ोन पर ही रखता है ताकि आप बीच में बोल सकें; आपकी बात तभी भेजी जाती है जब आप बीच में बोलें। रोकने के लिए ■ दबाएँ।',
+    consentAria: 'आवाज़ चालू करें', consent: 'आपकी आवाज़ एक स्पीच सर्विस (Sarvam, या आपका ब्राउज़र) लिखे हुए शब्दों में बदलती है। बातचीत के दौरान माइक चालू रहता है, मुनीम के बोलते समय भी, ताकि आप बीच में बोल सकें; उसकी आवाज़ मुनीम के वॉइस सर्वर से होकर Sarvam तक जाती है, कुछ भी रिकॉर्ड या रखा नहीं जाता। ■ दबाने पर या 8 सेकंड चुप रहने पर बातचीत ख़त्म हो जाती है।',
     talkHint: 'सुन रहा हूँ… बस बोलिए। ख़त्म करने के लिए ■ दबाएँ।', interruptHint: 'बीच में बोलकर या टैप करके रोक सकते हैं।', cutInTap: 'बोलने के लिए टैप करें', ownerLog: 'मालिक का लॉग चालू', ownerLogTip: 'यह ब्राउज़र हर सवाल-जवाब मालिक के लॉग में रखता है (नाम हटाकर)', talkEnded: 'बातचीत ख़त्म हुई। फिर बात करने के लिए माइक दबाएँ।', endTalk: 'बातचीत ख़त्म करें',
     micOn: 'माइक चालू करें', type: 'लिखकर पूछें', label: 'आपका सवाल', listening: 'सुन रहा हूँ… हिंदी या अंग्रेज़ी', hearing: 'आपकी बात लिख रहा हूँ…',
     aiOff: 'एआई बंद', placeholder: 'पूछें, या माइक दबाएँ', send: 'पूछें', stopSend: 'रोकें और भेजें', speak: 'बोलकर पूछें',
@@ -148,6 +149,11 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   useEffect(() => { if (usageOff()) return; fetch('/api/owner', { cache: 'no-store' }).then((r) => r.json()).then((j) => { ownerRef.current = j.owner === true; setOwnerLog(j.owner === true); }).catch(() => {}); }, []);
   const turnsRef = useRef(new Map<string, TurnRecord>());
   const tapCut = useRef(false); // the user tapped "Tap to talk" over the answer playing now
+  // streaming voice through the relay (D-100): one open session for the whole conversation; null → the record-and-upload loop
+  const streamRef = useRef<StreamVoice | null>(null);
+  const sayingRef = useRef(''); // what Munim is saying now, to tell its own echo from your words
+  const duckRef = useRef(false); const vadEndRef = useRef(0); const quietTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const streamOff = () => /(?:^|;\s*)munim_stream=off(?:;|$)/.test(document.cookie); // #stream=off turns it off for this browser
   const costOf = (t: TurnRecord) => turnCost({ model: t.model, llm: t.tokens, judgeModel: t.judge?.model, judge: t.judge, sttMs: t.stt === 'server' ? t.ms.audio : 0, ttsChars: t.ttsChars });
   function logTurn(t: TurnRecord) {
     t = { ...t, cost: costOf(t) }; turnsRef.current.set(t.id, t);
@@ -210,6 +216,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const consented = () => { try { return sessionStorage.getItem('munim_voice_ok') === '1'; } catch { return false; } };
   function endTalk(quiet: boolean) {
     setTalkOn(false);
+    if (quietTimer.current) clearTimeout(quietTimer.current); streamRef.current?.close(); streamRef.current = null; duckRef.current = false;
     const h = rec.current as (RecorderHandle | { stop: () => void } | null); rec.current = null;
     if (h && 'cancel' in h) h.cancel(); else h?.stop();
     stopSpeaking(); setSpeaking(null); setVoice('idle'); setLevel(0); ackOk.current = false;
@@ -240,6 +247,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     track('voice_started', { ctx, mode: sttMode, talk: talkRef.current });
     setTalkOn(true);
     const tt = t;
+    if (sttMode === 'server' && !aiOff && !streamOff() && await startStream()) return;
     if (sttMode === 'browser') {
       setVoice('listening');
       rec.current = browserListen(hiLast ? 'hi' : 'en', (t) => setHeard(t), (t) => { setVoice('idle'); rec.current = null; if (t) ask(t, 'voice', { mode: 'browser' }); else if (talkRef.current) endTalk(true); else setErr(tt.notCaught); },
@@ -255,6 +263,39 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       if (!talkRef.current) { h.cancel(); setVoice('idle'); return; } // ended while the mic was starting: never record with nothing on screen
       rec.current = h;
     } catch { setTalkOn(false); setVoice('idle'); setErr(t.noMic); }
+  }
+  /** Streaming conversation (D-100): the mic streams for the whole conversation; Sarvam says when you start and stop;
+   *  talking over Munim ducks it at once and stops it when your words arrive (its own echo, heard back, is ignored). */
+  async function startStream(): Promise<boolean> {
+    const armQuiet = () => { if (quietTimer.current) clearTimeout(quietTimer.current); quietTimer.current = setTimeout(() => { if (talkRef.current && !busyRef.current && !streamRef.current?.playing) endTalkRef.current(true); }, 8000); };
+    let sv = streamRef.current;
+    if (!sv) {
+      sv = await StreamVoice.open({
+        onLevel: setLevel,
+        onVadStart: () => {
+          if (quietTimer.current) clearTimeout(quietTimer.current);
+          if (streamRef.current?.playing) { streamRef.current.duck(true); duckRef.current = true; } else { setVoice('listening'); setHeard(''); }
+        },
+        onVadEnd: () => {
+          vadEndRef.current = performance.now();
+          if (duckRef.current) setTimeout(() => { if (duckRef.current) { duckRef.current = false; streamRef.current?.duck(false); } }, 1800); // nothing said after all
+        },
+        onText: (text) => {
+          const s = streamRef.current; if (!s || !talkRef.current) return;
+          if (s.playing && isEcho(text, sayingRef.current)) { duckRef.current = false; s.duck(false); return; } // Munim heard itself
+          if (s.playing) { s.stopVoice(); tapCut.current = false; }
+          duckRef.current = false; setHeard(text);
+          if (busyRef.current) return; // still answering the last question
+          setVoice('idle'); void ask(text, 'voice', { mode: 'stream', ms: vadEndRef.current ? Math.round(performance.now() - vadEndRef.current) : undefined });
+        },
+        onClose: () => { streamRef.current = null; if (talkRef.current) { setNote(t.talkEnded); endTalkRef.current(false); } },
+      });
+      if (!sv) return false;
+      streamRef.current = sv;
+      try { await sv.startMic('auto'); } catch { sv.close(); streamRef.current = null; setTalkOn(false); setVoice('idle'); setErr(t.noMic); return true; }
+    }
+    setVoice('listening'); armQuiet();
+    return true;
   }
   startVoiceRef.current = startVoice; // the newest one, for the hands-free loop
   const endTalkRef = useRef(endTalk); endTalkRef.current = endTalk;
@@ -289,6 +330,21 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     let chars = 0; // characters Sarvam actually voiced for this answer: the cost (D-089)
     const voiced = async (p: string) => { const a = await tts(p, lang); if (a) chars += p.length; return a; };
     if (handsFree) setNote(t.interruptHint);
+    const sv = handsFree ? streamRef.current : null;
+    if (sv) { // streamed: the relay voices each piece as it is made; Sarvam's speech detection handles cutting in
+      const said = local ? redact(textToSay) : textToSay;
+      const pieces = splitForSpeech(withoutDisclaimer(said, DISC_LINES), { firstMax: 90 }).map((p) => forSpeech(p, lang)); // ₹ amounts and dates read as on the old path
+      sayingRef.current = pieces.join(' ');
+      const t0 = performance.now(); let firstMs: number | null = null; const sid = turn?.id ?? `a${idx}`;
+      try { await sv.speak(sid, pieces, lang, () => { if (firstMs === null) firstMs = Math.round(performance.now() - t0); }); } catch { /* the answer is still on screen */ }
+      const prev = turn?.id ? turnsRef.current.get(turn.id) : undefined;
+      if (prev) logTurn({ ...prev, voice: 'stream', ttsChars: pieces.join(' ').length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + prev.ms.agent + firstMs } : {}) } });
+      if (turn && firstMs !== null) setMsgs((cur) => cur.map((m, i) => (i === idx ? { ...m, lat: { stt: turn.stt?.ms, agent: turn.agentMs, speak: firstMs! } } : m)));
+      sayingRef.current = '';
+      setSpeaking((cur) => (cur === idx ? null : cur)); setNote(null);
+      if (talkRef.current) void startVoiceRef.current(); // still listening: arms the 8 s quiet timer
+      return;
+    }
     try {
       // on your own data the text was already scrubbed by askLocal (names, payees, identifiers); this is a last safety net
       const spoken = local ? redact(textToSay) : textToSay;
