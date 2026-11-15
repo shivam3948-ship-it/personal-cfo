@@ -145,7 +145,7 @@ export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v:
     while (phase === 'watch' && kept - chunks[0].d.length > keep) kept -= chunks.shift()!.d.length;
   };
   const det = new CutInDetector(opts.detector); const ctxState = ctx.state;
-  const buf = new Uint8Array(an.fftSize); const silenceMs = opts.silenceMs ?? 1000, maxMs = opts.maxMs ?? 20000;
+  const buf = new Float32Array(an.fftSize); const silenceMs = opts.silenceMs ?? 1000, maxMs = opts.maxMs ?? 20000; // float: 8-bit levels can't see a voice the echo canceller has turned down
   let raf = 0, quietSince = 0, recFrom = 0, endedAt = 0;
   const close = () => { phase = 'done'; endedAt = endedAt || performance.now(); chunks = []; kept = 0; cancelAnimationFrame(raf); proc.disconnect(); stream.getTracks().forEach((t) => t.stop()); ctx.close().catch(() => {}); opts.onLevel?.(0); };
   const finish = () => {
@@ -154,9 +154,9 @@ export async function watchForSpeech(opts: { onSpeech: () => void; onLevel?: (v:
   };
   const tick = () => {
     if (phase === 'done') return;
-    an.getByteTimeDomainData(buf);
-    let sum = 0; for (const v of buf) sum += (v - 128) * (v - 128);
-    const level = Math.min(1, (Math.sqrt(sum / buf.length) / 128) * 6), now = performance.now();
+    an.getFloatTimeDomainData(buf);
+    let sum = 0; for (const v of buf) sum += v * v;
+    const level = Math.min(1, Math.sqrt(sum / buf.length) * 6), now = performance.now(); // same 0..1 scale as before (rms × 6)
     if (phase === 'watch') {
       if (det.push(level, now)) { phase = 'rec'; recFrom = det.startedAt; endedAt = now; opts.onSpeech(); }
     } else {

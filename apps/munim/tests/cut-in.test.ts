@@ -34,3 +34,17 @@ describe('cut-in detector (D-090)', () => {
     expect(g.triggered).toBe(false); expect(g.need).toBeGreaterThanOrEqual(0.15); expect(g.peak).toBeLessThan(g.need); expect(g.frames).toBeGreaterThan(200);
   });
 });
+
+// The owner's Galaxy S24 (/voicetest, 15 Nov): echo cancellation leaves Munim's voice near silence with short leaks, and
+// turns the user down to roughly −40 to −30 dBFS (level 0.06–0.19 on the rms × 6 scale). The old 0.15 bar missed him.
+describe('cut-in on a phone whose echo cancellation turns the user down (S24, 15 Nov)', () => {
+  const quietEcho = (ms: number, i: number) => (i % 90 < 6 ? 0.4 : 0.004); // near silence, a ~0.1 s leak every 1.5 s
+  const quietVoice = (ms: number, i: number) => (i % 7 === 0 ? 0.03 : 0.09 + 0.05 * Math.sin(i)); // −40 to −30 dBFS, dips
+  it('hears his turned-down voice', () => {
+    const r = run((ms, i) => quietEcho(ms, i) + (ms > 3000 ? quietVoice(ms, i) : 0));
+    expect(r.at).not.toBeNull(); expect(r.at!).toBeGreaterThan(3000); expect(r.at!).toBeLessThan(3700);
+  });
+  it('the leaks alone never stop Munim', () => {
+    expect(run(quietEcho).at).toBeNull();
+  });
+});

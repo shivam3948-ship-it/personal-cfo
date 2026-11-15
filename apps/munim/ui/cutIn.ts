@@ -26,8 +26,11 @@ export class CutInDetector {
   startedAt = 0;
 
   constructor(opts: CutInOpts = {}) {
-    // min 0.15 (was a fixed 0.3): the cancellation turns the user's voice down while Munim talks, so the old bar was too high
-    this.o = { min: 0.15, cap: 0.45, k: 2.5, warmMs: 400, floorMs: 1500, winMs: 400, frac: 0.6, holdMs: 250, ...opts };
+    // min 0.07 (was 0.15, before that a fixed 0.3). On the owner's Galaxy S24 (/voicetest, 15 Nov) echo cancellation leaves
+    // Munim's voice at near silence but also turns the user down: his speech sat mostly between −45 and −30 dBFS, under the
+    // old bar (−32 dBFS), so talking over Munim never stopped it. Where the leftover echo is louder (the MacBook, 7 Nov) the
+    // bar is set by floor × k and doesn't change; short echo bursts still can't pass the 0.25 s hold at 60% of frames.
+    this.o = { min: 0.07, cap: 0.45, k: 2.5, warmMs: 400, floorMs: 1500, winMs: 400, frac: 0.6, holdMs: 250, ...opts };
     this.lastNeed = this.o.min;
   }
 
