@@ -29,4 +29,8 @@ describe('speaking the answer while it is written', () => {
     const r = run(['You spent ₹5,874. ', 'Sell your mutual funds now.'], results);
     expect(r.said).toEqual(['You spent ₹5,874.']);
   });
+  it('Hindi spending talk ("₹… निकले") is voiced even with the AI check on; "इससे निकल जाइए" is not', () => {
+    const r = run(['सितंबर में कुल ₹5,874 निकले। ', 'इससे निकल जाइए।'], results, true);
+    expect(r.said).toEqual(['सितंबर में कुल ₹5,874 निकले।']); expect(r.stopped).toBe(true);
+  });
 });

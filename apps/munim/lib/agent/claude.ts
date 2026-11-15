@@ -254,13 +254,14 @@ export function sentenceSpeaker(ctx: Pick<ToolCtx, 'adviceMode' | 'judge'>, resu
   };
   // Any sentence about selling, stopping, redeeming, switching or exiting, in English, Hindi or Hinglish, waits for the finished-
   // answer checks (the AI check catches phrasings the word patterns miss, e.g. "उसे बेच दीजिए" after naming the fund).
-  const TRADE_HINT = /\b(?:sell|sold|redeem|exit|switch|stop|pause|withdraw|surrender|book|cash out|bech\w*|nikal\w*|band kar\w*|rok\w*)\b|बेच|निकाल|बंद|रोक|स्विच|सरेंडर|रिडीम/i;
+  const TRADE_HINT = /\b(?:sell|sold|redeem|exit|switch|stop|pause|withdraw|surrender|book|cash out|bech\w*|nikal\w*|band kar\w*|rok\w*)\b|बेच|निकाल|निकल\s*(?:जा|ल|आ)|निकलिए|बंद|रोक|स्विच|सरेंडर|रिडीम|छोड़/i;
   let spoken = ''; // what has been said so far: the trade check reads a sentence with what came before ("…small cap fund? Sell it.")
   const ok = (x: string) => {
     if (!checkNumbers(x, results).ok || strangerProducts(x, known).length || TRADE_HINT.test(x)) return false;
     if (guarded) { const all = `${spoken} ${x}`.trim(), before = spoken ? sentences(spoken).length : 0; if (exitIndices(all, held).some((i) => i >= before)) return false; }
     // with the AI check on, anything it would read (an investment word, or a fund the user holds) waits for it
-    if (ctx.judge && (TOUCHES_INVESTMENTS.test(x) || held.some((n) => n && x.toLowerCase().includes(n.toLowerCase())))) return false;
+    // ("निकले", money that went out, isn't an investment word: the exit verbs are TRADE_HINT's job, so they're left out here)
+    if (ctx.judge && (TOUCHES_INVESTMENTS.test(x.replace(/निकल\S*|छोड़\S*/g, ' ')) || held.some((n) => n && x.toLowerCase().includes(n.toLowerCase())))) return false;
     return true;
   };
   const emit = (x: string) => { const t = x.trim(); if (!t) return; if (!ok(t)) { sp.stop(); return; } spoken = `${spoken} ${t}`.trim(); say(t); };
