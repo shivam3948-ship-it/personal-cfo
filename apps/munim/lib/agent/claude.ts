@@ -258,7 +258,7 @@ export function sentenceSpeaker(ctx: Pick<ToolCtx, 'adviceMode' | 'judge'>, resu
   };
   // Any sentence about selling, stopping, redeeming, switching or exiting, in English, Hindi or Hinglish, waits for the finished-
   // answer checks (the AI check catches phrasings the word patterns miss, e.g. "उसे बेच दीजिए" after naming the fund).
-  const TRADE_HINT = /\b(?:sell|sold|redeem|exit|switch|stop|pause|withdraw|surrender|book|cash out|bech\w*|nikal\w*|band kar\w*|rok\w*)\b|बेच|निकाल|निकल\s*(?:जा|ल|आ)|निकलिए|बंद|रोक|स्विच|सरेंडर|रिडीम|छोड़/i;
+  const TRADE_HINT = /\b(?:sell|sold|redeem|exit|switch|stop|pause|withdraw|surrender|book|cash out|keep|hold\w*|stay invested|continue|ride|rakh\w*|bane rah\w*|bech\w*|nikal\w*|band kar\w*|rok\w*)\b|बेच|निकाल|बने\s*रह|रखे\s*रह|टिके\s*रह|जारी\s*रख|होल्ड|निकल\s*(?:जा|ल|आ)|निकलिए|बंद|रोक|स्विच|सरेंडर|रिडीम|छोड़/i;
   let spoken = ''; // what has been said so far: the trade check reads a sentence with what came before ("…small cap fund? Sell it.")
   const ok = (x: string) => {
     if (!checkNumbers(x, results).ok || strangerProducts(x, known).length || TRADE_HINT.test(x)) return false;

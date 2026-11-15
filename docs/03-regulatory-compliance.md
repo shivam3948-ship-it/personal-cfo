@@ -39,6 +39,7 @@ The LLM guardrail, the copy and the test suite all use this table.
 | "This fund lagged its benchmark over 3 and 5 years." | "Replace it with fund C." |
 | Explaining what LTCG is | "Book ₹1.25L of gains before 31 March." |
 | Generic: "Many investors review overlapping funds; here are the questions to ask." | Any personalised fund, amount or timing recommendation |
+| "Your small cap fund is worth ₹92,440 against ₹1,10,373 in a plain index fund on the same dates; the choice depends on when you need this money." (the facts that decide it, D-107) | "Keep your small cap fund." / "Stay invested." / "बने रहिए।" (a verdict to keep a holding is a recommendation too; caught by the answer guard since D-107) |
 
 **In code (D-066, 28 Oct):** outside `private`, the answer guard (apps/munim/lib/agent/tradeWords.ts, brands.ts) asks the model to rewrite once and then removes any sentence that tells the user to sell, switch, exit, redeem, surrender, stop, book gains on or top up something they hold, named or by category, and any fund or insurer the user doesn't hold, replacing it with the no-licence line. New money by category ("a liquid fund for the safety net") stays allowed. The regular → direct switch above stays gated as an imperative until L-1; Munim states it as a fact (the direct plan of the same fund costs ₹X less). The hand-written list in apps/munim/tests/advice-guard.test.ts is the reference for what must go and what must stay.
 

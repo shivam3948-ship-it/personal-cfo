@@ -47,7 +47,7 @@ const PRONOUN_CALL = /\b(?:sell|redeem|exit|switch|dump|offload|surrender|ditch)
 
 // a refusal to ADVISE governs the trade word ("can't tell you to sell", "cannot recommend whether to redeem"); so does a
 // negation ("don't stop your SIP"), a condition ("if you sell…", "when you sell…") or "no need to"
-const REFUSING = /\b(?:can[’']?t|cannot|won[’']?t|will not|(?:am )?not able to|unable to)\s+(?:tell|advise|recommend|suggest|say|ask)\s+(?:you\s+)?(?:to|whether|which|if)\b(?:(?!\bbut\b|\bhowever\b)(?:[^.!?;:,—–\n-]|,(?=\s+(?:or\s+)?(?:sell|switch|exit|redeem|stop|buy|surrender|move|pause)\b)|(?<=\b(?:sell|switch|exit|redeem|stop|buy|surrender|move|pause)),(?=\s*$))){0,60}$|\b(?:don[’']?t|do not|doesn[’']?t|does not)\s+(?:need|have)\s+to\s+$|\bno need to\s+$|\b(?:never|not|don[’']?t|do not|doesn[’']?t)\s+(?:to\s+|ever\s+|just\s+)?$|^\s*(?:if|when|once|whenever|before|after|unless)\s+(?:you\s+|they\s+|one\s+)?(?:ever\s+)?$/i; // a condition only when it opens the sentence: "You can't go wrong if you sell this fund" is still a call
+const REFUSING = /\b(?:can[’']?t|cannot|won[’']?t|will not|(?:am )?not able to|unable to)\s+(?:tell|advise|recommend|suggest|say|ask)\s+(?:you\s+)?(?:to|whether|which|if)\b(?:(?!\bbut\b|\bhowever\b)(?:[^.!?;:,—–\n-]|,(?=\s+(?:or\s+)?(?:sell|switch|exit|redeem|stop|buy|surrender|move|pause)\b)|(?<=\b(?:sell|switch|exit|redeem|stop|buy|surrender|move|pause)),(?=\s*$))){0,60}$|\b(?:don[’']?t|do not|doesn[’']?t|does not)\s+(?:need|have)\s+to\s+$|\bno need to\s+$|\b(?:choice|decision|call|whether)\s+(?:(?:is\s+)?(?:yours\s+)?(?:to|whether\s+to|of\s+whether\s+to)\s+)?(?:(?:keep|hold)\s+(?:it\s+)?or\s+)?$|\b(?:never|not|don[’']?t|do not|doesn[’']?t)\s+(?:to\s+|ever\s+|just\s+)?$|^\s*(?:if|when|once|whenever|before|after|unless)\s+(?:you\s+|they\s+|one\s+)?(?:ever\s+)?$/i; // a condition only when it opens the sentence: "You can't go wrong if you sell this fund" is still a call
 const refused = (a: string, at: number | undefined) => { const from = Math.max(0, (at ?? 0) - 90); return REFUSING.test((from ? '\u0001' : '') + a.slice(from, at)); }; // cut mid-sentence: "^" can't match // a verb list ("sell, switch or stop") stays refused
 // a sentence about what an action does, with the action as its subject: "Switching … counts as a sale", "Surrendering … returns little"
 const GERUND_FACT = /^\s*(?:Selling|Switching|Surrendering|Redeeming|Exiting|Stopping|Booking|Withdrawing)\b(?![^.!?]*\b(?:best|better|should|recommend|right move|good idea|wise)\b)[^.!?]*\b(?:counts|is|are|isn[’']?t|aren[’']?t|returns|means|costs|attracts|triggers|will|would|can|cannot|can[’']?t|won[’']?t|may|usually|often|gives)\b/i;
@@ -99,6 +99,21 @@ function patterns(held: string[]) {
 }
 const anyUnrefused = (re: RegExp | null, s: string) => !!re && [...s.matchAll(re)].some((m) => !refused(s, m.index));
 
+// D-107 review: a verdict to KEEP a holding is advice too ("keep your small cap fund", "stay invested", "मत बेचिए, बने रहिए").
+// Positive hold verbs on a holding (named, by category, or "it" after one). Advice not to act in a panic ("don't redeem your funds
+// just because the market fell", "don't stop your SIP") stays allowed, as the guard's golden set and the AI check's rules have it. Choices left to the user ("whether to stay invested is yours") aren't verdicts.
+const HOLD_EN = /\b(?:stay(?:ing)?\s+invested|ride\s+(?:it\s+|this\s+|the\s+fall\s+)?out|sit\s+tight|hold\s+(?:on(?:to)?|it|them|your|the|this|that)\b|keep\s+(?:it|them|this|that|your|the|investing|holding)\b|continue\s+(?:with\s+)?(?:it|your|the|investing|holding)\b)/i;
+const HOLD_HI = /बने\s*रह|रखे\s*रह|टिके\s*रह|जारी\s*रख|होल्ड\s*(?:कर|रख)|\b(?:bane\s+rah\w*|rakh(?:o|iye|e\s+rah\w*)|tike\s+rah\w*|jaari\s+rakh\w*|hold\s+kar\w*)\b/i;
+const HOLD_CHOICE = /\b(?:whether|if\s+you|your\s+(?:call|choice|decision)|depends|up\s+to\s+you|decide)\b|फ़ैसला|फैसला|निर्भर|अगर|\bagar\b|chahe|चाहे/i;
+const HOLD_PRONOUN = /\b(?:it|them|this|that)\b|इसे|उसे|इन्हें|उन्हें|इसमें|उसमें|\b(?:ise|use|isme|usme)\b/i;
+function holdCall(s: string, prev: string | undefined, p: ReturnType<typeof patterns>): boolean {
+  return clauses(s).some((c) => {
+    if (HOLD_CHOICE.test(c) || !(HOLD_EN.test(c) || HOLD_HI.test(c))) return false;
+    const tgt = p.target.test(c) || p.hiTarget.test(c.replace(HI_POT, '')) || p.target.test(s) || p.hiTarget.test(s.replace(HI_POT, '')); // "फंड मत बेचिए, बने रहिए": the holding sits in the other clause
+    return tgt || (HOLD_PRONOUN.test(c) && !!prev && (p.target.test(prev) || p.hiTarget.test(prev)));
+  });
+}
+
 /** An instruction to sell, switch, exit, redeem, surrender, move out of, stop, book gains on, or (for a fund the user holds,
  *  `held` = its names) top up an investment or policy. Outside advice mode the answer guard removes these. */
 function flags(a: string, held: string[]): { s: string; hit: boolean }[] {
@@ -112,7 +127,8 @@ function flags(a: string, held: string[]): { s: string; hit: boolean }[] {
     return anyUnrefused(p.exit, s) || anyUnrefused(p.move, s) || anyUnrefused(p.obj, s) || anyUnrefused(p.part, s) || anyUnrefused(p.putHeld, s) || anyUnrefused(p.stop, s) || anyUnrefused(p.buy, s)
       || (BOOK.test(s) && !refused(s, BOOK.exec(s)?.index))
       || (PRONOUN_CALL.test(s) && p.target.test(s) && !refused(s, PRONOUN_CALL.exec(s)?.index))
-      || clauses(s).some((c) => !HI_REFUSAL.test(c) && ((HI_SELL.test(c) && p.hiTarget.test(c.replace(HI_POT, ''))) || (HI_MOVE.test(c) && p.hiSource.test(c.replace(HI_POT, '')))));
+      || clauses(s).some((c) => !HI_REFUSAL.test(c) && ((HI_SELL.test(c) && p.hiTarget.test(c.replace(HI_POT, ''))) || (HI_MOVE.test(c) && p.hiSource.test(c.replace(HI_POT, '')))))
+      || holdCall(s, i > 0 ? all[i - 1] : undefined, p);
   })() }));
 }
 export const tellsToExit = (a: string, held: string[] = []): boolean => flags(a, held).some((f) => f.hit);

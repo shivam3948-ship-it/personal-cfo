@@ -238,7 +238,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
         vs_plain_index_fund_same_dates: Object.fromEntries(Object.entries(x.vsIndex).map(([k, z]) => [fname(k), { invested: R(z.invested), fund_value: R(z.fundValue), index_fund_value: R(z.indexValue), difference: R(z.diff) }])),
         guidance: named
           ? 'Advice is on for this person (not SEBI-registered): you may say which units to move, sell or exit, how much and by when, from the figures above. To name a new fund to buy, use advice_picks only, never memory.'
-          : 'Facts and categories only: what regular-plan fees cost, that direct plans of the same fund cost less, the tax-free limit and deadline. Do not tell the user which fund to move, sell or buy, how much, or when. Suggest they decide with the facts; Munim doesn\'t have an investment adviser licence yet.',
+          : 'Facts and categories only: what regular-plan fees cost, that direct plans of the same fund cost less, the tax-free limit and deadline. Do not tell the user which fund to move, sell or buy, how much, or when. Give the facts that decide it and leave the choice to them (never sell, keep, hold or stop); mention that Munim doesn\'t have an investment adviser licence yet only if they insist on a pick or a yes or no.',
       } };
     }
     case 'search_documents': {
