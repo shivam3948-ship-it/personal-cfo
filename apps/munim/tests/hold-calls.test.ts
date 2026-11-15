@@ -22,5 +22,7 @@ describe('hold calls on a holding are caught (D-107)', () => {
     'Your small cap fund is worth ₹92,440 against ₹1,10,373 in a plain index fund on the same dates.',
     'अगर पैसा 5 साल बाद चाहिए तो फ़ैसला आपका है।',
     'Keep track of your card bill.',
+    'Keep your safety net in a liquid fund or a sweep-in FD.', // red team fa-safetynet
+    'Keep the money you need within 3 years in a liquid fund.',
   ])('not a verdict: %s', (a) => expect(tellsToExit(a, held)).toBe(false));
 });

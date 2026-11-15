@@ -109,6 +109,8 @@ const HOLD_PRONOUN = /\b(?:it|them|this|that)\b|इसे|उसे|इन्ह
 function holdCall(s: string, prev: string | undefined, p: ReturnType<typeof patterns>): boolean {
   return clauses(s).some((c) => {
     if (HOLD_CHOICE.test(c) || !(HOLD_EN.test(c) || HOLD_HI.test(c))) return false;
+    // where to put money ("keep your safety net in a liquid fund") is new-money guidance, not a verdict on a holding (red team fa-safetynet)
+    if (/\b(?:keep|hold|park)\b[^.!?]*?\bin(?:to)?\s+(?:a|an|any)\s/i.test(c) || /safety\s+net|emergency|savings?\b|सेफ़्टी|सेफ्टी|इमरजेंसी|बचत/i.test(c)) return false;
     const tgt = p.target.test(c) || p.hiTarget.test(c.replace(HI_POT, '')) || p.target.test(s) || p.hiTarget.test(s.replace(HI_POT, '')); // "फंड मत बेचिए, बने रहिए": the holding sits in the other clause
     return tgt || (HOLD_PRONOUN.test(c) && !!prev && (p.target.test(prev) || p.hiTarget.test(prev)));
   });
