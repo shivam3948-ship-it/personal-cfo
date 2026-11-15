@@ -4,7 +4,7 @@
 // Voice: mic → /api/stt (Sarvam) or the browser's speech recognition, after a one-time note on where the audio goes.
 import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/analytics';
-import { send, usageInstall, usageOff } from '@/lib/telemetry';
+import { send, usageInstall, usageOff, usageSwitchedOff } from '@/lib/telemetry';
 import { answerProps } from '@/lib/telemetryCore';
 import { askLocal, NO_DATA, NO_DATA_HI } from '@/lib/local/askLocal';
 import { DISCLAIMER } from '@/lib/advice';
@@ -144,9 +144,10 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   useEffect(() => { fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => setAiOff(j.chat === 'rules' && j.stt === 'browser' && j.tts === 'browser')).catch(() => {}); }, []);
   useEffect(() => { setCanVote(!usageOff()); }, []);
   // the owner's turn log (D-089): only a browser marked with #owner=<key> sends whole turns; the server checks the cookie too
-  // and not when usage counts are off, or the browser asks sites not to track (Global Privacy Control, Do Not Track)
+  // and not when usage counts are switched off. Do Not Track doesn't stop it: the key is the owner's own deliberate opt-in for
+  // his own browsers (15 Nov: his Chrome and phone send Do Not Track, so the log stayed empty)
   const ownerRef = useRef(false); const [ownerLog, setOwnerLog] = useState(false);
-  useEffect(() => { if (usageOff()) return; fetch('/api/owner', { cache: 'no-store' }).then((r) => r.json()).then((j) => { ownerRef.current = j.owner === true; setOwnerLog(j.owner === true); }).catch(() => {}); }, []);
+  useEffect(() => { if (usageSwitchedOff()) return; fetch('/api/owner', { cache: 'no-store' }).then((r) => r.json()).then((j) => { ownerRef.current = j.owner === true; setOwnerLog(j.owner === true); }).catch(() => {}); }, []);
   const turnsRef = useRef(new Map<string, TurnRecord>());
   const tapCut = useRef(false); // the user tapped "Tap to talk" over the answer playing now
   // streaming voice through the relay (D-100): one open session for the whole conversation; null → the record-and-upload loop
@@ -157,7 +158,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const costOf = (t: TurnRecord) => turnCost({ model: t.model, llm: t.tokens, judgeModel: t.judge?.model, judge: t.judge, sttMs: t.stt === 'server' ? t.ms.audio : 0, ttsChars: t.ttsChars });
   function logTurn(t: TurnRecord) {
     t = { ...t, cost: costOf(t) }; turnsRef.current.set(t.id, t);
-    if (ownerRef.current && !usageOff()) void fetch('/api/turns', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify(t) }).catch(() => {});
+    if (ownerRef.current && !usageSwitchedOff()) void fetch('/api/turns', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify(t) }).catch(() => {});
   }
   function vote(i: number, id: string | undefined, v: 'up' | 'down', why?: Why) {
     setVotes((cur) => ({ ...cur, [i]: { vote: v, why } }));

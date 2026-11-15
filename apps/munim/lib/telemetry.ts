@@ -34,6 +34,13 @@ export function privacySignal(): boolean {
 }
 
 /** True when this phone sends nothing: turned off here, or the browser's privacy signal. */
+/** Only the explicit "usage counts off" switch, not the browser's general Do Not Track / Global Privacy Control signal: used for
+ *  the owner's own turn log, which needs a deliberate #owner=<key> opt-in on that browser (D-089; 15 Nov: the owner's Chrome
+ *  and phone send Do Not Track, so his own log stayed empty). */
+export function usageSwitchedOff(): boolean {
+  if (typeof window === 'undefined') return true;
+  return mem.off ?? ls.get(OFF) === '1';
+}
 export function usageOff(): boolean {
   if (typeof window === 'undefined' || privacySignal()) return true;
   return mem.off ?? ls.get(OFF) === '1';
