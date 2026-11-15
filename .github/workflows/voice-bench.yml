@@ -1,0 +1,18 @@
+name: voice-bench
+on:
+  push:
+    branches: [chore/voice-bench]
+permissions: { contents: read }
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: cd bench && npm init -y >/dev/null && npm install ws@8.18.0 --no-audit --no-fund >/dev/null
+      - name: Bench
+        env: { SARVAM_API_KEY: "${{ secrets.SARVAM_API_KEY }}" }
+        run: cd bench && node voices.mjs
+      - uses: actions/upload-artifact@v4
+        with: { name: voices, path: bench/voices }
