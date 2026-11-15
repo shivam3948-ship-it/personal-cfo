@@ -41,7 +41,7 @@ class Component extends DCLogic {
       hasDue: CR.due.length > 0,
       due: CR.due.map(function (x) { return { date: hi ? x.dateHi : x.date, label: hi ? x.label.replace(/credit card/i, 'क्रेडिट कार्ड') : x.label, what: hi ? x.whatHi : x.what, amount: x.amount }; }),
       hasCards: CR.cards.length > 0,
-      cards: CR.cards.map(function (k) { return { name: hi && k.nameHi ? k.nameHi : k.name, head: hi ? k.headHi : k.head, line: hi ? k.lineHi : k.line, ink: k.warn ? 'var(--warn)' : 'var(--ink2)', used: hi ? k.usedHi : k.used, hasCost: k.hasCost, cost: hi ? k.costHi : k.cost, costInk: k.warnCost ? 'var(--warn)' : 'var(--muted)' }; }),
+      cards: CR.cards.map(function (k) { return { name: hi && k.nameHi ? k.nameHi : k.name, head: hi ? k.headHi : k.head, line: hi ? k.lineHi : k.line, ink: k.warn ? 'var(--warn)' : 'var(--ink2)', used: hi ? k.usedHi : k.used, hasCost: k.hasCost, cost: hi ? k.costHi : k.cost, costInk: k.warnCost ? 'var(--warn)' : 'var(--muted)', hasFx: k.hasFx, fx: hi ? k.fxHi : k.fx }; }),
       hasLoans: CR.loans.length > 0,
       loans: CR.loans.map(function (l) { return { name: l.name, kind: hi ? l.kindHi : l.kind, emi: hi ? l.emiHi : l.emi, left: hi ? l.leftHi : l.left, rate: hi ? l.rateHi : l.rate, interest: hi ? l.interestHi : l.interest }; }),
       hasSeen: CR.seen.length > 0,
@@ -80,6 +80,8 @@ export default function Credit(props) {
             {(V.d?.cards || []).map((k, i2) => (<Fragment key={i2}>
               <section style={{"background": "var(--card)", "borderRadius": "18px", "boxShadow": "0 0 0 1px var(--hair)", "padding": "14px 16px", "display": "grid", "gap": "6px"}}><span style={{"fontSize": "13px", "color": "var(--muted)"}}>{k?.name}</span><b style={{"fontSize": "18px"}}>{k?.head}</b><span style={{"fontSize": "14.5px", "lineHeight": "1.45", "color": k?.ink}}>{k?.line}</span><span style={{"fontSize": "13.5px", "color": "var(--muted)"}}>{k?.used}</span>{!!(k?.hasCost) && (<>
                   <span style={{"fontSize": "13.5px", "color": k?.costInk}}>{k?.cost}</span>
+                </>)}{!!(k?.hasFx) && (<>
+                  <span style={{"fontSize": "13.5px", "color": "var(--muted)"}}>{k?.fx}</span>
                 </>)}</section>
             </Fragment>))}
           </>)}

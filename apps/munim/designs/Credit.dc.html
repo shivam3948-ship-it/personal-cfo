@@ -71,6 +71,7 @@ button{font:inherit;color:inherit}
             <span style="font-size: 14.5px; line-height: 1.45; color: {{k.ink}}">{{k.line}}</span>
             <span style="font-size: 13.5px; color: var(--muted)">{{k.used}}</span>
             <sc-if value="{{k.hasCost}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13.5px; color: {{k.costInk}}">{{k.cost}}</span></sc-if>
+            <sc-if value="{{k.hasFx}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13.5px; color: var(--muted)">{{k.fx}}</span></sc-if>
           </section>
         </sc-for>
       </sc-if>
@@ -166,7 +167,7 @@ class Component extends DCLogic {
       hasDue: CR.due.length > 0,
       due: CR.due.map(function (x) { return { date: hi ? x.dateHi : x.date, label: hi ? x.label.replace(/credit card/i, 'क्रेडिट कार्ड') : x.label, what: hi ? x.whatHi : x.what, amount: x.amount }; }),
       hasCards: CR.cards.length > 0,
-      cards: CR.cards.map(function (k) { return { name: hi && k.nameHi ? k.nameHi : k.name, head: hi ? k.headHi : k.head, line: hi ? k.lineHi : k.line, ink: k.warn ? 'var(--warn)' : 'var(--ink2)', used: hi ? k.usedHi : k.used, hasCost: k.hasCost, cost: hi ? k.costHi : k.cost, costInk: k.warnCost ? 'var(--warn)' : 'var(--muted)' }; }),
+      cards: CR.cards.map(function (k) { return { name: hi && k.nameHi ? k.nameHi : k.name, head: hi ? k.headHi : k.head, line: hi ? k.lineHi : k.line, ink: k.warn ? 'var(--warn)' : 'var(--ink2)', used: hi ? k.usedHi : k.used, hasCost: k.hasCost, cost: hi ? k.costHi : k.cost, costInk: k.warnCost ? 'var(--warn)' : 'var(--muted)', hasFx: k.hasFx, fx: hi ? k.fxHi : k.fx }; }),
       hasLoans: CR.loans.length > 0,
       loans: CR.loans.map(function (l) { return { name: l.name, kind: hi ? l.kindHi : l.kind, emi: hi ? l.emiHi : l.emi, left: hi ? l.leftHi : l.left, rate: hi ? l.rateHi : l.rate, interest: hi ? l.interestHi : l.interest }; }),
       hasSeen: CR.seen.length > 0,

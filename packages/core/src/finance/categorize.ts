@@ -53,7 +53,7 @@ const RULES: Rule[] = [
   { cat: 'Refund', re: /\brefund\b|\breversal\b/i, dir: 'credit' },
   { cat: 'Interest', re: /\b(sb )?interest (credit|paid)\b|\bint\.? ?pd\b/i, dir: 'credit' },
   { cat: 'Salary', re: /\bsalary\b|\bsal cr\b/i, dir: 'credit' },
-  { cat: 'Subscriptions', re: /\blinkedin ?premium\b|\bswiggy ?one\b|\bzomato ?gold\b|\buber ?one\b|\bzepto ?pass\b|\bflipkart ?(vip|plus)\b|\bnetflix\b|\bspotify\b|\bhotstar\b|\bjiohotstar\b|\byoutube ?premium\b|\byoutubepremium\b|\bprime\b|\bsonyliv\b|\bzee5\b|\blingopro\b|\baudible\b|\bicloud\b|\bgoogle one\b|\bchatgpt\b|\bopenai\b/i },
+  { cat: 'Subscriptions', re: /\blinkedin ?premium\b|\bswiggy ?one\b|\bzomato ?gold\b|\buber ?one\b|\bzepto ?pass\b|\bflipkart ?(vip|plus)\b|\bnetflix\b|\bspotify\b|\bhotstar\b|\bjiohotstar\b|\byoutube ?premium\b|\byoutubepremium\b|\bprime\b|\bsonyliv\b|\bzee5\b|\blingopro\b|\baudible\b|\bicloud\b|\bgoogle one\b|\bchatgpt\b|\bopenai\b|\banthropic\b|\bclaude\b/i },
   { cat: 'Fitness', re: /\bcult(fit|\.fit)?\b|\bgym\b|\bfitness\b|\bhealthifyme\b/i },
   { cat: 'Self transfer', re: /\bself\b|\bown a\/c\b/i },
   { cat: 'Self transfer', re: /\bsweep\b|\bauto ?sweep\b|\bfd (booking|creation)\b|\bto fd\b/i }, // money moved into your own FD (SBI "SWEEP TFR", 29 Oct)

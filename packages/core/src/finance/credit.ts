@@ -6,6 +6,7 @@ import { asOfDate, creditView } from './picture';
 import { monthlyIncome } from './essentials';
 import { loanStatus, type LoanStatus } from './loans';
 import { cardBills, merchantKey, type CardBill } from './cards';
+import { cardForex, type CardForex } from './forex';
 
 export interface CardInfo extends CardBill {
   label: string;
@@ -13,6 +14,8 @@ export interface CardInfo extends CardBill {
   charges: Paise; statements: number;
   /** cycles where the bill was not paid in full (a balance carried into the next one), of the cycles we can check */
   carried: number; cyclesChecked: number;
+  /** purchases in another currency and the estimated hidden mark-up (D-096) */
+  forex: CardForex | null;
 }
 export interface SeenEmi { payee: string; amount: Paise; day: number; months: number; last: string }
 export interface DueItem { date: string; kind: 'card' | 'emi'; label: string; amount: Paise; /** a date guessed from the usual day, not printed anywhere */ approx?: boolean }
@@ -68,13 +71,14 @@ function nextOnDay(from: string, day: number): string {
 export function creditPicture(ds: Dataset, today?: string): CreditPicture {
   const asOf = asOfDate(ds), now = today && today > asOf ? today : asOf;
   const label = (id: string) => ds.accounts.find((a) => a.id === id)?.label ?? `Card ••${id.split(':')[1] ?? ''}`;
+  const fx = cardForex(ds);
   const cards: CardInfo[] = cardBills(ds, asOf, today).map((b) => {
     const st = ds.cardStatements.filter((s) => s.account === b.account).sort((x, y) => x.periodEnd.localeCompare(y.periodEnd));
     // an earlier bill was not paid in full when the next statement's payments are below its previous balance; charges are
     // reported on their own (a fee or GST line isn't proof of a carried balance) (review, 8 Nov)
     const later = st.slice(1);
     return { ...b, label: label(b.account), charges: st.reduce((a, s) => a + s.charges, 0), statements: st.length,
-      carried: later.filter((s) => s.payments < s.prevBalance - RUPEE).length, cyclesChecked: later.length };
+      carried: later.filter((s) => s.payments < s.prevBalance - RUPEE).length, cyclesChecked: later.length, forex: fx.find((f) => f.account === b.account) ?? null };
   });
   const loans = (ds.loans ?? []).map((l) => loanStatus(l, asOf)).filter((l) => l.emisLeft > 0);
   const seen = seenEmis(ds, loans.map((l) => ({ emi: l.emi, lender: l.lender })));

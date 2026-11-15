@@ -25,7 +25,13 @@ export function buildCredit(ds: Dataset, _s?: unknown, today?: string) {
       ? { en: `${b.charges > 0 ? `${R0(b.charges)} in interest and fees on your last ${b.statements} statement${b.statements === 1 ? '' : 's'}` : 'No interest charged'}${b.carried ? ` · ${b.carried} of the last ${b.cyclesChecked} bills not paid in full` : ''}`,
         hi: `${b.charges > 0 ? `पिछले ${b.statements} स्टेटमेंट में ${R0(b.charges)} ब्याज और फ़ीस` : 'कोई ब्याज नहीं लगा'}${b.carried ? ` · पिछले ${b.cyclesChecked} में से ${b.carried} बिल पूरे नहीं भरे` : ''}` }
       : b.cyclesChecked ? { en: `Earlier bills paid in full (${b.cyclesChecked} of ${b.cyclesChecked} we can see), no interest charged`, hi: `पिछले बिल पूरे भरे (जितने दिखते हैं, ${b.cyclesChecked} में से ${b.cyclesChecked}), कोई ब्याज नहीं लगा` } : null;
-    return { ...l, nameHi: l.name.replace(/credit card/i, 'क्रेडिट कार्ड'), warnCost: b.charges > 0 || b.carried > 0, cost: cost?.en ?? '', costHi: cost?.hi ?? '', hasCost: !!cost };
+    // purchases in another currency: the bank's mark-up + GST is inside the rupee amount, estimated from its published rate (D-096)
+    const f = b.forex, cur = f?.currencies.join('/') ?? '';
+    const fx = f ? (f.fee
+      ? { en: `${R0(f.paid)} spent in ${cur} · about ${R0(f.fee.amount)} of it is the bank's built-in mark-up + GST, if your card charges ${f.fee.rate.markupBp / 100}% + GST (${f.fee.rate.bank} ${f.fee.rate.card}'s rate)`,
+          hi: `${cur} में ${R0(f.paid)} ख़र्च · अगर आपका कार्ड ${f.fee.rate.markupBp / 100}% + GST लेता है (${f.fee.rate.bank} ${f.fee.rate.card} की दर), तो इसमें लगभग ${R0(f.fee.amount)} बैंक का मार्क-अप और GST है` }
+      : { en: `${R0(f.paid)} spent in ${cur} · the bank's mark-up is inside this amount`, hi: `${cur} में ${R0(f.paid)} ख़र्च · बैंक का मार्क-अप इसी रक़म में शामिल है` }) : null;
+    return { ...l, nameHi: l.name.replace(/credit card/i, 'क्रेडिट कार्ड'), warnCost: b.charges > 0 || b.carried > 0, cost: cost?.en ?? '', costHi: cost?.hi ?? '', hasCost: !!cost, fx: fx?.en ?? '', fxHi: fx?.hi ?? '', hasFx: !!fx };
   });
   const loans = c.loans.map((l) => ({
     name: l.lender, kind: LOAN[l.type][0], kindHi: LOAN[l.type][1], emi: `${R0(l.emi)} a month`, emiHi: `${R0(l.emi)} हर महीने`,

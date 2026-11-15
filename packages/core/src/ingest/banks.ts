@@ -1,10 +1,10 @@
-// Statement readers for the banks Munim supports first (D-036, D-048): HDFC, SBI, Canara and Federal Bank savings accounts; HDFC and Axis credit cards.
+// Statement readers for the banks Munim supports first (D-036, D-048): HDFC, SBI, Canara and Federal Bank savings accounts; HDFC, Axis and ICICI credit cards.
 // Input: text lines rebuilt by position (pdfLines). Output: transactions plus checks against the statement's OWN totals;
 // a reader only "passes" when every check reconciles to the paisa. Pure TS: runs on the phone, the PDF never leaves it.
 // Only the last 4 digits of an account or card number are kept.
 import type { Account, CardStatement, Check, Paise, Txn } from '../types';
 
-export type BankFormat = 'hdfc_savings' | 'sbi_savings' | 'canara_savings' | 'federal_savings' | 'hdfc_card' | 'axis_card';
+export type BankFormat = 'hdfc_savings' | 'sbi_savings' | 'canara_savings' | 'federal_savings' | 'hdfc_card' | 'axis_card' | 'icici_card';
 export interface BankRead { format: BankFormat; account: Account; txns: Txn[]; checks: Check[]; stmt?: CardStatement; period?: { from: string; to: string } }
 
 const AMT = /[\d,]+\.\d{2}/;
@@ -19,6 +19,7 @@ const rupees = (p: Paise) => (p / 100).toFixed(2);
 export function detectFormat(lines: string[]): BankFormat | null {
   const t = lines.slice(0, 120).join('\n');
   if (/Credit Card Statement/i.test(t) && /TOTAL AMOUNT DUE/i.test(t) && /\d{2}\/\d{2}\/\d{4}\|\s*\d{2}:\d{2}/.test(lines.join('\n'))) return 'hdfc_card';
+  if (/CREDIT CARD STATEMENT/i.test(t) && /icici/i.test(lines.join('\n')) && /Total Amount due\s+Previous Balance\s+Purchases/i.test(t)) return 'icici_card';
   if (/Withdrawal Amt\.?\s+Deposit Amt\.?\s+Closing Balance/i.test(t)) return 'hdfc_savings';
   if (/^Date\s+Particulars\s+Deposits\s+Withdrawals\s+Balance$/im.test(t) && /^Opening Balance\s+-?[\d,]+\.\d{2}$/im.test(t) && /^Chq:/m.test(t)) return 'canara_savings';
   if (/^Axis Bank\b.*Card.*Statement/im.test(t) && /Transaction Summary/i.test(t) && /Debit\/Credit/i.test(t)) return 'axis_card';
@@ -30,7 +31,7 @@ export function detectFormat(lines: string[]): BankFormat | null {
 export function readBank(lines: string[], file: string): BankRead | null {
   const f = detectFormat(lines);
   const r = f === 'hdfc_savings' ? hdfcSavings(lines, file) : f === 'sbi_savings' ? sbiSavings(lines, file) : f === 'canara_savings' ? canaraSavings(lines, file) : f === 'federal_savings' ? federalSavings(lines, file)
-    : f === 'hdfc_card' ? hdfcCard(lines, file) : f === 'axis_card' ? axisCard(lines, file) : null;
+    : f === 'hdfc_card' ? hdfcCard(lines, file) : f === 'axis_card' ? axisCard(lines, file) : f === 'icici_card' ? iciciCard(lines, file) : null;
   // Axis prints no statement period (its "period" is the rows' own first and last dates), so only the date itself is checked
   if (r) r.checks.push(...dateChecks(r.txns, r.format === 'axis_card' ? undefined : r.period, r.account.kind === 'bank' ? 'bank' : 'card'));
   return r;
@@ -314,4 +315,62 @@ export function federalSavings(lines: string[], file: string): BankRead {
 function periodFrom(lines: string[]) {
   const m = /From\s*:\s*(\d{2}[/-]\d{2}[/-]\d{4})\s*To\s*:\s*(\d{2}[/-]\d{2}[/-]\d{4})/i.exec(lines.join('\n')) ?? /Statement From\s*:\s*(\d{2}-\d{2}-\d{4})\s*to\s*(\d{2}-\d{2}-\d{4})/i.exec(lines.join('\n'));
   return m ? { from: yy(m[1]), to: yy(m[2]) } : undefined;
+}
+
+// ---------- ICICI credit card ----------
+// Read from the owner's own statement (D-096, 15 Nov). Its PDF prints most text twice ("20/09/202620/09/2026", "9090" for 90
+// points) and writes each row's amount in a scrambled font: "H,QQQ.QQ" is ₹1,000.00 (H–P are 1–9, Q is 0), followed by a
+// plain-text number that is NOT the amount: it is the amount ÷ 1.2 on every row (833.33 here), so a reader that trusts the
+// plain digits reports a sixth less than was spent. Only the scrambled amounts add up to the printed totals, so those are read,
+// and the totals checks prove it. A foreign purchase also prints the amount charged abroad ("10 USD"); ICICI adds its mark-up
+// and GST into the rupee amount ("Mark-up fee and corresponding GST levied is included in the transaction amount displayed").
+const MDY: RegExp = /([A-Za-z]{3})[a-z]*\s+(\d{1,2}),\s+(\d{4})/;
+const mdy = (s: string) => { const m = MDY.exec(s); return m && MON[m[1].toLowerCase()] ? `${m[3]}-${MON[m[1].toLowerCase()]}-${m[2].padStart(2, '0')}` : ''; };
+/** "H,QQQ.QQ" → 100000 paise: H–P stand for 1–9 and Q for 0 in ICICI's scrambled amount font. */
+export const iciciAmount = (s: string): Paise | null => {
+  if (!/^[H-Q][H-Q,]*\.[H-Q]{2}$/.test(s)) return null;
+  return Number(s.replace(/,/g, '').replace(/[H-Q]/g, (c) => String((c.charCodeAt(0) - 71) % 10)).replace('.', ''));
+};
+/** "ABCABC" → "ABC": ICICI prints text twice. */
+const undouble = (s: string) => { const t = s.trim(); const h = t.length / 2; return Number.isInteger(h) && t.slice(0, h) === t.slice(h) ? t.slice(0, h).trim() : t; };
+
+export function iciciCard(lines: string[], file: string): BankRead {
+  const all = lines.join('\n');
+  const card = last4(/(\d{4}X{4,}\d{4})/.exec(all)?.[1]);
+  const id = `card:${card || 'icici'}`;
+  const ROW = /(\d{2}\/\d{2}\/\d{4})\1\s+\d{6,}\s+(.*?)\s+([H-Q][H-Q,]*\.[H-Q]{2})[\d,]*\.\d{2}\s*(CR(?:CR)?)?\s*$/;
+  const txns: Txn[] = [];
+  lines.forEach((l, i) => {
+    const m = ROW.exec(l);
+    if (!m) return;
+    let rest = m[2];
+    // the foreign amount: "10 USD10 USD", or "10.5010.50" with "USDUSD" on the next line
+    let fx: Txn['fx'];
+    const fxIn = /\s(\d+(?:\.\d{1,2})?) ([A-Z]{3})\1 \2$/.exec(rest);
+    const fxSplit = !fxIn ? /\s(\d+\.\d{1,2})\1$/.exec(rest) : null;
+    const nextCur = /([A-Z]{3})\1\s*$/.exec(lines[i + 1] ?? '')?.[1];
+    if (fxIn) { fx = { currency: fxIn[2], minor: Math.round(Number(fxIn[1]) * 100) }; rest = rest.slice(0, fxIn.index); }
+    else if (fxSplit && nextCur) { fx = { currency: nextCur, minor: Math.round(Number(fxSplit[1]) * 100) }; rest = rest.slice(0, fxSplit.index); }
+    rest = rest.replace(/\s+(-?\d+)\1$/, ''); // reward points, printed twice ("4040", "-36-36")
+    txns.push({ id: `${file}#${txns.length + 1}`, date: yy(m[1]), desc: undouble(rest), amount: iciciAmount(m[3])!, dir: m[4] ? 'credit' : 'debit', account: id, source: 'card_statement', sourceFile: file, ...(fx ? { fx } : {}) });
+  });
+  // summary: Total due = Previous balance + Purchases/charges + Cash advances − Payments/credits, as one line of five ₹ amounts
+  const hIdx = lines.findIndex((l) => /Total Amount due\s+Previous Balance\s+Purchases/i.test(l));
+  const amtLine = hIdx >= 0 ? lines.slice(hIdx + 1, hIdx + 5).find((l) => (l.match(/[\d,]+\.\d{2}/g) ?? []).length === 5) : undefined;
+  const [total, prev, purch, cash, pay] = (amtLine?.match(/[\d,]+\.\d{2}/g) ?? []).map(paise);
+  const mIdx = lines.findIndex((l) => /^Minimum Amount due/i.test(l));
+  const minDue = mIdx >= 0 ? paise(lines.slice(mIdx + 1, mIdx + 3).find((l) => /^\D?[\d,]+\.\d{2}$/.test(l.trim())) ?? '0') : 0;
+  const dIdx = lines.findIndex((l) => /^PAYMENT DUE DATE/i.test(l));
+  const dueDate = dIdx >= 0 ? mdy(lines.slice(dIdx, dIdx + 6).find((l) => MDY.test(l)) ?? '') : '';
+  const lIdx = lines.findIndex((l) => /^Credit Limit \(Including cash\)/i.test(l));
+  const lims = lIdx >= 0 ? (lines.slice(lIdx + 1, lIdx + 6).find((l) => (l.match(/[\d,]+\.\d{2}/g) ?? []).length === 4)?.match(/[\d,]+\.\d{2}/g) ?? []).map(paise) : [];
+  const per = /Statement period\s*:\s*([A-Za-z]+\s+\d{1,2},\s+\d{4})\s+to\s+([A-Za-z]+\s+\d{1,2},\s+\d{4})/i.exec(all);
+  const sum = (d: Txn['dir']) => txns.filter((t) => t.dir === d).reduce((a, t) => a + t.amount, 0);
+  const checks: Check[] = total !== undefined ? [
+    check('equation', 'Previous balance + purchases + cash − payments = total due', Math.abs(prev + purch + cash - pay - total) <= 100, `${rupees(prev + purch + cash - pay)} vs printed ${rupees(total)}`),
+    check('debits', 'Purchase rows add up to the printed purchases', sum('debit') === purch + cash, `${rupees(sum('debit'))} vs printed ${rupees(purch + cash)}`),
+    check('credits', 'Payment and credit rows add up to the printed credits', sum('credit') === pay, `${rupees(sum('credit'))} vs printed ${rupees(pay)}`),
+  ] : [check('summary', 'Statement summary found', false, 'no total-due line')];
+  const stmt: CardStatement = { account: id, file, periodStart: per ? mdy(per[1]) : '', periodEnd: per ? mdy(per[2]) : '', dueDate, prevBalance: prev ?? 0, payments: pay ?? 0, purchases: (purch ?? 0) + (cash ?? 0), credits: pay ?? 0, charges: 0, totalDue: total ?? 0, minDue, creditsInPayments: true, ...(lims.length === 4 && lims[0] > 0 ? { limit: lims[0], available: lims[1] } : {}) };
+  return { format: 'icici_card', txns, checks, stmt, period: { from: stmt.periodStart, to: stmt.periodEnd }, account: { id, kind: 'card', label: `ICICI credit card ••${card}`, last4: card } };
 }

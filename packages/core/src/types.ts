@@ -17,6 +17,8 @@ export interface Txn {
   category?: string;
   merchant?: string;
   matched?: 'card_payment'; // re-labelled by a cross-check: this bank debit paid a card bill (ingest/finalise.ts)
+  /** a card purchase charged in another currency: the amount abroad in that currency's minor units (cents), as printed (D-096) */
+  fx?: { currency: string; minor: number };
 }
 
 export interface Account {
@@ -46,6 +48,9 @@ export interface CardStatement {
   limit?: Paise;
   /** available credit printed on the statement (D-092) */
   available?: Paise;
+  /** the printed payments figure also counts refunds (ICICI's "Payments / Credits"), so a credit that makes it add up is not
+   *  thereby a payment (D-096) */
+  creditsInPayments?: boolean;
 }
 
 export interface Loan {

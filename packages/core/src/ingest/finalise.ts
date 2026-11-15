@@ -23,7 +23,18 @@ export function finalise(ds: Dataset) {
   regularPayments(ds);
   cardRefunds(ds);
   cardPayments(ds);
+  cardMoneyBack(ds);
   crossChecks(ds);
+}
+
+/** After the payment checks: a credit on a card from a merchant that is still read as income is money back (a refund or a
+ *  reversal whose purchase is on an older statement), never income (D-096: a travel refund on an ICICI statement). */
+function cardMoneyBack(ds: Dataset) {
+  for (const t of ds.txns) {
+    if (!t.account.startsWith('card:') || t.dir !== 'credit' || t.category !== 'Other income' || PAYMENT_WORDS.test(t.desc)) continue;
+    const k = merchantKey(t); if (k && BILL_PAY.has(k)) continue;
+    t.category = 'Refund';
+  }
 }
 
 /** On a card, the bill payment is a credit ("BPPY CC PAYMENT…", "BBPS…", "NEFT…") that the word rules may read as income
@@ -48,7 +59,7 @@ function cardPayments(ds: Dataset) {
   const notCb = (t: Txn) => !['Cashback', 'Refund', 'Card bill payment'].includes(t.category ?? '');
   for (const t of ds.txns) if (t.account.startsWith('card:') && t.dir === 'credit' && notCb(t) && PAYMENT_WORDS.test(t.desc)) label(t);
   for (const s of ds.cardStatements) {
-    if (!(s.payments > 0)) continue;
+    if (!(s.payments > 0) || s.creditsInPayments) continue; // ICICI's total counts refunds too: adding up proves nothing (D-096: a travel refund was read as a bill payment)
     const credits = ds.txns.filter((t) => t.account === s.account && t.dir === 'credit' && t.sourceFile === s.file);
     const sum = (xs: Txn[]) => xs.reduce((a, t) => a + t.amount, 0);
     const paid = credits.filter((t) => t.category === 'Card bill payment');
