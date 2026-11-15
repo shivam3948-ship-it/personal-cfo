@@ -38,6 +38,8 @@ describe.skipIf(!live)(`Ask Munim eval set, live Claude (${MODEL})`, () => {
       fs.writeFileSync(path.join(dir, `${tag}.json`), JSON.stringify({ ...s, model: MODEL }, null, 1));
     }
     console.log(`${s.passed}/${s.n} pass${latency}`);
+    // which cases failed and on what (sample data only, so safe in public CI logs)
+    for (const r of s.results.filter((x) => !x.pass)) console.log(`FAILED ${r.id}: ${Object.entries(r.checks).filter(([, v]) => v === false).map(([k]) => k).join(',')} | ${r.answer.replace(/\s+/g, ' ').slice(0, 220)}`);
   }, 45 * 60_000);
 
   it('every case was answered by Claude, not the rules fallback', () => {
