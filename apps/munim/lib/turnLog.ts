@@ -19,6 +19,9 @@ export interface TurnRecord {
   tokens?: { calls: number; input: number; cacheRead: number; cacheWrite: number; output: number };
   judge?: { model: string; input: number; output: number };
   ttsChars?: number; cost?: TurnCost; cutIn?: CutIn;
+  /** streaming voice (D-100): while Munim spoke, how often Sarvam heard speech start, how many were Munim's own echo, whether
+   *  it stopped, and questions asked while it was still thinking (taken over, not dropped) */
+  barge?: { starts: number; echoes: number; stopped: boolean; overThinking: number };
   vote?: 'up' | 'down'; reason?: string;
 }
 
@@ -37,6 +40,7 @@ export function flagsOf(t: TurnRecord): Flag[] {
   if (t.fallback) f.push('fell_back');
   const slow = t.via === 'voice' ? (t.ms.total ?? 0) > SLOW_VOICE_MS : t.ms.agent > SLOW_TYPED_MS;
   if (slow) f.push('slow');
+  if (t.barge && t.barge.starts > t.barge.echoes && !t.barge.stopped) f.push('cut_in_missed');
   if (t.cutIn?.how === 'tap') { f.push('tapped_to_cut_in'); if (t.cutIn.need > 0 && t.cutIn.peak >= t.cutIn.need * 0.66) f.push('cut_in_missed'); }
   return f;
 }
@@ -75,7 +79,7 @@ export function summarize(turns: TurnRecord[]): LogSummary {
     agentMs: { p50: pct(nums(turns.map((t) => t.ms.agent)), 0.5), p90: pct(nums(turns.map((t) => t.ms.agent)), 0.9) },
     firstWordMs: { p50: pct(nums(voice.map((t) => t.ms.firstWord)), 0.5) },
     cost: { total: costTotal, perTurn: priced ? Math.round(costTotal / priced) : null, llm: sum('llm'), judge: sum('judge'), stt: sum('stt'), tts: sum('tts') },
-    cutIn: { heard: turns.filter((t) => t.cutIn?.how === 'voice').length, tapped: turns.filter((t) => t.cutIn?.how === 'tap').length, missed: turns.filter((t) => flagsOf(t).includes('cut_in_missed')).length },
+    cutIn: { heard: turns.filter((t) => t.cutIn?.how === 'voice' || t.barge?.stopped).length, tapped: turns.filter((t) => t.cutIn?.how === 'tap').length, missed: turns.filter((t) => flagsOf(t).includes('cut_in_missed')).length },
   };
 }
 
@@ -113,6 +117,7 @@ export function cleanTurn(b: unknown): TurnRecord | null {
   const chars = num(x.ttsChars); if (chars !== undefined) t.ttsChars = chars;
   if (x.cost && typeof x.cost === 'object') { const c = obj(x.cost); t.cost = { llm: num(c.llm) ?? 0, judge: num(c.judge) ?? 0, stt: num(c.stt) ?? 0, tts: num(c.tts) ?? 0, total: num(c.total) ?? 0,
     unpriced: Array.isArray(c.unpriced) ? c.unpriced.filter(tok).slice(0, 4) : [] }; }
+  if (x.barge && typeof x.barge === 'object') { const b = obj(x.barge); t.barge = { starts: num(b.starts) ?? 0, echoes: num(b.echoes) ?? 0, stopped: b.stopped === true, overThinking: num(b.overThinking) ?? 0 }; }
   const c = obj(x.cutIn), how = oneOf(c.how, ['voice', 'tap', 'none'] as const);
   if (how) { const atMs = num(c.atMs); t.cutIn = { how, frames: num(c.frames) ?? 0, ms: num(c.ms) ?? 0, floor: num(c.floor) ?? 0, need: num(c.need) ?? 0, peak: num(c.peak) ?? 0, p90: num(c.p90) ?? 0,
     triggered: c.triggered === true, ...(atMs !== undefined ? { atMs } : {}), ...(tok(c.ctx) ? { ctx: c.ctx } : {}) }; }

@@ -13,10 +13,12 @@ const MIC_RATE = 16000, OUT_RATE = 24000;
 
 /** Words Munim was saying, heard back through the microphone, are not a question (echo the phone didn't cancel). */
 export function isEcho(heard: string, saying: string): boolean {
-  const w = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter((x) => x.length > 1);
+  const w = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{M}\p{N}\s]/gu, ' ').split(/\s+/).filter((x) => x.length > 1);
   const h = w(heard), say = new Set(w(saying));
-  if (!h.length || !say.size) return false;
-  return h.filter((x) => say.has(x)).length / h.length >= 0.6;
+  // a short interruption ("सितंबर का बताओ", "stop") often repeats a word Munim just said: it's never echo (15 Nov, the owner:
+  // "interruption is not working always"); echo is a long stretch of Munim's own sentence
+  if (h.length < 4 || !say.size) return false;
+  return h.filter((x) => say.has(x)).length / h.length >= 0.75;
 }
 
 /** Float samples (−1..1) to 16-bit little-endian PCM. */

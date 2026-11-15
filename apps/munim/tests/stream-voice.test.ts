@@ -18,3 +18,11 @@ describe('streaming voice', () => {
     expect(pcm16ToFloat(wav)[0]).toBeCloseTo(0.5, 3);
   });
 });
+
+describe('interrupting is never mistaken for echo (15 Nov)', () => {
+  it('a short interruption that repeats Munim’s words still counts as you', () => {
+    expect(isEcho('सितंबर का बताओ', 'सितंबर में आपने ₹5,874 ख़र्च किए')).toBe(false);
+    expect(isEcho('stop', 'Stop paying for the gym if you never go.')).toBe(false);
+    expect(isEcho('रुको रुको सितंबर नहीं अगस्त का बताओ', 'सितंबर में आपने ख़र्च किए')).toBe(false);
+  });
+});

@@ -154,6 +154,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const streamRef = useRef<StreamVoice | null>(null);
   const sayingRef = useRef(''); // what Munim is saying now, to tell its own echo from your words
   const duckRef = useRef(false); const vadEndRef = useRef(0); const quietTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bargeRef = useRef({ starts: 0, echoes: 0, stopped: false, overThinking: 0 }); const speechOn = useRef(false); const sustain = useRef<ReturnType<typeof setTimeout> | null>(null);
   const streamOff = () => /(?:^|;\s*)munim_stream=off(?:;|$)/.test(document.cookie); // #stream=off turns it off for this browser
   const costOf = (t: TurnRecord) => turnCost({ model: t.model, llm: t.tokens, judgeModel: t.judge?.model, judge: t.judge, sttMs: t.stt === 'server' ? t.ms.audio : 0, ttsChars: t.ttsChars });
   function logTurn(t: TurnRecord) {
@@ -181,8 +182,10 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
 
   const ttsOff = useRef(false); // after one 501 (no voice key) this visit uses the browser's voice
   const ackOk = useRef(false);
-  async function ask(q: string, via: 'text' | 'voice' = 'text', stt?: SttTiming) {
-    q = q.trim(); if (!q || busyRef.current) { ackOk.current = false; return; }
+  const askGen = useRef(0); // a question asked while Munim is still thinking takes over: the older answer is dropped
+  async function ask(q: string, via: 'text' | 'voice' = 'text', stt?: SttTiming, takeOver = false) {
+    q = q.trim(); if (!q || (busyRef.current && !takeOver)) { ackOk.current = false; return; }
+    const gen = ++askGen.current;
     if (via === 'text' && talkRef.current) setTalkOn(false); // typing ends a hands-free conversation
     const next: Msg[] = [...msgsRef.current, { role: 'user', content: q }];
     stopSpeaking(); setSpeaking(null);
@@ -196,6 +199,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
       const agentMs = Math.round(performance.now() - t0);
+      if (gen !== askGen.current) return; // you asked something else meanwhile
       if (local && j.mode) setDisc({ ...(j.mode === 'private' ? DISCLAIMER.private : DISCLAIMER.guided), test: false }); // the line matches the mode the answer was given in
       setMsgs([...next, { role: 'assistant', content: j.answer, spoken: j.spoken, done: doneNote(j.actions) || undefined, meta: { checked: j.check?.checked ?? 0, ok: !!j.check?.ok, tools: j.tools ?? [], engine: j.engine, id: j.trace }, ...(via === 'voice' ? { lat: { stt: stt?.ms, agent: agentMs } } : {}) }]);
       // metadata only: which tools ran, how long, whether the numbers checked out. Never the question or the answer.
@@ -209,7 +213,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       }
       if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang }); // asked by voice → answered by voice; typed → stays quiet
     } catch (e) { ackOk.current = false; setTalkOn(false); setErr((e as Error).message === NO_DATA ? (hi ? NO_DATA_HI : NO_DATA) : hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
-    finally { setBusy(false); input.current?.focus(); }
+    finally { if (gen === askGen.current) { setBusy(false); input.current?.focus(); } }
   }
   const lastUser = [...msgs].reverse().find((m) => m.role === 'user')?.content;
   const startVoiceRef = useRef<() => Promise<void>>(async () => {});
@@ -275,19 +279,27 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
         onLevel: setLevel,
         onVadStart: () => {
           if (quietTimer.current) clearTimeout(quietTimer.current);
-          if (streamRef.current?.playing) { streamRef.current.duck(true); duckRef.current = true; } else { setVoice('listening'); setHeard(''); }
+          speechOn.current = true;
+          if (streamRef.current?.playing) {
+            bargeRef.current.starts++;
+            streamRef.current.duck(true); duckRef.current = true;
+            // still talking 0.9 s later: that's you, not a blip of echo, so Munim stops now rather than when your words arrive
+            if (sustain.current) clearTimeout(sustain.current);
+            sustain.current = setTimeout(() => { const s2 = streamRef.current; if (speechOn.current && s2?.playing) { s2.stopVoice(); bargeRef.current.stopped = true; duckRef.current = false; setVoice('listening'); setHeard(''); } }, 900);
+          } else { setVoice('listening'); setHeard(''); }
         },
         onVadEnd: () => {
+          speechOn.current = false; if (sustain.current) clearTimeout(sustain.current);
           vadEndRef.current = performance.now();
           if (duckRef.current) setTimeout(() => { if (duckRef.current) { duckRef.current = false; streamRef.current?.duck(false); } }, 1800); // nothing said after all
         },
         onText: (text) => {
           const s = streamRef.current; if (!s || !talkRef.current) return;
-          if (s.playing && isEcho(text, sayingRef.current)) { duckRef.current = false; s.duck(false); return; } // Munim heard itself
-          if (s.playing) { s.stopVoice(); tapCut.current = false; }
+          if (s.playing && isEcho(text, sayingRef.current)) { bargeRef.current.echoes++; duckRef.current = false; s.duck(false); return; } // Munim heard itself
+          if (s.playing) { s.stopVoice(); bargeRef.current.stopped = true; tapCut.current = false; }
           duckRef.current = false; setHeard(text);
-          if (busyRef.current) return; // still answering the last question
-          setVoice('idle'); void ask(text, 'voice', { mode: 'stream', ms: vadEndRef.current ? Math.round(performance.now() - vadEndRef.current) : undefined });
+          const over = busyRef.current; if (over) bargeRef.current.overThinking++; // asked while Munim was still thinking: this question takes over
+          setVoice('idle'); void ask(text, 'voice', { mode: 'stream', ms: vadEndRef.current ? Math.round(performance.now() - vadEndRef.current) : undefined }, over);
         },
         onClose: () => { streamRef.current = null; if (talkRef.current) { setNote(t.talkEnded); endTalkRef.current(false); } },
       });
@@ -335,11 +347,12 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     if (sv) { // streamed: the relay voices each piece as it is made; Sarvam's speech detection handles cutting in
       const said = local ? redact(textToSay) : textToSay;
       const pieces = splitForSpeech(withoutDisclaimer(said, DISC_LINES), { firstMax: 90 }).map((p) => forSpeech(p, lang)); // ₹ amounts and dates read as on the old path
-      sayingRef.current = pieces.join(' ');
+      sayingRef.current = pieces.join(' '); bargeRef.current = { starts: 0, echoes: 0, stopped: false, overThinking: bargeRef.current.overThinking };
       const t0 = performance.now(); let firstMs: number | null = null; const sid = turn?.id ?? `a${idx}`;
       try { await sv.speak(sid, pieces, lang, () => { if (firstMs === null) firstMs = Math.round(performance.now() - t0); }); } catch { /* the answer is still on screen */ }
       const prev = turn?.id ? turnsRef.current.get(turn.id) : undefined;
-      if (prev) logTurn({ ...prev, voice: 'stream', ttsChars: pieces.join(' ').length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + prev.ms.agent + firstMs } : {}) } });
+      const barge = { ...bargeRef.current }; bargeRef.current.overThinking = 0;
+      if (prev) logTurn({ ...prev, voice: 'stream', barge, ttsChars: pieces.join(' ').length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + prev.ms.agent + firstMs } : {}) } });
       if (turn && firstMs !== null) setMsgs((cur) => cur.map((m, i) => (i === idx ? { ...m, lat: { stt: turn.stt?.ms, agent: turn.agentMs, speak: firstMs! } } : m)));
       sayingRef.current = '';
       setSpeaking((cur) => (cur === idx ? null : cur)); setNote(null);
