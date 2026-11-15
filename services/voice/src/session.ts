@@ -60,7 +60,7 @@ export class Session {
     const ws = new WebSocket(`${this.up.ttsUrl}?${q}`, [`api-subscription-key.${this.up.key}`]);
     this.tts = ws; this.ttsId = id; this.ttsReady = false; this.ttsQueue = [];
     ws.on('open', () => {
-      ws.send(JSON.stringify({ type: 'config', data: { language_code: lang === 'hi' ? 'hi-IN' : 'en-IN', speaker: this.up.speaker ?? 'shubh', output_audio_codec: 'linear16', speech_sample_rate: 24000, min_buffer_size: 30, max_chunk_length: 150, ...(this.up.pace ? { pace: this.up.pace } : {}) } }));
+      ws.send(JSON.stringify({ type: 'config', data: { language_code: lang === 'hi' ? 'hi-IN' : 'en-IN', speaker: this.up.speaker ?? 'shubh', enable_preprocessing: true, output_audio_codec: 'linear16', speech_sample_rate: 24000, min_buffer_size: 30, max_chunk_length: 150, ...(this.up.pace ? { pace: this.up.pace } : {}) } }));
       this.ttsReady = true;
       for (const t of this.ttsQueue.splice(0)) this.ttsText(t);
     });

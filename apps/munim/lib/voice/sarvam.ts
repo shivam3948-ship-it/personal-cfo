@@ -46,9 +46,8 @@ export interface TtsResult { audioBase64: string; mime: string; ms: number; atte
 export async function sarvamTts(text: string, lang: 'hi' | 'en'): Promise<TtsResult> {
   const t0 = Date.now();
   const language = lang === 'hi' ? 'hi-IN' : 'en-IN';
-  const model = process.env.SARVAM_TTS_MODEL || 'bulbul:v3';
-  const extra: Record<string, unknown> = {};
-  if (process.env.SARVAM_TTS_SPEAKER) extra.speaker = process.env.SARVAM_TTS_SPEAKER;
+  const model = process.env.SARVAM_TTS_MODEL || 'bulbul:v4-flash'; // D-103: picked by the voice bench
+  const extra: Record<string, unknown> = { speaker: process.env.SARVAM_TTS_SPEAKER || 'shubh_hi_customer', enable_preprocessing: true };
   if (process.env.SARVAM_TTS_PACE) extra.pace = Number(process.env.SARVAM_TTS_PACE);
   const t = text.slice(0, 1500); // older API versions cap a text at 1500 characters
   const attempts: { body: Record<string, unknown>; mime: string }[] = [

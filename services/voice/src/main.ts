@@ -9,7 +9,7 @@ startRelay({
   up: {
     sttUrl: env.SARVAM_STT_WS ?? 'wss://api.sarvam.ai/speech-to-text/ws',
     ttsUrl: env.SARVAM_TTS_WS ?? 'wss://api.sarvam.ai/text-to-speech/ws',
-    key: env.SARVAM_API_KEY ?? '', ttsModel: env.SARVAM_TTS_MODEL ?? 'bulbul:v3', speaker: env.SARVAM_TTS_SPEAKER,
+    key: env.SARVAM_API_KEY ?? '', ttsModel: env.SARVAM_TTS_MODEL ?? 'bulbul:v4-flash', speaker: env.SARVAM_TTS_SPEAKER ?? 'shubh_hi_customer', // D-103
     pace: env.SARVAM_TTS_PACE ? Number(env.SARVAM_TTS_PACE) : undefined,
   },
 }).then(({ port }) => console.log(`munim-voice on ${port}`));

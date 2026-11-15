@@ -89,7 +89,7 @@ describe('relay', () => {
     const said = nextMsg(ws!, (m) => m.t === 'said');
     ws!.send(JSON.stringify({ t: 'say', id: 'a1', text: 'अगस्त में ₹5,874 ख़र्च हुए।', lang: 'hi' }));
     expect((await audio).id).toBe('a1'); await said;
-    expect(seen.ttsConfig).toMatchObject({ language_code: 'hi-IN', output_audio_codec: 'linear16', speech_sample_rate: 24000 });
+    expect(seen.ttsConfig).toMatchObject({ language_code: 'hi-IN', output_audio_codec: 'linear16', speech_sample_rate: 24000, enable_preprocessing: true });
     expect(seen.ttsTexts).toContain('अगस्त में ₹5,874 ख़र्च हुए।');
     const closedBefore = seen.ttsClosed;
     ws!.send(JSON.stringify({ t: 'stop' }));
