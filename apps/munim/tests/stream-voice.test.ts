@@ -26,3 +26,18 @@ describe('interrupting is never mistaken for echo (15 Nov)', () => {
     expect(isEcho('रुको रुको सितंबर नहीं अगस्त का बताओ', 'सितंबर में आपने ख़र्च किए')).toBe(false);
   });
 });
+
+import { turnComplete } from '@/ui/streamVoice';
+describe('end of turn (D-106)', () => {
+  it('a statement that pauses waits for the rest; a question or request goes at once', () => {
+    expect(turnComplete('मेरा स्मॉल कैप फंड गिर रहा है।')).toBe(false);
+    expect(turnComplete('मेरा स्मॉल कैप फंड गिर रहा है। क्या मुझे उसे बेच देना चाहिए?')).toBe(true);
+    expect(turnComplete('I got a bonus of twenty thousand rupees.')).toBe(false);
+    expect(turnComplete('I got a bonus of twenty thousand rupees. Where should I put it?')).toBe(true);
+    expect(turnComplete('पिछले महीने मेरा सबसे ज़्यादा पैसा कहाँ गया')).toBe(true);
+    expect(turnComplete('सितंबर का ख़र्च बताओ')).toBe(true);
+    expect(turnComplete('mera kharcha batao')).toBe(true);
+    expect(turnComplete('हाँ')).toBe(true);
+    expect(turnComplete('ok thanks')).toBe(true);
+  });
+});

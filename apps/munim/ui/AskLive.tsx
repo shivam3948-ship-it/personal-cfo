@@ -13,7 +13,7 @@ const DISC_LINES = Object.values(DISCLAIMER).flatMap((d) => [d.en, d.hi]);
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
 import { withoutDisclaimer, forSpeech, splitForSpeech, isDisclaimerLine } from '@core/agent/lang';
-import { StreamVoice, isEcho } from '@/ui/streamVoice';
+import { StreamVoice, isEcho, turnComplete, TURN_WAIT_MS } from '@/ui/streamVoice';
 import { doneNote, type Action } from '@/lib/actionsCore';
 import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type CutInWatch, type RecorderHandle, type Recording } from '@/ui/voice';
 import { turnCost } from '@/lib/cost';
@@ -154,6 +154,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   // streaming voice through the relay (D-100): one open session for the whole conversation; null → the record-and-upload loop
   const streamRef = useRef<StreamVoice | null>(null);
   const sayingRef = useRef(''); // what Munim is saying now, to tell its own echo from your words
+  const heldRef = useRef<{ text: string; timer: ReturnType<typeof setTimeout> | null } | null>(null); // a statement waiting for the rest of its question (D-106)
   const duckRef = useRef(false); const vadEndRef = useRef(0); const quietTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const liveRef = useRef<{ id: string; said: string[]; first: number | null; status: number } | null>(null); // the answer being voiced while it is written
   const bargeRef = useRef({ starts: 0, echoes: 0, stopped: false, overThinking: 0 }); const speechOn = useRef(false); const sustain = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -258,7 +259,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const consented = () => { try { return sessionStorage.getItem('munim_voice_ok') === '1'; } catch { return false; } };
   function endTalk(quiet: boolean) {
     setTalkOn(false);
-    if (quietTimer.current) clearTimeout(quietTimer.current); streamRef.current?.close(); streamRef.current = null; duckRef.current = false;
+    if (quietTimer.current) clearTimeout(quietTimer.current); if (heldRef.current?.timer) clearTimeout(heldRef.current.timer); heldRef.current = null; streamRef.current?.close(); streamRef.current = null; duckRef.current = false;
     const h = rec.current as (RecorderHandle | { stop: () => void } | null); rec.current = null;
     if (h && 'cancel' in h) h.cancel(); else h?.stop();
     stopSpeaking(); setSpeaking(null); setVoice('idle'); setLevel(0); ackOk.current = false;
@@ -309,6 +310,11 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   /** Streaming conversation (D-100): the mic streams for the whole conversation; Sarvam says when you start and stop;
    *  talking over Munim ducks it at once and stops it when your words arrive (its own echo, heard back, is ignored). */
   async function startStream(): Promise<boolean> {
+    function sendTurn(text: string) {
+      const over = busyRef.current; if (over) bargeRef.current.overThinking++; // asked while Munim was still thinking: this question takes over
+      setVoice('idle'); void ask(text, 'voice', { mode: 'stream', ms: vadEndRef.current ? Math.round(performance.now() - vadEndRef.current) : undefined }, over);
+    }
+    function sendHeld() { const h = heldRef.current; heldRef.current = null; if (h && talkRef.current) sendTurn(h.text); }
     const armQuiet = () => { if (quietTimer.current) clearTimeout(quietTimer.current); quietTimer.current = setTimeout(() => { if (talkRef.current && !busyRef.current && !streamRef.current?.playing) endTalkRef.current(true); }, 8000); };
     let sv = streamRef.current;
     if (!sv) {
@@ -316,6 +322,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
         onLevel: setLevel,
         onVadStart: () => {
           if (quietTimer.current) clearTimeout(quietTimer.current);
+          if (heldRef.current) { if (heldRef.current.timer) clearTimeout(heldRef.current.timer); heldRef.current.timer = setTimeout(sendHeld, 4000); } // more is coming: wait for it (up to 4 s)
           speechOn.current = true;
           if (streamRef.current?.playing) {
             bargeRef.current.starts++;
@@ -334,9 +341,12 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           const s = streamRef.current; if (!s || !talkRef.current) return;
           if (s.playing && isEcho(text, sayingRef.current)) { bargeRef.current.echoes++; duckRef.current = false; s.duck(false); return; } // Munim heard itself
           if (s.playing) { s.stopVoice(); bargeRef.current.stopped = true; tapCut.current = false; }
-          duckRef.current = false; setHeard(text);
-          const over = busyRef.current; if (over) bargeRef.current.overThinking++; // asked while Munim was still thinking: this question takes over
-          setVoice('idle'); void ask(text, 'voice', { mode: 'stream', ms: vadEndRef.current ? Math.round(performance.now() - vadEndRef.current) : undefined }, over);
+          duckRef.current = false;
+          // D-106: a statement that ends on a pause waits briefly for the rest of the question; a question goes at once
+          const h = heldRef.current; if (h?.timer) clearTimeout(h.timer);
+          const whole = h ? `${h.text} ${text}` : text; setHeard(whole);
+          if (turnComplete(whole)) { heldRef.current = null; sendTurn(whole); return; }
+          heldRef.current = { text: whole, timer: setTimeout(sendHeld, TURN_WAIT_MS) }; setVoice('listening');
         },
         onClose: () => { streamRef.current = null; if (talkRef.current) { setNote(t.talkEnded); endTalkRef.current(false); } },
       });
