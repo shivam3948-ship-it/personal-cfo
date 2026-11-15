@@ -12,7 +12,7 @@ import { DISCLAIMER } from '@/lib/advice';
 const DISC_LINES = Object.values(DISCLAIMER).flatMap((d) => [d.en, d.hi]);
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
-import { withoutDisclaimer, forSpeech, splitForSpeech } from '@core/agent/lang';
+import { withoutDisclaimer, forSpeech, splitForSpeech, isDisclaimerLine } from '@core/agent/lang';
 import { StreamVoice, isEcho } from '@/ui/streamVoice';
 import { doneNote, type Action } from '@/lib/actionsCore';
 import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type CutInWatch, type RecorderHandle, type Recording } from '@/ui/voice';
@@ -154,6 +154,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const streamRef = useRef<StreamVoice | null>(null);
   const sayingRef = useRef(''); // what Munim is saying now, to tell its own echo from your words
   const duckRef = useRef(false); const vadEndRef = useRef(0); const quietTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const liveRef = useRef<{ id: string; said: string[]; first: number | null } | null>(null); // the answer being voiced while it is written
   const bargeRef = useRef({ starts: 0, echoes: 0, stopped: false, overThinking: 0 }); const speechOn = useRef(false); const sustain = useRef<ReturnType<typeof setTimeout> | null>(null);
   const streamOff = () => /(?:^|;\s*)munim_stream=off(?:;|$)/.test(document.cookie); // #stream=off turns it off for this browser
   const costOf = (t: TurnRecord) => turnCost({ model: t.model, llm: t.tokens, judgeModel: t.judge?.model, judge: t.judge, sttMs: t.stt === 'server' ? t.ms.audio : 0, ttsChars: t.ttsChars });
@@ -194,8 +195,33 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     try {
       const t0 = performance.now();
       const turns = next.map(({ role, content, done }) => ({ role, content: done ? `${content}\n\n${done}` : content })); // what Munim already saved travels with its answer
-      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge']; log?: { question: string; answer: string } } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed') : await (async () => {
-        const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed', ...(/(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie) ? { prefetch: true } : {}) }) });
+      // Voice in a streaming conversation (D-100): each checked sentence is voiced as soon as the answer has written it
+      const sv = via === 'voice' && talkRef.current ? streamRef.current : null;
+      const live = sv ? { id: `s${gen}`, said: [] as string[], first: null as number | null } : null;
+      if (sv && live) { sayingRef.current = ''; bargeRef.current = { starts: 0, echoes: 0, stopped: false, overThinking: bargeRef.current.overThinking }; sv.begin(live.id, () => { if (live.first === null) live.first = Math.round(performance.now() - t0); }); }
+      const qLang = /[\u0900-\u097F]/.test(q) ? 'hi' : 'en';
+      const onSentence = sv && live ? (x: string) => {
+        if (gen !== askGen.current || isDisclaimerLine(x, DISC_LINES)) return;
+        live.said.push(x); sayingRef.current += ` ${x}`;
+        const l = /[\u0900-\u097F]/.test(x) ? 'hi' : /[a-z]/i.test(x) ? 'en' : qLang; // the voice follows each sentence's script
+        sv.add(live.id, forSpeech(x, l), l);
+      } : undefined;
+      liveRef.current = live;
+      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge']; log?: { question: string; answer: string } } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed', onSentence) : await (async () => {
+        const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed', ...(onSentence ? { stream: true } : {}), ...(/(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie) ? { prefetch: true } : {}) }) });
+        if (onSentence && r.ok && r.body && (r.headers.get('content-type') ?? '').includes('ndjson')) { // sentences, then the whole reply
+          const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
+          for (;;) {
+            const { done, value } = await rd.read(); if (done) break;
+            buf += dec.decode(value, { stream: true }); let k: number;
+            while ((k = buf.indexOf('\n')) >= 0) {
+              const ln = buf.slice(0, k); buf = buf.slice(k + 1); if (!ln.trim()) continue;
+              const m = JSON.parse(ln);
+              if (m.t === 'say') onSentence(m.s); else if (m.t === 'done') { const { t: _t, ...rest } = m; void _t; return rest; } else if (m.t === 'error') throw new Error(hi ? t.noAnswer : m.error);
+            }
+          }
+          throw new Error(t.noAnswer);
+        }
         const x = await r.json(); if (!r.ok) throw new Error(hi ? t.noAnswer : x.error ?? t.noAnswer); return x;
       })();
       const agentMs = Math.round(performance.now() - t0);
@@ -346,13 +372,23 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     const sv = handsFree ? streamRef.current : null;
     if (sv) { // streamed: the relay voices each piece as it is made; Sarvam's speech detection handles cutting in
       const said = local ? redact(textToSay) : textToSay;
-      const pieces = splitForSpeech(withoutDisclaimer(said, DISC_LINES), { firstMax: 90 }).map((p) => forSpeech(p, lang)); // ₹ amounts and dates read as on the old path
-      sayingRef.current = pieces.join(' '); bargeRef.current = { starts: 0, echoes: 0, stopped: false, overThinking: bargeRef.current.overThinking };
-      const t0 = performance.now(); let firstMs: number | null = null; const sid = turn?.id ?? `a${idx}`;
-      try { await sv.speak(sid, pieces, lang, () => { if (firstMs === null) firstMs = Math.round(performance.now() - t0); }); } catch { /* the answer is still on screen */ }
+      const live = liveRef.current; liveRef.current = null;
+      const t0 = performance.now(); let firstMs: number | null = null;
+      // what the voice already said while the answer was written (D-100) isn't said again; the rest follows in order
+      const norm = (x: string) => x.replace(/\s+/g, ' ').trim();
+      const done = new Set((live?.said ?? []).map(norm));
+      const rest = withoutDisclaimer(said, DISC_LINES).split(/(?<=[.?!।])\s+|\n+/).map((x) => x.trim()).filter((x) => x && !done.has(norm(x)) && !isDisclaimerLine(x, DISC_LINES));
+      const sid = live?.id ?? turn?.id ?? `a${idx}`;
+      if (!live) { sayingRef.current = ''; bargeRef.current = { starts: 0, echoes: 0, stopped: false, overThinking: bargeRef.current.overThinking }; sv.begin(sid, () => { if (firstMs === null) firstMs = Math.round(performance.now() - t0); }); }
+      sayingRef.current = norm(`${sayingRef.current} ${rest.join(' ')}`);
+      for (const p of rest) sv.add(sid, forSpeech(p, lang), lang);
+      try { await sv.finish(sid); } catch { /* the answer is still on screen */ }
+      // first sound: when it came while the answer was still being written, it counts from the question, minus the thinking time
+      if (live?.first != null && turn) firstMs = Math.max(0, live.first - turn.agentMs);
+      const spokeEarly = live?.first != null ? live.first : null;
       const prev = turn?.id ? turnsRef.current.get(turn.id) : undefined;
       const barge = { ...bargeRef.current }; bargeRef.current.overThinking = 0;
-      if (prev) logTurn({ ...prev, voice: 'stream', barge, ttsChars: pieces.join(' ').length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + prev.ms.agent + firstMs } : {}) } });
+      if (prev) logTurn({ ...prev, voice: 'stream', barge, ttsChars: sayingRef.current.length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + (spokeEarly ?? prev.ms.agent + firstMs) } : {}) } });
       if (turn && firstMs !== null) setMsgs((cur) => cur.map((m, i) => (i === idx ? { ...m, lat: { stt: turn.stt?.ms, agent: turn.agentMs, speak: firstMs! } } : m)));
       sayingRef.current = '';
       setSpeaking((cur) => (cur === idx ? null : cur)); setNote(null);

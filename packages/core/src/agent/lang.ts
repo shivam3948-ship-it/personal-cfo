@@ -46,6 +46,9 @@ export function disclaimerLast(text: string): string {
  *  line and the test-build line wherever they sit, and any exact line passed in `exact` (each advice mode's disclaimer,
  *  apps/munim/lib/advice.ts, the private-mode one included). A "no licence" refusal is the answer, so it is still said. If
  *  nothing else is left, the text is said as it is. */
+/** A sentence that is only a disclaimer line (D-099: never said aloud). */
+export const isDisclaimerLine = (x: string, exact: string[] = []): boolean => { const t = x.trim(); return exact.some((e) => e && t === e.trim()) || DISCLAIMER_SENT.test(t); };
+
 export function withoutDisclaimer(text: string, exact: string[] = []): string {
   let t = text;
   for (const e of [...exact].sort((a, b) => b.length - a.length)) if (e) t = t.split(e).join(' ');

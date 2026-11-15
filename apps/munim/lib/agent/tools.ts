@@ -36,7 +36,9 @@ export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMo
   /** Names to scrub from the user's own words before they leave (e.g. the first name given at onboarding). */
   names?: string[];
   /** Voice speed (D-095): run the question's likely tool before the first model call, so most answers take one call, not two. */
-  prefetch?: boolean }
+  prefetch?: boolean;
+  /** Voice (D-100): each sentence of the answer, as soon as it is written and has passed the checks, for speaking at once. */
+  onSentence?: (sentence: string) => void }
 export interface ToolOutput { result: Record<string, unknown>; action?: Action }
 
 // Rupees, no paise: these are spoken aloud. The guard tolerates the ≤₹0.50 rounding.

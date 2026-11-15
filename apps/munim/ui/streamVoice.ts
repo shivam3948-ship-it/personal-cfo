@@ -82,7 +82,7 @@ export class StreamVoice {
     if (m.t === 'vad') { if (m.e === 'start') this.h.onVadStart?.(); else this.h.onVadEnd?.(); }
     else if (m.t === 'text' && m.text) this.h.onText?.(m.text, m.lang ?? null);
     else if (m.t === 'audio' && m.id && m.b64 && m.id === this.current) this.play(m.id, m.b64);
-    else if (m.t === 'said' && m.id) { this.saidIds.add(m.id); this.h.onSaid?.(m.id); this.checkDrain(); }
+    else if (m.t === 'said' && m.id) { this.saidIds.add(m.id); if (m.id === this.current) this.said++; this.h.onSaid?.(m.id); this.checkDrain(); }
   }
 
   /** Starts streaming the microphone (echo cancellation on). Call inside the tap that starts the conversation. */
@@ -108,27 +108,30 @@ export class StreamVoice {
     if (m) { m.proc.disconnect(); m.stream.getTracks().forEach((t) => t.stop()); void m.ctx.close().catch(() => {}); }
   }
 
-  /** Voices an answer, piece by piece in order; resolves when all of it has played (or it was stopped). */
-  speak(id: string, pieces: string[], lang: 'hi' | 'en', onFirst?: () => void): Promise<void> {
-    this.stopVoice(); this.current = id; this.firstHook = onFirst ? { id, f: onFirst } : null; this.saidIds.delete(id); this.gain.gain.value = 1;
-    for (const p of pieces) this.send({ t: 'say', id, text: p, lang });
-    const want = pieces.length;
-    let said = 0;
+  private pieces = 0; private said = 0;
+  /** Starts a new answer (stopping any other): pieces are added as they are ready, and finish() waits for them to play. */
+  begin(id: string, onFirst?: () => void) {
+    this.stopVoice(); this.current = id; this.firstHook = onFirst ? { id, f: onFirst } : null; this.gain.gain.value = 1; this.pieces = 0; this.said = 0;
+  }
+  add(id: string, text: string, lang: 'hi' | 'en') { if (id !== this.current || !text.trim()) return; this.send({ t: 'say', id, text, lang }); this.pieces++; }
+  /** Resolves when every piece added has been voiced and played, or the answer was stopped. */
+  finish(id: string): Promise<void> {
+    const t0 = performance.now();
     return new Promise((resolve) => {
-      const prev = this.h.onSaid;
-      this.h.onSaid = (sid) => { prev?.(sid); if (sid === id) said++; };
-      const t0 = performance.now();
       // done when every piece was voiced and has played, or (if the voice service doesn't confirm each piece) when audio
       // stopped arriving 1.5 s ago and has all played; never later than a minute
-      const check = () => {
+      const tick = () => {
         const drained = this.out.currentTime >= this.nextAt - 0.02, now = performance.now();
         const quiet = this.firstSent.has(id) && now - this.lastAudioAt > 1500;
-        if (this.current !== id || (drained && (said >= want || quiet)) || now - t0 > 60_000) { this.h.onSaid = prev; resolve(); return true; }
-        return false;
+        if (this.current !== id || (drained && (this.said >= this.pieces || quiet)) || now - t0 > 60_000) { resolve(); return; }
+        setTimeout(tick, 60);
       };
-      const tick = () => { if (!check()) setTimeout(tick, 60); };
       tick();
     });
+  }
+  /** Voices a whole answer at once. */
+  speak(id: string, pieces: string[], lang: 'hi' | 'en', onFirst?: () => void): Promise<void> {
+    this.begin(id, onFirst); for (const p of pieces) this.add(id, p, lang); return this.finish(id);
   }
 
   private play(id: string, b64: string) {

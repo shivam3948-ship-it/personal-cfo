@@ -57,7 +57,31 @@ const icsUrl = (a: Action) => { try { return 'data:text/calendar;charset=utf-8,'
 
 /** A stand-in LLM client: forwards only the messages (question + filtered tool results) to the relay. */
 function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode }, via?: 'voice' | 'typed'): LlmClient {
-  return { messages: { create: async (body) => {
+  const asMessage = (j: { content: unknown; stop_reason: unknown; model: unknown; mode?: AdviceMode; llm?: Record<string, number> }) => {
+    if (j.mode === 'guided' || seen.mode === 'guided') seen.mode = 'guided'; else if (j.mode) seen.mode = j.mode; // the strictest mode the server used
+    const u = j.llm ?? {};
+    return { content: j.content, stop_reason: j.stop_reason, model: j.model, usage: { input_tokens: u.input ?? 0, output_tokens: u.output ?? 0, cache_read_input_tokens: u.cacheRead ?? 0, cache_creation_input_tokens: u.cacheWrite ?? 0 } } as unknown as Anthropic.Message;
+  };
+  return { messages: {
+    // Voice (D-100): the relay streams the model's text as it is written; the phone checks each sentence before it is spoken
+    ...(via === 'voice' ? { streamText: async (body: Anthropic.MessageCreateParamsNonStreaming, onText: (d: string) => void) => {
+      const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via, stream: true }) });
+      if (r.status === 503) { noKey = true; throw new NoKey(); }
+      if (!r.ok || !r.body) { const j = await r.json().catch(() => ({})); throw new Error(j.error ?? 'relay failed'); }
+      const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
+      for (;;) {
+        const { done, value } = await rd.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let k: number;
+        while ((k = buf.indexOf('\n')) >= 0) {
+          const ln = buf.slice(0, k); buf = buf.slice(k + 1); if (!ln.trim()) continue;
+          const m = JSON.parse(ln);
+          if (m.t === 'text') onText(m.d); else if (m.t === 'final') return asMessage(m); else if (m.t === 'error') throw new Error(m.error);
+        }
+      }
+      throw new Error('relay stream ended early');
+    } } : {}),
+    create: async (body) => {
     const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via }) });
     if (r.status === 503) { noKey = true; throw new NoKey(); }
     const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'relay failed');
@@ -85,7 +109,7 @@ export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en';
 let prefetchAsk: Promise<'on' | 'test' | 'off'> | null = null;
 const prefetchOnServer = () => (prefetchAsk ??= fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => (j.prefetch === 'on' || j.prefetch === 'test' ? j.prefetch : 'off') as 'on' | 'test' | 'off').catch(() => 'off' as const));
 
-export async function askLocal(history: Turn[], via?: 'voice' | 'typed'): Promise<LocalReply> {
+export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSentence?: (s: string) => void): Promise<LocalReply> {
   const ds = await myData(); if (!ds) throw new Error(NO_DATA);
   await loadActions();
   const p = getProfile();
@@ -106,7 +130,9 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed'): Promis
   // D-095: the server decides; a browser's #prefetch=on only counts while the server is in test mode (review, 8 Nov)
   const server = await prefetchOnServer();
   const prefetch = server === 'on' || (server === 'test' && /(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie));
-  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, ...(picks ? { picks } : {}), ...(prefetch ? { prefetch } : {}) };
+  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, ...(picks ? { picks } : {}), ...(prefetch ? { prefetch } : {}),
+    // voice (D-100): a checked sentence goes to the voice service with your name and payees removed, like the finished answer
+    ...(onSentence ? { onSentence: (x: string) => onSentence(scrub(x, names)) } : {}) };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;
   const t0 = Date.now();
   if (/(?:^|;\s*)munim_ai=off(?:;|$)/.test(document.cookie)) noKey = true; // ?ai=off (D-062): don't even ask the relay

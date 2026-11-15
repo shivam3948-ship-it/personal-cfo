@@ -1,5 +1,5 @@
 import type Anthropic from '@anthropic-ai/sdk';
-import { MODEL, getClient, type LlmClient } from '@core/llm';
+import { MODEL, createStreaming, getClient, type LlmClient } from '@core/llm';
 import { systemPrompt } from './prompt';
 import { DISCLAIMER, NO_PICK, NO_PRODUCT, NO_TRADE, namesFunds, type AdviceMode } from '@/lib/advice';
 import { TOOLS, runTool, type ToolCtx } from './tools';
@@ -112,9 +112,17 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
     messages.push({ role: 'assistant', content: [{ type: 'tool_use', id, name: pre, input: {} }] });
     messages.push({ role: 'user', content: [{ type: 'tool_result', tool_use_id: id, content: JSON.stringify(shown), is_error: 'error' in shown }] });
   }
+  // Voice (D-100): each finished sentence is handed to the voice as soon as it is written, if it passes the same checks the
+  // whole answer gets: every figure from a tool result, no instruction to act on a holding, no product the user doesn't
+  // hold, and nothing the AI check would need to see (an investment sentence while that check is on). The first sentence
+  // that fails stops it for the rest of this answer; the finished answer still goes through every check below, and the
+  // voice then says only what it hasn't said. Never in advice mode, where the server may tighten the answer afterwards.
+  const speaker = ctx.onSentence && !namesFunds(ctx.adviceMode) ? sentenceSpeaker(ctx, results, funds, knownProducts(ctx.ds.portfolio?.holdings ?? [], ctx.ds.policies ?? [], [], history.filter((t) => t.role === 'user').map((t) => t.content)), ctx.onSentence) : null;
   for (let step = 0; step < 7; step++) {
     const tc = Date.now();
-    const res = await client.messages.create(cacheOn() ? { model, max_tokens: 700, system: cachedSystem(system), tools: TOOLS, messages: withCacheMark(messages) } : { model, max_tokens: 700, system, tools: TOOLS, messages });
+    const body = cacheOn() ? { model, max_tokens: 700, system: cachedSystem(system), tools: TOOLS, messages: withCacheMark(messages) } : { model, max_tokens: 700, system, tools: TOOLS, messages };
+    const res = speaker && !speaker.stopped ? await createStreaming(client, body, (d) => speaker.push(d)) : await client.messages.create(body);
+    if (speaker && !speaker.stopped) { if (res.stop_reason === 'tool_use') speaker.reset(); else speaker.end(); }
     addUsage(llm, Date.now() - tc, res.usage); if (res.model) usedModel = res.model; // the model that actually answered (the relay may use the voice model)
     const uses = res.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
     if (res.stop_reason !== 'tool_use' || !uses.length) {
@@ -122,6 +130,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       // An empty reply (cut off at the token limit, or the model ended after its tools): ask once for the answer, then let the
       // rules engine answer rather than show nothing (live eval 28 Oct, sa-elss).
       if (!answer) {
+        speaker?.stop();
         if (emptyRetried) throw new Error('empty answer');
         emptyRetried = true;
         messages.push({ role: 'assistant', content: [{ type: 'text', text: '…' }] }); // a cut-off tool call can't be replayed: keep the turn order only
@@ -131,7 +140,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       const check = checkNumbers(answer, results);
       // One repair round: if a spoken figure is not in any tool result, ask the model to fix it before anyone hears it.
       if (!check.ok && !repaired) {
-        repaired = true;
+        repaired = true; speaker?.stop();
         messages.push({ role: 'assistant', content: res.content });
         messages.push({ role: 'user', content: `[system check] These figures are not in any tool result: ${check.unverified.join(', ')}. Call a tool if you need the number, or rewrite the answer without it. Reply with the corrected spoken answer only.` });
         continue;
@@ -145,7 +154,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       const g = await checkAdvice(answer, ctx, funds, known, said);
       guard = g.by === 'none' ? 'rules' : g.by; guardMs += g.ms; if (g.judge) judgeLlm = { model: g.judge.model, input: (judgeLlm?.input ?? 0) + g.judge.input, output: (judgeLlm?.output ?? 0) + g.judge.output }; // the word patterns always run, so 'none' only means nothing touched investments
       if (g.flagged.length && !fundsRepaired) {
-        fundsRepaired = true;
+        fundsRepaired = true; speaker?.stop();
         messages.push({ role: 'assistant', content: res.content });
         const why = g.flagged.map((f) => `"${f.s}" (${f.why === 'trade' ? `tells the user to act on something they hold: Munim has no investment adviser licence, so give the facts and trade-offs only${f.name ? `, or call it "${funds[0]?.label ?? 'your small cap fund'}"` : ''}` : namesFunds(ctx.adviceMode) ? 'names a product that is not in advice_picks: name only products from advice_picks, or give the category and say no pick is set up yet' : 'names a product the user does not hold as a choice: name the category instead'})`).join('; ');
         messages.push({ role: 'user', content: `[system check] These sentences break Munim's advice rules: ${why}. Rewrite them. Reply with the corrected spoken answer only.` });
@@ -229,4 +238,42 @@ export function removeFlagged(answer: string, flagged: Flag[], mode: AdviceMode,
   const a = scrubFunds(out.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').replace(/^\s*\d+\.\s*$/gm, '').trim(), namesFunds(mode) ? [] : funds);
   const lines = [...new Set(flagged.map((f) => (f.why === 'trade' ? NO_TRADE[lang] : namesFunds(mode) ? NO_PICK[lang] : NO_PRODUCT[lang])))];
   return [a, ...lines].filter(Boolean).join(' ');
+}
+
+/** Cuts streamed text into sentences and passes each one on only if it would pass the whole-answer checks (D-100). */
+export function sentenceSpeaker(ctx: Pick<ToolCtx, 'adviceMode' | 'judge'>, results: unknown[], funds: ReturnType<typeof fundLabels>, known: Known, say: (s: string) => void) {
+  let buf = '';
+  const held = heldNames(funds), guarded = !namesFunds(ctx.adviceMode);
+  const sp = {
+    stopped: false,
+    stop() { sp.stopped = true; buf = ''; },
+    /** a tool call followed the text: what was said stands, the partial sentence is dropped */
+    reset() { buf = ''; },
+    push(d: string) { if (sp.stopped) return; buf += d; drain(false); },
+    end() { if (!sp.stopped) drain(true); buf = ''; },
+  };
+  // Any sentence about selling, stopping, redeeming, switching or exiting, in English, Hindi or Hinglish, waits for the finished-
+  // answer checks (the AI check catches phrasings the word patterns miss, e.g. "उसे बेच दीजिए" after naming the fund).
+  const TRADE_HINT = /\b(?:sell|sold|redeem|exit|switch|stop|pause|withdraw|surrender|book|cash out|bech\w*|nikal\w*|band kar\w*|rok\w*)\b|बेच|निकाल|बंद|रोक|स्विच|सरेंडर|रिडीम/i;
+  let spoken = ''; // what has been said so far: the trade check reads a sentence with what came before ("…small cap fund? Sell it.")
+  const ok = (x: string) => {
+    if (!checkNumbers(x, results).ok || strangerProducts(x, known).length || TRADE_HINT.test(x)) return false;
+    if (guarded) { const all = `${spoken} ${x}`.trim(), before = spoken ? sentences(spoken).length : 0; if (exitIndices(all, held).some((i) => i >= before)) return false; }
+    // with the AI check on, anything it would read (an investment word, or a fund the user holds) waits for it
+    if (ctx.judge && (TOUCHES_INVESTMENTS.test(x) || held.some((n) => n && x.toLowerCase().includes(n.toLowerCase())))) return false;
+    return true;
+  };
+  const emit = (x: string) => { const t = x.trim(); if (!t) return; if (!ok(t)) { sp.stop(); return; } spoken = `${spoken} ${t}`.trim(); say(t); };
+  function drain(final: boolean) {
+    // a sentence ends at . ? ! । followed by space or a line break, or at a line break; "₹1.5" and "Rs." stay whole
+    const re = /([^\n]*?(?:[.?!।](?=\s)|\n))/g;
+    let m: RegExpExecArray | null, used = 0;
+    while (!sp.stopped && (m = re.exec(buf))) {
+      const piece = m[1]; if (/(?:^|\s)(?:rs|e\.g|i\.e|vs|no|mr|dr)\.$/i.test(piece.trim())) continue;
+      emit(buf.slice(used, m.index + piece.length)); used = m.index + piece.length;
+    }
+    buf = buf.slice(used);
+    if (final && !sp.stopped) { emit(buf); buf = ''; }
+  }
+  return sp;
 }
