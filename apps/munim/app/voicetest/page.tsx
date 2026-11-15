@@ -39,7 +39,9 @@ export default function VoiceTest() {
       if (timer) clearInterval(timer);
       stream?.getTracks().forEach((t) => t.stop()); await ctx?.close();
       const sorted = [...lv].sort((a, b) => a - b), q = (p: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] : NaN);
-      add(`${mode}: played ${ok ? 'yes' : 'NO'} · first sound ${first} ms${lv.length ? ` · mic heard: quiet ${q(0.1)} dB, typical ${q(0.5)} dB, loudest ${q(0.98)} dB` : ''}`);
+      // how long the mic heard something clearly above silence, and the longest unbroken stretch: tells your voice (long) from echo leaking through (short bursts)
+      let above = 0, run = 0, longest = 0; for (const d of lv) { if (d > -45) { above++; run++; longest = Math.max(longest, run); } else run = 0; }
+      add(`${mode}: played ${ok ? 'yes' : 'NO'} · first sound ${first} ms${lv.length ? ` · mic heard: quiet ${q(0.1)} dB, typical ${q(0.5)} dB, loudest ${q(0.98)} dB · above −45 dB for ${above * 50} ms, longest ${longest * 50} ms` : ''}`);
     } catch (e) { add(`${mode}: error ${(e as Error).message}`); }
     finally { setBusy(false); setLevel(0); }
   }
