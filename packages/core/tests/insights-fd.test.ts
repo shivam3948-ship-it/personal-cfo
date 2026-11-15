@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { fdComparison } from '../src/portfolio/insights';
-import type { Holding } from '../src/types';
+import type { Holding } from '../src/portfolio/cas';
 
 // 15 Nov, the owner's since-inception CAS (D-098): redemptions were left out of the FD comparison, so a portfolio returning
 // well above 7% read as behind a 7% FD. The FD mirror takes money out on the dates you did.
