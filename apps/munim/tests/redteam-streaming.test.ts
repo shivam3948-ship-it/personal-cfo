@@ -5,10 +5,10 @@ import { fundLabels, heldNames } from '@/lib/agent/funds';
 import { exitIndices } from '@/lib/agent/tradeWords';
 import { checkNumbers } from '@core/agent/guard';
 import { STREAM_ATTACKS } from '../evals/redteam/streaming';
-import type { Holding } from '@core/types';
+
 
 // D-100 red team: nothing the voice says while the answer is written may break a rule the finished answer is checked for.
-const holding = { isin: 'INF000000001', scheme: 'Example Small Cap Fund - Direct Plan - Growth', amc: 'Example', plan: 'Direct', category: 'Small cap', asset: 'equity', flows: [], units: 1, nav: 1, navDate: '2026-11-01', cost: 0, value: 100000 } as unknown as Holding;
+const holding = { isin: 'INF000000001', scheme: 'Example Small Cap Fund - Direct Plan - Growth', amc: 'Example', plan: 'Direct', category: 'Small cap', asset: 'equity', flows: [], units: 1, nav: 1, navDate: '2026-11-01', cost: 0, value: 100000 } as never;
 const funds = fundLabels([holding], 'en'), held = heldNames(funds), known = knownProducts([holding], [], [], []);
 const results = [{ spent: 5874 }];
 
