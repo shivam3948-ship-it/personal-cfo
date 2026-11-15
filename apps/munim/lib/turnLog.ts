@@ -22,6 +22,8 @@ export interface TurnRecord {
   /** streaming voice (D-100): while Munim spoke, how often Sarvam heard speech start, how many were Munim's own echo, whether
    *  it stopped, and questions asked while it was still thinking (taken over, not dropped) */
   barge?: { starts: number; echoes: number; stopped: boolean; overThinking: number };
+  /** spoken status lines said while Munim worked (D-104); when above 0, ms.firstWord is the first status line, not the answer */
+  status?: number;
   vote?: 'up' | 'down'; reason?: string;
 }
 
@@ -118,6 +120,7 @@ export function cleanTurn(b: unknown): TurnRecord | null {
   if (x.cost && typeof x.cost === 'object') { const c = obj(x.cost); t.cost = { llm: num(c.llm) ?? 0, judge: num(c.judge) ?? 0, stt: num(c.stt) ?? 0, tts: num(c.tts) ?? 0, total: num(c.total) ?? 0,
     unpriced: Array.isArray(c.unpriced) ? c.unpriced.filter(tok).slice(0, 4) : [] }; }
   if (x.barge && typeof x.barge === 'object') { const b = obj(x.barge); t.barge = { starts: num(b.starts) ?? 0, echoes: num(b.echoes) ?? 0, stopped: b.stopped === true, overThinking: num(b.overThinking) ?? 0 }; }
+  const st = num(x.status); if (st !== undefined) t.status = Math.max(0, Math.min(5, Math.round(st)));
   const c = obj(x.cutIn), how = oneOf(c.how, ['voice', 'tap', 'none'] as const);
   if (how) { const atMs = num(c.atMs); t.cutIn = { how, frames: num(c.frames) ?? 0, ms: num(c.ms) ?? 0, floor: num(c.floor) ?? 0, need: num(c.need) ?? 0, peak: num(c.peak) ?? 0, p90: num(c.p90) ?? 0,
     triggered: c.triggered === true, ...(atMs !== undefined ? { atMs } : {}), ...(tok(c.ctx) ? { ctx: c.ctx } : {}) }; }

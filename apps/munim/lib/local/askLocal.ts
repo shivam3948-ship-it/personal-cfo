@@ -109,7 +109,7 @@ export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en';
 let prefetchAsk: Promise<'on' | 'test' | 'off'> | null = null;
 const prefetchOnServer = () => (prefetchAsk ??= fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => (j.prefetch === 'on' || j.prefetch === 'test' ? j.prefetch : 'off') as 'on' | 'test' | 'off').catch(() => 'off' as const));
 
-export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSentence?: (s: string) => void): Promise<LocalReply> {
+export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSentence?: (s: string) => void, onTool?: (tool: string) => void): Promise<LocalReply> {
   const ds = await myData(); if (!ds) throw new Error(NO_DATA);
   await loadActions();
   const p = getProfile();
@@ -132,7 +132,7 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSente
   const prefetch = server === 'on' || (server === 'test' && /(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie));
   const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, ...(picks ? { picks } : {}), ...(prefetch ? { prefetch } : {}),
     // voice (D-100): a checked sentence goes to the voice service with your name and payees removed, like the finished answer
-    ...(onSentence ? { onSentence: (x: string) => onSentence(scrub(x, names)) } : {}) };
+    ...(onSentence ? { onSentence: (x: string) => onSentence(scrub(x, names)) } : {}), ...(onTool ? { onTool } : {}) };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;
   const t0 = Date.now();
   if (/(?:^|;\s*)munim_ai=off(?:;|$)/.test(document.cookie)) noKey = true; // ?ai=off (D-062): don't even ask the relay

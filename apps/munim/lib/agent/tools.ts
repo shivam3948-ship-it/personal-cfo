@@ -38,7 +38,9 @@ export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMo
   /** Voice speed (D-095): run the question's likely tool before the first model call, so most answers take one call, not two. */
   prefetch?: boolean;
   /** Voice (D-100): each sentence of the answer, as soon as it is written and has passed the checks, for speaking at once. */
-  onSentence?: (sentence: string) => void }
+  onSentence?: (sentence: string) => void;
+  /** Voice (D-104): the name of each tool as it starts running, so the voice can say what Munim is looking at. */
+  onTool?: (tool: string) => void }
 export interface ToolOutput { result: Record<string, unknown>; action?: Action }
 
 // Rupees, no paise: these are spoken aloud. The guard tolerates the ≤₹0.50 rounding.

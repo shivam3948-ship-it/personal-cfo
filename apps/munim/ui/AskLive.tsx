@@ -18,6 +18,7 @@ import { doneNote, type Action } from '@/lib/actionsCore';
 import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type CutInWatch, type RecorderHandle, type Recording } from '@/ui/voice';
 import { turnCost } from '@/lib/cost';
 import type { CutIn, TurnRecord } from '@/lib/turnLog';
+import { statusGate } from '@/lib/agent/status';
 
 // Latency sprint: the moment you stop talking, a short spoken acknowledgement plays while Munim hears and answers, so the
 // first sound comes in about a second instead of after the whole answer. Voiced once per language and reused.
@@ -154,7 +155,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const streamRef = useRef<StreamVoice | null>(null);
   const sayingRef = useRef(''); // what Munim is saying now, to tell its own echo from your words
   const duckRef = useRef(false); const vadEndRef = useRef(0); const quietTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const liveRef = useRef<{ id: string; said: string[]; first: number | null } | null>(null); // the answer being voiced while it is written
+  const liveRef = useRef<{ id: string; said: string[]; first: number | null; status: number } | null>(null); // the answer being voiced while it is written
   const bargeRef = useRef({ starts: 0, echoes: 0, stopped: false, overThinking: 0 }); const speechOn = useRef(false); const sustain = useRef<ReturnType<typeof setTimeout> | null>(null);
   const streamOff = () => /(?:^|;\s*)munim_stream=off(?:;|$)/.test(document.cookie); // #stream=off turns it off for this browser
   const costOf = (t: TurnRecord) => turnCost({ model: t.model, llm: t.tokens, judgeModel: t.judge?.model, judge: t.judge, sttMs: t.stt === 'server' ? t.ms.audio : 0, ttsChars: t.ttsChars });
@@ -197,17 +198,27 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const turns = next.map(({ role, content, done }) => ({ role, content: done ? `${content}\n\n${done}` : content })); // what Munim already saved travels with its answer
       // Voice in a streaming conversation (D-100): each checked sentence is voiced as soon as the answer has written it
       const sv = via === 'voice' && talkRef.current ? streamRef.current : null;
-      const live = sv ? { id: `s${gen}`, said: [] as string[], first: null as number | null } : null;
+      const live = sv ? { id: `s${gen}`, said: [] as string[], first: null as number | null, status: 0 } : null;
       if (sv && live) { sayingRef.current = ''; bargeRef.current = { starts: 0, echoes: 0, stopped: false, overThinking: bargeRef.current.overThinking }; sv.begin(live.id, () => { if (live.first === null) live.first = Math.round(performance.now() - t0); }); }
       const qLang = /[\u0900-\u097F]/.test(q) ? 'hi' : 'en';
+      // D-104: instead of a fixed "one second", say what Munim is looking at, from the tool actually running (at most two lines,
+      // none once the answer has started); fixed lines with no figures or names, so they need no answer checks
+      const gate = statusGate();
+      const onTool = sv && live ? (tool: string) => {
+        if (gen !== askGen.current) return;
+        const line = gate.next(tool, qLang); if (!line) return;
+        live.status++; sayingRef.current += ` ${line}`;
+        sv.add(live.id, forSpeech(line, qLang), qLang);
+      } : undefined;
       const onSentence = sv && live ? (x: string) => {
+        gate.answering();
         if (gen !== askGen.current || isDisclaimerLine(x, DISC_LINES)) return;
         live.said.push(x); sayingRef.current += ` ${x}`;
         const l = /[\u0900-\u097F]/.test(x) ? 'hi' : /[a-z]/i.test(x) ? 'en' : qLang; // the voice follows each sentence's script
         sv.add(live.id, forSpeech(x, l), l);
       } : undefined;
       liveRef.current = live;
-      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge']; log?: { question: string; answer: string } } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed', onSentence) : await (async () => {
+      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge']; log?: { question: string; answer: string } } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed', onSentence, onTool) : await (async () => {
         const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed', ...(onSentence ? { stream: true } : {}), ...(/(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie) ? { prefetch: true } : {}) }) });
         if (onSentence && r.ok && r.body && (r.headers.get('content-type') ?? '').includes('ndjson')) { // sentences, then the whole reply
           const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
@@ -217,7 +228,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
             while ((k = buf.indexOf('\n')) >= 0) {
               const ln = buf.slice(0, k); buf = buf.slice(k + 1); if (!ln.trim()) continue;
               const m = JSON.parse(ln);
-              if (m.t === 'say') onSentence(m.s); else if (m.t === 'done') { const { t: _t, ...rest } = m; void _t; return rest; } else if (m.t === 'error') throw new Error(hi ? t.noAnswer : m.error);
+              if (m.t === 'say') onSentence(m.s); else if (m.t === 'tool') { if (typeof m.n === 'string') onTool?.(m.n); } else if (m.t === 'done') { const { t: _t, ...rest } = m; void _t; return rest; } else if (m.t === 'error') throw new Error(hi ? t.noAnswer : m.error);
             }
           }
           throw new Error(t.noAnswer);
@@ -388,7 +399,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const spokeEarly = live?.first != null ? live.first : null;
       const prev = turn?.id ? turnsRef.current.get(turn.id) : undefined;
       const barge = { ...bargeRef.current }; bargeRef.current.overThinking = 0;
-      if (prev) logTurn({ ...prev, voice: 'stream', barge, ttsChars: sayingRef.current.length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + (spokeEarly ?? prev.ms.agent + firstMs) } : {}) } });
+      if (prev) logTurn({ ...prev, voice: 'stream', barge, ...(live?.status ? { status: live.status } : {}), ttsChars: sayingRef.current.length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + (spokeEarly ?? prev.ms.agent + firstMs) } : {}) } });
       if (turn && firstMs !== null) setMsgs((cur) => cur.map((m, i) => (i === idx ? { ...m, lat: { stt: turn.stt?.ms, agent: turn.agentMs, speak: firstMs! } } : m)));
       sayingRef.current = '';
       setSpeaking((cur) => (cur === idx ? null : cur)); setNote(null);

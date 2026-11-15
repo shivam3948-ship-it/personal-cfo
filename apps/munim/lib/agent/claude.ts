@@ -105,6 +105,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
   const pre = ctx.prefetch && history.at(-1)?.role === 'user' ? prefetchTool(lastUser) : null;
   if (pre && TOOLS.some((t) => t.name === pre)) {
     const s = Date.now(); let out: Awaited<ReturnType<typeof runTool>>;
+    try { ctx.onTool?.(pre); } catch { /* the voice's status line is never worth a failed turn */ }
     try { out = await runTool(pre, {}, ctx); } catch (e) { out = { result: { error: (e as Error).message } }; }
     trace.push({ tool: pre, input: {}, result: out.result, ms: Date.now() - s });
     const shown = ctx.sanitize ? ctx.sanitize(out.result) : out.result; results.push(shown);
@@ -171,7 +172,7 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
       // Actions (a reminder, an email draft, a goal, a prepayment plan) only when the user's own last message asks for one or
       // says yes to an offer: an order that slipped in through data can't create one (prompt-injection review, 29 Oct).
       if (ACTION_TOOLS.has(u.name) && !allowedActions(lastUser, prevAssistant).includes(u.name)) out = { result: { error: 'Actions run only when the user asks for one or says yes to your offer. Offer it in one sentence instead.' } };
-      else try { out = await runTool(u.name, (u.input ?? {}) as Record<string, unknown>, ctx); }
+      else try { if (TOOLS.some((t) => t.name === u.name)) try { ctx.onTool?.(u.name); } catch { /* as above */ } out = await runTool(u.name, (u.input ?? {}) as Record<string, unknown>, ctx); }
       catch (e) { out = { result: { error: (e as Error).message } }; }
       trace.push({ tool: u.name, input: (u.input ?? {}) as Record<string, unknown>, result: out.result, ms: Date.now() - s });
       const shown = ctx.sanitize ? ctx.sanitize(out.result) : out.result; // what the AI sees is what the number check trusts

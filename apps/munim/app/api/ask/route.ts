@@ -44,13 +44,14 @@ export async function POST(req: Request) {
     const ai = aiConfig(req); // ?ai=off or MUNIM_AI=off: the rules engine answers, no model is called (D-062)
     const ds = await session.dataset();
     const opts = { ...(body.via === 'voice' && VOICE_MODEL ? { model: VOICE_MODEL } : {}), ...(prefetchOn(body.prefetch) ? { prefetch: true } : {}) }; // voice turns may use the faster model (D-075)
-    const run = (onSentence?: (s: string) => void) => respond(messages, sid, ds, body.lang ?? 'auto', !!body.offline || ai.chat === 'rules', session.adviceMode, { ...opts, ...(onSentence ? { onSentence } : {}) });
-    // Voice (D-100): stream:true sends each checked sentence as it is written ({"t":"say"}), then the whole reply ({"t":"done"})
+    const run = (onSentence?: (s: string) => void, onTool?: (n: string) => void) => respond(messages, sid, ds, body.lang ?? 'auto', !!body.offline || ai.chat === 'rules', session.adviceMode, { ...opts, ...(onSentence ? { onSentence } : {}), ...(onTool ? { onTool } : {}) });
+    // Voice (D-100): stream:true sends each checked sentence as it is written ({"t":"say"}), then the whole reply ({"t":"done"});
+    // each tool's name as it starts ({"t":"tool"}, D-104), so the voice can say what Munim is looking at. Names only, never results.
     if (body.stream === true && body.via === 'voice') {
       const enc = new TextEncoder();
       const out = new ReadableStream({ async start(ctrl) {
         const line = (o: unknown) => { try { ctrl.enqueue(enc.encode(JSON.stringify(o) + '\n')); } catch { /* client went away */ } };
-        try { const r = await run((s) => line({ t: 'say', s })); line({ t: 'done', ...payload(r) }); try { keep(r); } catch { /* debug trace only */ } }
+        try { const r = await run((s) => line({ t: 'say', s }), (n) => line({ t: 'tool', n })); line({ t: 'done', ...payload(r) }); try { keep(r); } catch { /* debug trace only */ } }
         catch (e) { console.error('[ask]', (e as Error).message); line({ t: 'error', error: 'Munim could not answer just now. Try again.' }); }
         ctrl.close();
       } });
