@@ -50,7 +50,7 @@ export async function runEval(ds: Dataset, opts: { offline: boolean; cases?: Eva
     const tools: string[] = []; let last: Awaited<ReturnType<typeof respond>> | null = null; const t0 = Date.now();
     for (const q of k.turns) {
       history.push({ role: 'user', content: q });
-      last = opts.respond ? await opts.respond(history, k) : await respond(history, `eval-${k.id}`, ds, 'auto', opts.offline, k.mode ?? 'demo', opts.phone ? { sanitize: (x) => forLlm(x, payees) } : {});
+      last = opts.respond ? await opts.respond(history, k) : await respond(history, `eval-${k.id}`, ds, 'auto', opts.offline, k.mode ?? 'demo', { ...(opts.phone ? { sanitize: (x: Record<string, unknown>) => forLlm(x, payees) } : {}), ...(process.env.EVAL_PREFETCH === '1' ? { prefetch: true } : {}) }); // EVAL_PREFETCH=1: as voice runs in production (D-095)
       history.push({ role: 'assistant', content: last.answer });
       tools.push(...last.trace.map((t) => t.tool));
     }
