@@ -161,7 +161,10 @@ export async function runClaude(history: Turn[], ctx: ToolCtx, client: LlmClient
         messages.push({ role: 'user', content: `[system check] These sentences break Munim's advice rules: ${why}. Rewrite them. Reply with the corrected spoken answer only.` });
         continue;
       }
-      const final = g.flagged.length ? removeFlagged(answer, g.flagged, ctx.adviceMode, ctx.lang, funds) : answer;
+      const cleaned = g.flagged.length ? removeFlagged(answer, g.flagged, ctx.adviceMode, ctx.lang, funds) : answer;
+      // advice mode (D-066): its not-registered line goes on every answer in code, not left to the model (live eval, 15 Nov: pv-hi dropped it on v5 and v6)
+      const priv = DISCLAIMER.private;
+      const final = ctx.adviceMode === 'private' && !cleaned.includes(priv[ctx.lang]) && !cleaned.includes(priv.en) ? `${cleaned} ${priv[ctx.lang]}` : cleaned;
       return { answer: final, lang: ctx.lang, trace, actions, check: final === answer ? check : checkNumbers(final, results), engine: 'claude', model: usedModel, ms: Date.now() - t0, llm, judgeLlm, repaired: repaired || fundsRepaired, guard, guardMs, adviceFired: fundsRepaired || g.flagged.length > 0 };
     }
     messages.push({ role: 'assistant', content: res.content });

@@ -59,3 +59,14 @@ describe('spoken status: a made-up tool name', () => {
     expect(seen).toEqual([]);
   });
 });
+
+import { DISCLAIMER } from '@/lib/advice';
+describe('advice mode line in code (D-107)', () => {
+  it('a private-mode answer always ends with the not-registered line, once', async () => {
+    const ds = await loadDemo();
+    const client = { messages: { create: async () => msg([{ type: 'text', text: 'Your small cap fund has trailed the index.', citations: null }], 'end_turn') } };
+    const r = await runClaude([{ role: 'user', content: 'Should I sell my small cap fund?' }], { ds, sid: 't', lang: 'en', adviceMode: 'private', addAction: (() => ({})) as never }, client);
+    expect(r.answer.endsWith(DISCLAIMER.private.en)).toBe(true);
+    expect(r.answer.split(DISCLAIMER.private.en).length).toBe(2);
+  });
+});
