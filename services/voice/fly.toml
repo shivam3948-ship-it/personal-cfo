@@ -1,6 +1,6 @@
-# Munim's voice relay (D-100). Mumbai, one small machine kept running so the first turn never waits for a cold start.
+# Munim's voice relay (D-100). Singapore, one small machine kept running so the first turn never waits for a cold start.
 app = "munim-voice"
-primary_region = "bom"
+primary_region = "sin"  # Fly no longer provisions in Mumbai (bom); Singapore is the nearest
 
 [build]
 

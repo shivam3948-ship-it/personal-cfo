@@ -1,4 +1,4 @@
-// Munim's voice relay (D-100), on Fly.io in Mumbai. Browsers connect over a WebSocket with a short-lived ticket from the
+// Munim's voice relay (D-100), on Fly.io in Singapore (the nearest region Fly still provisions). Browsers connect over a WebSocket with a short-lived ticket from the
 // Munim site; the relay holds the Sarvam connections, whose key must never reach a browser. No storage, no logs beyond counts.
 import { createServer } from 'node:http';
 import { WebSocketServer, type WebSocket } from 'ws';
