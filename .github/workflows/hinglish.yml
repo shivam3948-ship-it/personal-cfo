@@ -1,0 +1,15 @@
+name: hinglish-bench
+on:
+  push:
+    branches: [chore/teardown-clips]
+    paths: [bench/hinglish.mjs]
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - env: { SARVAM_API_KEY: "${{ secrets.SARVAM_API_KEY }}" }
+        run: node bench/hinglish.mjs
