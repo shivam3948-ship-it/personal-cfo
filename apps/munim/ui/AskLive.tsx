@@ -224,7 +224,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
         sv.add(live.id, forSpeech(x, l), l);
       } : undefined;
       liveRef.current = live;
-      const j: { answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge']; log?: { question: string; answer: string } } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed', onSentence, onTool) : await (async () => {
+      const j: { why?: TurnRecord['why']; answer: string; spoken?: string; check?: { checked: number; ok: boolean; unverified?: string[] }; tools?: string[]; engine: string; trace?: string; model?: string; prompt?: string; ms?: number; lang?: string; where?: string; fallback?: boolean; repaired?: boolean; mode?: string; guard?: string; guardMs?: number; actions?: Action[]; llm?: TurnRecord['tokens']; judge?: TurnRecord['judge']; log?: { question: string; answer: string } } = local ? await askLocal(turns, via === 'voice' ? 'voice' : 'typed', onSentence, onTool) : await (async () => {
         const r = await fetch('/api/ask', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: turns, install: await usageInstall() ?? undefined, via: via === 'voice' ? 'voice' : 'typed', ...(onSentence ? { stream: true } : {}), ...(/(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie) ? { prefetch: true } : {}) }) });
         if (onSentence && r.ok && r.body && (r.headers.get('content-type') ?? '').includes('ndjson')) { // sentences, then the whole reply
           const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
@@ -251,7 +251,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       if (j.trace && (!local || j.log)) { // the turn as the owner's log keeps it; on your own data only askLocal's scrubbed text (D-089)
         logTurn({ id: j.trace, at: new Date().toISOString(), data: local ? 'mine' : 'sample', via: via === 'voice' ? 'voice' : 'typed', lang: j.lang === 'hi' || j.lang === 'en' ? j.lang : hi ? 'hi' : 'en',
           question: local ? j.log!.question : q, answer: local ? j.log!.answer : j.answer, engine: j.engine, ...(j.model ? { model: j.model } : {}), ...(j.prompt ? { prompt: j.prompt } : {}), tools: j.tools ?? [],
-          check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified?.length ?? 0 }, repaired: j.repaired, fallback: j.fallback, guard: j.guard,
+          check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified?.length ?? 0 }, repaired: j.repaired, fallback: j.fallback, ...(j.why ? { why: j.why } : {}), guard: j.guard,
           ms: { agent: agentMs, ...(stt?.ms !== undefined ? { stt: stt.ms } : {}), ...(stt?.audioMs ? { audio: stt.audioMs } : {}) }, ...(stt ? { stt: stt.mode } : {}), ...(j.llm ? { tokens: j.llm } : {}), ...(j.judge ? { judge: j.judge } : {}) });
       }
       if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang, tools: j.tools ?? [] }); // asked by voice → answered by voice; typed → stays quiet

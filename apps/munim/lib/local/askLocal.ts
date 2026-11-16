@@ -69,7 +69,7 @@ function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode 
     ...(via === 'voice' ? { streamText: async (body: Anthropic.MessageCreateParamsNonStreaming, onText: (d: string) => void) => {
       const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via, stream: true }) });
       if (r.status === 503) { noKey = true; throw new NoKey(); }
-      if (!r.ok || !r.body) { const j = await r.json().catch(() => ({})); throw new Error(j.error ?? 'relay failed'); }
+      if (!r.ok || !r.body) { await r.json().catch(() => ({})); throw new RelayError(r.status); }
       const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
       for (;;) {
         const { done, value } = await rd.read(); if (done) break;
@@ -78,7 +78,7 @@ function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode 
         while ((k = buf.indexOf('\n')) >= 0) {
           const ln = buf.slice(0, k); buf = buf.slice(k + 1); if (!ln.trim()) continue;
           const m = JSON.parse(ln);
-          if (m.t === 'text') onText(m.d); else if (m.t === 'final') return asMessage(m); else if (m.t === 'error') throw new Error(m.error);
+          if (m.t === 'text') onText(m.d); else if (m.t === 'final') return asMessage(m); else if (m.t === 'error') throw new RelayError(502);
         }
       }
       throw new Error('relay stream ended early');
@@ -86,7 +86,7 @@ function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode 
     create: async (body) => {
     const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via }) });
     if (r.status === 503) { noKey = true; throw new NoKey(); }
-    const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'relay failed');
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new RelayError(r.status);
     if (j.mode === 'guided' || seen.mode === 'guided') seen.mode = 'guided'; else if (j.mode) seen.mode = j.mode; // the strictest mode the server used
     const u = j.llm ?? {}; // timing and token counts only; the model the relay actually used (voice turns may differ)
     return { content: j.content, stop_reason: j.stop_reason, model: j.model, usage: { input_tokens: u.input ?? 0, output_tokens: u.output ?? 0, cache_read_input_tokens: u.cacheRead ?? 0, cache_creation_input_tokens: u.cacheWrite ?? 0 } } as Anthropic.Message;
@@ -96,7 +96,7 @@ class NoKey extends Error { constructor() { super('no_key'); } }
 let noKey = false; // after one 503, this visit stays on the phone's engine (no pointless calls)
 let judgeOff = false; // the AI check said 503 (off or no key): the word patterns alone this visit
 
-export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay';
+export interface LocalReply { why?: 'bad_request' | 'rate_limited' | 'too_long' | 'model_error' | 'network' | 'other'; spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay';
   trace: string; model?: string; prompt: string; ms: number; repaired: boolean; fallback: boolean;
   /** The advice mode this answer was given in (the server's, when the relay answered): the footer follows it (review 2, N9). */
   mode: AdviceMode; guard?: AgentReply['guard']; guardMs?: number;
@@ -110,6 +110,10 @@ export interface LocalReply { spoken: string; answer: string; lang: 'hi' | 'en';
 /** Whether the server turned prefetch on for everyone (D-095): asked once per page load. */
 let prefetchAsk: Promise<'on' | 'test' | 'off'> | null = null;
 const prefetchOnServer = () => (prefetchAsk ??= fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => (j.prefetch === 'on' || j.prefetch === 'test' ? j.prefetch : 'off') as 'on' | 'test' | 'off').catch(() => 'off' as const));
+
+/** A relay failure, by status only: the owner's log says why the phone fell back, never the message (16 Nov). */
+class RelayError extends Error { constructor(readonly status: number) { super(`relay ${status}`); } }
+const whyOf = (e: unknown): NonNullable<LocalReply['why']> => e instanceof RelayError ? (e.status === 400 ? 'bad_request' : e.status === 429 ? 'rate_limited' : e.status === 413 ? 'too_long' : e.status >= 500 ? 'model_error' : 'other') : e instanceof TypeError ? 'network' : 'other';
 
 export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSentence?: (s: string) => void, onTool?: (tool: string) => void): Promise<LocalReply> {
   const ds = await myData(); if (!ds) throw new Error(NO_DATA);
@@ -140,7 +144,7 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSente
   const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, memory, ...(picks ? { picks } : {}), ...(prefetch ? { prefetch } : {}),
     // voice (D-100): a checked sentence goes to the voice service with your name and payees removed, like the finished answer
     ...(onSentence ? { onSentence: (x: string) => onSentence(scrub(x, names)) } : {}), ...(onTool ? { onTool } : {}) };
-  let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;
+  let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false; let why: LocalReply['why'];
   const t0 = Date.now();
   if (/(?:^|;\s*)munim_ai=off(?:;|$)/.test(document.cookie)) noKey = true; // ?ai=off (D-062): don't even ask the relay
   const seen: { mode?: AdviceMode } = {};
@@ -150,10 +154,10 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSente
     // was switched off) while this phone thought advice was on, apply the guided guard to what the model said
     if (seen.mode === 'guided' && adviceMode !== 'guided') r = { ...r, answer: guardAnswer(r.answer, 'guided', fundLabels(ds.portfolio?.holdings ?? [], lang), knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? [], [], history.filter((t) => t.role === 'user').map((t) => t.content)), lang) };
   }
-  catch (e) { fallback = !(e instanceof NoKey); r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
+  catch (e) { fallback = !(e instanceof NoKey); why = fallback ? whyOf(e) : undefined; r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
   void rememberTopic(r.trace.map((t) => t.tool).filter((n) => TOOLS.some((t) => t.name === n))); // D-108: real tool names and today's date, never the words
   const spoken = scrub(r.answer, names); // what may go to the voice service
   const log = { question: scrub(last, names), answer: spoken }; // and to the owner's log (D-089): your name and every payee removed
   return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where,
-    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback, mode: seen.mode === 'guided' ? 'guided' : adviceMode, guard: r.guard, guardMs: r.guardMs, llm: r.llm, judge: r.judgeLlm, log };
+    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback, ...(why ? { why } : {}), mode: seen.mode === 'guided' ? 'guided' : adviceMode, guard: r.guard, guardMs: r.guardMs, llm: r.llm, judge: r.judgeLlm, log };
 }

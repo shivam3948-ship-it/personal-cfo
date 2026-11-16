@@ -8,11 +8,9 @@
 import { NextResponse } from 'next/server';
 import type Anthropic from '@anthropic-ai/sdk';
 import { MODEL, VOICE_MODEL, createStreaming, getClient } from '@core/llm';
-import { redact } from '@core/privacy/redact';
-import { forLlm } from '@core/privacy/forLlm';
-import { defang } from '@core/privacy/injection';
 import { DISCLAIMER } from '@/lib/session';
 import { systemPrompt } from '@/lib/agent/prompt';
+import { clean, MAX_BYTES } from '@/lib/relayClean';
 import { TOOLS } from '@/lib/agent/tools';
 import { cachedSystem, cacheOn, withCacheMark } from '@/lib/agent/claude';
 import { allow } from '@/lib/rateLimit';
@@ -22,34 +20,7 @@ import { adviceUnlocked } from '@/lib/adviceUnlock';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 const json = (b: unknown, status = 200) => NextResponse.json(b, { status, headers: { 'Cache-Control': 'no-store' } });
-const MAX_BYTES = 48_000, MAX_MESSAGES = 24;
-const TOOL_NAMES = new Set(TOOLS.map((t) => t.name));
 const sameOrigin = (req: Request) => { const o = req.headers.get('origin'), host = req.headers.get('host'); try { return !!o && !!host && new URL(o).host === host; } catch { return false; } };
-const redactJson = (v: unknown) => { try { return JSON.parse(redact(JSON.stringify(v ?? {}))); } catch { return {}; } };
-
-type Block = { type: string; [k: string]: unknown };
-/** Only text, tool calls and tool results; user text redacted again and tool results filtered again (defence in depth). */
-function clean(messages: unknown): Anthropic.MessageParam[] | null {
-  if (!Array.isArray(messages) || !messages.length || messages.length > MAX_MESSAGES) return null;
-  const out: Anthropic.MessageParam[] = [];
-  const issued = new Set<string>(); // tool_use ids the conversation actually made
-  for (const m of messages as { role?: unknown; content?: unknown }[]) {
-    if (m.role !== 'user' && m.role !== 'assistant') return null;
-    if (typeof m.content === 'string') { out.push({ role: m.role, content: redact(m.content.slice(0, m.role === 'user' ? 2000 : 4000)) }); continue; }
-    if (!Array.isArray(m.content)) return null;
-    const blocks: Block[] = [];
-    for (const b of m.content as Block[]) {
-      if (b?.type === 'text' && typeof b.text === 'string') blocks.push({ type: 'text', text: redact(b.text.slice(0, m.role === 'user' ? 2000 : 4000)) });
-      else if (b?.type === 'tool_use' && m.role === 'assistant' && typeof b.id === 'string' && typeof b.name === 'string' && TOOL_NAMES.has(b.name)) { issued.add(b.id); blocks.push({ type: 'tool_use', id: b.id, name: b.name, input: redactJson(b.input) }); }
-      else if (b?.type === 'tool_result' && m.role === 'user' && typeof b.tool_use_id === 'string' && issued.has(b.tool_use_id)) {
-        let content: unknown = b.content; try { content = JSON.stringify(forLlm(JSON.parse(String(b.content)))); } catch { content = defang(redact(String(b.content ?? '').slice(0, 8000))); } // not JSON: still filtered for injection
-        blocks.push({ type: 'tool_result', tool_use_id: b.tool_use_id, content: String(content), is_error: !!b.is_error });
-      } else return null;
-    }
-    out.push({ role: m.role, content: blocks as unknown as Anthropic.MessageParam['content'] });
-  }
-  return out.at(-1)?.role === 'user' ? out : null;
-}
 
 export async function POST(req: Request) {
   const client = modelsAllowed(req) ? getClient() : null; // AI off (D-062) behaves like no key: the phone answers

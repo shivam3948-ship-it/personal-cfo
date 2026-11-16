@@ -13,6 +13,8 @@ export interface TurnRecord {
   engine: string; model?: string; prompt?: string; tools: string[];
   check: { ok: boolean; checked: number; unverified: number };
   repaired?: boolean; fallback?: boolean; guard?: string; adviceFired?: boolean;
+  /** why the phone fell back to the rules engine (16 Nov): a fixed code, never the error text */
+  why?: 'bad_request' | 'rate_limited' | 'too_long' | 'model_error' | 'network' | 'other';
   /** ms: speech to text, the answer (model + tools + checks), Munim's first word after the answer, and the three together */
   ms: { stt?: number; agent: number; firstWord?: number; total?: number; audio?: number };
   stt?: 'server' | 'browser' | 'stream'; voice?: 'sarvam' | 'browser' | 'none' | 'stream';
@@ -113,6 +115,7 @@ export function cleanTurn(b: unknown): TurnRecord | null {
   };
   for (const k of ['stt', 'firstWord', 'total', 'audio'] as const) { const v = num(ms[k]); if (v !== undefined) t.ms[k] = v; }
   for (const k of ['repaired', 'fallback', 'adviceFired'] as const) if (x[k] === true) t[k] = true;
+  if (typeof x.why === 'string' && ['bad_request', 'rate_limited', 'too_long', 'model_error', 'network', 'other'].includes(x.why)) t.why = x.why as TurnRecord['why'];
   if (tok(x.guard)) t.guard = x.guard;
   const stt = oneOf(x.stt, ['server', 'browser', 'stream'] as const); if (stt) t.stt = stt;
   const voice = oneOf(x.voice, ['sarvam', 'browser', 'none', 'stream'] as const); if (voice) t.voice = voice;
