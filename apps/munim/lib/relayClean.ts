@@ -11,7 +11,8 @@ const TOOL_NAMES = new Set(TOOLS.map((t) => t.name));
 const redactJson = (v: unknown) => { try { return JSON.parse(redact(JSON.stringify(v ?? {}))); } catch { return {}; } };
 
 type Block = { type: string; [k: string]: unknown };
-/** Only text, tool calls and tool results; user text redacted again and tool results filtered again (defence in depth). */
+/** Only text, the assistant's own thinking blocks, tool calls and tool results; user and assistant text redacted again and tool
+ *  results filtered again (defence in depth). */
 export function clean(messages: unknown): Anthropic.MessageParam[] | null {
   if (!Array.isArray(messages) || !messages.length || messages.length > MAX_MESSAGES) return null;
   const out: Anthropic.MessageParam[] = [];

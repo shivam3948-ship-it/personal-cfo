@@ -67,7 +67,7 @@ function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode 
   return { messages: {
     // Voice (D-100): the relay streams the model's text as it is written; the phone checks each sentence before it is spoken
     ...(via === 'voice' ? { streamText: async (body: Anthropic.MessageCreateParamsNonStreaming, onText: (d: string) => void) => {
-      const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via, stream: true }) });
+      const r = await relayFetch({ method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via, stream: true }) });
       if (r.status === 503) { noKey = true; throw new NoKey(); }
       if (!r.ok || !r.body) { await r.json().catch(() => ({})); throw new RelayError(r.status); }
       const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
@@ -84,7 +84,7 @@ function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode 
       throw new Error('relay stream ended early');
     } } : {}),
     create: async (body) => {
-    const r = await fetch('/api/ask/relay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via }) });
+    const r = await relayFetch({ method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via }) });
     if (r.status === 503) { noKey = true; throw new NoKey(); }
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new RelayError(r.status);
     if (j.mode === 'guided' || seen.mode === 'guided') seen.mode = 'guided'; else if (j.mode) seen.mode = j.mode; // the strictest mode the server used
@@ -113,7 +113,9 @@ const prefetchOnServer = () => (prefetchAsk ??= fetch('/api/ai', { cache: 'no-st
 
 /** A relay failure, by status only: the owner's log says why the phone fell back, never the message (16 Nov). */
 class RelayError extends Error { constructor(readonly status: number) { super(`relay ${status}`); } }
-const whyOf = (e: unknown): NonNullable<LocalReply['why']> => e instanceof RelayError ? (e.status === 400 ? 'bad_request' : e.status === 429 ? 'rate_limited' : e.status === 413 ? 'too_long' : e.status >= 500 ? 'model_error' : 'other') : e instanceof TypeError ? 'network' : 'other';
+/** Only a failed fetch counts as "network"; any other TypeError is a bug and logs as "other" (review, 16 Nov). */
+const relayFetch = (init: RequestInit) => fetch('/api/ask/relay', init).catch(() => { throw new RelayError(0); });
+const whyOf = (e: unknown): NonNullable<LocalReply['why']> => e instanceof RelayError ? (e.status === 0 ? 'network' : e.status === 400 ? 'bad_request' : e.status === 429 ? 'rate_limited' : e.status === 413 ? 'too_long' : e.status >= 500 ? 'model_error' : 'other') : 'other';
 
 export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSentence?: (s: string) => void, onTool?: (tool: string) => void): Promise<LocalReply> {
   const ds = await myData(); if (!ds) throw new Error(NO_DATA);
