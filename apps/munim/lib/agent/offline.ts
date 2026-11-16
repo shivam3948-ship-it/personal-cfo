@@ -366,6 +366,10 @@ export async function runOffline(history: Turn[], ctx: ToolCtx): Promise<AgentRe
       break;
     }
     case 'goal': {
+      // a question about a goal already saved ("what's my goal?", "मेरा लक्ष्य क्या है?") is not a request to create one (red team mem-order, 16 Nov)
+      if (!parseAmountRupees(text) && /\b(?:what|which|show|tell|kya|kitna)\b|क्या|कितना|कौन|बताओ|बताइए/i.test(text)) {
+        answer = say('आपके सहेजे हुए लक्ष्य Actions में हैं।', 'Your saved goals are in Actions.'); break;
+      }
       const amount = parseAmountRupees(text) ?? 100000;
       const asOf = (await call('upcoming_dues', { days: 1 })).as_of as string;
       const fyEnd = `${Number(asOf.slice(0, 4)) + (Number(asOf.slice(5, 7)) >= 4 ? 1 : 0)}-03-31`; // end of the financial year

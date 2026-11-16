@@ -53,10 +53,10 @@ describe('end of turn: statements in English and Hindi (D-106 review)', () => {
 
 import { splitSpoken, spokenMax, SAYS_YES, SAYS_NO, MORE_ASK } from '@/ui/streamVoice';
 describe('short spoken answers (D-108)', () => {
-  it('says two sentences (three for investment answers), then offers the rest', () => {
+  it('says two sentences, then offers the rest; investment answers are said whole', () => {
     const rest = ['a.', 'b.', 'c.', 'd.'];
-    expect(splitSpoken(rest, 0, spokenMax(['spending_breakdown']))).toEqual({ now: ['a.', 'b.'], later: ['c.', 'd.'] });
-    expect(splitSpoken(rest, 0, spokenMax(['portfolio_xray']))).toEqual({ now: ['a.', 'b.', 'c.'], later: ['d.'] });
+    expect(splitSpoken(rest, 0, spokenMax('a. b. c. d.'))).toEqual({ now: ['a.', 'b.'], later: ['c.', 'd.'] });
+    expect(splitSpoken(rest, 0, spokenMax('your fund is up'))).toEqual({ now: ['a.', 'b.', 'c.', 'd.'], later: [] });
     expect(splitSpoken(['c.', 'd.'], 2, 2)).toEqual({ now: [], later: ['c.', 'd.'] }); // two already voiced while it was written
     expect(splitSpoken(['a.'], 0, 2)).toEqual({ now: ['a.'], later: [] }); // short answers are said whole, no offer
     expect(MORE_ASK.hi).toBe('और बताऊँ?');
@@ -77,5 +77,20 @@ describe('the voice for each sentence (D-108)', () => {
     expect(voiceLang('Your card bill is due on 5 November.', 'hi')).toBe('en');
     expect(voiceLang('I see a ka-ching at the cafe.', 'hi')).toBe('en'); // one stray match is not Hinglish
     expect(voiceLang('₹18,400', 'hi')).toBe('hi');
+  });
+});
+
+import { sayWhole } from '@/ui/streamVoice';
+describe('short spoken answers never cut an investment answer (D-108 review)', () => {
+  it('a sell or keep answer, with its balancing line and guard line, is said whole', () => {
+    const answer = ['Your small cap fund is worth ₹92,440 against ₹1,10,373 in a plain index fund on the same dates.', 'It is 31 percent of your money.', 'Your portfolio has returned 14.2 percent a year.', 'If you need this money soon, a further fall matters more; if not for years, short falls matter less.', 'Munim doesn’t have an investment adviser licence yet, so it can’t tell you to sell, switch or stop a fund or policy; a SEBI-registered adviser can.'];
+    expect(splitSpoken(answer, 0, spokenMax(answer.join(' '))).later).toEqual([]);
+    const hi = ['आपका स्मॉल कैप फंड 92,440 रुपये का है।', 'अगर पैसा जल्दी चाहिए तो गिरावट ज़्यादा मायने रखती है।', 'मुनीम के पास अभी निवेश सलाहकार का लाइसेंस नहीं है।'];
+    expect(splitSpoken(hi, 0, spokenMax(hi.join(' '))).later).toEqual([]);
+  });
+  it('a spending answer is still cut after two sentences', () => {
+    const spend = ['सितंबर में सबसे ज़्यादा पैसा किराए में गया, 26,000।', 'उसके बाद लोन EMI 22,782 और ट्रैवल 21,000 रहा।', 'फ़ूड डिलीवरी भी 10,441 रही।'];
+    expect(sayWhole(spend.join(' '))).toBe(false);
+    expect(splitSpoken(spend, 0, spokenMax(spend.join(' '))).later).toHaveLength(1);
   });
 });

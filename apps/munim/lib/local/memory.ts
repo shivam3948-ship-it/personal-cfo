@@ -14,3 +14,5 @@ export async function rememberTopic(tools: string[], date = new Date().toISOStri
 }
 export async function loadTopics(): Promise<Topic[]> { return (await idbGet<Topic[]>(KEY)) ?? []; }
 export async function forgetTopics(): Promise<void> { await idbDel(KEY); }
+/** Everything Munim remembers: the topics and the saved goals and reminders. Called when the last of your data is deleted. */
+export async function forgetEverything(): Promise<void> { await idbDel(KEY); await idbDel('actions'); }

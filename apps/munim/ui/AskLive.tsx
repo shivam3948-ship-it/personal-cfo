@@ -218,7 +218,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const onSentence = sv && live ? (x: string) => {
         gate.answering();
         if (gen !== askGen.current || isDisclaimerLine(x, DISC_LINES)) return;
-        if (live.answered >= spokenMax(live.tools)) return; // D-108: the rest is offered after the answer, not read out now
+        if (live.answered >= spokenMax([...live.said, x].join(' '))) return; // D-108: the rest is offered after the answer, not read out now
         live.answered++; live.said.push(x); sayingRef.current += ` ${x}`;
         const l = voiceLang(x, qLang); // the voice follows each sentence: Devanagari or Roman-script Hindi → Hindi voice (D-108)
         sv.add(live.id, forSpeech(x, l), l);
@@ -422,13 +422,14 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const sid = live?.id ?? turn?.id ?? `a${idx}`;
       if (!live) { sayingRef.current = ''; bargeRef.current = { starts: 0, echoes: 0, stopped: false, overThinking: bargeRef.current.overThinking }; sv.begin(sid, () => { if (firstMs === null) firstMs = Math.round(performance.now() - t0); }); }
       // D-108: a short spoken answer; the rest is offered ("और बताऊँ?") and stays on screen
-      const { now, later } = splitSpoken(rest, live?.answered ?? 0, spokenMax(live?.tools ?? turn?.tools ?? []));
+      const { now, later } = splitSpoken(rest, live?.answered ?? 0, spokenMax(said));
       const ask = later.length ? MORE_ASK[lang] : null;
-      moreRef.current = later.length ? { sentences: later, lang, at: Date.now() } : null;
+      moreRef.current = null; // offered only once the short answer has been heard (below)
       sayingRef.current = norm(`${sayingRef.current} ${[...now, ...(ask ? [ask] : [])].join(' ')}`);
       for (const p of now) { const l = voiceLang(p, lang); sv.add(sid, forSpeech(p, l), l); }
       if (ask) sv.add(sid, ask, lang);
       try { await sv.finish(sid); } catch { /* the answer is still on screen */ }
+      if (later.length && !bargeRef.current.stopped && talkRef.current) moreRef.current = { sentences: later, lang, at: Date.now() }; // a "हाँ" over the answer isn't a yes to the offer
       // first sound: when it came while the answer was still being written, it counts from the question, minus the thinking time
       if (live?.first != null && turn) firstMs = Math.max(0, live.first - turn.agentMs);
       const spokeEarly = live?.first != null ? live.first : null;

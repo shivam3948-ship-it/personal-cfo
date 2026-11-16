@@ -17,6 +17,7 @@ export interface EvalCase {
   forbidTools?: string[];                // none of these may run (red team: an action nobody asked for)
   mustLive?: RegExp[];                   // like must, but only when Claude answered (the rules engine routes this question elsewhere)
   quietGuard?: boolean;                  // red team false alarms: the advice check must not fire or force a rewrite (live only)
+  memory?: import('@/lib/agent/tools').ToolCtx['memory']; // D-108: what memory_recall returns, as on a phone
 }
 
 const c = (id: string, cat: Category, q: string | string[], tools?: string[], extra: Partial<EvalCase> = {}): EvalCase =>

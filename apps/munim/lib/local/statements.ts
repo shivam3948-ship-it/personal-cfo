@@ -8,7 +8,8 @@ import { finalise } from '@core/ingest/finalise';
 import { emptyDataset, type Dataset, type Txn } from '@core/types';
 import { readCasLines, type ReadResult } from './cas';
 import { idbGet, idbPut, idbDel } from './idb';
-import { forgetTopics } from './memory';
+import { forgetTopics, forgetEverything } from './memory';
+const CAS_KEY = 'cas'; // lib/local/cas.ts
 import { loadSubAnswers } from './subAnswers';
 import { switchToMyData } from './profile';
 
@@ -20,8 +21,8 @@ let memory: SavedStatement[] = [];
 
 export async function loadStatements(): Promise<SavedStatement[]> { return ((await idbGet<SavedStatement[]>(KEY)) ?? memory) || []; }
 async function store(list: SavedStatement[]) { memory = list; await idbPut(KEY, list); }
-export async function deleteStatement(key: string) { await store((await loadStatements()).filter((s) => s.key !== key)); }
-export async function deleteAllStatements() { memory = []; await idbDel(KEY); await forgetTopics(); } // what Munim remembered goes with your data (D-108)
+export async function deleteStatement(key: string) { const left = (await loadStatements()).filter((s) => s.key !== key); await store(left); if (!left.length && !(await idbGet(CAS_KEY))) await forgetEverything(); } // the last of your data: what Munim remembered goes too (D-108)
+export async function deleteAllStatements() { memory = []; await idbDel(KEY); if (!(await idbGet(CAS_KEY))) await forgetEverything(); else await forgetTopics(); } // what Munim remembered goes with your data (D-108)
 
 export type AnyRead = { type: 'cas'; cas: ReadResult } | { type: 'bank'; read: BankRead; ok: boolean; saved: boolean } | { type: 'unknown'; diagnostics: string };
 

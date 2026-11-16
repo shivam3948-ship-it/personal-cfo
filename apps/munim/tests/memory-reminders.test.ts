@@ -48,3 +48,15 @@ describe('memory_recall (D-108)', () => {
     await forgetTopics(); expect(await loadTopics()).toEqual([]);
   });
 });
+
+import { forgetEverything } from '@/lib/local/memory';
+import { idbGet, idbPut } from '@/lib/local/idb';
+import { deleteStatement } from '@/lib/local/statements';
+describe('memory is forgotten with the last of your data (D-108 review)', () => {
+  it('deleting the last statement, with no CAS, clears topics and saved goals and reminders', async () => {
+    await idbPut('statements', [{ key: 'a' }]); await idbPut('actions', [{ id: 'g' }]); await rememberTopic(['spending_breakdown']);
+    await deleteStatement('a');
+    expect(await idbGet('actions')).toBeUndefined(); expect(await loadTopics()).toEqual([]);
+    await forgetEverything();
+  });
+});

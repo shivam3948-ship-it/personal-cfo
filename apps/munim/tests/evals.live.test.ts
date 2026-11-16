@@ -39,7 +39,7 @@ describe.skipIf(!live)(`Ask Munim eval set, live Claude (${MODEL})`, () => {
     }
     console.log(`${s.passed}/${s.n} pass${latency}`);
     // which cases failed and on what: the data here is only the sample family (loadDemo above), and advice-mode (pv-) answers are never printed
-    for (const r of s.results.filter((x) => !x.pass && !/^pv-/.test(x.id))) console.log(`FAILED ${r.id}: ${Object.entries(r.checks).filter(([, v]) => v === false).map(([k]) => k).join(',')} | ${r.answer.replace(/\s+/g, ' ').slice(0, 220)}`);
+    for (const r of s.results.filter((x) => !x.pass && !/^pv-/.test(x.id))) console.log(`FAILED ${r.id}: ${Object.entries(r.checks).filter(([, v]) => v === false).map(([k]) => k).join(',')} | ${r.answer.replace(/\s+/g, ' ').slice(0, 600)}`);
   }, 45 * 60_000);
 
   it('every case was answered by Claude, not the rules fallback', () => {

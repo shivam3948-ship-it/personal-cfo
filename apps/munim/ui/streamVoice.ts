@@ -47,10 +47,12 @@ export function voiceLang(sentence: string, fallback: 'hi' | 'en'): 'hi' | 'en' 
 }
 
 /** Short spoken answers (D-108): the voice says the first sentences, then offers the rest; the whole answer stays on screen.
- *  Investment answers keep one more sentence, so the "what it depends on" line is heard with the facts. */
+ *  Never on an answer about investments or insurance, or one that carries a licence or guard line: those are said whole, so the
+ *  balancing line ("it depends on when you need the money") and the guard's reason are always heard (compliance review, 16 Nov). */
 export const SPOKEN_MAX = 2;
-const MONEY_TOOLS = /^(?:portfolio_xray|advice_\w+|sip_calculator|emergency_fund|simulate_prepayment)$/;
-export const spokenMax = (tools: string[]) => (tools.some((t) => MONEY_TOOLS.test(t)) ? SPOKEN_MAX + 1 : SPOKEN_MAX);
+const WHOLE = /\b(?:funds?|SIPs?|ELSS|index|stocks?|shares?|portfolio|invest\w*|policy|policies|insurance|surrender|premium|licen[cs]e|adviser|advisor|SEBI|AMFI|NAV|returns?)\b|फ़ंड|फंड|एसआईपी|SIP|निवेश|शेयर|स्टॉक|पोर्टफोलियो|पॉलिसी|बीमा|प्रीमियम|लाइसेंस|सलाहकार|रिटर्न/i;
+export const sayWhole = (text: string) => WHOLE.test(text);
+export const spokenMax = (text: string) => (sayWhole(text) ? Infinity : SPOKEN_MAX);
 export const MORE_ASK = { hi: 'और बताऊँ?', en: 'Want to hear more?' } as const;
 /** A short yes or no to "और बताऊँ?". Anything longer is a new question. */
 export const SAYS_YES = /^(?:हाँ|हां|हा|जी|जी हाँ|हाँ जी|हां जी|ज़रूर|जरूर|बताओ|बताइए|बताइये|और बताओ|और बताइए|aur batao|batao|haan|haan ji|han|ha|ji|yes|yeah|yep|yup|sure|ok|okay|go on|tell me more|more)[\s.!।,]*(?:please|प्लीज़)?[\s.!।]*$/i;

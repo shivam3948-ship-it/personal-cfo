@@ -40,7 +40,7 @@ export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMo
   /** Voice (D-100): each sentence of the answer, as soon as it is written and has passed the checks, for speaking at once. */
   onSentence?: (sentence: string) => void;
   /** On the phone only (D-108): what Munim remembers here, for memory_recall. Absent on the sample data and on the server. */
-  memory?: { goals: { title: string; target: number; byDate: string; monthlyNeeded: number }[]; reminders: { title: string; date: string; repeat?: 'weekly' | 'monthly' }[]; topics: { date: string; tools: string[] }[] };
+  memory?: { goals: { title: string; target: number; byDate: string; monthlyNeeded: number; savedOn?: string }[]; reminders: { title: string; date: string; repeat?: 'weekly' | 'monthly' }[]; topics: { date: string; tools: string[] }[] };
   /** Voice (D-104): the name of each tool as it starts running, so the voice can say what Munim is looking at. */
   onTool?: (tool: string) => void }
 export interface ToolOutput { result: Record<string, unknown>; action?: Action }
@@ -299,7 +299,7 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
     case 'memory_recall': {
       const m = ctx.memory;
       if (!m) return { result: { available: false, note: 'Nothing is remembered on the sample data.' } };
-      return { result: { goals: m.goals.slice(0, 5).map((g) => ({ goal: defang(g.title), target: R(g.target), by: g.byDate, monthly_needed: R(g.monthlyNeeded) })),
+      return { result: { goals: m.goals.slice(0, 5).map((g) => ({ goal: defang(g.title), target: R(g.target), by: g.byDate, monthly_needed_when_saved: R(g.monthlyNeeded), ...(g.savedOn ? { saved_on: g.savedOn } : {}) })),
         reminders: m.reminders.slice(0, 8).map((r) => ({ reminder: defang(r.title), date: r.date, ...(r.repeat ? { repeats: r.repeat } : {}) })),
         recent_topics: m.topics.slice(0, 5).map((t) => ({ date: t.date, looked_at: t.tools })) } };
     }
