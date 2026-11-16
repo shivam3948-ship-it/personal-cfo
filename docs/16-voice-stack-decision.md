@@ -12,7 +12,7 @@
 | **Indian voices** | The voice is the product. An American-accented Hindi voice undercuts it. |
 | **Under ~5 s per turn** | Anything slower feels broken in a live demo. |
 | **Works when the network is bad** | Venue wifi. The demo cannot depend on one vendor. |
-| **Cost at scale** | A Phase 1.5 consumer feature for mass-market users (the Bachatt audience). |
+| **Cost at scale** | A Phase 1.5 consumer feature for mass-market users (first-time savers). |
 
 ## 2. Architecture: cascade vs speech-to-speech
 | | Cascade (STT → LLM with tools → TTS) | Speech-to-speech realtime model |

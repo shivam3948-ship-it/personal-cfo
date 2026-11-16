@@ -111,7 +111,7 @@ How we'll know: Monthly Verified Actions and 30-day re-upload (docs/05), with pr
 4. **Privacy bar rising:** DPDP Rules (obligations from May 2027) reward on-device, minimal-data designs (D-017).
 5. **Market timing:** retail direct-plan share rose from 21.4% to 36.7% (2021→2026). Millions are now self-directed without an adviser, and funded competitors are moving, so the window to be the *trusted* version is now.
 
-## 7. What about first-time investors (Ramesh, and Bachatt's market)?
+## 7. What about first-time investors (Ramesh, and the micro-savings market)?
 **Same root problem, earlier in the journey.** First-timers also lack a trusted, unconflicted judgement, but *before* the first decision rather than after it. With no portfolio, there's no feedback loop to close yet. Their job is "help me start safely", not "tell me if my portfolio is fine".
 
 | | Returning investor (Rohan) | First-time investor (Ramesh) |

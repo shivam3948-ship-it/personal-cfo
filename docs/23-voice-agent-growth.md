@@ -1,7 +1,7 @@
 # 23 · Growing an in-app voice agent (discovery → adoption → usage)
 
-**Goal (16 Oct 2026):** increase discovery, adoption and usage of a voice agent *inside a host app* like Bachatt. Munim becomes the voice layer, not a separate app.
-**User for this goal:** the host app's user. For Bachatt: first-time savers, often self-employed, Hindi or code-mixed speakers, low-end Android, noisy places, patchy data (from public sources as of 3 Oct 2026; verify). This differs from Rohan (docs/11); for this goal, Rohan is secondary.
+**Goal (16 Oct 2026):** increase discovery, adoption and usage of a voice agent *inside a host app* such as a micro-savings app. Munim becomes the voice layer, not a separate app.
+**User for this goal:** the host app's user. For a micro-savings app: first-time savers, often self-employed, Hindi or code-mixed speakers, low-end Android, noisy places, patchy data (from public sources as of 3 Oct 2026; verify). This differs from Rohan (docs/11); for this goal, Rohan is secondary.
 
 ## Problem statement
 Voice agents inside apps get little use because: (1) users don't find them (an icon in a corner, a separate tab); (2) the first try fails (noise, code-mixed speech, slow or vague answers), and users don't try twice; (3) they aren't tied to what users came to do (save today, check balance, withdraw, pause), so there is no reason to come back.

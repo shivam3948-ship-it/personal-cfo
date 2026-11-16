@@ -96,7 +96,7 @@ export default function BachattResearch() {
       </section>
 
       <section style={card} aria-labelledby="opps">
-        <h2 id="opps" style={{ margin: 0, fontSize: 17 }}>Where a voice agent helps Bachatt</h2>
+        <h2 id="opps" style={{ margin: 0, fontSize: 17 }}>Where a voice agent helps</h2>
         <div style={{ display: 'grid', gap: 12 }}>
           {OPPS.map((o, i) => (
             <div key={o.title} style={{ display: 'grid', gap: 4, paddingTop: i ? 12 : 0, borderTop: i ? '1px solid var(--line-2)' : 0 }}>

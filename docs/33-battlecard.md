@@ -16,7 +16,7 @@
 | Time to pilot | Weeks: host sends state, receives proposals | Months | Days | n/a |
 
 ## When we win
-- The buyer's reviews or tickets are dominated by withdrawal and debit doubts. For savings apps in our sample this is 53.5% of low ratings; for Bachatt, 38.2%.
+- The buyer's reviews or tickets are dominated by withdrawal and debit doubts. For savings apps in our sample this is 53.5% of low ratings; for the single app we studied in depth, 38.2%.
 - The buyer has a bot today and its users complain they can't reach a person.
 - The buyer's users are first-time savers more comfortable speaking than typing.
 
@@ -26,12 +26,12 @@
 - Compliance won't allow any AI-generated text in the money flow. Answer: rules first, Claude only for open questions, and every figure checked.
 
 ## Objections and answers
-- **"We already have Saathi or another assistant."** Bachatt's listing describes Saathi as presenting savings instruments. Munim is for the money-back moment: status, debits, charges, handoff. It can sit behind an existing assistant as its answers-from-records layer. ⚠ How Saathi actually works in the app is not verified.
+- **"We already have an assistant."** Assistants in savings apps tend to present savings products. Munim is for the money-back moment: status, debits, charges, handoff. It can sit behind an existing assistant as its answers-from-records layer. ⚠ How a given app's assistant works inside the app is not verified.
 - **"Bots annoy our users."** Exactly why handoff is one step and two misses hand over. We measure repeat contacts, not deflection alone.
 - **"What does it cost?"** About ₹1.65 per conversation all-in (estimate). Pricing is per resolved conversation (docs/34).
 - **"Is this investment advice?"** No. It answers from the account and the host's rules; no fund, stock or policy picks.
 
 ## Proof we can show today
-- `/research` and `/research/bachatt`: review evidence.
+- `/research` and the single-app deep dive: review evidence.
 - The opportunity tree.
 - The `/host` scenarios: late withdrawal, paid but "not in my bank", charged twice, the instant split.

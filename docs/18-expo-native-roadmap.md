@@ -10,7 +10,7 @@
 |---|---|
 | A habit that needs push notifications | The **Sunday Money Call** wants a weekly notification, and a reminder the day before each due date |
 | Device integrations | Writing reminders into the calendar directly; the share sheet; the voice session surviving a locked screen |
-| Distribution | Most of Bachatt's audience finds apps on the Play Store; a PWA install is a weaker funnel (assumption; test it) |
+| Distribution | Most first-time savers find apps on the Play Store; a PWA install is a weaker funnel (assumption; test it) |
 | Data access | Android SMS would remove manual uploads, but it is **policy-restricted** (see §5) |
 
 Go native when the web MVP shows a weekly return habit (docs/05). Until then the PWA is enough.

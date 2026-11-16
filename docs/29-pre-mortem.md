@@ -8,8 +8,8 @@ Imagine it is six months from now and Munim failed. These are the most likely re
 | A1 | The mic didn't work on stage (no permission, wrong input device, noisy hall) | The mic button stays grey; "Allow the microphone" error | Grant Chrome's mic permission beforehand; use the typing box on Talk and the tap chips on /host as backup; rehearse by tapping chips |
 | A2 | Venue Wi-Fi blocked or slowed Claude and Sarvam | First answer takes more than 5 s | Phone hotspot. The rules agent answers with no network to Claude, and browser voice needs no Sarvam |
 | A3 | Hindi speech recognition misheard a question live | Wrong intent on stage | Demo with chips first, then one spoken line we have rehearsed ("मेरे पैसे अभी तक नहीं आए") |
-| A4 | Judges asked "why should Bachatt care?" and we answered with features | Questions about the business, not the tech | Lead with /research/bachatt: 38.2% of low ratings are about withdrawals, then the four /host scenarios |
-| A5 | It looked like an impersonation of Bachatt | "Is this Bachatt's app?" | The host is the fictional "Daily Saver", labelled as such. Never use Bachatt's logo |
+| A4 | Judges asked "why should a savings app care?" and we answered with features | Questions about the business, not the tech | Lead with the review research: 38.2% of the studied app's low ratings are about withdrawals, then the four /host scenarios |
+| A5 | It looked like an impersonation of a real app | "Is this their app?" | The host is the fictional "Daily Saver", labelled as such. Never use a real app's logo |
 | A6 | Advice-boundary question ("are you giving investment advice?") | A judge asks about SEBI | "Guidance with a disclaimer; category level; no fund picks; registered advice only after an RIA licence" (D-021) |
 
 ## B · The product failed
