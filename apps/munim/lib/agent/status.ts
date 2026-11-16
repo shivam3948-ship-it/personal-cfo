@@ -22,6 +22,7 @@ export const STATUS: Record<string, Line> = {
   emergency_fund: LOOK('इमरजेंसी फ़ंड', 'Checking the emergency fund.'),
   portfolio_xray: LOOK('म्यूचुअल फ़ंड', 'Looking at the mutual funds.'),
   search_documents: LOOK('काग़ज़ात', 'Searching the documents.'),
+  memory_recall: LOOK('पिछली बातें', 'Checking what we talked about before.'),
   money_audit: LOOK('पूरा हिसाब', 'Going through everything.'),
   sip_calculator: { hi: 'SIP का हिसाब लगा रहा हूँ।', en: 'Working out the SIP.' },
   create_reminder: { hi: 'रिमाइंडर तैयार कर रहा हूँ।', en: 'Setting up the reminder.' },

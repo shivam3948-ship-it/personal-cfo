@@ -26,6 +26,7 @@ import { myDataset } from './statements';
 import { loadCas } from './cas';
 import { getProfile } from './profile';
 import { idbGet, idbPut } from './idb';
+import { loadTopics, rememberTopic } from './memory';
 import { PROMPT_VERSION } from '@/lib/agent/prompt';
 import { traceId } from '@/lib/telemetryCore';
 import { scrub } from './scrub';
@@ -130,7 +131,12 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSente
   // D-095: the server decides; a browser's #prefetch=on only counts while the server is in test mode (review, 8 Nov)
   const server = await prefetchOnServer();
   const prefetch = server === 'on' || (server === 'test' && /(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie));
-  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, ...(picks ? { picks } : {}), ...(prefetch ? { prefetch } : {}),
+  // D-108: what Munim remembers on this phone, for memory_recall (goal and reminder titles go through the same sanitize as any tool result)
+  const saved = actions ?? [];
+  const memory: ToolCtx['memory'] = { topics: await loadTopics(),
+    goals: saved.filter((a) => a.kind === 'goal' && a.goal).map((a) => ({ title: a.title, target: a.goal!.target, byDate: a.goal!.byDate, monthlyNeeded: a.goal!.monthlyNeeded })),
+    reminders: saved.filter((a) => a.kind === 'reminder' && a.reminder).map((a) => ({ title: a.title, date: a.reminder!.date, ...(a.reminder!.repeat ? { repeat: a.reminder!.repeat } : {}) })) };
+  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, memory, ...(picks ? { picks } : {}), ...(prefetch ? { prefetch } : {}),
     // voice (D-100): a checked sentence goes to the voice service with your name and payees removed, like the finished answer
     ...(onSentence ? { onSentence: (x: string) => onSentence(scrub(x, names)) } : {}), ...(onTool ? { onTool } : {}) };
   let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false;
@@ -144,6 +150,7 @@ export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSente
     if (seen.mode === 'guided' && adviceMode !== 'guided') r = { ...r, answer: guardAnswer(r.answer, 'guided', fundLabels(ds.portfolio?.holdings ?? [], lang), knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? [], [], history.filter((t) => t.role === 'user').map((t) => t.content)), lang) };
   }
   catch (e) { fallback = !(e instanceof NoKey); r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
+  void rememberTopic(r.trace.map((t) => t.tool)); // D-108: tool names and today's date, never the words
   const spoken = scrub(r.answer, names); // what may go to the voice service
   const log = { question: scrub(last, names), answer: spoken }; // and to the owner's log (D-089): your name and every payee removed
   return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where,

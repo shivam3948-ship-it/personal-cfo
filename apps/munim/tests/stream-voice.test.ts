@@ -50,3 +50,32 @@ describe('end of turn: statements in English and Hindi (D-106 review)', () => {
     expect(turnComplete('मैं कबाड़ी की दुकान चलाता हूँ।')).toBe(false); // "कब" inside a word
   });
 });
+
+import { splitSpoken, spokenMax, SAYS_YES, SAYS_NO, MORE_ASK } from '@/ui/streamVoice';
+describe('short spoken answers (D-108)', () => {
+  it('says two sentences (three for investment answers), then offers the rest', () => {
+    const rest = ['a.', 'b.', 'c.', 'd.'];
+    expect(splitSpoken(rest, 0, spokenMax(['spending_breakdown']))).toEqual({ now: ['a.', 'b.'], later: ['c.', 'd.'] });
+    expect(splitSpoken(rest, 0, spokenMax(['portfolio_xray']))).toEqual({ now: ['a.', 'b.', 'c.'], later: ['d.'] });
+    expect(splitSpoken(['c.', 'd.'], 2, 2)).toEqual({ now: [], later: ['c.', 'd.'] }); // two already voiced while it was written
+    expect(splitSpoken(['a.'], 0, 2)).toEqual({ now: ['a.'], later: [] }); // short answers are said whole, no offer
+    expect(MORE_ASK.hi).toBe('और बताऊँ?');
+  });
+  it('a short yes says the rest; a short no ends the offer; anything longer is a new question', () => {
+    for (const y of ['हाँ', 'हाँ जी', 'जी', 'और बताओ', 'haan', 'Yes.', 'ok', 'tell me more', 'हाँ, प्लीज़']) expect(SAYS_YES.test(y), y).toBe(true);
+    for (const n of ['नहीं', 'बस', 'no thanks', "That's all", 'nahi']) expect(SAYS_NO.test(n), n).toBe(true);
+    for (const q of ['हाँ, और मेरा कार्ड बिल कब है?', 'yes what about my loans', 'नहीं, मेरा मतलब SIP से था']) { expect(SAYS_YES.test(q), q).toBe(false); expect(SAYS_NO.test(q), q).toBe(false); }
+  });
+});
+
+import { voiceLang } from '@/ui/streamVoice';
+describe('the voice for each sentence (D-108)', () => {
+  it('Roman-script Hindi gets the Hindi voice; English stays English', () => {
+    expect(voiceLang('Aapka is mahine ka kharcha ₹18,400 hai.', 'en')).toBe('hi');
+    expect(voiceLang('Emergency fund abhi 3.4 mahine ka hai.', 'en')).toBe('hi');
+    expect(voiceLang('सितंबर में सबसे ज़्यादा किराया गया।', 'en')).toBe('hi');
+    expect(voiceLang('Your card bill is due on 5 November.', 'hi')).toBe('en');
+    expect(voiceLang('I see a ka-ching at the cafe.', 'hi')).toBe('en'); // one stray match is not Hinglish
+    expect(voiceLang('₹18,400', 'hi')).toBe('hi');
+  });
+});

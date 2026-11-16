@@ -6,6 +6,7 @@ import { shortName } from '@core/portfolio/engine';
 import { pdfLines, PdfPasswordError } from '@core/ingest/pdfLines';
 import type { Portfolio } from '@/lib/views/portfolioBlocks';
 import { idbGet, idbPut, idbDel } from './idb';
+import { forgetTopics } from './memory';
 import { switchToMyData } from './profile';
 
 export { PdfPasswordError };
@@ -16,7 +17,7 @@ export interface LocalCas extends Portfolio { checks: CasResult['checks']; added
 const KEY = 'cas';
 export async function loadCas(): Promise<LocalCas | null> { return (await idbGet<LocalCas>(KEY)) ?? null; }
 export async function saveCas(c: LocalCas) { await idbPut(KEY, c); switchToMyData(); }
-export async function deleteCas() { await idbDel(KEY); }
+export async function deleteCas() { await idbDel(KEY); await forgetTopics(); } // what Munim remembered goes with your data (D-108)
 
 /** Only fields the engine needs; AMC kept only when it looks like a fund house (the line it comes from sits near the investor's name). */
 function clean(h: Holding): Holding {

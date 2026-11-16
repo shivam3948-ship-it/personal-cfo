@@ -13,7 +13,7 @@ const DISC_LINES = Object.values(DISCLAIMER).flatMap((d) => [d.en, d.hi]);
 import { getProfile } from '@/lib/local/profile';
 import { redact } from '@core/privacy/redact';
 import { withoutDisclaimer, forSpeech, splitForSpeech, isDisclaimerLine } from '@core/agent/lang';
-import { StreamVoice, isEcho, turnComplete, TURN_WAIT_MS } from '@/ui/streamVoice';
+import { StreamVoice, isEcho, turnComplete, TURN_WAIT_MS, spokenMax, splitSpoken, MORE_ASK, SAYS_YES, SAYS_NO, voiceLang } from '@/ui/streamVoice';
 import { doneNote, type Action } from '@/lib/actionsCore';
 import { record, browserListen, browserSttAvailable, speakPieces, stopSpeaking, unlockAudio, playBase64, watchForSpeech, type Audio64, type CutInWatch, type RecorderHandle, type Recording } from '@/ui/voice';
 import { turnCost } from '@/lib/cost';
@@ -157,7 +157,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
   const streamRef = useRef<StreamVoice | null>(null);
   const sayingRef = useRef(''); // what Munim is saying now, to tell its own echo from your words
   const duckRef = useRef(false); const vadEndRef = useRef(0); const quietTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const liveRef = useRef<{ id: string; said: string[]; first: number | null; status: number } | null>(null); // the answer being voiced while it is written
+  const liveRef = useRef<{ id: string; said: string[]; first: number | null; status: number; answered: number; tools: string[] } | null>(null); // the answer being voiced while it is written
+  const moreRef = useRef<{ sentences: string[]; lang: 'hi' | 'en'; at: number } | null>(null); // what "और बताऊँ?" offers (D-108)
   const bargeRef = useRef({ starts: 0, echoes: 0, stopped: false, overThinking: 0 }); const speechOn = useRef(false); const sustain = useRef<ReturnType<typeof setTimeout> | null>(null);
   const streamOff = () => /(?:^|;\s*)munim_stream=off(?:;|$)/.test(document.cookie); // #stream=off turns it off for this browser
   const costOf = (t: TurnRecord) => turnCost({ model: t.model, llm: t.tokens, judgeModel: t.judge?.model, judge: t.judge, sttMs: t.stt === 'server' ? t.ms.audio : 0, ttsChars: t.ttsChars });
@@ -200,7 +201,8 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const turns = next.map(({ role, content, done }) => ({ role, content: done ? `${content}\n\n${done}` : content })); // what Munim already saved travels with its answer
       // Voice in a streaming conversation (D-100): each checked sentence is voiced as soon as the answer has written it
       const sv = via === 'voice' && talkRef.current ? streamRef.current : null;
-      const live = sv ? { id: `s${gen}`, said: [] as string[], first: null as number | null, status: 0 } : null;
+      const live = sv ? { id: `s${gen}`, said: [] as string[], first: null as number | null, status: 0, answered: 0, tools: [] as string[] } : null;
+      moreRef.current = null; // a new question ends the last offer
       if (sv && live) { sayingRef.current = ''; bargeRef.current = { starts: 0, echoes: 0, stopped: false, overThinking: bargeRef.current.overThinking }; sv.begin(live.id, () => { if (live.first === null) live.first = Math.round(performance.now() - t0); }); }
       const qLang = /[\u0900-\u097F]/.test(q) ? 'hi' : 'en';
       // D-104: instead of a fixed "one second", say what Munim is looking at, from the tool actually running (at most two lines,
@@ -208,6 +210,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const gate = statusGate();
       const onTool = sv && live ? (tool: string) => {
         if (gen !== askGen.current) return;
+        live?.tools.push(tool);
         const line = gate.next(tool, qLang); if (!line) return;
         live.status++; sayingRef.current += ` ${line}`;
         sv.add(live.id, forSpeech(line, qLang), qLang);
@@ -215,8 +218,9 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const onSentence = sv && live ? (x: string) => {
         gate.answering();
         if (gen !== askGen.current || isDisclaimerLine(x, DISC_LINES)) return;
-        live.said.push(x); sayingRef.current += ` ${x}`;
-        const l = /[\u0900-\u097F]/.test(x) ? 'hi' : /[a-z]/i.test(x) ? 'en' : qLang; // the voice follows each sentence's script
+        if (live.answered >= spokenMax(live.tools)) return; // D-108: the rest is offered after the answer, not read out now
+        live.answered++; live.said.push(x); sayingRef.current += ` ${x}`;
+        const l = voiceLang(x, qLang); // the voice follows each sentence: Devanagari or Roman-script Hindi → Hindi voice (D-108)
         sv.add(live.id, forSpeech(x, l), l);
       } : undefined;
       liveRef.current = live;
@@ -250,7 +254,7 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           check: { ok: !!j.check?.ok, checked: j.check?.checked ?? 0, unverified: j.check?.unverified?.length ?? 0 }, repaired: j.repaired, fallback: j.fallback, guard: j.guard,
           ms: { agent: agentMs, ...(stt?.ms !== undefined ? { stt: stt.ms } : {}), ...(stt?.audioMs ? { audio: stt.audioMs } : {}) }, ...(stt ? { stt: stt.mode } : {}), ...(j.llm ? { tokens: j.llm } : {}), ...(j.judge ? { judge: j.judge } : {}) });
       }
-      if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang }); // asked by voice → answered by voice; typed → stays quiet
+      if (via === 'voice') listen(j.spoken ?? j.answer, next.length, 'auto', { stt, agentMs, id: j.trace, lang: j.lang, tools: j.tools ?? [] }); // asked by voice → answered by voice; typed → stays quiet
     } catch (e) { ackOk.current = false; setTalkOn(false); setErr((e as Error).message === NO_DATA ? (hi ? NO_DATA_HI : NO_DATA) : hi ? t.noAnswer : (e as Error).message); setMsgs(next); }
     finally { if (gen === askGen.current) { setBusy(false); input.current?.focus(); } }
   }
@@ -315,6 +319,13 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const over = busyRef.current; if (over) bargeRef.current.overThinking++; // asked while Munim was still thinking: this question takes over
       setVoice('idle'); void ask(text, 'voice', { mode: 'stream', ms: vadEndRef.current ? Math.max(0, Math.round((textAtRef.current || performance.now()) - vadEndRef.current)) : undefined }, over);
     }
+    function sayMore(more: { sentences: string[]; lang: 'hi' | 'en' }) {
+      const s = streamRef.current; if (!s) return;
+      const id = `m${Date.now()}`; sayingRef.current = more.sentences.join(' ');
+      setVoice('idle'); s.begin(id, () => {});
+      for (const p of more.sentences) { const l = voiceLang(p, more.lang); s.add(id, forSpeech(p, l), l); }
+      void s.finish(id).catch(() => {}).then(() => { sayingRef.current = ''; if (talkRef.current) { setVoice('listening'); armQuiet(); } });
+    }
     function sendHeld() { const h = heldRef.current; heldRef.current = null; if (h && talkRef.current) sendTurn(h.text); }
     const armQuiet = () => { if (quietTimer.current) clearTimeout(quietTimer.current); quietTimer.current = setTimeout(() => { if (talkRef.current && !busyRef.current && !streamRef.current?.playing) endTalkRef.current(true); }, 8000); };
     let sv = streamRef.current;
@@ -344,6 +355,12 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
           if (s.playing && isEcho(text, sayingRef.current)) { bargeRef.current.echoes++; duckRef.current = false; s.duck(false); return; } // Munim heard itself
           if (s.playing) { s.stopVoice(); bargeRef.current.stopped = true; tapCut.current = false; }
           duckRef.current = false; textAtRef.current = performance.now();
+          // D-108: a short yes to "और बताऊँ?" says the rest of the last answer (already checked, no new call); a no ends the offer
+          const more = moreRef.current; moreRef.current = null;
+          if (more && !heldRef.current && Date.now() - more.at < 90_000) {
+            if (SAYS_YES.test(text.trim())) { sayMore(more); return; }
+            if (SAYS_NO.test(text.trim())) { const ok = more.lang === 'hi' ? 'ठीक है।' : 'Okay.', id = `n${Date.now()}`; sayingRef.current = ok; s.begin(id, () => {}); s.add(id, ok, more.lang); void s.finish(id).catch(() => {}); setVoice('listening'); armQuiet(); return; }
+          }
           // D-106: a statement that ends on a pause waits briefly for the rest of the question; a question goes at once
           const h = heldRef.current; if (h?.timer) clearTimeout(h.timer);
           const whole = h ? `${h.text} ${text}` : text; setHeard(whole);
@@ -375,10 +392,10 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
     const j = await r.json().catch(() => ({}));
     return r.ok && j.audioBase64 ? { audioBase64: j.audioBase64, mime: j.mime } : null;
   }
-  async function listen(textToSay: string, idx: number, how: 'tap' | 'auto' = 'tap', turn?: { stt?: SttTiming; agentMs: number; id?: string; lang?: string }) {
+  async function listen(textToSay: string, idx: number, how: 'tap' | 'auto' = 'tap', turn?: { stt?: SttTiming; agentMs: number; id?: string; lang?: string; tools?: string[] }) {
     ackOk.current = false;
     if (speaking === idx) { stopSpeaking(); setSpeaking(null); return; } // second tap stops it
-    const lang = /[\u0900-\u097F]/.test(textToSay) ? 'hi' : 'en';
+    const lang = voiceLang(textToSay, hi ? 'hi' : 'en');
     stopSpeaking(); setSpeaking(idx);
     // hands-free: while Munim speaks, talking over it stops the answer and Munim listens (barge-in)
     const handsFree = how === 'auto' && talkRef.current;
@@ -404,15 +421,20 @@ export default function AskLive({ local = false, hi: hiProp }: { local?: boolean
       const rest = withoutDisclaimer(said, DISC_LINES).split(/(?<=[.?!।])\s+|\n+/).map((x) => x.trim()).filter((x) => x && !done.has(norm(x)) && !isDisclaimerLine(x, DISC_LINES));
       const sid = live?.id ?? turn?.id ?? `a${idx}`;
       if (!live) { sayingRef.current = ''; bargeRef.current = { starts: 0, echoes: 0, stopped: false, overThinking: bargeRef.current.overThinking }; sv.begin(sid, () => { if (firstMs === null) firstMs = Math.round(performance.now() - t0); }); }
-      sayingRef.current = norm(`${sayingRef.current} ${rest.join(' ')}`);
-      for (const p of rest) sv.add(sid, forSpeech(p, lang), lang);
+      // D-108: a short spoken answer; the rest is offered ("और बताऊँ?") and stays on screen
+      const { now, later } = splitSpoken(rest, live?.answered ?? 0, spokenMax(live?.tools ?? turn?.tools ?? []));
+      const ask = later.length ? MORE_ASK[lang] : null;
+      moreRef.current = later.length ? { sentences: later, lang, at: Date.now() } : null;
+      sayingRef.current = norm(`${sayingRef.current} ${[...now, ...(ask ? [ask] : [])].join(' ')}`);
+      for (const p of now) { const l = voiceLang(p, lang); sv.add(sid, forSpeech(p, l), l); }
+      if (ask) sv.add(sid, ask, lang);
       try { await sv.finish(sid); } catch { /* the answer is still on screen */ }
       // first sound: when it came while the answer was still being written, it counts from the question, minus the thinking time
       if (live?.first != null && turn) firstMs = Math.max(0, live.first - turn.agentMs);
       const spokeEarly = live?.first != null ? live.first : null;
       const prev = turn?.id ? turnsRef.current.get(turn.id) : undefined;
       const barge = { ...bargeRef.current }; bargeRef.current.overThinking = 0;
-      if (prev) logTurn({ ...prev, voice: 'stream', barge, ...(live?.status ? { status: live.status } : {}), ttsChars: sayingRef.current.length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + (spokeEarly ?? prev.ms.agent + firstMs) } : {}) } });
+      if (prev) logTurn({ ...prev, voice: 'stream', barge, ...(live?.status ? { status: live.status } : {}), ...(later.length ? { held: later.length } : {}), ttsChars: sayingRef.current.length, ms: { ...prev.ms, ...(firstMs !== null ? { firstWord: firstMs, total: (prev.ms.stt ?? 0) + (spokeEarly ?? prev.ms.agent + firstMs) } : {}) } });
       if (turn && firstMs !== null) setMsgs((cur) => cur.map((m, i) => (i === idx ? { ...m, lat: { stt: turn.stt?.ms, agent: turn.agentMs, speak: firstMs! } } : m)));
       sayingRef.current = '';
       setSpeaking((cur) => (cur === idx ? null : cur)); setNote(null);

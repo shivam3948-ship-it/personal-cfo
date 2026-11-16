@@ -35,6 +35,33 @@ export function turnComplete(text: string): boolean {
 }
 export const TURN_WAIT_MS = 900; // how long a statement waits for the rest of the question
 
+/** The voice for one sentence (D-108): Devanagari → Hindi; Hindi written in Roman script ("Aapka kharcha 18,400 hai") → Hindi too,
+ *  which Sarvam reads as Hindi ("रुपये", "5 नवंबर") where the English voice said "rupees" and "5th November" (Hinglish bench,
+ *  16 Nov); plain English → English. Hinglish = at least two common Hindi words that English doesn't use. */
+const HINGLISH = /\b(?:hai|hain|aap|aapka|aapki|aapke|apna|apni|mera|meri|mere|kya|kyun|nahi|nahin|ka|ki|ke|ko|se|mein|raha|rahi|rahe|karo|karein|kijiye|karna|chahiye|sakte|sakta|liye|paisa|paise|kharcha|kharch|bachat|mahine|mahina|abhi|agar|toh|bhi|aur|accha|achha|thoda|zyada|jyada|kitna|kitne|kab|kaise|lagega|hoga|jaana|wala|wali)\b/gi;
+export function voiceLang(sentence: string, fallback: 'hi' | 'en'): 'hi' | 'en' {
+  if (/[\u0900-\u097F]/.test(sentence)) return 'hi';
+  if (!/[a-z]/i.test(sentence)) return fallback;
+  const hits = new Set((sentence.match(HINGLISH) ?? []).map((w) => w.toLowerCase()));
+  return hits.size >= 2 ? 'hi' : 'en';
+}
+
+/** Short spoken answers (D-108): the voice says the first sentences, then offers the rest; the whole answer stays on screen.
+ *  Investment answers keep one more sentence, so the "what it depends on" line is heard with the facts. */
+export const SPOKEN_MAX = 2;
+const MONEY_TOOLS = /^(?:portfolio_xray|advice_\w+|sip_calculator|emergency_fund|simulate_prepayment)$/;
+export const spokenMax = (tools: string[]) => (tools.some((t) => MONEY_TOOLS.test(t)) ? SPOKEN_MAX + 1 : SPOKEN_MAX);
+export const MORE_ASK = { hi: 'और बताऊँ?', en: 'Want to hear more?' } as const;
+/** A short yes or no to "और बताऊँ?". Anything longer is a new question. */
+export const SAYS_YES = /^(?:हाँ|हां|हा|जी|जी हाँ|हाँ जी|हां जी|ज़रूर|जरूर|बताओ|बताइए|बताइये|और बताओ|और बताइए|aur batao|batao|haan|haan ji|han|ha|ji|yes|yeah|yep|yup|sure|ok|okay|go on|tell me more|more)[\s.!।,]*(?:please|प्लीज़)?[\s.!।]*$/i;
+export const SAYS_NO = /^(?:नहीं|नही|ना|बस|रहने दो|no|nope|nah|bas|nahi|nahin|that'?s all|that'?s it|no thanks)[\s.!।,]*(?:thanks|thank you|धन्यवाद)?[\s.!।]*$/i;
+
+/** Split what Munim will voice into what it says now and what it offers to say next. */
+export function splitSpoken(rest: string[], alreadySaid: number, max: number): { now: string[]; later: string[] } {
+  const room = Math.max(0, max - alreadySaid);
+  return { now: rest.slice(0, room), later: rest.slice(room) };
+}
+
 /** Float samples (−1..1) to 16-bit little-endian PCM. */
 export function toPcm16(f: Float32Array): ArrayBuffer {
   const out = new Int16Array(f.length);

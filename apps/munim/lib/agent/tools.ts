@@ -39,6 +39,8 @@ export interface ToolCtx { ds: Dataset; sid: string; lang: 'hi' | 'en'; adviceMo
   prefetch?: boolean;
   /** Voice (D-100): each sentence of the answer, as soon as it is written and has passed the checks, for speaking at once. */
   onSentence?: (sentence: string) => void;
+  /** On the phone only (D-108): what Munim remembers here, for memory_recall. Absent on the sample data and on the server. */
+  memory?: { goals: { title: string; target: number; byDate: string; monthlyNeeded: number }[]; reminders: { title: string; date: string; repeat?: 'weekly' | 'monthly' }[]; topics: { date: string; tools: string[] }[] };
   /** Voice (D-104): the name of each tool as it starts running, so the voice can say what Munim is looking at. */
   onTool?: (tool: string) => void }
 export interface ToolOutput { result: Record<string, unknown>; action?: Action }
@@ -69,7 +71,8 @@ export const TOOLS: Anthropic.Tool[] = [
   { name: 'advice_plan', description: 'What should I do next? Foundation-first guidance from the user\'s documents: card debt → high-interest loans → emergency fund → health cover → life cover → savings-type policies → invest the surplus by goal horizon. Each step has status, finding, recommendation and basis, plus a disclaimer to say once. Use for "what should I do", "kya karun", "salah do", priorities, or before any recommendation.', input_schema: obj({}) },
   { name: 'money_audit', description: 'What am I missing / where am I going wrong / what can I do better: one list of what is costing the user money, biggest first, in rupees a year (memberships with no matching orders in the statements, duplicate and trial charges, price rises, bank and card fees, spending spikes, regular-plan fund fees, unbooked tax-free gains, funds trailing an index fund, and for scope all the foundation gaps). Use for open "audit" questions.', input_schema: obj({ scope: S('all | spending (bank and card statements) | funds (mutual funds)', { enum: ['all', 'spending', 'funds'] }) }) },
   { name: 'sip_calculator', description: 'Future value of investing a fixed amount every day, month or year, or once, at an assumed yearly return (default 12%). Use for "how much will X become" questions. Illustration only; returns are not guaranteed.', input_schema: obj({ amount_rupees: N('Amount each time, in rupees'), every: S('day | month | year | once', { enum: ['day', 'month', 'year', 'once'] }), years: N('Number of years'), annual_return_pct: N('Assumed yearly return, default 12') }, ['amount_rupees', 'every', 'years']) },
-  { name: 'create_reminder', description: 'ACTION: save a reminder as a calendar event (.ics + Google Calendar link). Use when the user asks for a reminder or agrees to one.', input_schema: obj({ title: S('Short title, in the user language'), date: S('YYYY-MM-DD'), time: S('HH:MM 24h, optional'), notes: S('Optional details') }, ['title', 'date']) },
+  { name: 'create_reminder', description: 'ACTION: save a reminder as a calendar event (.ics + Google Calendar link). Use when the user asks for a reminder or agrees to one. For a follow-up that repeats (a weekly money check-in, a card bill or SIP date every month), set repeat.', input_schema: obj({ title: S('Short title, in the user language'), date: S('YYYY-MM-DD (the first time)'), time: S('HH:MM 24h, optional'), notes: S('Optional details'), repeat: S('Optional: weekly or monthly', { enum: ['weekly', 'monthly'] }) }, ['title', 'date']) },
+  { name: 'memory_recall', description: 'What Munim remembers on this phone: the user\'s saved savings goals, their reminders, and the topics of their last few conversations (dates and what was looked at, never their words). Use when they mention a goal, a reminder or an earlier conversation ("my goal", "last time", "what did we discuss"). Empty on the sample data.', input_schema: obj({}, []) },
   { name: 'draft_email', description: 'ACTION: draft an email for the user to review and send. Kinds: cancel_subscription, refund_request (trial charged), dispute_charge (duplicate debit), rate_reduction (loan), claim_intimation (health), fee_waiver.', input_schema: obj({ kind: S('Draft type', { enum: ['cancel_subscription', 'refund_request', 'dispute_charge', 'rate_reduction', 'claim_intimation', 'fee_waiver'] }), merchant: S('Merchant for subscription/refund/dispute'), loan: S('Loan type or lender for rate_reduction'), member: S('For claim_intimation'), condition: S('For claim_intimation'), admission: S('planned or emergency'), admit_date: S('YYYY-MM-DD') }, ['kind']) },
   { name: 'create_savings_goal', description: 'ACTION: create a savings goal and compute the monthly amount needed vs. the average monthly surplus.', input_schema: obj({ name: S('Goal name'), target_rupees: N('Target amount in rupees'), by_date: S('YYYY-MM-DD') }, ['name', 'target_rupees', 'by_date']) },
   { name: 'save_prepayment_plan', description: 'ACTION: save a loan prepayment plan with a calendar reminder on the chosen date.', input_schema: obj({ loan: S('Loan type or lender'), amount_rupees: N('Amount in rupees'), date: S('YYYY-MM-DD for the prepayment') }, ['loan', 'amount_rupees', 'date']) },
@@ -288,10 +291,18 @@ export async function runTool(name: string, input: Record<string, unknown>, ctx:
     case 'create_reminder': {
       const date = String(input.date ?? '');
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { result: { error: 'date must be YYYY-MM-DD' } };
-      const a = ctx.addAction(ctx.sid, { kind: 'reminder', title: String(input.title ?? 'Reminder'), reminder: { date, time: input.time ? String(input.time) : undefined, notes: input.notes ? String(input.notes) : undefined } });
-      return { result: { done: true, already_existed: !!a.duplicate, action_id: a.id, title: a.title, date, calendar_file: ctx.icsUrl ? ctx.icsUrl(a) : `/api/actions/${a.id}/ics`, google_calendar: gcalLink(a) }, action: a };
+      const repeat = input.repeat === 'weekly' || input.repeat === 'monthly' ? input.repeat : undefined;
+      const a = ctx.addAction(ctx.sid, { kind: 'reminder', title: String(input.title ?? 'Reminder'), reminder: { date, time: input.time ? String(input.time) : undefined, notes: input.notes ? String(input.notes) : undefined, ...(repeat ? { repeat } : {}) } });
+      return { result: { done: true, already_existed: !!a.duplicate, action_id: a.id, title: a.title, date, ...(repeat ? { repeats: repeat } : {}), calendar_file: ctx.icsUrl ? ctx.icsUrl(a) : `/api/actions/${a.id}/ics`, google_calendar: gcalLink(a) }, action: a };
     }
     case 'draft_email': return draft(input, ctx);
+    case 'memory_recall': {
+      const m = ctx.memory;
+      if (!m) return { result: { available: false, note: 'Nothing is remembered on the sample data.' } };
+      return { result: { goals: m.goals.slice(0, 5).map((g) => ({ goal: defang(g.title), target: R(g.target), by: g.byDate, monthly_needed: R(g.monthlyNeeded) })),
+        reminders: m.reminders.slice(0, 8).map((r) => ({ reminder: defang(r.title), date: r.date, ...(r.repeat ? { repeats: r.repeat } : {}) })),
+        recent_topics: m.topics.slice(0, 5).map((t) => ({ date: t.date, looked_at: t.tools })) } };
+    }
     case 'create_savings_goal': {
       const target = Math.round(Number(input.target_rupees) * 100); const by = String(input.by_date ?? '');
       const months = Math.max(1, Math.ceil(daysBetween(asOf, by) / 30.44));

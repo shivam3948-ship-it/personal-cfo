@@ -76,6 +76,8 @@ export const CASES: EvalCase[] = [
   c('act-remind', 'action', ['Remind me to pay my card bill on 30 Oct', 'yes'], ['create_reminder']),
   c('act-cancel', 'action', ['Draft an email to cancel cult.fit', 'yes'], ['draft_email']),
   c('act-goal', 'action', ['I want to save 1 lakh for a trip by March', 'haan'], ['create_savings_goal']),
+  c('act-monthly', 'action', 'Remind me every month to pay my card bill before it is due', ['create_reminder']), // D-108: a repeating follow-up
+  c('mem-sample', 'missing_data', 'What did we talk about last time?', undefined, { honest: true }), // D-108: nothing is remembered on the sample, so say so
   c('act-prepay', 'action', ['Should I prepay ₹50,000 on my car loan?', 'haan, plan save kar do'], ['save_prepayment_plan']),
 
   // ---- the data can't answer: say so, invent nothing ----

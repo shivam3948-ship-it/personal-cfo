@@ -130,3 +130,7 @@ After a pause, Munim answers at once only if what it heard reads as a finished q
 
 ## Answer first, one caution at most (D-107, 15 Nov)
 Munim answers the question before anything else, keeps at most one short caution and never opens with what it can't do; when a user asks whether to sell a falling fund, it gives the facts that decide it and what the choice depends on, and leaves the choice with them. Principle: the user came for an answer, so it goes first, and caveats are rationed so the one that matters is heard (our label: "answer, then the one caution"). It applies the inverted pyramid (the most important information first; the name is a common journalism term, not from a UX source) and the aesthetic and minimalist design heuristic (Nielsen's; the name is from that source): every extra caution competes with the answer for attention, especially in speech.
+
+
+## Say less, offer more (D-108, 16 Nov)
+In voice, Munim says the first two sentences of an answer and then asks "और बताऊँ?"; a yes speaks the rest, and the full answer is always on screen. Principle: speech is linear and can't be skimmed, so the listener gets the answer and chooses whether to hear the detail (our label: "say less, offer more"). It applies progressive disclosure (the name is a common interaction-design term, used by the Nielsen Norman Group; not our label) and the limits of working memory for spoken lists (Cowan's "magical number four", Behavioral and Brain Sciences, 2001; the name is from that source): two or three spoken facts are about what a listener can hold.
