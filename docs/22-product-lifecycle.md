@@ -23,7 +23,7 @@ Supersedes the phase order in [07](07-roadmap.md) where they differ; phases (P1â
 
 ## Rules for moving between stages
 1. Write the pass bar before the stage starts; don't move it after seeing results.
-2. One stage at a time for the product; the career track (buildathon, Bachatt case study) runs in parallel and does not count as validation.
+2. One stage at a time for the product; the buildathon and case studies run in parallel and does not count as validation.
 3. If a Stage 4 kill signal appears (users won't fetch a CAS, or don't trust the numbers), revisit the wedge (D-OPEN-1 options) before building more screens.
 
 ## Next 2 weeks (Stage 3 â†’ 4)

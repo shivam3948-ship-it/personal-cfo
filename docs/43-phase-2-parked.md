@@ -1,6 +1,6 @@
 # 43 · Phase 2: parked features
 
-Phase 1 is frozen (D-074, 29 Oct 2026): no new features until Munim has been shared with Bachatt's CPO and real users have used it. This file is the only place a new idea goes. Nothing moves from here into a sprint until it passes the gate below.
+Phase 1 is frozen (D-074, 29 Oct 2026): no new features until Munim has been shared with a first wealthtech reviewer and real users have used it. This file is the only place a new idea goes. Nothing moves from here into a sprint until it passes the gate below.
 
 ## The gate (every item, every time)
 An item comes back only when all four are true, written down in its row:

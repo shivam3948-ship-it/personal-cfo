@@ -99,7 +99,7 @@ Most 5★ reviews are written before the user has ever withdrawn.
 ## What this changes in the prototype
 - **New:** "पूरा पैसा एक साथ क्यों नहीं?" uses `instantSplit()` to say how much comes now and how much on the next working day. The maths is in integer paise, and the numbers are checked.
 - **Already built** (docs/26): withdrawal status from the request record, with a bank reference once paid and a person in one step if it's late; a debit check; a value breakdown.
-- **For the pitch** (see `/research/bachatt`):
+- **Where a voice agent could help** (see `/research/bachatt`):
   1. A withdrawal tracker you can ask.
   2. Say the instant-access split before the user withdraws.
   3. Explain each charge the moment it hits.
