@@ -1,0 +1,114 @@
+'use client';
+// Mounts a compiled design screen with live data: fetches its view model, follows the system light/dark setting,
+// and maps fetch status to the design's own loading / error states.
+import { useEffect, useState, type ComponentType } from 'react';
+import { track } from '@/lib/analytics';
+import { getProfile, variantOf, type Profile } from '@/lib/local/profile';
+import { resolveTheme, THEME_EVENT } from '@/lib/local/theme';
+
+type Props = Record<string, unknown>;
+
+export function useTheme(): 'light' | 'dark' {
+  const [t, setT] = useState<'light' | 'dark'>('light');
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    // ?theme= pins it for this tab (testing); otherwise your choice on the You page; otherwise the phone (lib/local/theme.ts)
+    const set = () => { const v = resolveTheme(mq.matches); setT(v); document.body.className = 't-' + v; };
+    set(); mq.addEventListener('change', set); window.addEventListener(THEME_EVENT, set);
+    return () => { mq.removeEventListener('change', set); window.removeEventListener(THEME_EVENT, set); };
+  }, []);
+  return t;
+}
+
+/** `check` lets a page reject data it can't show (e.g. an unknown category in the URL) with a message instead of a crash. */
+/** `patch` lets a page fold in data that lives only on this phone (your CAS) before the screen renders; it never goes to the server. */
+/** A patched view marks `_mine: true` when it now shows your data, and may set `_state` (e.g. 'empty'). Anything else is the
+ *  sample family, so a "Sample data" bar sits above it (D-049); `sample` marks static screens that are sample-only. */
+export function Screen({ C, view, props = {}, check, patch, sample = false }: { C: ComponentType<Props>; view?: string; props?: Props; check?: (data: unknown) => string | null; patch?: (data: Record<string, unknown>) => Promise<Record<string, unknown>>; sample?: boolean }) {
+  const theme = useTheme();
+  const [prof, setProf] = useState<Profile | null | undefined>(undefined);
+  useEffect(() => { setProf(getProfile()); }, []);
+  const [data, setData] = useState<unknown>(view ? undefined : {});
+  const [err, setErr] = useState<string | null>(null);
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    // The two modes never mix (the owner, 15 Nov): the sample family is only ever the sample family, and on your own data a
+    // screen is folded into an EMPTY frame (?base=empty), so no sample figure can sit beside yours. A screen that can't show
+    // your data yet says so instead of falling back to the sample.
+    const mine = getProfile()?.start === 'mine';
+    if (mine && (sample || !view || !patch)) { setData({ _notMine: sample ? 'later' : 'add' }); track('screen_viewed', { screen: view ?? 'static', mine: true }); return; }
+    if (!view) { track('screen_viewed', { screen: 'static' }); return; }
+    let live = true;
+    fetch(`/api/view/${view}${mine ? '?base=empty' : ''}`, { cache: 'no-store' }).then(async (r) => {
+      const j = await r.json(); if (!r.ok) throw new Error(j.error ?? 'Could not load this screen.');
+      const v = mine ? await patch!(j.view) : j.view; // an error shows the error state, never the sample
+      if (live) { setData(mine && !(v as Record<string, unknown>)._mine ? { _notMine: 'add' } : v); setErr(null); track('screen_viewed', { screen: view }); }
+    }).catch((e) => { if (live) { setErr((e as Error).message); track('view_load_failed', { screen: view }); } });
+    return () => { live = false; };
+  }, [view, n]);
+  if (data === undefined || prof === undefined) return err ? <Failed message={err} onRetry={() => setN(n + 1)} /> : <Loading />;
+  const bad = check?.(data);
+  if (bad) return <Failed message={bad} onRetry={() => { location.href = '/spends'; }} retryLabel="Back" />;
+  const d = data as Record<string, unknown>;
+  if (d._notMine) return <NotOnYourData kind={d._notMine as 'later' | 'add'} hi={prof?.lang === 'hi'} />;
+  const showsSample = sample || (!!view && !d._mine);
+  const screen = <C {...props} variant={props.variant ?? variantOf(prof)} theme={theme} state={(d._state as string) ?? 'ready'} data={data} />;
+  if (!showsSample) return screen;
+  return <div style={{ ['--screen-h' as string]: `calc(100dvh - ${BAR}px)` }}><SampleBar hi={prof?.lang === 'hi'} />{screen}</div>;
+}
+
+export const BAR = 44;
+/** One line, on every screen that shows the sample family, so it never passes for your money. */
+export function SampleBar({ hi }: { hi: boolean }) {
+  return (
+    <div role="note" style={{ height: BAR, boxSizing: 'border-box', maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px', background: 'var(--mari-tint)', color: 'var(--mari-ink)', fontSize: 13.5 }}>
+      <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mari)', flex: 'none' }} />
+      <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><b style={{ fontWeight: 600 }}>{hi ? 'नमूना डेटा' : 'Sample data'}</b>{hi ? ' · रोहन, एक काल्पनिक परिवार' : ' · Rohan, a made-up family'}</span>
+      <a href="/invest/add" onClick={() => track('sample_bar_add_tapped')} style={{ flex: 'none', fontWeight: 600, color: 'var(--link)', textDecoration: 'none', minHeight: 40, display: 'inline-flex', alignItems: 'center' }}>{hi ? 'अपना जोड़ें ›' : 'Add yours ›'}</a>
+    </div>
+  );
+}
+
+/** On your own data, a screen with nothing of yours to show: never the sample family in its place (15 Nov). `later`: the screen
+ *  only exists for the sample so far; `add`: it needs a statement or a CAS you haven't added. */
+export function NotOnYourData({ kind, hi }: { kind: 'later' | 'add'; hi: boolean }) {
+  const t = kind === 'later'
+    ? (hi ? ['यह पेज अभी सिर्फ़ नमूना परिवार के लिए है', 'आपके अपने डेटा पर यह जल्द आएगा। नमूना देखने के लिए "आप" पेज पर नमूना परिवार चुनें।'] : ['This page only works on the sample family so far', 'It isn’t built for your own data yet. To look at it, switch to the sample family on the You page.'])
+    : (hi ? ['इसके लिए आपका स्टेटमेंट चाहिए', 'बैंक या कार्ड स्टेटमेंट, या म्यूचुअल फ़ंड CAS जोड़ें। सब कुछ आपके फ़ोन पर पढ़ा जाता है।'] : ['This needs your statement', 'Add a bank or card statement, or your mutual fund CAS. Everything is read on your phone.']);
+  return (
+    <div role="status" style={{ maxWidth: 480, margin: '0 auto', padding: '48px 20px', display: 'grid', gap: 12, textAlign: 'center' }}>
+      <b style={{ fontSize: 18, fontWeight: 600 }}>{t[0]}</b>
+      <span style={{ fontSize: 14.5, color: 'var(--muted)' }}>{t[1]}</span>
+      {kind === 'add' && <a href="/invest/add" style={{ justifySelf: 'center', fontWeight: 600, color: 'var(--link)', textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>{hi ? 'स्टेटमेंट जोड़ें ›' : 'Add a statement ›'}</a>}
+      <a href="/" style={{ justifySelf: 'center', color: 'var(--link)', textDecoration: 'none', minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>{hi ? 'आज पर वापस' : 'Back to Today'}</a>
+    </div>
+  );
+}
+
+/** Hindi for the wrapper's own loading and error lines; read after mount (the profile lives in this browser). */
+function useHi() { const [hi, setHi] = useState(false); useEffect(() => { setHi(getProfile()?.lang === 'hi'); }, []); return hi; }
+
+function Loading() {
+  const hi = useHi();
+  return (
+    <div aria-busy="true" style={{ maxWidth: 480, margin: '0 auto', padding: '16px', display: 'grid', gap: 12 }}>
+      <span className="skel" style={{ height: 32, width: '40%' }} />
+      <span className="skel" style={{ height: 180, borderRadius: 22 }} />
+      <span className="skel" style={{ height: 220, borderRadius: 22 }} />
+      <span style={{ fontSize: 13.5, color: 'var(--muted)', textAlign: 'center' }}>{hi ? 'आपका हिसाब जोड़ा जा रहा है…' : 'Adding up your money…'}</span>
+    </div>
+  );
+}
+
+function Failed({ message, onRetry, retryLabel }: { message: string; onRetry: () => void; retryLabel?: 'Retry' | 'Back' }) {
+  const hi = useHi();
+  const label = (retryLabel ?? 'Retry') === 'Back' ? (hi ? 'वापस' : 'Back') : (hi ? 'फिर कोशिश करें' : 'Retry');
+  return (
+    <div role="alert" style={{ maxWidth: 480, margin: '0 auto', padding: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--err-tint)', color: 'var(--err-ink)', borderRadius: 16, padding: '6px 6px 6px 14px' }}>
+        <span style={{ flex: 1, fontSize: 14 }}>{message}</span>
+        <button type="button" onClick={onRetry} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 0, background: 'var(--card)', color: 'var(--ink)', fontSize: 14, fontWeight: 600 }}>{label}</button>
+      </div>
+    </div>
+  );
+}

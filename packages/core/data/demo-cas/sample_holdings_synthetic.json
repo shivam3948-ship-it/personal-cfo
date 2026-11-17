@@ -1,0 +1,57 @@
+{
+ "_note": "SYNTHETIC sample holdings (% of fund) for the demo family only. Not real fund data. The real build reads AMFI monthly portfolio disclosures (DECISIONS D-OPEN-3).",
+ "asOf": "Sep 2026 (synthetic)",
+ "funds": {
+  "Banyan Nifty 50 Index Fund": {
+   "HDFC Bank": 13.0,
+   "ICICI Bank": 9.0,
+   "Reliance Industries": 8.5,
+   "Infosys": 5.0,
+   "Bharti Airtel": 4.5,
+   "Larsen & Toubro": 4.0,
+   "ITC": 3.5,
+   "TCS": 3.0,
+   "Axis Bank": 3.0,
+   "Kotak Mahindra Bank": 3.0,
+   "State Bank of India": 3.0,
+   "Mahindra & Mahindra": 2.5
+  },
+  "Kestrel Flexi Cap Fund": {
+   "HDFC Bank": 9.0,
+   "ICICI Bank": 8.0,
+   "Reliance Industries": 5.0,
+   "Infosys": 4.0,
+   "Bharti Airtel": 4.0,
+   "Axis Bank": 3.5,
+   "Larsen & Toubro": 3.0,
+   "Kotak Mahindra Bank": 2.0,
+   "Mahindra & Mahindra": 2.0,
+   "Persistent Systems": 3.0,
+   "Max Healthcare": 2.5,
+   "Trent": 2.5,
+   "Dixon Technologies": 2.0
+  },
+  "Teak ELSS Tax Saver Fund": {
+   "HDFC Bank": 8.0,
+   "ICICI Bank": 7.0,
+   "Reliance Industries": 6.0,
+   "Infosys": 5.0,
+   "TCS": 4.0,
+   "ITC": 4.0,
+   "Larsen & Toubro": 3.5,
+   "State Bank of India": 3.0,
+   "Axis Bank": 3.0,
+   "Bharti Airtel": 3.0,
+   "Cipla": 2.0,
+   "Tata Motors": 2.0
+  },
+  "Monsoon Small Cap Fund": {
+   "Karur Vysya Bank": 2.5,
+   "Cholamandalam Financial": 2.2,
+   "Navin Fluorine": 2.0,
+   "Kaynes Technology": 2.0,
+   "Brigade Enterprises": 1.8,
+   "Multi Commodity Exchange": 1.8
+  }
+ }
+}

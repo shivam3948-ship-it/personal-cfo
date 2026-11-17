@@ -1,0 +1,165 @@
+'use client';
+// Ask Munim on your own data (D-050, option A). Everything that reads your statements runs here, on the phone:
+//   · the tools (spending, leaks, loans, safety net…) compute on your statements and CAS in this browser
+//   · with an API key on the server: the same Claude loop as the sample family, but each model call goes through
+//     /api/ask/relay, which only ever sees your question and the tool results after forLlm() (no files, rows, payee names
+//     or identifiers). The server adds the system prompt and the advice mode itself.
+//   · without a key (503): the rules engine answers right here, and nothing leaves the phone at all.
+// Actions (reminders, drafts, goals) are kept in this browser.
+import type Anthropic from '@anthropic-ai/sdk';
+import type { LlmClient } from '@core/llm';
+import { detectLang } from '@core/agent/lang';
+import { asOfDate } from '@core/finance/picture';
+import { forLlm } from '@core/privacy/forLlm';
+import { counterpartyNames } from '@core/privacy/counterparties';
+import { redact } from '@core/privacy/redact';
+import { emptyDataset, type Dataset } from '@core/types';
+import { fundLabels, guardAnswer, runClaude, type AgentReply, type Turn } from '@/lib/agent/claude';
+import { knownProducts } from '@/lib/agent/brands';
+import type { JudgeInput, Verdict } from '@/lib/agent/judge';
+import type { Picks } from '@/lib/advicePicks';
+import { runOffline } from '@/lib/agent/offline';
+import type { ToolCtx } from '@/lib/agent/tools';
+import { actionKey, toIcs, type Action } from '@/lib/actionsCore';
+import type { AdviceMode } from '@/lib/advice';
+import { myDataset } from './statements';
+import { loadCas } from './cas';
+import { getProfile } from './profile';
+import { idbGet, idbPut } from './idb';
+import { loadTopics, rememberTopic } from './memory';
+import { TOOLS } from '@/lib/agent/tools';
+import { PROMPT_VERSION } from '@/lib/agent/prompt';
+import { traceId } from '@/lib/telemetryCore';
+import { scrub } from './scrub';
+
+/** Your statements and CAS as one dataset, or null when nothing has been added on this phone. */
+/** On your own data with nothing added yet: Munim asks for a statement, never answers about the sample family (15 Nov). */
+export const NO_DATA = 'Add a statement first: on your own data, Munim answers only from what you add.';
+export const NO_DATA_HI = 'पहले एक स्टेटमेंट जोड़ें: आपके अपने डेटा पर मुनीम सिर्फ़ उसी से जवाब देता है जो आप जोड़ते हैं।';
+export async function myData(): Promise<Dataset | null> {
+  const [ds, cas] = await Promise.all([myDataset(), loadCas()]);
+  if (!ds && !cas) return null;
+  const d = ds ?? emptyDataset('Your statements');
+  if (cas) d.portfolio = { asOf: cas.asOf, holdings: cas.holdings, checks: [], source: 'Your CAS' };
+  return d;
+}
+
+// ---- actions, kept in this browser ----
+const KEY = 'actions';
+let actions: Action[] | null = null;
+async function loadActions() { actions = (await idbGet<Action[]>(KEY)) ?? []; return actions; } // read each time: deleting your data clears it (D-108)
+function addLocal(_sid: string, a: Omit<Action, 'id' | 'createdAt'>): Action & { duplicate?: boolean } {
+  const list = actions ?? (actions = []);
+  const k = actionKey(a); const same = list.find((x) => actionKey(x) === k);
+  if (same) return { ...same, duplicate: true };
+  const act: Action = { ...a, id: Math.random().toString(36).slice(2, 10), createdAt: new Date().toISOString() };
+  list.unshift(act); void idbPut(KEY, list); return act;
+}
+const icsUrl = (a: Action) => { try { return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(toIcs(a)); } catch { return ''; } };
+
+/** A stand-in LLM client: forwards only the messages (question + filtered tool results) to the relay. */
+function relayClient(lang: 'hi' | 'en', asOf: string, seen: { mode?: AdviceMode }, via?: 'voice' | 'typed'): LlmClient {
+  const asMessage = (j: { content: unknown; stop_reason: unknown; model: unknown; mode?: AdviceMode; llm?: Record<string, number> }) => {
+    if (j.mode === 'guided' || seen.mode === 'guided') seen.mode = 'guided'; else if (j.mode) seen.mode = j.mode; // the strictest mode the server used
+    const u = j.llm ?? {};
+    return { content: j.content, stop_reason: j.stop_reason, model: j.model, usage: { input_tokens: u.input ?? 0, output_tokens: u.output ?? 0, cache_read_input_tokens: u.cacheRead ?? 0, cache_creation_input_tokens: u.cacheWrite ?? 0 } } as unknown as Anthropic.Message;
+  };
+  return { messages: {
+    // Voice (D-100): the relay streams the model's text as it is written; the phone checks each sentence before it is spoken
+    ...(via === 'voice' ? { streamText: async (body: Anthropic.MessageCreateParamsNonStreaming, onText: (d: string) => void) => {
+      const r = await relayFetch({ method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via, stream: true }) });
+      if (r.status === 503) { noKey = true; throw new NoKey(); }
+      if (!r.ok || !r.body) { await r.json().catch(() => ({})); throw new RelayError(r.status); }
+      const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
+      for (;;) {
+        const { done, value } = await rd.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let k: number;
+        while ((k = buf.indexOf('\n')) >= 0) {
+          const ln = buf.slice(0, k); buf = buf.slice(k + 1); if (!ln.trim()) continue;
+          const m = JSON.parse(ln);
+          if (m.t === 'text') onText(m.d); else if (m.t === 'final') return asMessage(m); else if (m.t === 'error') throw new RelayError(502);
+        }
+      }
+      throw new Error('relay stream ended early');
+    } } : {}),
+    create: async (body) => {
+    const r = await relayFetch({ method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: body.messages, lang, asOf, via }) });
+    if (r.status === 503) { noKey = true; throw new NoKey(); }
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new RelayError(r.status);
+    if (j.mode === 'guided' || seen.mode === 'guided') seen.mode = 'guided'; else if (j.mode) seen.mode = j.mode; // the strictest mode the server used
+    const u = j.llm ?? {}; // timing and token counts only; the model the relay actually used (voice turns may differ)
+    return { content: j.content, stop_reason: j.stop_reason, model: j.model, usage: { input_tokens: u.input ?? 0, output_tokens: u.output ?? 0, cache_read_input_tokens: u.cacheRead ?? 0, cache_creation_input_tokens: u.cacheWrite ?? 0 } } as Anthropic.Message;
+  } } };
+}
+class NoKey extends Error { constructor() { super('no_key'); } }
+let noKey = false; // after one 503, this visit stays on the phone's engine (no pointless calls)
+let judgeOff = false; // the AI check said 503 (off or no key): the word patterns alone this visit
+
+export interface LocalReply { why?: 'bad_request' | 'rate_limited' | 'too_long' | 'model_error' | 'network' | 'other'; spoken: string; answer: string; lang: 'hi' | 'en'; engine: AgentReply['engine']; check: AgentReply['check']; tools: string[]; actions: Action[]; where: 'phone' | 'phone+relay';
+  trace: string; model?: string; prompt: string; ms: number; repaired: boolean; fallback: boolean;
+  /** The advice mode this answer was given in (the server's, when the relay answered): the footer follows it (review 2, N9). */
+  mode: AdviceMode; guard?: AgentReply['guard']; guardMs?: number;
+  /** token counts only (D-089): what the owner's log turns into a cost */
+  llm?: AgentReply['llm']; judge?: AgentReply['judgeLlm'];
+  /** the question and answer with your name and payees removed: the only text the owner's log may keep from your data */
+  log: { question: string; answer: string } }
+
+/** On your own data the advice mode is 'guided' (no fund picks, the SEBI line), whatever the public test switch says:
+ *  'demo' never reads real data, and 'internal' needs a server-side allow-list we don't have yet (compliance review, D-050). */
+/** Whether the server turned prefetch on for everyone (D-095): asked once per page load. */
+let prefetchAsk: Promise<'on' | 'test' | 'off'> | null = null;
+const prefetchOnServer = () => (prefetchAsk ??= fetch('/api/ai', { cache: 'no-store' }).then((r) => r.json()).then((j) => (j.prefetch === 'on' || j.prefetch === 'test' ? j.prefetch : 'off') as 'on' | 'test' | 'off').catch(() => 'off' as const));
+
+/** A relay failure, by status only: the owner's log says why the phone fell back, never the message (16 Nov). */
+class RelayError extends Error { constructor(readonly status: number) { super(`relay ${status}`); } }
+/** Only a failed fetch counts as "network"; any other TypeError is a bug and logs as "other" (review, 16 Nov). */
+const relayFetch = (init: RequestInit) => fetch('/api/ask/relay', init).catch(() => { throw new RelayError(0); });
+const whyOf = (e: unknown): NonNullable<LocalReply['why']> => e instanceof RelayError ? (e.status === 0 ? 'network' : e.status === 400 ? 'bad_request' : e.status === 429 ? 'rate_limited' : e.status === 413 ? 'too_long' : e.status >= 500 ? 'model_error' : 'other') : 'other';
+
+export async function askLocal(history: Turn[], via?: 'voice' | 'typed', onSentence?: (s: string) => void, onTool?: (tool: string) => void): Promise<LocalReply> {
+  const ds = await myData(); if (!ds) throw new Error(NO_DATA);
+  await loadActions();
+  const p = getProfile();
+  const last = history.filter((t) => t.role === 'user').at(-1)?.content ?? '';
+  const lang = detectLang(last, 'auto');
+  // guided on your own data, unless the owner switched advice on for this browser (D-066; the server checks the key)
+  const adviceMode: AdviceMode = (await fetch('/api/advice', { cache: 'no-store' }).then((r) => r.json()).catch(() => ({}))).advice === true ? 'private' : 'guided';
+  const names = [...(p?.name ? [p.name] : []), ...counterpartyNames(ds.txns)]; // your name and every payee/sender your statements name
+  const picks = adviceMode === 'private' ? async () => { const r = await fetch('/api/advice/picks', { cache: 'no-store' }); if (!r.ok) throw new Error('no picks'); return r.json() as Promise<Picks>; } : undefined;
+  // the AI check (D-069) runs on the server: the phone sends only the answer's sentences and names, already redacted
+  const judge = async (input: JudgeInput): Promise<Verdict | null> => {
+    if (noKey || judgeOff) return null;
+    const r = await fetch('/api/ask/judge', { method: 'POST', headers: { 'content-type': 'application/json' }, signal: AbortSignal.timeout(5_000),
+      body: JSON.stringify({ sentences: input.sentences.map((x) => redact(x, { names })), held: input.held, said: input.said, lang: input.lang, mode: adviceMode }) }).catch(() => null);
+    if (r?.status === 503) judgeOff = true; // switched off or no key: don't ask again this visit
+    return r && r.ok ? (r.json() as Promise<Verdict>) : null; // any failure: the word patterns decide (they always run)
+  };
+  // D-095: the server decides; a browser's #prefetch=on only counts while the server is in test mode (review, 8 Nov)
+  const server = await prefetchOnServer();
+  const prefetch = server === 'on' || (server === 'test' && /(?:^|;\s*)munim_prefetch=on(?:;|$)/.test(document.cookie));
+  // D-108: what Munim remembers on this phone, for memory_recall (goal and reminder titles go through the same sanitize as any tool result)
+  const saved = actions ?? [];
+  const memory: ToolCtx['memory'] = { topics: await loadTopics(),
+    goals: saved.filter((a) => a.kind === 'goal' && a.goal).map((a) => ({ title: a.title, target: a.goal!.target, byDate: a.goal!.byDate, monthlyNeeded: a.goal!.monthlyNeeded, savedOn: a.createdAt.slice(0, 10) })),
+    reminders: saved.filter((a) => a.kind === 'reminder' && a.reminder).map((a) => ({ title: a.title, date: a.reminder!.date, ...(a.reminder!.repeat ? { repeat: a.reminder!.repeat } : {}) })) };
+  const ctx: ToolCtx = { ds, sid: 'phone', lang, adviceMode, addAction: addLocal, icsUrl, sanitize: (r) => forLlm(r, names), names, judge, memory, ...(picks ? { picks } : {}), ...(prefetch ? { prefetch } : {}),
+    // voice (D-100): a checked sentence goes to the voice service with your name and payees removed, like the finished answer
+    ...(onSentence ? { onSentence: (x: string) => onSentence(scrub(x, names)) } : {}), ...(onTool ? { onTool } : {}) };
+  let r: AgentReply; let where: LocalReply['where'] = 'phone+relay'; let fallback = false; let why: LocalReply['why'];
+  const t0 = Date.now();
+  if (/(?:^|;\s*)munim_ai=off(?:;|$)/.test(document.cookie)) noKey = true; // ?ai=off (D-062): don't even ask the relay
+  const seen: { mode?: AdviceMode } = {};
+  try {
+    if (noKey) throw new NoKey(); r = await runClaude(history, ctx, relayClient(lang, asOfDate(ds), seen, via));
+    // the server decides the mode (D-066 review, #5): if the relay answered in guided mode (the advice cookie expired, or advice
+    // was switched off) while this phone thought advice was on, apply the guided guard to what the model said
+    if (seen.mode === 'guided' && adviceMode !== 'guided') r = { ...r, answer: guardAnswer(r.answer, 'guided', fundLabels(ds.portfolio?.holdings ?? [], lang), knownProducts(ds.portfolio?.holdings ?? [], ds.policies ?? [], [], history.filter((t) => t.role === 'user').map((t) => t.content)), lang) };
+  }
+  catch (e) { fallback = !(e instanceof NoKey); why = fallback ? whyOf(e) : undefined; r = await runOffline(history, ctx); where = 'phone'; } // no key, offline or a failed call: the rules engine, on the phone
+  void rememberTopic(r.trace.map((t) => t.tool).filter((n) => TOOLS.some((t) => t.name === n))); // D-108: real tool names and today's date, never the words
+  const spoken = scrub(r.answer, names); // what may go to the voice service
+  const log = { question: scrub(last, names), answer: spoken }; // and to the owner's log (D-089): your name and every payee removed
+  return { spoken, answer: r.answer, lang: r.lang, engine: r.engine, check: r.check, tools: r.trace.map((t) => t.tool), actions: r.actions, where,
+    trace: traceId(), model: r.model, prompt: PROMPT_VERSION, ms: Date.now() - t0, repaired: !!r.repaired, fallback, ...(why ? { why } : {}), mode: seen.mode === 'guided' ? 'guided' : adviceMode, guard: r.guard, guardMs: r.guardMs, llm: r.llm, judge: r.judgeLlm, log };
+}

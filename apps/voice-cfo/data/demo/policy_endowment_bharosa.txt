@@ -1,0 +1,16 @@
+BHAROSA LIFE INSURANCE CO. LTD (fictional)
+POLICY SCHEDULE - BHAROSA JEEVAN NIDHI (Endowment, non-linked, participating)
+
+Life Assured: Rohan Mehta
+Policy Number: XXXXXX8812
+Policy Type: Endowment Plan
+Sum Assured: Rs 8,00,000
+Monthly Premium: Rs 5,000.00 (Rs 60,000 per year)
+Premium Frequency: Monthly (NACH, 10th of every month)
+Policy Start Date: 10-Apr-2022
+Policy Term: 20 years    Premium Paying Term: 20 years
+Maturity Date: 10-Apr-2042
+Benefit Illustration (as given by the insurer; not guaranteed):
+  Maturity value at assumed investment return of 4% p.a.: Rs 12,60,000
+  Maturity value at assumed investment return of 8% p.a.: Rs 19,50,000
+Death Benefit: Sum Assured plus accrued bonuses.

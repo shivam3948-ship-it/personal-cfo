@@ -1,0 +1,49 @@
+name: Voice relay
+# Builds, deploys and live-checks Munim's voice relay on Fly.io (D-100). Needs the FLY_API_TOKEN and SARVAM_API_KEY secrets.
+on:
+  push:
+    branches: [main]
+    paths: ['services/voice/**', '.github/workflows/voice.yml']
+  workflow_dispatch:
+concurrency: { group: voice-relay, cancel-in-progress: false }
+permissions: { contents: read }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: services/voice } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci --no-audit --no-fund
+      - run: npx tsc --noEmit
+      - run: npx vitest run
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: services/voice } }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secrets present
+        env: { FLY_API_TOKEN: "${{ secrets.FLY_API_TOKEN }}", SARVAM_API_KEY: "${{ secrets.SARVAM_API_KEY }}" }
+        run: |
+          test -n "$FLY_API_TOKEN" || { echo "FLY_API_TOKEN secret missing"; exit 1; }
+          test -n "$SARVAM_API_KEY" || { echo "SARVAM_API_KEY secret missing"; exit 1; }
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Create the app once
+        env: { FLY_API_TOKEN: "${{ secrets.FLY_API_TOKEN }}" }
+        run: flyctl status --app munim-voice >/dev/null 2>&1 || flyctl apps create munim-voice --org personal
+      - name: Sarvam key as a Fly secret
+        env: { FLY_API_TOKEN: "${{ secrets.FLY_API_TOKEN }}", SARVAM_API_KEY: "${{ secrets.SARVAM_API_KEY }}" }
+        run: printf 'SARVAM_API_KEY=%s\n' "$SARVAM_API_KEY" | flyctl secrets import --app munim-voice --stage
+      - name: Deploy
+        env: { FLY_API_TOKEN: "${{ secrets.FLY_API_TOKEN }}" }
+        run: flyctl deploy --remote-only --app munim-voice --ha=false
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci --no-audit --no-fund
+      - name: Live check against real Sarvam
+        env:
+          SARVAM_API_KEY: ${{ secrets.SARVAM_API_KEY }}
+          RELAY_URL: wss://munim-voice.fly.dev/v1
+        run: node test/live.mjs

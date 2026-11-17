@@ -1,0 +1,76 @@
+{
+  "opening": 9825035,
+  "closing": 8707565,
+  "smsClosing": 14176365,
+  "bankRows": 133,
+  "bankDebits": 44736070,
+  "bankCredits": 43618600,
+  "loans": {
+    "car": {
+      "emi": 1260100,
+      "principal": 60000000,
+      "rate": 9.5,
+      "n": 60,
+      "first": "2024-04-05"
+    },
+    "pl": {
+      "emi": 1018100,
+      "principal": 30000000,
+      "rate": 13.5,
+      "n": 36,
+      "first": "2026-01-20"
+    }
+  },
+  "outstandingSep30": {
+    "car": 33532407,
+    "pl": 23591597
+  },
+  "cards": [
+    {
+      "end": "2026-07-04",
+      "due": "2026-07-24",
+      "prev": 1842000,
+      "payments": 1842000,
+      "purchases": 1460300,
+      "credits": 21200,
+      "total": 1439100,
+      "minDue": 72000,
+      "rows": 12
+    },
+    {
+      "end": "2026-08-04",
+      "due": "2026-08-24",
+      "prev": 1439100,
+      "payments": 1439100,
+      "purchases": 1808500,
+      "credits": 14600,
+      "total": 1793900,
+      "minDue": 89700,
+      "rows": 13
+    },
+    {
+      "end": "2026-09-04",
+      "due": "2026-09-24",
+      "prev": 1793900,
+      "payments": 1793900,
+      "purchases": 5837900,
+      "credits": 147900,
+      "total": 5690000,
+      "minDue": 284500,
+      "rows": 15
+    },
+    {
+      "end": "2026-10-04",
+      "due": "2026-10-24",
+      "prev": 5690000,
+      "payments": 5690000,
+      "purchases": 3692600,
+      "credits": 58300,
+      "total": 3634300,
+      "minDue": 181700,
+      "rows": 14
+    }
+  ],
+  "utilisationPct": 28.5,
+  "smsTxns": 30
+}

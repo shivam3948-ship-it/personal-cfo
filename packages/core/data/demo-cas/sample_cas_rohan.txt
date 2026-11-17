@@ -1,0 +1,219 @@
+Consolidated Account Statement
+01-Jan-2021 To 15-Oct-2026
+Rohan Saffron
+Flat 12, Example Road, Bengaluru 560076
+Email Id: r*****@example.com  Mobile: +91XXXXXX3210
+
+PORTFOLIO SUMMARY
+Mutual Fund Cost Value Market Value
+Kestrel Mutual Fund 3,50,000.00 5,56,249.80
+Banyan Mutual Fund 1,65,000.00 2,21,654.05
+Monsoon Mutual Fund 82,000.00 92,440.22
+Teak Mutual Fund 1,50,000.00 2,78,978.43
+Lotus Mutual Fund 1,00,000.00 1,28,962.00
+Total 8,47,000.00 12,78,284.50
+
+Kestrel Mutual Fund
+Folio No: 1023456/71   PAN: OK   KYC: OK
+Rohan Saffron
+K01FCRG-Kestrel Flexi Cap Fund - Regular Plan - Growth - ISIN: INF000K01FC1(Advisor: ARN-000000) Registrar : CAMS
+Opening Unit Balance: 0.000
+05-Jan-2021 SIP Purchase - Instalment 1 5,000.00 500.000 10.0000 500.000
+05-Feb-2021 SIP Purchase - Instalment 2 5,000.00 513.185 9.7431 1,013.185
+05-Mar-2021 SIP Purchase - Instalment 3 5,000.00 546.482 9.1494 1,559.667
+05-Apr-2021 SIP Purchase - Instalment 4 5,000.00 571.671 8.7463 2,131.338
+05-May-2021 SIP Purchase - Instalment 5 5,000.00 570.143 8.7697 2,701.481
+05-Jun-2021 SIP Purchase - Instalment 6 5,000.00 638.418 7.8319 3,339.899
+05-Jul-2021 SIP Purchase - Instalment 7 5,000.00 573.692 8.7155 3,913.591
+05-Aug-2021 SIP Purchase - Instalment 8 5,000.00 571.767 8.7448 4,485.358
+05-Sep-2021 SIP Purchase - Instalment 9 5,000.00 552.026 9.0575 5,037.384
+05-Oct-2021 SIP Purchase - Instalment 10 5,000.00 548.026 9.1236 5,585.410
+05-Nov-2021 SIP Purchase - Instalment 11 5,000.00 523.620 9.5489 6,109.030
+05-Dec-2021 SIP Purchase - Instalment 12 5,000.00 527.443 9.4797 6,636.473
+05-Jan-2022 SIP Purchase - Instalment 13 5,000.00 505.740 9.8865 7,142.213
+05-Feb-2022 SIP Purchase - Instalment 14 5,000.00 485.068 10.3078 7,627.281
+05-Mar-2022 SIP Purchase - Instalment 15 5,000.00 468.186 10.6795 8,095.467
+05-Apr-2022 SIP Purchase - Instalment 16 5,000.00 474.157 10.5450 8,569.624
+05-May-2022 SIP Purchase - Instalment 17 5,000.00 444.160 11.2572 9,013.784
+05-Jun-2022 SIP Purchase - Instalment 18 5,000.00 437.520 11.4280 9,451.304
+05-Jul-2022 SIP Purchase - Instalment 19 5,000.00 426.012 11.7368 9,877.316
+05-Aug-2022 SIP Purchase - Instalment 20 5,000.00 414.775 12.0547 10,292.091
+05-Sep-2022 SIP Purchase - Instalment 21 5,000.00 388.681 12.8640 10,680.772
+05-Oct-2022 SIP Purchase - Instalment 22 5,000.00 407.660 12.2651 11,088.432
+05-Nov-2022 SIP Purchase - Instalment 23 5,000.00 384.624 12.9997 11,473.056
+05-Dec-2022 SIP Purchase - Instalment 24 5,000.00 374.976 13.3342 11,848.032
+05-Jan-2023 SIP Purchase - Instalment 25 5,000.00 388.484 12.8706 12,236.516
+05-Feb-2023 SIP Purchase - Instalment 26 5,000.00 362.133 13.8071 12,598.649
+05-Mar-2023 SIP Purchase - Instalment 27 5,000.00 343.326 14.5634 12,941.975
+05-Apr-2023 SIP Purchase - Instalment 28 5,000.00 339.428 14.7307 13,281.403
+05-May-2023 SIP Purchase - Instalment 29 5,000.00 352.078 14.2014 13,633.481
+05-Jun-2023 SIP Purchase - Instalment 30 5,000.00 356.132 14.0397 13,989.613
+05-Jul-2023 SIP Purchase - Instalment 31 5,000.00 364.375 13.7221 14,353.988
+05-Aug-2023 SIP Purchase - Instalment 32 5,000.00 334.664 14.9404 14,688.652
+05-Sep-2023 SIP Purchase - Instalment 33 5,000.00 346.525 14.4290 15,035.177
+05-Oct-2023 SIP Purchase - Instalment 34 5,000.00 333.061 15.0123 15,368.238
+05-Nov-2023 SIP Purchase - Instalment 35 5,000.00 368.405 13.5720 15,736.643
+05-Dec-2023 SIP Purchase - Instalment 36 5,000.00 362.555 13.7910 16,099.198
+05-Jan-2024 SIP Purchase - Instalment 37 5,000.00 338.920 14.7528 16,438.118
+05-Feb-2024 SIP Purchase - Instalment 38 5,000.00 338.896 14.7538 16,777.014
+05-Mar-2024 SIP Purchase - Instalment 39 5,000.00 364.459 13.7189 17,141.473
+05-Apr-2024 SIP Purchase - Instalment 40 5,000.00 368.011 13.5865 17,509.484
+05-May-2024 SIP Purchase - Instalment 41 5,000.00 358.634 13.9418 17,868.118
+05-Jun-2024 SIP Purchase - Instalment 42 5,000.00 360.598 13.8659 18,228.716
+05-Jul-2024 SIP Purchase - Instalment 43 5,000.00 362.665 13.7868 18,591.381
+05-Aug-2024 SIP Purchase - Instalment 44 5,000.00 359.683 13.9011 18,951.064
+05-Sep-2024 SIP Purchase - Instalment 45 5,000.00 358.060 13.9642 19,309.124
+05-Oct-2024 SIP Purchase - Instalment 46 5,000.00 373.005 13.4046 19,682.129
+05-Nov-2024 SIP Purchase - Instalment 47 5,000.00 363.920 13.7393 20,046.049
+05-Dec-2024 SIP Purchase - Instalment 48 5,000.00 346.751 14.4196 20,392.800
+05-Jan-2025 SIP Purchase - Instalment 49 5,000.00 331.199 15.0967 20,723.999
+05-Feb-2025 SIP Purchase - Instalment 50 5,000.00 342.846 14.5838 21,066.845
+05-Mar-2025 SIP Purchase - Instalment 51 5,000.00 339.520 14.7267 21,406.365
+05-Apr-2025 SIP Purchase - Instalment 52 5,000.00 312.353 16.0075 21,718.718
+05-May-2025 SIP Purchase - Instalment 53 5,000.00 327.191 15.2816 22,045.909
+05-Jun-2025 SIP Purchase - Instalment 54 5,000.00 315.460 15.8499 22,361.369
+05-Jul-2025 SIP Purchase - Instalment 55 5,000.00 319.335 15.6575 22,680.704
+05-Aug-2025 SIP Purchase - Instalment 56 5,000.00 302.525 16.5276 22,983.229
+05-Sep-2025 SIP Purchase - Instalment 57 5,000.00 297.414 16.8116 23,280.643
+05-Oct-2025 SIP Purchase - Instalment 58 5,000.00 278.887 17.9284 23,559.530
+05-Nov-2025 SIP Purchase - Instalment 59 5,000.00 263.421 18.9810 23,822.951
+05-Dec-2025 SIP Purchase - Instalment 60 5,000.00 261.374 19.1297 24,084.325
+05-Jan-2026 SIP Purchase - Instalment 61 5,000.00 252.662 19.7893 24,336.987
+05-Feb-2026 SIP Purchase - Instalment 62 5,000.00 252.688 19.7872 24,589.675
+05-Mar-2026 SIP Purchase - Instalment 63 5,000.00 239.007 20.9199 24,828.682
+05-Apr-2026 SIP Purchase - Instalment 64 5,000.00 237.800 21.0261 25,066.482
+05-May-2026 SIP Purchase - Instalment 65 5,000.00 247.845 20.1739 25,314.327
+05-Jun-2026 SIP Purchase - Instalment 66 5,000.00 250.884 19.9295 25,565.211
+05-Jul-2026 SIP Purchase - Instalment 67 5,000.00 232.598 21.4963 25,797.809
+05-Aug-2026 SIP Purchase - Instalment 68 5,000.00 223.447 22.3767 26,021.256
+05-Sep-2026 SIP Purchase - Instalment 69 5,000.00 219.317 22.7981 26,240.573
+05-Oct-2026 SIP Purchase - Instalment 70 5,000.00 223.695 22.3519 26,464.268
+Closing Unit Balance: 26,464.268 NAV on 15-Oct-2026: INR 21.0189 Total Cost Value: 3,50,000.00 Market Value on 15-Oct-2026: INR 5,56,249.80
+
+Banyan Mutual Fund
+Folio No: 5501234   PAN: OK   KYC: OK
+Rohan Saffron
+B07IXRG-Banyan Nifty 50 Index Fund - Direct Plan - Growth - ISIN: INF000B07IX2(Advisor: DIRECT) Registrar : CAMS
+Opening Unit Balance: 0.000
+05-Apr-2022 SIP Purchase - Instalment 1 3,000.00 300.000 10.0000 300.000
+05-May-2022 SIP Purchase - Instalment 2 3,000.00 293.941 10.2061 593.941
+05-Jun-2022 SIP Purchase - Instalment 3 3,000.00 288.911 10.3838 882.852
+05-Jul-2022 SIP Purchase - Instalment 4 3,000.00 303.933 9.8706 1,186.785
+05-Aug-2022 SIP Purchase - Instalment 5 3,000.00 302.055 9.9320 1,488.840
+05-Sep-2022 SIP Purchase - Instalment 6 3,000.00 286.912 10.4562 1,775.752
+05-Oct-2022 SIP Purchase - Instalment 7 3,000.00 283.283 10.5901 2,059.035
+05-Nov-2022 SIP Purchase - Instalment 8 3,000.00 281.672 10.6507 2,340.707
+05-Dec-2022 SIP Purchase - Instalment 9 3,000.00 274.665 10.9224 2,615.372
+05-Jan-2023 SIP Purchase - Instalment 10 3,000.00 268.120 11.1890 2,883.492
+05-Feb-2023 SIP Purchase - Instalment 11 3,000.00 258.246 11.6168 3,141.738
+05-Mar-2023 SIP Purchase - Instalment 12 3,000.00 261.089 11.4903 3,402.827
+05-Apr-2023 SIP Purchase - Instalment 13 3,000.00 257.870 11.6338 3,660.697
+05-May-2023 SIP Purchase - Instalment 14 3,000.00 271.647 11.0438 3,932.344
+05-Jun-2023 SIP Purchase - Instalment 15 3,000.00 285.178 10.5197 4,217.522
+05-Jul-2023 SIP Purchase - Instalment 16 3,000.00 284.541 10.5433 4,502.063
+05-Aug-2023 SIP Purchase - Instalment 17 3,000.00 286.118 10.4852 4,788.181
+05-Sep-2023 SIP Purchase - Instalment 18 3,000.00 293.585 10.2185 5,081.766
+05-Oct-2023 SIP Purchase - Instalment 19 3,000.00 304.858 9.8407 5,386.624
+05-Nov-2023 SIP Purchase - Instalment 20 3,000.00 290.535 10.3258 5,677.159
+05-Dec-2023 SIP Purchase - Instalment 21 3,000.00 287.488 10.4352 5,964.647
+05-Jan-2024 SIP Purchase - Instalment 22 3,000.00 301.785 9.9408 6,266.432
+05-Feb-2024 SIP Purchase - Instalment 23 3,000.00 324.523 9.2443 6,590.955
+05-Mar-2024 SIP Purchase - Instalment 24 3,000.00 306.947 9.7737 6,897.902
+05-Apr-2024 SIP Purchase - Instalment 25 3,000.00 311.369 9.6349 7,209.271
+05-May-2024 SIP Purchase - Instalment 26 3,000.00 336.667 8.9109 7,545.938
+05-Jun-2024 SIP Purchase - Instalment 27 3,000.00 352.392 8.5132 7,898.330
+05-Jul-2024 SIP Purchase - Instalment 28 3,000.00 345.361 8.6866 8,243.691
+05-Aug-2024 SIP Purchase - Instalment 29 3,000.00 326.847 9.1786 8,570.538
+05-Sep-2024 SIP Purchase - Instalment 30 3,000.00 303.849 9.8733 8,874.387
+05-Oct-2024 SIP Purchase - Instalment 31 3,000.00 293.498 10.2215 9,167.885
+05-Nov-2024 SIP Purchase - Instalment 32 3,000.00 295.698 10.1455 9,463.583
+05-Dec-2024 SIP Purchase - Instalment 33 3,000.00 300.018 9.9994 9,763.601
+05-Jan-2025 SIP Purchase - Instalment 34 3,000.00 292.781 10.2466 10,056.382
+05-Feb-2025 SIP Purchase - Instalment 35 3,000.00 277.146 10.8246 10,333.528
+05-Mar-2025 SIP Purchase - Instalment 36 3,000.00 274.778 10.9179 10,608.306
+05-Apr-2025 SIP Purchase - Instalment 37 3,000.00 278.510 10.7716 10,886.816
+05-May-2025 SIP Purchase - Instalment 38 3,000.00 282.216 10.6302 11,169.032
+05-Jun-2025 SIP Purchase - Instalment 39 3,000.00 267.983 11.1948 11,437.015
+05-Jul-2025 SIP Purchase - Instalment 40 3,000.00 267.328 11.2222 11,704.343
+05-Aug-2025 SIP Purchase - Instalment 41 3,000.00 243.805 12.3049 11,948.148
+05-Sep-2025 SIP Purchase - Instalment 42 3,000.00 245.614 12.2143 12,193.762
+05-Oct-2025 SIP Purchase - Instalment 43 3,000.00 269.069 11.1495 12,462.831
+05-Nov-2025 SIP Purchase - Instalment 44 3,000.00 277.352 10.8166 12,740.183
+05-Dec-2025 SIP Purchase - Instalment 45 3,000.00 288.376 10.4031 13,028.559
+05-Jan-2026 SIP Purchase - Instalment 46 3,000.00 289.022 10.3798 13,317.581
+05-Feb-2026 SIP Purchase - Instalment 47 3,000.00 273.535 10.9675 13,591.116
+05-Mar-2026 SIP Purchase - Instalment 48 3,000.00 282.792 10.6085 13,873.908
+05-Apr-2026 SIP Purchase - Instalment 49 3,000.00 274.934 10.9117 14,148.842
+05-May-2026 SIP Purchase - Instalment 50 3,000.00 253.531 11.8329 14,402.373
+05-Jun-2026 SIP Purchase - Instalment 51 3,000.00 243.969 12.2966 14,646.342
+05-Jul-2026 SIP Purchase - Instalment 52 3,000.00 235.899 12.7173 14,882.241
+05-Aug-2026 SIP Purchase - Instalment 53 3,000.00 225.457 13.3063 15,107.698
+05-Sep-2026 SIP Purchase - Instalment 54 3,000.00 213.986 14.0196 15,321.684
+05-Oct-2026 SIP Purchase - Instalment 55 3,000.00 216.630 13.8485 15,538.314
+Closing Unit Balance: 15,538.314 NAV on 15-Oct-2026: INR 14.2650 Total Cost Value: 1,65,000.00 Market Value on 15-Oct-2026: INR 2,21,654.05
+
+Monsoon Mutual Fund
+Folio No: 88412093/12   PAN: OK   KYC: OK
+Rohan Saffron
+M03SCRG-Monsoon Small Cap Fund - Regular Plan - Growth - ISIN: INF000M03SC3(Advisor: ARN-000000) Registrar : CAMS
+Opening Unit Balance: 0.000
+05-Jun-2023 SIP Purchase - Instalment 1 2,000.00 200.000 10.0000 200.000
+05-Jul-2023 SIP Purchase - Instalment 2 2,000.00 205.640 9.7257 405.640
+05-Aug-2023 SIP Purchase - Instalment 3 2,000.00 217.143 9.2105 622.783
+05-Sep-2023 SIP Purchase - Instalment 4 2,000.00 211.622 9.4508 834.405
+05-Oct-2023 SIP Purchase - Instalment 5 2,000.00 215.503 9.2806 1,049.908
+05-Nov-2023 SIP Purchase - Instalment 6 2,000.00 200.696 9.9653 1,250.604
+05-Dec-2023 SIP Purchase - Instalment 7 2,000.00 224.813 8.8963 1,475.417
+05-Jan-2024 SIP Purchase - Instalment 8 2,000.00 212.433 9.4147 1,687.850
+05-Feb-2024 SIP Purchase - Instalment 9 2,000.00 203.667 9.8199 1,891.517
+05-Mar-2024 SIP Purchase - Instalment 10 2,000.00 202.416 9.8806 2,093.933
+05-Apr-2024 SIP Purchase - Instalment 11 2,000.00 208.634 9.5862 2,302.567
+05-May-2024 SIP Purchase - Instalment 12 2,000.00 222.005 9.0088 2,524.572
+05-Jun-2024 SIP Purchase - Instalment 13 2,000.00 223.188 8.9610 2,747.760
+05-Jul-2024 SIP Purchase - Instalment 14 2,000.00 218.301 9.1616 2,966.061
+05-Aug-2024 SIP Purchase - Instalment 15 2,000.00 224.351 8.9146 3,190.412
+05-Sep-2024 SIP Purchase - Instalment 16 2,000.00 211.723 9.4463 3,402.135
+05-Oct-2024 SIP Purchase - Instalment 17 2,000.00 222.714 8.9801 3,624.849
+05-Nov-2024 SIP Purchase - Instalment 18 2,000.00 205.450 9.7347 3,830.299
+05-Dec-2024 SIP Purchase - Instalment 19 2,000.00 211.110 9.4737 4,041.409
+05-Jan-2025 SIP Purchase - Instalment 20 2,000.00 199.857 10.0072 4,241.266
+05-Feb-2025 SIP Purchase - Instalment 21 2,000.00 203.321 9.8366 4,444.587
+05-Mar-2025 SIP Purchase - Instalment 22 2,000.00 166.439 12.0164 4,611.026
+05-Apr-2025 SIP Purchase - Instalment 23 2,000.00 190.113 10.5200 4,801.139
+05-May-2025 SIP Purchase - Instalment 24 2,000.00 167.153 11.9651 4,968.292
+05-Jun-2025 SIP Purchase - Instalment 25 2,000.00 156.868 12.7495 5,125.160
+05-Jul-2025 SIP Purchase - Instalment 26 2,000.00 141.936 14.0909 5,267.096
+05-Aug-2025 SIP Purchase - Instalment 27 2,000.00 155.443 12.8664 5,422.539
+05-Sep-2025 SIP Purchase - Instalment 28 2,000.00 159.349 12.5511 5,581.888
+05-Oct-2025 SIP Purchase - Instalment 29 2,000.00 181.224 11.0361 5,763.112
+05-Nov-2025 SIP Purchase - Instalment 30 2,000.00 181.403 11.0252 5,944.515
+05-Dec-2025 SIP Purchase - Instalment 31 2,000.00 182.584 10.9539 6,127.099
+05-Jan-2026 SIP Purchase - Instalment 32 2,000.00 182.479 10.9601 6,309.578
+05-Feb-2026 SIP Purchase - Instalment 33 2,000.00 187.561 10.6632 6,497.139
+05-Mar-2026 SIP Purchase - Instalment 34 2,000.00 202.227 9.8899 6,699.366
+05-Apr-2026 SIP Purchase - Instalment 35 2,000.00 199.201 10.0401 6,898.567
+05-May-2026 SIP Purchase - Instalment 36 2,000.00 175.981 11.3648 7,074.548
+05-Jun-2026 SIP Purchase - Instalment 37 2,000.00 169.013 11.8334 7,243.561
+05-Jul-2026 SIP Purchase - Instalment 38 2,000.00 175.235 11.4133 7,418.796
+05-Aug-2026 SIP Purchase - Instalment 39 2,000.00 167.378 11.9490 7,586.174
+05-Sep-2026 SIP Purchase - Instalment 40 2,000.00 157.988 12.6592 7,744.162
+05-Oct-2026 SIP Purchase - Instalment 41 2,000.00 166.380 12.0206 7,910.542
+Closing Unit Balance: 7,910.542 NAV on 15-Oct-2026: INR 11.6857 Total Cost Value: 82,000.00 Market Value on 15-Oct-2026: INR 92,440.22
+
+Teak Mutual Fund
+Folio No: 3300981   PAN: OK   KYC: OK
+Rohan Saffron
+T11ELRG-Teak ELSS Tax Saver Fund - Regular Plan - Growth - ISIN: INF000T11EL4(Advisor: ARN-000000) Registrar : CAMS
+Opening Unit Balance: 0.000
+10-Mar-2021 Purchase 50,000.00 5,000.000 10.0000 5,000.000
+08-Mar-2022 Purchase 50,000.00 4,292.939 11.6470 9,292.939
+09-Mar-2023 Purchase 50,000.00 3,941.018 12.6871 13,233.957
+Closing Unit Balance: 13,233.957 NAV on 15-Oct-2026: INR 21.0805 Total Cost Value: 1,50,000.00 Market Value on 15-Oct-2026: INR 2,78,978.43
+
+Lotus Mutual Fund
+Folio No: 7712004/33   PAN: OK   KYC: OK
+Rohan Saffron
+L05SDRG-Lotus Short Duration Fund - Direct Plan - Growth - ISIN: INF000L05SD5(Advisor: DIRECT) Registrar : CAMS
+Opening Unit Balance: 0.000
+12-Feb-2024 Purchase 1,00,000.00 10,000.000 10.0000 10,000.000
+Closing Unit Balance: 10,000.000 NAV on 15-Oct-2026: INR 12.8962 Total Cost Value: 1,00,000.00 Market Value on 15-Oct-2026: INR 1,28,962.00

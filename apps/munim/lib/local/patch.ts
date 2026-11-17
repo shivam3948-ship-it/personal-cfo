@@ -1,0 +1,97 @@
+'use client';
+import { loadCas } from './cas';
+import { pfFrom, xrayFrom, xrsFrom, gateXR } from '@/lib/views/portfolioBlocks';
+import { DISCLAIMER, type AdviceMode } from '@/lib/advice';
+import { buildCredit } from '@/lib/views/credit';
+
+/** Your own data is never 'demo' (AGENTS 1a): guided, or private when the owner switched advice on for this browser (D-066).
+ *  Before 7 Nov the X-ray on your CAS kept the sample's mode and its footer said 'Test build on sample data'. */
+const ownMode = (v: View) => { const m: AdviceMode = v.MODE === 'private' ? 'private' : 'guided'; return { MODE: m, DISC: DISCLAIMER[m].en }; };
+import { myDataset, loadStatements } from './statements';
+import { buildSpendsMain } from '@/lib/views/spendsMain';
+import { buildTransactions, buildCategory } from '@/lib/views/spends';
+import { buildToday } from '@/lib/views/today';
+import { buildTodayMine, dateLineHi } from '@/lib/views/todayMine';
+import { getProfile } from './profile';
+import { emptyDataset } from '@core/types';
+import { vsBenchmarks } from '@core/portfolio/engine';
+import { latestBankBalance } from '@core/finance/picture';
+import { essentialsByMonth, monthlyIncome } from '@core/finance/essentials';
+// Fold your on-phone CAS into the Invest and X-ray view models, in the browser, with the same code the server uses for the
+// sample family. Overlap needs each fund's holdings, which we don't have for real funds yet (D-OPEN-3), so that card hides.
+
+type View = Record<string, unknown>;
+export async function withMyCasInvest(v: View): Promise<View> {
+  // v is the empty frame (?base=empty), never the sample family's view (15 Nov): the safety net comes from your bank statements
+  const [c, ds] = await Promise.all([loadCas(), myDataset()]);
+  if (!c && !ds) return { ...v, ...ownMode(v), _state: 'empty', _mine: true };
+  const bank = ds ? latestBankBalance(ds) : null;
+  return { ...v, ...ownMode(v), ...(ds ? { ESSM: essentialsByMonth(ds), BANK: bank?.balance ?? 0, BANK_ASOF: bank?.date || null, INCOME_M: monthlyIncome(ds) } : {}),
+    ...(c ? { PF: pfFrom(c), XRS: xrsFrom(xrayFrom(c, {}, 'no fund holdings yet'), await benchRows(c)), MISSING: c.midway ?? [] } : {}), CAS_SRC: 'yours', _mine: true };
+}
+/** How many of your funds can be set against their index (public index NAVs from the server; your funds never leave the phone). */
+const benchSeries = () => fetch('/api/benchmarks').then((r) => r.json()).then((j) => j.series ?? {}).catch(() => ({}));
+async function benchRows(c: NonNullable<Awaited<ReturnType<typeof loadCas>>>) { return vsBenchmarks(c.holdings, await benchSeries(), c.asOf)?.rows?.length ?? 0; }
+export async function withMyCasXray(v: View): Promise<View> {
+  const c = await loadCas(); if (!c) return v;
+  const x = xrayFrom(c, {}, 'no fund holdings yet');
+  // against its index: public index NAVs come from the server; your funds and dates never leave the phone
+  const series = await fetch('/api/benchmarks').then((r) => r.json()).then((j) => j.series ?? {}).catch(() => ({}));
+  const own = ownMode(v);
+  const XR = { ...gateXR(x.XR, own.MODE), bench: vsBenchmarks(c.holdings, series, c.asOf) };
+  return { ...v, ...own, PF: pfFrom(c), XR, X3: x.X3, CAS_SRC: 'yours', MISSING: c.midway ?? [], _mine: true };
+}
+
+// ---- your bank and card statements → Spends, Transactions, Category (computed here, never sent) ----
+
+const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const dmy = (iso?: string) => (iso ? `${+iso.slice(8, 10)} ${MON3[+iso.slice(5, 7) - 1]}` : '');
+export async function withMyStatementsSpends(v: View): Promise<View> {
+  const ds = await myDataset();
+  if (!ds) { // chose your own data, none added yet: the get-started state, dated today rather than the sample's month
+    const now = new Date();
+    return getProfile()?.start === 'mine' ? { ...v, META: { ...(v.META as object), cur: now.getMonth(), day: now.getDate() }, _state: 'empty', _mine: true } : v;
+  }
+  const built = buildSpendsMain(ds, { reportFrom: null });
+  const files = (await loadStatements()).sort((a, b) => (a.period?.from ?? '').localeCompare(b.period?.from ?? '')).map((s) => ({
+    name: `${s.account.label} · ${dmy(s.period?.from)}–${dmy(s.period?.to)}`, what: `${s.txns.length} transactions`,
+    check: s.account.kind === 'bank' ? '✓ Balance matches on every line · opening + credits − debits = closing' : '✓ The bill’s total due matches' }));
+  // bank SMS rows (D-055): listed with the files, and the trust line stops claiming that everything balances
+  const sms = ds.txns.filter((t) => t.source === 'sms').length;
+  if (sms) files.push({ name: `Bank SMS · ${sms} payments`, what: 'Provisional: SMS have no totals to check', check: 'Replaced when a statement covers the same dates' });
+  // checks across statements (card bill paid from the bank ↔ card statement): what passed, and anything re-labelled
+  const cross = ds.log.find((l) => l.kind === 'cross-check');
+  if (cross?.checks?.length) {
+    const relabelled = ds.txns.filter((t) => t.matched === 'card_payment').length;
+    const bad = cross.checks.filter((c) => !c.ok);
+    files.push({ name: 'Across your statements', what: cross.summary,
+      check: bad.length ? `⚠ ${bad.map((c) => `${c.label}: ${c.detail}`).join(' · ')}` : `✓ Card bills paid from your bank match the card statements${relabelled ? ` · ${relabelled} payment${relabelled > 1 ? 's' : ''} not counted as spending` : ''}` });
+  }
+  return { ...v, ...built, META: { ...built.META, files, sms }, _mine: true };
+}
+export async function withMyStatementsTx(v: View): Promise<View> { const ds = await myDataset(); return ds ? { ...v, ...buildTransactions(ds), RULES0: 0, _mine: true } : v; }
+export async function withMyStatementsCat(v: View): Promise<View> { const ds = await myDataset(); return ds ? { ...v, ...buildCategory(ds), _mine: true } : v; }
+
+// ---- Today on your data (D-049) ----
+// `_mine` tells Screen this view now shows your data (no Sample tag); `_state: 'empty'` shows the get-started state.
+export async function withMyToday(v: View): Promise<View> {
+  const p = getProfile();
+  const [ds, cas] = await Promise.all([myDataset(), loadCas()]);
+  if (!ds && !cas) return p?.start === 'mine' ? { ...v, NAME: p.name ?? '', _state: 'empty', _mine: true } : v;
+  const mine = ds ?? emptyDataset('Your statements');
+  if (cas) mine.portfolio = { asOf: cas.asOf, holdings: cas.holdings, checks: [], source: 'Your CAS' };
+  const t = buildToday(mine, { kind: 'user', memberLabel: 'Me', displayName: p?.name ?? null });
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], now = new Date();
+  const n = new Date(), today = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+  const td = buildTodayMine(ds ?? mine, today); // the phone's date decides whether a card's due date has passed
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  if (td.bill && td.bill.dueIso < todayIso) td.bill = null; // its due date has passed on this phone's calendar
+  return { ...v, ...t, NAME: p?.name ?? '', TD: { ...td, inv: !!cas, dateLine: `${DAYS[now.getDay()]}, ${now.getDate()} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()]}`, dateLineHi: dateLineHi(now) }, _mine: true };
+}
+
+/** Credit on your own statements (D-094): cards, EMIs seen leaving your bank; the phone's date decides what's still ahead. */
+export async function withMyStatementsCredit(v: View): Promise<View> {
+  const ds = await myDataset();
+  if (!ds) return getProfile()?.start === 'mine' ? { ...v, CR: { ...(v.CR as object), has: false, score: null }, _state: 'empty', _mine: true } : v;
+  return { ...v, ...buildCredit(ds, undefined, ds.today), _mine: true };
+}

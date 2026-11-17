@@ -1,0 +1,91 @@
+{
+ "overlap": {
+  "pairs": [
+   [
+    "Banyan",
+    "Teak",
+    45.0
+   ],
+   [
+    "Banyan",
+    "Kestrel",
+    40.0
+   ],
+   [
+    "Kestrel",
+    "Teak",
+    33.0
+   ],
+   [
+    "Banyan",
+    "Monsoon",
+    0
+   ],
+   [
+    "Kestrel",
+    "Monsoon",
+    0
+   ],
+   [
+    "Teak",
+    "Monsoon",
+    0
+   ]
+  ],
+  "top5": [
+   [
+    "HDFC Bank",
+    10119578,
+    3
+   ],
+   [
+    "ICICI Bank",
+    8397733,
+    3
+   ],
+   [
+    "Reliance Industries",
+    6339179,
+    3
+   ],
+   [
+    "Infosys",
+    4728161,
+    3
+   ],
+   [
+    "Bharti Airtel",
+    4059377,
+    3
+   ]
+  ],
+  "top5Paise": 33644028,
+  "top5PctOfEquity": 29.3,
+  "in3plus": [
+   "Axis Bank",
+   "Bharti Airtel",
+   "HDFC Bank",
+   "ICICI Bank",
+   "Infosys",
+   "Larsen & Toubro",
+   "Reliance Industries"
+  ],
+  "dupPaise": 9974432,
+  "equityPaise": 114932250,
+  "asOf": "Sep 2026 factsheets (synthetic sample)"
+ },
+ "fd": {
+  "rate": 7.0,
+  "invested": 84700000,
+  "fdValue": 103919504,
+  "actual": 127828450,
+  "extra": 23908946
+ },
+ "did": {
+  "months": 3,
+  "movedPaise": 24281723,
+  "feeSavedSoFar": 54634,
+  "futureTax": 1560215,
+  "sipDirect": 2100000
+ }
+}

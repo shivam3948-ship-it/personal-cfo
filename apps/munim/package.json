@@ -1,0 +1,33 @@
+{
+  "name": "munim",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Munim v2: personal CFO, rebuilt screen by screen on @munim/core (D-031).",
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "eval": "EVAL_WRITE=1 vitest run tests/evals.test.ts",
+    "eval:live": "RUN_LIVE=1 EVAL_WRITE=1 vitest run tests/evals.live.test.ts",
+    "eval:judge": "RUN_LIVE=1 EVAL_WRITE=1 vitest run tests/judge.live.test.ts",
+    "eval:site": "EVAL_WRITE=1 vitest run tests/evals.site.test.ts",
+    "voice:latency": "RUN_LIVE=1 EVAL_WRITE=1 vitest run tests/voice-latency.live.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.134.0",
+    "next": "15.5.28",
+    "react": "19.1.10",
+    "react-dom": "19.1.10",
+    "unpdf": "1.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "@types/react": "19.1.2",
+    "@types/react-dom": "19.1.2",
+    "pdf-lib": "^1.17.1",
+    "typescript": "5.8.3",
+    "vitest": "3.2.4"
+  }
+}

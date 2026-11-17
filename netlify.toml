@@ -1,0 +1,9 @@
+# Netlify deploy for Munim (apps/voice-cfo). Next.js is detected and run through Netlify's Next.js runtime.
+[build]
+  base = "apps/voice-cfo"
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"

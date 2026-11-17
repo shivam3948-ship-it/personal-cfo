@@ -1,0 +1,245 @@
+{
+ "collected": "2026-10-16",
+ "source": "Google Play public reviews (hl=en_IN, gl=IN); per app: newest 3,000 + 1,000 \"most relevant\"; reviewer names removed; raw text kept off the repo",
+ "apps": {
+  "Bachatt": 3837,
+  "Jar": 3998,
+  "Groww": 4000,
+  "ET Money": 3697
+ },
+ "avg_score_in_sample": {
+  "Bachatt": 4.2,
+  "Jar": 3.62,
+  "Groww": 4.03,
+  "ET Money": 2.76
+ },
+ "store_rating_bachatt": "4.6★ from 1.77L ratings, 50L+ downloads (Play listing, 16 Oct 2026)",
+ "low_rated_with_text": {
+  "savings_apps": 1707,
+  "investing_apps": 2926
+ },
+ "themes": [
+  {
+   "id": "withdrawal_problem",
+   "label": "Withdrawal delayed, failed or stuck",
+   "savings_pct": 53.5,
+   "investing_pct": 6.5,
+   "all_n": 1103,
+   "precision_check": "9/10"
+  },
+  {
+   "id": "trust_fraud",
+   "label": "Calls it fraud / scam / fake / unsafe",
+   "savings_pct": 25.6,
+   "investing_pct": 3.3,
+   "all_n": 535,
+   "precision_check": "not checked"
+  },
+  {
+   "id": "support_unreachable",
+   "label": "Support unreachable or unhelpful",
+   "savings_pct": 23.7,
+   "investing_pct": 18.3,
+   "all_n": 940,
+   "precision_check": "9/10"
+  },
+  {
+   "id": "got_less_than_put_in",
+   "label": "Got back less than deposited / value lower than expected",
+   "savings_pct": 16.6,
+   "investing_pct": 2.1,
+   "all_n": 345,
+   "precision_check": "7/10"
+  },
+  {
+   "id": "app_bugs",
+   "label": "App crashes, server down, glitches, forced updates",
+   "savings_pct": 13.1,
+   "investing_pct": 9.3,
+   "all_n": 495,
+   "precision_check": "8/10"
+  },
+  {
+   "id": "unexpected_debit",
+   "label": "Money debited unexpectedly (autopay, multiple debits, fees without consent)",
+   "savings_pct": 3.6,
+   "investing_pct": 1.5,
+   "all_n": 105,
+   "precision_check": "7/10"
+  },
+  {
+   "id": "onboarding_kyc_bank",
+   "label": "Sign-up, OTP, KYC, bank linking or bank change problems",
+   "savings_pct": 2.8,
+   "investing_pct": 5.6,
+   "all_n": 212,
+   "precision_check": "not checked"
+  },
+  {
+   "id": "paywall_fees",
+   "label": "Paid plans, subscriptions or fees for basic features",
+   "savings_pct": 2.7,
+   "investing_pct": 21.8,
+   "all_n": 683,
+   "precision_check": "7/10"
+  },
+  {
+   "id": "debited_not_reflected",
+   "label": "Debited but not shown / \"in progress\" / balance mismatch",
+   "savings_pct": 1.9,
+   "investing_pct": 0.8,
+   "all_n": 56,
+   "precision_check": "7/10"
+  },
+  {
+   "id": "confusing_ux",
+   "label": "Confusing UI, features removed, hard to understand",
+   "savings_pct": 1.3,
+   "investing_pct": 9.9,
+   "all_n": 312,
+   "precision_check": "not checked"
+  },
+  {
+   "id": "pause_stop_hard",
+   "label": "Hard to pause, skip, stop or cancel saving/SIP/autopay",
+   "savings_pct": 0.6,
+   "investing_pct": 0.9,
+   "all_n": 36,
+   "precision_check": "not checked"
+  },
+  {
+   "id": "language",
+   "label": "Wants support/app in their language",
+   "savings_pct": 0.2,
+   "investing_pct": 0.2,
+   "all_n": 9,
+   "precision_check": "not checked"
+  }
+ ],
+ "uncoded_low_pct": 33.1,
+ "withdrawal": {
+  "savings_n": 913,
+  "mentions_timeline_or_status_pct": 25.2,
+  "also_support_pct": 27.2,
+  "fraud_word_if_withdrawal_pct": 27.7,
+  "fraud_word_if_no_withdrawal_pct": 23.2
+ },
+ "ai_support": {
+  "n": 38,
+  "by_app": {
+   "Bachatt": 1,
+   "ET Money": 6,
+   "Groww": 7,
+   "Jar": 24
+  },
+  "with_withdrawal": 18
+ },
+ "language": {
+  "devanagari_pct": 1.2,
+  "roman_hindi_pct": 9.6
+ },
+ "dev_reply_rate_low": {
+  "Bachatt": 96.4,
+  "Jar": 86.3,
+  "Groww": 87.1,
+  "ET Money": 97.9
+ },
+ "positives_high_savings": {
+  "easy_simple": {
+   "Bachatt": 10.4,
+   "Jar": 7.4,
+   "Groww": 35.5,
+   "ET Money": 18.2
+  },
+  "saving_habit_small": {
+   "Bachatt": 19.6,
+   "Jar": 5.1,
+   "Groww": 0.0,
+   "ET Money": 0.4
+  },
+  "fast_withdrawal": {
+   "Bachatt": 2.4,
+   "Jar": 0.0,
+   "Groww": 0.3,
+   "ET Money": 0.5
+  },
+  "returns_interest": {
+   "Bachatt": 3.6,
+   "Jar": 2.1,
+   "Groww": 2.5,
+   "ET Money": 4.3
+  },
+  "good_support": {
+   "Bachatt": 1.9,
+   "Jar": 0.9,
+   "Groww": 1.0,
+   "ET Money": 1.4
+  },
+  "trust_safe": {
+   "Bachatt": 2.8,
+   "Jar": 4.0,
+   "Groww": 2.7,
+   "ET Money": 2.2
+  }
+ },
+ "cost_per_voice_turn": {
+  "stt_inr_per_turn": 0.0417,
+  "tts_inr_per_turn_median": 0.405,
+  "tts_inr_per_turn_max": 0.591,
+  "voice_inr_per_turn_median": 0.4467,
+  "reply_chars_median": 135.0,
+  "reply_chars_max": 197,
+  "replies_measured": 12,
+  "claude_usd_per_fallback_turn": 0.0026,
+  "assumptions": {
+   "utterance_seconds": 5,
+   "claude_input_tokens": 700,
+   "claude_output_tokens": 120,
+   "claude_price_usd_per_mtok": [
+    2.0,
+    10.0
+   ],
+   "claude_price_source": "third-party page (apidog, 29 Sep 2026) – verify on Anthropic pricing page"
+  },
+  "sarvam_prices": {
+   "stt_inr_per_hour": 30,
+   "tts_bulbul_v3_inr_per_10k_chars": 30,
+   "source": "docs.sarvam.ai pricing, read 16 Oct 2026"
+  }
+ },
+ "unit_economics_illustrative": {
+  "note": "Trail rates are ILLUSTRATIVE inputs, not sourced; Claude fallback cost excluded (rules answer first).",
+  "rows": [
+   {
+    "sessions_per_month": 2,
+    "turns_per_session": 3,
+    "voice_cost_inr_per_user_month": 2.68,
+    "breakeven_balance_inr_at_annual_trail": {
+     "0.1%": 32162,
+     "0.25%": 12865,
+     "0.5%": 6432
+    }
+   },
+   {
+    "sessions_per_month": 4,
+    "turns_per_session": 3,
+    "voice_cost_inr_per_user_month": 5.36,
+    "breakeven_balance_inr_at_annual_trail": {
+     "0.1%": 64325,
+     "0.25%": 25730,
+     "0.5%": 12865
+    }
+   },
+   {
+    "sessions_per_month": 8,
+    "turns_per_session": 3,
+    "voice_cost_inr_per_user_month": 10.72,
+    "breakeven_balance_inr_at_annual_trail": {
+     "0.1%": 128650,
+     "0.25%": 51460,
+     "0.5%": 25730
+    }
+   }
+  ]
+ }
+}

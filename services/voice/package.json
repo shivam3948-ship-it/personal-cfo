@@ -1,0 +1,10 @@
+{
+  "name": "munim-voice",
+  "private": true,
+  "type": "module",
+  "description": "Munim's voice relay (D-100): holds the streaming connections to Sarvam that a browser can't hold securely",
+  "scripts": { "build": "tsc", "start": "node dist/main.js", "test": "vitest run" },
+  "dependencies": { "ws": "8.18.0" },
+  "devDependencies": { "@types/node": "20.14.10", "@types/ws": "8.5.12", "typescript": "5.5.4", "vitest": "2.0.5" },
+  "engines": { "node": ">=20" }
+}

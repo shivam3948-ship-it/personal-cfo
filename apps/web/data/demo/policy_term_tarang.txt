@@ -1,0 +1,15 @@
+TARANG LIFE INSURANCE CO. LTD (fictional)
+POLICY SCHEDULE - TARANG SMART TERM PLAN (Pure term, non-linked, non-participating)
+
+Policyholder / Life Assured: Rohan Mehta    Age at entry: 26
+Policy Number: XXXXXX5590
+Policy Type: Term Insurance
+Sum Assured: Rs 1,00,00,000
+Annual Premium: Rs 14,500.00 (incl. GST)
+Premium Frequency: Yearly
+Policy Start Date: 02-Nov-2023
+Next Premium Due Date: 02-Nov-2026
+Policy Term: 34 years (cover till age 60)
+Nominee: Mother
+Grace Period: 30 days from the due date. Cover lapses if premium is unpaid after the grace period.
+Death Benefit: Sum Assured paid to the nominee. No maturity benefit.

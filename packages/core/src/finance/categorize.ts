@@ -1,0 +1,144 @@
+import type { Txn } from '../types';
+
+/** How a category counts in the money picture. */
+export type Group = 'income' | 'spend' | 'committed' | 'non_spend';
+
+export interface Category { name: string; group: Group; hi: string }
+
+export const CATEGORIES: Record<string, Category> = {
+  Salary: { name: 'Salary', group: 'income', hi: 'सैलरी' },
+  'Other income': { name: 'Other income', group: 'income', hi: 'दूसरी आमदनी' },
+  Rent: { name: 'Rent', group: 'spend', hi: 'किराया' },
+  'Food delivery': { name: 'Food delivery', group: 'spend', hi: 'फ़ूड डिलीवरी' },
+  'Quick commerce': { name: 'Quick commerce', group: 'spend', hi: 'क्विक कॉमर्स' },
+  Groceries: { name: 'Groceries', group: 'spend', hi: 'राशन' },
+  Dining: { name: 'Dining', group: 'spend', hi: 'बाहर खाना' },
+  Shopping: { name: 'Shopping', group: 'spend', hi: 'शॉपिंग' },
+  Electronics: { name: 'Electronics', group: 'spend', hi: 'इलेक्ट्रॉनिक्स' },
+  Travel: { name: 'Travel', group: 'spend', hi: 'ट्रैवल' },
+  Cabs: { name: 'Cabs', group: 'spend', hi: 'कैब' },
+  Fuel: { name: 'Fuel', group: 'spend', hi: 'पेट्रोल' },
+  Utilities: { name: 'Utilities', group: 'spend', hi: 'बिजली-पानी' },
+  'Mobile & internet': { name: 'Mobile & internet', group: 'spend', hi: 'मोबाइल-इंटरनेट' },
+  Subscriptions: { name: 'Subscriptions', group: 'spend', hi: 'सब्सक्रिप्शन' },
+  Fitness: { name: 'Fitness', group: 'spend', hi: 'जिम' },
+  Education: { name: 'Education', group: 'spend', hi: 'पढ़ाई' },
+  'Cash withdrawal': { name: 'Cash withdrawal', group: 'spend', hi: 'कैश निकासी' },
+  'Fees & charges': { name: 'Fees & charges', group: 'spend', hi: 'बैंक चार्ज' },
+  'Shops & businesses': { name: 'Shops & businesses', group: 'spend', hi: 'दुकानें और कारोबार' }, // UPI to a merchant/QR handle or a business name (D-078)
+  'Paid to people': { name: 'Paid to people', group: 'spend', hi: 'लोगों को भेजे पैसे' }, // UPI to a person: who, not what for (D-078)
+  Other: { name: 'Other', group: 'spend', hi: 'अन्य' },
+  'Loan EMI': { name: 'Loan EMI', group: 'committed', hi: 'लोन EMI' },
+  Insurance: { name: 'Insurance', group: 'committed', hi: 'बीमा' },
+  Investments: { name: 'Investments', group: 'committed', hi: 'निवेश' },
+  'Family support': { name: 'Family support', group: 'committed', hi: 'परिवार को' },
+  'Regular payments': { name: 'Regular payments', group: 'committed', hi: 'नियमित भुगतान' }, // same person, about the same amount, every month (D-078)
+  Tax: { name: 'Tax', group: 'committed', hi: 'टैक्स' },
+  'Self transfer': { name: 'Self transfer', group: 'non_spend', hi: 'अपने खाते में' },
+  'Card bill payment': { name: 'Card bill payment', group: 'non_spend', hi: 'कार्ड बिल' },
+  Cashback: { name: 'Cashback', group: 'non_spend', hi: 'कैशबैक' },
+  Interest: { name: 'Interest', group: 'income', hi: 'ब्याज' }, // bank interest is income (was non_spend)
+  Refund: { name: 'Refund', group: 'non_spend', hi: 'रिफ़ंड' },
+};
+
+export const groupOf = (cat: string): Group => CATEGORIES[cat]?.group ?? 'spend';
+
+interface Rule { cat: string; re: RegExp; dir?: 'debit' | 'credit' }
+
+// Priority-ordered; first match wins. Word boundaries, not substrings (\blic\b would not match "licious").
+const RULES: Rule[] = [
+  { cat: 'Card bill payment', re: /\b(billpay|bill ?pay|payment)\b.*\bcredit card\b|\bcc bill\b|\bcard bill\b|\bcc\b|\bcredit ?card\b|\bcreditcard\b/i, dir: 'debit' }, // "UPI/…/CC/…" too (real HDFC narration, 28 Oct)
+  { cat: 'Card bill payment', re: /\bpayment received\b/i, dir: 'credit' }, // card-side receipt of the bill payment
+  { cat: 'Cashback', re: /\bcashback\b/i, dir: 'credit' },
+  { cat: 'Refund', re: /\brefund\b|\breversal\b/i, dir: 'credit' },
+  { cat: 'Interest', re: /\b(sb )?interest (credit|paid)\b|\bint\.? ?pd\b/i, dir: 'credit' },
+  { cat: 'Salary', re: /\bsalary\b|\bsal cr\b/i, dir: 'credit' },
+  { cat: 'Subscriptions', re: /\blinkedin ?premium\b|\bswiggy ?one\b|\bzomato ?gold\b|\buber ?one\b|\bzepto ?pass\b|\bflipkart ?(vip|plus)\b|\bnetflix\b|\bspotify\b|\bhotstar\b|\bjiohotstar\b|\byoutube ?premium\b|\byoutubepremium\b|\bprime\b|\bsonyliv\b|\bzee5\b|\blingopro\b|\baudible\b|\bicloud\b|\bgoogle one\b|\bchatgpt\b|\bopenai\b|\banthropic\b|\bclaude\b/i },
+  { cat: 'Fitness', re: /\bcult(fit|\.fit)?\b|\bgym\b|\bfitness\b|\bhealthifyme\b/i },
+  { cat: 'Self transfer', re: /\bself\b|\bown a\/c\b/i },
+  { cat: 'Self transfer', re: /\bsweep\b|\bauto ?sweep\b|\bfd (booking|creation)\b|\bto fd\b/i }, // money moved into your own FD (SBI "SWEEP TFR", 29 Oct)
+  { cat: 'Tax', re: /\bcbdt\b|\bincome ?tax\b|\btin 2\.0\b|\badvance tax\b|\bself assessment tax\b/i, dir: 'debit' },
+  { cat: 'Loan EMI', re: /\bemi\b|\bauto finance\b|\bfinserv\b|\bloan\b|\bln xx\d+/i, dir: 'debit' },
+  { cat: 'Investments', re: /\bmf sip\b|\bsip\b|\bmutual fund\b|\bbse ltd\b|\biccl\b|\bzerodha\b|\bgroww\b/i, dir: 'debit' },
+  { cat: 'Insurance', re: /\binsurance\b|\bpremium\b|\blic\b|\bpol xx\d+/i, dir: 'debit' },
+  { cat: 'Rent', re: /\brent\b/i, dir: 'debit' },
+  { cat: 'Family support', re: /\b(papa|mummy|maa|mom|dad|father|mother)\b/i, dir: 'debit' },
+  { cat: 'Fees & charges', re: /\b(annual fee|charges?|chg|chgs|gst on|late fee|penal)\b/i, dir: 'debit' },
+  { cat: 'Cash withdrawal', re: /\batm\b.*\bwdl\b|\batm wdl\b|\bcash withdrawal\b/i, dir: 'debit' },
+  // quick commerce first: "Swiggy Instamart" is groceries, not food delivery (owner's HDFC card, 8 Nov); Blink Commerce is Blinkit's company
+  { cat: 'Quick commerce', re: /\bblinkit\b|\bblink commerce\b|\bzepto\b|\binstamart\b|\bbigbasket now\b/i },
+  { cat: 'Food delivery', re: /\bswiggy\b|\bzomato\b|\beatsure\b/i },
+  { cat: 'Groceries', re: /\bdmart\b|\bbigbasket\b|\bjiomart\b|\bnature'?s basket\b|\bgrocer/i },
+  // local shops a first-time saver pays by UPI (D-055): words in the shop's name, not chains
+  { cat: 'Groceries', re: /\bkirana\b|\bgeneral stores?\b|\bprovisions?( stores?)?\b|\bsuper ?market\b|\bvegetables?\b|\bsabzi\b|\bsabji\b|\bdairy\b|\bmilk\b|\bfruits?\b|\bration\b/i, dir: 'debit' },
+  { cat: 'Cabs', re: /\buber\b|\bola(cabs)?\b|\brapido\b|\bblusmart\b/i },
+  { cat: 'Fuel', re: /\bhpcl\b|\biocl\b|\bbpcl\b|\bfuel\b|\bpetrol\b|\bshell\b/i },
+  { cat: 'Mobile & internet', re: /\bmobile recharge\b|\bprepaid recharge\b|\bairtel\b|\bjio\b|\bvodafone\b|\bvi postpaid\b|\bact fibernet\b|\bbroadband\b|\bpostpaid\b/i },
+  { cat: 'Utilities', re: /\belectricity\b|\bdhbvn\b|\bbescom\b|\btata power\b|\bwater\b|\bgas\b|\bigl\b/i },
+  { cat: 'Electronics', re: /\bcroma\b|\breliance digital\b|\bvijay sales\b|\bapple store\b/i },
+  { cat: 'Travel', re: /\bmakemytrip\b|\bgoibibo\b|\bindigo\b|\birctc\b|\bresort\b|\bhotel\b|\boyo\b|\bairbnb\b|\bcleartrip\b/i },
+  { cat: 'Dining', re: /\btea\b|\bchai\b|\bbakery\b|\bbakers\b|\bsweets?\b|\bmithai\b|\bdhaba\b|\bcafe\b|\brestaurant\b|\bbiryani\b|\bsocial\b|\bchaayos\b|\bstarbucks\b|\bdominos\b|\bpos\b/i },
+  { cat: 'Shopping', re: /\bamazon\b|\bflipkart\b|\bmyntra\b|\bajio\b|\bnykaa\b|\bmeesho\b|\bnike\b|\badidas\b|\bpuma\b|\bzara\b|\buniqlo\b|\bdecathlon\b|\bskechers\b|\bbata\b/i }, // brands: the owner's Nike purchase, 8 Nov
+  { cat: 'Education', re: /\bcoursera\b|\budemy\b|\bschool\b|\bcollege\b|\btuition\b/i },
+];
+
+const MERCHANTS: [RegExp, string][] = [
+  [/\blinkedin ?premium\b/i, 'LinkedIn Premium'], [/\bswiggy ?one\b/i, 'Swiggy One'], [/\bzomato ?gold\b/i, 'Zomato Gold'], [/\buber ?one\b/i, 'Uber One'], [/\bzepto ?pass\b/i, 'Zepto Pass'], [/\bflipkart ?(vip|plus)\b/i, 'Flipkart VIP'],
+  [/\bswiggy\b/i, 'Swiggy'], [/\bzomato\b/i, 'Zomato'], [/\bblinkit\b/i, 'Blinkit'], [/\bzepto\b/i, 'Zepto'],
+  [/\bdmart\b/i, 'DMart'], [/\buber\b/i, 'Uber'], [/\bola(cabs)?\b/i, 'Ola'], [/\brapido\b/i, 'Rapido'],
+  [/\bnetflix\b/i, 'Netflix'], [/\bspotify\b/i, 'Spotify'], [/\b(jio)?hotstar\b/i, 'JioHotstar'], [/\byoutube ?premium\b|youtubepremium/i, 'YouTube Premium'],
+  [/\bamazon prime\b/i, 'Amazon Prime'], [/\blingopro\b/i, 'LingoPro'], [/\bcult(fit|\.fit)?\b/i, 'cult.fit'],
+  [/\bairtel\b/i, 'Airtel'], [/\bact fibernet\b/i, 'ACT Fibernet'], [/\bdhbvn\b/i, 'DHBVN Electricity'],
+  [/\bmf sip\b|\bbse ltd\b|\biccl\b/i, 'Mutual fund SIP'], [/\batm\b/i, 'ATM cash'],
+  [/\bamazon\b/i, 'Amazon'], [/\bmyntra\b/i, 'Myntra'], [/\bcroma\b/i, 'Croma'], [/\bmakemytrip\b/i, 'MakeMyTrip'],
+  [/\bkestrel\b/i, 'Kestrel Auto Finance'], [/\borbit\b/i, 'Orbit Finserv'], [/\bbharosa\b/i, 'Bharosa Life'],
+  [/\bsuraksha\b/i, 'Suraksha Health'], [/\btarang\b/i, 'Tarang Life'], [/\bhpcl\b/i, 'HPCL'], [/\biocl\b/i, 'IOCL'],
+];
+
+/** Brand names Munim recognises. Anything else in a merchant field may be a person (a UPI payee, an NEFT sender). */
+export const KNOWN_MERCHANTS = new Set(MERCHANTS.map(([, n]) => n));
+
+export function merchantOf(desc: string): string {
+  for (const [re, name] of MERCHANTS) if (re.test(desc)) return name;
+  // Fallback: the most informative token of a UPI/POS narration, never a person's handle.
+  const parts = desc.split(/[/|]/).map((p) => p.trim()).filter(Boolean);
+  const isP2P = /\bp2p\b/i.test(desc);
+  if (isP2P) return 'Person-to-person';
+  const cand = parts.find((p) => !/^(upi|neft|imps|ach|ach dr|pos|bbps|billpay|autopay|nach|cr|dr)$/i.test(p) && !/@/.test(p) && !/^\d+$/.test(p));
+  return (cand ?? desc).replace(/\s+/g, ' ').slice(0, 40);
+}
+
+// UPI payments no word rule caught (D-078). Most of a first-time saver's spending is UPI to people and small shops, and the
+// narration already says who was paid: the payee's UPI handle and name. Read on the phone; nothing is sent anywhere.
+//   a shop: a merchant/QR handle (paytmqr, bharatpe, q123…@ybl, razorpay…) or a shop word in the name ("SHARMA MEDICAL")
+//   a person: a phone-number handle, or a plain name with a plain handle. A tiny shop on a personal UPI ID reads as a
+//   person: "Paid to people" says who was paid, not what for, so it stays in the unsorted bucket (bucketOf)
+const SHOP_HANDLE = /paytmqr|bharatpe|^q\d{5,}|razorpay|\brzp|pinelabs|okbiz|mswipe|ezetap|vyapar|yespay|ibkpos|^paytm-|^gpay-|merchant|^mab\./i;
+const SHOP_WORDS = /\b(stores?|enterprises?|traders?|trading|medicals?|pharma|pharmacy|chemists?|mart|shop|kirana|hotel|restaurant|cafe|dhaba|bakery|bakers|pvt|ltd|llp|agency|agencies|clinic|hospital|salon|parlour|tailors?|electricals?|hardware|mobiles|garments|textiles?|jewell?ers|opticals?|motors|automobiles|petroleum)\b/i;
+export function upiPayee(desc: string): 'shop' | 'person' | null {
+  if (!/^\s*UPI(OUT|IN)?\b/i.test(desc)) return null;
+  const sbi = /^\s*UPI\/(DR|CR)\//i.test(desc); // SBI: UPI/DR/ref/NAME/BANK/handle(cut)/note; HDFC: UPI-NAME-handle@bank-…
+  const fed = /^\s*UPI(OUT|IN)\//i.test(desc); // Federal Bank: UPIOUT/ref/handle@bank/note/… (no payee name)
+  const parts = desc.split('/').map((x) => x.trim());
+  // '-' separates HDFC's fields, but is part of a handle where '/' is the separator ("paytm-1234@ptys")
+  const handle = (desc.match(sbi || fed ? /[\w.\-]+@[A-Za-z]+/ : /[\w.]+@[A-Za-z]+/)?.[0] ?? (sbi ? parts[5] ?? '' : '')).toLowerCase();
+  const local = handle.split('@')[0];
+  const name = (sbi ? parts[3] : fed ? '' : desc.split(/[-/]/)[1]) ?? '';
+  if (SHOP_HANDLE.test(handle) || SHOP_WORDS.test(name)) return 'shop';
+  if (/^(\+?91)?\d{10}$/.test(local)) return 'person';
+  if (/^[a-z][a-z.\-_]*\d{0,4}$/.test(local) && (fed || /^[A-Za-z .]{3,}$/.test(name.trim()))) return 'person'; // a plain handle; Federal prints no name to check
+  return null;
+}
+
+export function categorize(t: Pick<Txn, 'desc' | 'dir'>): string {
+  for (const r of RULES) {
+    if (r.dir && r.dir !== t.dir) continue;
+    if (r.re.test(t.desc)) return r.cat;
+  }
+  if (t.dir === 'debit') { const p = upiPayee(t.desc); if (p === 'shop') return 'Shops & businesses'; if (p === 'person') return 'Paid to people'; }
+  return t.dir === 'credit' ? 'Other income' : 'Other';
+}
+
+export function categorizeAll(txns: Txn[]): Txn[] {
+  return txns.map((t) => ({ ...t, category: t.category ?? categorize(t), merchant: t.merchant ?? merchantOf(t.desc) }));
+}

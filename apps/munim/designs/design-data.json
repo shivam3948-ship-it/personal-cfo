@@ -1,0 +1,1363 @@
+{
+ "Today": {
+  "M0": {
+   "card": "₹36,343",
+   "total": "₹8,58,754",
+   "inv": "₹12,78,285",
+   "bank": "₹1,41,764",
+   "loans": "−₹5,61,294",
+   "gain": "₹4,31,285"
+  },
+  "ESS": 83414,
+  "EMG": {
+   "saved": 270726,
+   "target": 500484
+  },
+  "NAME": "Rohan",
+  "TD": null
+ },
+ "Spends": {
+  "CAT": {
+   "Subscriptions": 526700,
+   "Cash withdrawal": 500000,
+   "Food delivery": 492300,
+   "Dining": 272900,
+   "Fuel": 220000,
+   "Fitness": 199900,
+   "Utilities": 198000,
+   "Quick commerce": 138200,
+   "Shopping": 127200,
+   "Cabs": 82800,
+   "Mobile & internet": 59900
+  },
+  "USUAL15": {
+   "Subscriptions": 26800,
+   "Cash withdrawal": 500000,
+   "Food delivery": 385400,
+   "Dining": 447600,
+   "Fuel": 386900,
+   "Fitness": 199900,
+   "Utilities": 241000,
+   "Quick commerce": 152000,
+   "Shopping": 117700,
+   "Cabs": 145900,
+   "Mobile & internet": 59900
+  },
+  "PACE": [
+   {
+    "m": "Jul",
+    "v": 1711900
+   },
+   {
+    "m": "Aug",
+    "v": 3169100
+   },
+   {
+    "m": "Sep",
+    "v": 4895700
+   }
+  ],
+  "USUALCUM": [
+   107500,
+   107500,
+   166500,
+   290000,
+   332200,
+   332200,
+   332200,
+   745400,
+   1047700,
+   1047700,
+   1615800,
+   2941400,
+   2941400,
+   3109200,
+   3169100,
+   3275000,
+   3555000,
+   3619900,
+   3670400,
+   3670400,
+   3735700,
+   3884200,
+   3928400,
+   4313600,
+   4939800,
+   4939800,
+   5029700,
+   6393100,
+   6393100,
+   6650970,
+   6650970
+  ],
+  "OCTCUM": [
+   132000,
+   132000,
+   282700,
+   608900,
+   699700,
+   826900,
+   901700,
+   1101600,
+   1666100,
+   1666100,
+   2166000,
+   2393500,
+   2680500,
+   2758000,
+   2817900
+  ],
+  "FIXED": 4360100,
+  "FAMILY": 1000000,
+  "UNCAT": 0,
+  "NOTCOUNTED": 2000000,
+  "RECENT": [
+   [
+    "15 Oct",
+    "Airtel",
+    "Mobile & internet",
+    59900
+   ],
+   [
+    "14 Oct",
+    "Zomato",
+    "Food delivery",
+    62600
+   ],
+   [
+    "14 Oct",
+    "YouTube Premium",
+    "Subscriptions",
+    14900
+   ],
+   [
+    "13 Oct",
+    "Zomato",
+    "Food delivery",
+    67000
+   ]
+  ],
+  "orbitMatch": 673892,
+  "orbitSwitchNet": -996393,
+  "INCOME": 14500000,
+  "MONTHS": [
+   [
+    "Jul",
+    4274900,
+    7268200,
+    1000000,
+    true
+   ],
+   [
+    "Aug",
+    8798800,
+    5378200,
+    1000000,
+    true
+   ],
+   [
+    "Sep",
+    6650970,
+    5378200,
+    1000000,
+    true
+   ],
+   [
+    "Oct",
+    2817900,
+    4360100,
+    1000000,
+    false
+   ]
+  ],
+  "FOOD": {
+   "amt": 492300,
+   "usual15": 385400,
+   "orders": 9
+  },
+  "LEAK": {
+   "cult": 2398800,
+   "dup": 64900,
+   "lingo": 499900,
+   "subsYear": 4507800
+  },
+  "PAST": {
+   "07": {
+    "inc": 14500000,
+    "ev": {
+     "Cabs": 188300,
+     "Food delivery": 505100,
+     "Quick commerce": 275300,
+     "Fitness": 199900,
+     "Subscriptions": 271500,
+     "Utilities": 214000,
+     "Dining": 643600,
+     "Cash withdrawal": 500000,
+     "Mobile & internet": 165800,
+     "Shopping": 561900,
+     "Fuel": 237700,
+     "Groceries": 511800
+    },
+    "fx": 7268200,
+    "fam": 1000000,
+    "unc": 0,
+    "nc": 3439100,
+    "cum": [
+     0,
+     48700,
+     48700,
+     63200,
+     89300,
+     153600,
+     212000,
+     411900,
+     423800,
+     525600,
+     525600,
+     998900,
+     1548800,
+     1652000,
+     1711900,
+     2092000,
+     2160100,
+     2451300,
+     2451300,
+     2784600,
+     3102100,
+     3158700,
+     3158700,
+     3158700,
+     3353700,
+     3387100,
+     3456300,
+     3456300,
+     3456300,
+     3956100,
+     4274900
+    ],
+    "top": [
+     [
+      "2026-07-13",
+      "ATM cash",
+      "Cash withdrawal",
+      500000
+     ],
+     [
+      "2026-07-31",
+      "DMart",
+      "Groceries",
+      318800
+     ],
+     [
+      "2026-07-16",
+      "Social, Cyberhub",
+      "Dining",
+      274200
+     ],
+     [
+      "2026-07-12",
+      "Social, Cyberhub",
+      "Dining",
+      259300
+     ]
+    ]
+   },
+   "08": {
+    "inc": 14500000,
+    "ev": {
+     "Fees & charges": 70800,
+     "Quick commerce": 277600,
+     "Fuel": 617600,
+     "Food delivery": 541900,
+     "Cabs": 204600,
+     "Fitness": 199900,
+     "Dining": 600200,
+     "Cash withdrawal": 500000,
+     "Subscriptions": 121600,
+     "Shopping": 753000,
+     "Utilities": 286000,
+     "Mobile & internet": 165800,
+     "Groceries": 560800,
+     "Electronics": 3899000
+    },
+    "fx": 5378200,
+    "fam": 1000000,
+    "unc": 0,
+    "nc": 3793900,
+    "cum": [
+     325500,
+     389700,
+     389700,
+     438000,
+     472200,
+     602000,
+     889500,
+     1380100,
+     2381400,
+     2511300,
+     2511300,
+     2941400,
+     2941400,
+     3109200,
+     3169100,
+     3145100,
+     3425100,
+     3490000,
+     3540500,
+     3540500,
+     3605800,
+     3754300,
+     3798500,
+     4183700,
+     4809900,
+     4809900,
+     4899800,
+     8798800,
+     8798800,
+     8798800,
+     8798800
+    ],
+    "top": [
+     [
+      "2026-08-28",
+      "Croma",
+      "Electronics",
+      3899000
+     ],
+     [
+      "2026-08-09",
+      "ATM cash",
+      "Cash withdrawal",
+      500000
+     ],
+     [
+      "2026-08-25",
+      "Amazon",
+      "Shopping",
+      315500
+     ],
+     [
+      "2026-08-12",
+      "DHBVN Electricity",
+      "Utilities",
+      286000
+     ]
+    ]
+   },
+   "09": {
+    "inc": 14500000,
+    "ev": {
+     "Food delivery": 1044100,
+     "Cabs": 211500,
+     "Quick commerce": 261100,
+     "Fitness": 199900,
+     "Shopping": 458400,
+     "Subscriptions": 186500,
+     "Fuel": 386900,
+     "Cash withdrawal": 500000,
+     "Utilities": 241000,
+     "Dining": 447600,
+     "Travel": 2100000,
+     "Mobile & internet": 165800,
+     "Groceries": 446400,
+     "Fees & charges": 1770
+    },
+    "fx": 5378200,
+    "fam": 1000000,
+    "unc": 0,
+    "nc": 7690000,
+    "cum": [
+     107500,
+     107500,
+     166500,
+     290000,
+     332200,
+     332200,
+     332200,
+     745400,
+     1047700,
+     1047700,
+     1615800,
+     3986300,
+     4698400,
+     4835800,
+     4895700,
+     5001600,
+     5077300,
+     5371400,
+     5565600,
+     5565600,
+     5565600,
+     5565600,
+     5689100,
+     5894600,
+     5968800,
+     6018400,
+     6277200,
+     6393100,
+     6393100,
+     6650970
+    ],
+    "top": [
+     [
+      "2026-09-12",
+      "MakeMyTrip",
+      "Travel",
+      1420000
+     ],
+     [
+      "2026-09-13",
+      "Goa Beach Resort",
+      "Travel",
+      680000
+     ],
+     [
+      "2026-09-11",
+      "ATM cash",
+      "Cash withdrawal",
+      500000
+     ],
+     [
+      "2026-09-12",
+      "Biryani Blues",
+      "Dining",
+      254800
+     ]
+    ]
+   }
+  },
+  "META": {
+   "cur": 9,
+   "day": 15,
+   "pastN": 3,
+   "bank": "4521",
+   "files": null,
+   "reportFrom": "September",
+   "subNote": "Includes LingoPro’s yearly ₹4,999"
+  },
+  "FIXES": null,
+  "INSAL": {
+   "credits": [
+    [
+     "2026-10-01",
+     "Salary",
+     "salary",
+     14500000
+    ]
+   ],
+   "hist": [
+    [
+     "Jul",
+     14500000
+    ],
+    [
+     "Aug",
+     14500000
+    ],
+    [
+     "Sep",
+     14500000
+    ]
+   ],
+   "salDates": [
+    "2026-07-01",
+    "2026-08-01",
+    "2026-09-01",
+    "2026-10-01"
+   ]
+  }
+ },
+ "Category": {
+  "DATA": {
+   "Food delivery": {
+    "m": [
+     505100,
+     541900,
+     1044100,
+     492300
+    ],
+    "u15": [
+     134800,
+     385400,
+     526200
+    ],
+    "tx": [
+     [
+      "2026-10-14",
+      "Zomato",
+      62600,
+      "bank:4521"
+     ],
+     [
+      "2026-10-13",
+      "Zomato",
+      67000,
+      "bank:4521"
+     ],
+     [
+      "2026-10-09",
+      "Swiggy",
+      52600,
+      "bank:4521"
+     ],
+     [
+      "2026-10-05",
+      "Swiggy",
+      49300,
+      "bank:4521"
+     ],
+     [
+      "2026-10-05",
+      "Zomato",
+      41500,
+      "bank:4521"
+     ],
+     [
+      "2026-10-03",
+      "Swiggy",
+      47800,
+      "bank:4521"
+     ],
+     [
+      "2026-10-03",
+      "Swiggy",
+      39500,
+      "bank:4521"
+     ],
+     [
+      "2026-10-01",
+      "Swiggy",
+      61900,
+      "bank:4521"
+     ],
+     [
+      "2026-10-01",
+      "Zomato",
+      70100,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Quick commerce": {
+    "m": [
+     275300,
+     277600,
+     261100,
+     138200
+    ],
+    "u15": [
+     152600,
+     152000,
+     143800
+    ],
+    "tx": [
+     [
+      "2026-10-07",
+      "Blinkit",
+      74800,
+      "bank:4521"
+     ],
+     [
+      "2026-10-03",
+      "Blinkit",
+      63400,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Dining": {
+    "m": [
+     643600,
+     600200,
+     447600,
+     272900
+    ],
+    "u15": [
+     259300,
+     479500,
+     447600
+    ],
+    "tx": [
+     [
+      "2026-10-04",
+      "Chaayos",
+      272900,
+      "card:9012"
+     ]
+    ]
+   },
+   "Shopping": {
+    "m": [
+     561900,
+     753000,
+     458400,
+     127200
+    ],
+    "u15": [
+     0,
+     282800,
+     117700
+    ],
+    "tx": [
+     [
+      "2026-10-06",
+      "Amazon",
+      127200,
+      "card:9012"
+     ]
+    ]
+   },
+   "Cabs": {
+    "m": [
+     188300,
+     204600,
+     211500,
+     82800
+    ],
+    "u15": [
+     164600,
+     108400,
+     145900
+    ],
+    "tx": [
+     [
+      "2026-10-12",
+      "Uber",
+      29500,
+      "bank:4521"
+     ],
+     [
+      "2026-10-04",
+      "Rapido",
+      26100,
+      "bank:4521"
+     ],
+     [
+      "2026-10-04",
+      "Uber",
+      27200,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Fuel": {
+    "m": [
+     237700,
+     617600,
+     386900,
+     220000
+    ],
+    "u15": [
+     0,
+     617600,
+     386900
+    ],
+    "tx": [
+     [
+      "2026-10-13",
+      "HPCL",
+      220000,
+      "card:9012"
+     ]
+    ]
+   },
+   "Utilities": {
+    "m": [
+     214000,
+     286000,
+     241000,
+     198000
+    ],
+    "u15": [
+     214000,
+     286000,
+     241000
+    ],
+    "tx": [
+     [
+      "2026-10-12",
+      "DHBVN Electricity",
+      198000,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Mobile & internet": {
+    "m": [
+     165800,
+     165800,
+     165800,
+     59900
+    ],
+    "u15": [
+     59900,
+     59900,
+     59900
+    ],
+    "tx": [
+     [
+      "2026-10-15",
+      "Airtel",
+      59900,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Cash withdrawal": {
+    "m": [
+     500000,
+     500000,
+     500000,
+     500000
+    ],
+    "u15": [
+     500000,
+     500000,
+     500000
+    ],
+    "tx": [
+     [
+      "2026-10-09",
+      "ATM cash",
+      500000,
+      "bank:4521"
+     ]
+    ]
+   },
+   "Fitness": {
+    "m": [
+     199900,
+     199900,
+     199900,
+     199900
+    ],
+    "u15": [
+     199900,
+     199900,
+     199900
+    ],
+    "tx": [
+     [
+      "2026-10-08",
+      "cult.fit",
+      199900,
+      "bank:4521"
+     ]
+    ]
+   }
+  },
+  "META": {
+   "cur": 9,
+   "day": 15,
+   "past": [
+    6,
+    7,
+    8
+   ],
+   "idle": {
+    "en": "cult.fit unused since July",
+    "hi": "cult.fit जुलाई से बंद पड़ा"
+   }
+  }
+ },
+ "Transactions": {
+  "TX": [
+   [
+    "2026-10-15",
+    "debit",
+    59900,
+    "Airtel",
+    "Mobile & internet",
+    "bank:4521"
+   ],
+   [
+    "2026-10-14",
+    "debit",
+    62600,
+    "Zomato",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-14",
+    "debit",
+    14900,
+    "YouTube Premium",
+    "Subscriptions",
+    "card:9012"
+   ],
+   [
+    "2026-10-13",
+    "debit",
+    67000,
+    "Zomato",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-13",
+    "debit",
+    220000,
+    "HPCL",
+    "Fuel",
+    "card:9012"
+   ],
+   [
+    "2026-10-12",
+    "debit",
+    198000,
+    "DHBVN Electricity",
+    "Utilities",
+    "bank:4521"
+   ],
+   [
+    "2026-10-12",
+    "debit",
+    29500,
+    "Uber",
+    "Cabs",
+    "bank:4521"
+   ],
+   [
+    "2026-10-11",
+    "debit",
+    499900,
+    "LingoPro",
+    "Subscriptions",
+    "card:9012"
+   ],
+   [
+    "2026-10-10",
+    "debit",
+    500000,
+    "Bharosa Life",
+    "Insurance",
+    "bank:4521"
+   ],
+   [
+    "2026-10-09",
+    "debit",
+    500000,
+    "ATM cash",
+    "Cash withdrawal",
+    "bank:4521"
+   ],
+   [
+    "2026-10-09",
+    "debit",
+    52600,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-09",
+    "debit",
+    11900,
+    "Spotify",
+    "Subscriptions",
+    "card:9012"
+   ],
+   [
+    "2026-10-08",
+    "debit",
+    199900,
+    "cult.fit",
+    "Fitness",
+    "bank:4521"
+   ],
+   [
+    "2026-10-07",
+    "debit",
+    1000000,
+    "Person-to-person",
+    "Family support",
+    "bank:4521"
+   ],
+   [
+    "2026-10-07",
+    "debit",
+    74800,
+    "Blinkit",
+    "Quick commerce",
+    "bank:4521"
+   ],
+   [
+    "2026-10-06",
+    "debit",
+    127200,
+    "Amazon",
+    "Shopping",
+    "card:9012"
+   ],
+   [
+    "2026-10-05",
+    "debit",
+    1260100,
+    "Kestrel Auto Finance",
+    "Loan EMI",
+    "bank:4521"
+   ],
+   [
+    "2026-10-05",
+    "debit",
+    1000000,
+    "Mutual fund SIP",
+    "Investments",
+    "bank:4521"
+   ],
+   [
+    "2026-10-05",
+    "debit",
+    49300,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-05",
+    "debit",
+    41500,
+    "Zomato",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-04",
+    "debit",
+    272900,
+    "POS CHAAYOS SECTOR 29",
+    "Dining",
+    "card:9012"
+   ],
+   [
+    "2026-10-04",
+    "debit",
+    26100,
+    "Rapido",
+    "Cabs",
+    "bank:4521"
+   ],
+   [
+    "2026-10-04",
+    "debit",
+    27200,
+    "Uber",
+    "Cabs",
+    "bank:4521"
+   ],
+   [
+    "2026-10-03",
+    "debit",
+    1000000,
+    "OWN A",
+    "Self transfer",
+    "bank:4521"
+   ],
+   [
+    "2026-10-03",
+    "debit",
+    47800,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-03",
+    "debit",
+    39500,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-03",
+    "debit",
+    63400,
+    "Blinkit",
+    "Quick commerce",
+    "bank:4521"
+   ],
+   [
+    "2026-10-02",
+    "debit",
+    2600000,
+    "Person-to-person",
+    "Rent",
+    "bank:4521"
+   ],
+   [
+    "2026-10-01",
+    "credit",
+    14500000,
+    "ACME TECHNOLOGIES PVT LTD SALARY",
+    "Salary",
+    "bank:4521"
+   ],
+   [
+    "2026-10-01",
+    "debit",
+    61900,
+    "Swiggy",
+    "Food delivery",
+    "bank:4521"
+   ],
+   [
+    "2026-10-01",
+    "debit",
+    70100,
+    "Zomato",
+    "Food delivery",
+    "bank:4521"
+   ]
+  ],
+  "RULES0": 1
+ },
+ "Invest": {
+  "ESSM": {
+   "Jul": {
+    "Fixed costs": 7268200,
+    "Family support": 1000000,
+    "Groceries": 511800,
+    "Utilities": 214000,
+    "Mobile & internet": 165800,
+    "Fuel": 237700
+   },
+   "Aug": {
+    "Fixed costs": 5378200,
+    "Family support": 1000000,
+    "Groceries": 560800,
+    "Utilities": 286000,
+    "Mobile & internet": 165800,
+    "Fuel": 617600
+   },
+   "Sep": {
+    "Fixed costs": 5378200,
+    "Family support": 1000000,
+    "Groceries": 446400,
+    "Utilities": 241000,
+    "Mobile & internet": 165800,
+    "Fuel": 386900
+   }
+  },
+  "BANK": 14176365,
+  "PF": {
+   "asOf": "2026-10-15",
+   "value": 127828450,
+   "cost": 84700000,
+   "xirr": 14.2,
+   "funds": [
+    [
+     "Kestrel Flexi Cap",
+     "Regular",
+     "Flexi cap",
+     "equity",
+     55624980,
+     16,
+     "2021-01-05",
+     10,
+     21.0189,
+     500625
+    ],
+    [
+     "Teak ELSS Tax Saver",
+     "Regular",
+     "ELSS",
+     "equity",
+     27897843,
+     14.3,
+     "2021-03-10",
+     10,
+     21.0805,
+     251081
+    ],
+    [
+     "Banyan Nifty 50 Index",
+     "Direct",
+     "Index",
+     "equity",
+     22165405,
+     13.2,
+     "2022-04-05",
+     10,
+     14.265,
+     0
+    ],
+    [
+     "Lotus Short Duration",
+     "Direct",
+     "Debt",
+     "debt",
+     12896200,
+     10,
+     "2024-02-12",
+     10,
+     12.8962,
+     0
+    ],
+    [
+     "Monsoon Small Cap",
+     "Regular",
+     "Small cap",
+     "equity",
+     9244022,
+     7.2,
+     "2023-06-05",
+     10,
+     11.6857,
+     83196
+    ]
+   ],
+   "sipGaps": 0,
+   "sells": 0,
+   "since": "Jan 2021"
+  },
+  "INCOME_M": 14500000,
+  "TERM_COVER": 1000000000,
+  "ENDOW": {
+   "irrLo": 0.48,
+   "irrHi": 4.6
+  },
+  "SAVED_WITH_MUNIM": 0,
+  "XRS": {
+   "count": 5,
+   "taxSave": 1562500,
+   "feeYr": 834902,
+   "fdExtra": 23908946
+  },
+  "DISC": "Test build on sample data. For education only, not investment advice.",
+  "CAS_SRC": "sample"
+ },
+ "Xray": {
+  "PF": {
+   "asOf": "2026-10-15",
+   "value": 127828450,
+   "cost": 84700000,
+   "xirr": 14.2,
+   "sipGaps": 0,
+   "sells": 0,
+   "since": "Jan 2021",
+   "funds": [
+    [
+     "Kestrel Flexi Cap",
+     "Regular",
+     "Flexi cap",
+     "equity",
+     55624980,
+     16,
+     "2021-01-05",
+     10,
+     21.0189,
+     500625
+    ],
+    [
+     "Teak ELSS Tax Saver",
+     "Regular",
+     "ELSS",
+     "equity",
+     27897843,
+     14.3,
+     "2021-03-10",
+     10,
+     21.0805,
+     251081
+    ],
+    [
+     "Banyan Nifty 50 Index",
+     "Direct",
+     "Index",
+     "equity",
+     22165405,
+     13.2,
+     "2022-04-05",
+     10,
+     14.265,
+     0
+    ],
+    [
+     "Lotus Short Duration",
+     "Direct",
+     "Debt",
+     "debt",
+     12896200,
+     10,
+     "2024-02-12",
+     10,
+     12.8962,
+     0
+    ],
+    [
+     "Monsoon Small Cap",
+     "Regular",
+     "Small cap",
+     "equity",
+     9244022,
+     7.2,
+     "2023-06-05",
+     10,
+     11.6857,
+     83196
+    ]
+   ]
+  },
+  "XR": {
+   "regular": {
+    "rows": [
+     {
+      "fund": "Kestrel Flexi Cap",
+      "stValue": 6105438
+     },
+     {
+      "fund": "Monsoon Small Cap",
+      "stValue": 2509421
+     },
+     {
+      "fund": "Teak ELSS Tax Saver",
+      "stValue": 0
+     }
+    ],
+    "feeTotal": 834902,
+    "ltGainReg": 34351980,
+    "taxIfSwitchAllLT": 2731498,
+    "ltValueReg": 84151980,
+    "feeOnLT": 757368,
+    "paybackMonths": 43.3,
+    "sipReg": 700000,
+    "sipFeeFirstYr": 37800,
+    "paybackYears": 3.6
+   },
+   "harvest": {
+    "exempt": 12500000,
+    "used": 0,
+    "left": 12500000,
+    "ltGainAll": 39230207,
+    "harvest": 12500000,
+    "taxSavedLater": 1562500,
+    "deadline": "2027-03-31",
+    "daysLeft": 167,
+    "combo": {
+     "gain": 12481723,
+     "value": 24281723,
+     "lots": 26,
+     "feeSavedYr": 218536,
+     "funds": [
+      "Kestrel Flexi Cap",
+      "Monsoon Small Cap"
+     ],
+     "futureTax": 1560215
+    }
+   },
+   "elss": {
+    "fund": "Teak ELSS Tax Saver",
+    "plan": "Regular",
+    "freeValue": 27897843,
+    "freeGain": 12897843,
+    "lockedValue": 0
+   },
+   "vsIndex": {
+    "Monsoon Small Cap": {
+     "covered": 41,
+     "of": 41,
+     "invested": 8200000,
+     "fundValue": 9244020,
+     "indexValue": 11037278,
+     "diff": -1793258
+    }
+   }
+  },
+  "X3": {
+   "overlap": {
+    "pairs": [
+     [
+      "Banyan",
+      "Teak",
+      45
+     ],
+     [
+      "Banyan",
+      "Kestrel",
+      40
+     ],
+     [
+      "Kestrel",
+      "Teak",
+      33
+     ],
+     [
+      "Banyan",
+      "Monsoon",
+      0
+     ],
+     [
+      "Kestrel",
+      "Monsoon",
+      0
+     ],
+     [
+      "Teak",
+      "Monsoon",
+      0
+     ]
+    ],
+    "top5": [
+     [
+      "HDFC Bank",
+      10119578,
+      3
+     ],
+     [
+      "ICICI Bank",
+      8397733,
+      3
+     ],
+     [
+      "Reliance Industries",
+      6339179,
+      3
+     ],
+     [
+      "Infosys",
+      4728161,
+      3
+     ],
+     [
+      "Bharti Airtel",
+      4059377,
+      3
+     ]
+    ],
+    "top5Paise": 33644028,
+    "top5PctOfEquity": 29.3,
+    "in3plus": [
+     "Axis Bank",
+     "Bharti Airtel",
+     "HDFC Bank",
+     "ICICI Bank",
+     "Infosys",
+     "Larsen & Toubro",
+     "Reliance Industries"
+    ],
+    "dupPaise": 9974432,
+    "equityPaise": 114932250,
+    "asOf": "Sep 2026 factsheets (synthetic sample)"
+   },
+   "fd": {
+    "rate": 7,
+    "invested": 84700000,
+    "fdValue": 103919504,
+    "actual": 127828450,
+    "extra": 23908946
+   },
+   "did": {
+    "months": 3,
+    "movedPaise": 24281723,
+    "feeSavedSoFar": 54634,
+    "futureTax": 1560215,
+    "sipDirect": 2100000
+   }
+  },
+  "MODE": "demo",
+  "DISC": "Test build on sample data. For education only, not investment advice.",
+  "CAS_SRC": "sample"
+ }
+}

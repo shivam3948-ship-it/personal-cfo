@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Credit</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;700&amp;family=Noto+Serif+Devanagari:wght@500;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.serif{font-family:'Noto Serif','Noto Serif Devanagari',serif;font-weight:700;letter-spacing:-0.01em}
+@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet{animation:sheet .28s ease-out both}
+@media (prefers-reduced-motion: reduce){.sheet{animation:none}}
+.row{display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 0;border:0;border-bottom:1px solid var(--hair);background:transparent;text-align:left;width:100%;cursor:pointer;color:var(--ink);text-decoration:none}
+.t-light{--bg:#F2F7F6;--band:#DDEEEA;--band2:#CBE5E0;--band3:#BFDFD9;--card:#FFFFFF;--ink:#10201E;--ink2:#34514D;--muted:#4E6863;--hair:#D6E6E2;--hair2:#C7DBD7;--tint:#E8F2F0;--tint2:#E1F0ED;--btn:#0F5E58;--on-btn:#FFFFFF;--link:#0F5E58;--warn:#9A5B00;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#FBF1DD;--mari-ink:#6E4600;--err-tint:#FCEBE8;--err-ink:#A3271C;--scrim:rgba(0,0,0,.45);--skel:#D3E3DF;--ai1:#8E7CF0;--ai2:#5B47D6;--ai3:#2E2A7A;--ai-ink:#4B3BC4;--ai-glow:rgba(91,71,214,.42);--orb1:#86E6D9;--orb2:#14897F;--orb3:#063D39;--orb-glow:rgba(15,94,88,.45);color-scheme:light}
+.t-dark{--bg:#0B1413;--band:#10211E;--band2:#163029;--band3:#1B3A34;--card:#14201E;--ink:#E6F0EE;--ink2:#C2D4D0;--muted:#93ABA6;--hair:#263835;--hair2:#334844;--tint:#1C2D2A;--tint2:#1E3330;--btn:#5CC2B4;--on-btn:#06201C;--link:#7ED3C7;--warn:#F2B860;--mari:#F2A93B;--on-mari:#2B1D00;--mari-tint:#33270F;--mari-ink:#F6C978;--err-tint:#3A1A17;--err-ink:#FF9E92;--scrim:rgba(0,0,0,.62);--skel:#1D2E2B;--ai1:#9C8CFF;--ai2:#6A55E6;--ai3:#352F8C;--ai-ink:#B9AEFF;--ai-glow:rgba(142,124,240,.38);--orb1:#A6F2E7;--orb2:#2BA295;--orb3:#0A4C46;--orb-glow:rgba(92,194,180,.40);color-scheme:dark}
+@keyframes shimmer{0%{opacity:.55}50%{opacity:1}100%{opacity:.55}}
+.skel{background:var(--skel);border-radius:8px;animation:shimmer 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+@keyframes breathe{0%,100%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 0 var(--ai-glow)}50%{box-shadow:0 8px 22px var(--ai-glow),0 0 0 7px rgba(0,0,0,0)}}
+.ai-orb{background:radial-gradient(circle at 30% 25%,var(--ai1) 0%,var(--ai2) 52%,var(--ai3) 100%);animation:breathe 3.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.ai-orb{animation:none;box-shadow:0 8px 22px var(--ai-glow)}}
+@keyframes orbspin{to{transform:rotate(360deg)}}
+.orb-teal{background:radial-gradient(circle at 30% 25%,var(--orb1) 0%,var(--orb2) 48%,var(--orb3) 100%);box-shadow:0 10px 24px var(--orb-glow)}
+.orb-teal::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,0,0,0) 0deg,var(--orb1) 80deg,var(--orb2) 120deg,rgba(0,0,0,0) 170deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:orbspin 3.6s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion: reduce){.orb-teal::before{animation:none}}
+</style>
+</helmet>
+<div class="t-{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif; font-size: 16px; line-height: 1.4; font-variant-numeric: tabular-nums">
+  <div style="position: absolute; inset: 0 0 80px 0; overflow-y: auto; padding: 18px 16px 24px; box-sizing: border-box; display: grid; gap: 14px; align-content: start">
+    <h1 class="serif" style="margin: 0; font-size: 28px">{{c.title}}</h1>
+    <section style="background: var(--card); border-radius: 22px; box-shadow: 0 0 0 1px var(--hair); padding: 20px 18px; display: grid; gap: 12px">
+      <span style="justify-self: start; font-size: 12px; font-weight: 600; color: var(--mari-ink); background: var(--mari-tint); border-radius: 999px; padding: 3px 10px">{{c.tag}}</span>
+      <b class="serif" style="font-size: 24px; line-height: 1.2">{{c.head}}</b>
+      <span style="font-size: 15px; color: var(--ink2)">{{c.sub}}</span>
+      <div style="display: grid; gap: 10px; margin-top: 4px">
+        <sc-for list="{{c.items}}" as="it" hint-placeholder-count="3">
+          <div style="display: flex; gap: 12px; align-items: flex-start">
+            <span aria-hidden="true" style="flex: none; width: 32px; height: 32px; border-radius: 10px; background: var(--tint); color: var(--link); display: grid; place-items: center; font-weight: 700; font-size: 14px">{{it.n}}</span>
+            <span style="display: grid; gap: 2px"><b style="font-size: 15px; font-weight: 600">{{it.t}}</b><span style="font-size: 13.5px; color: var(--muted)">{{it.d}}</span></span>
+          </div>
+        </sc-for>
+      </div>
+      <button type="button" onClick="{{notify}}" aria-pressed="{{asked}}" style="margin-top: 6px; min-height: 48px; border-radius: 999px; border: 0; background: {{btnBg}}; color: {{btnInk}}; box-shadow: {{btnRing}}; font-size: 15px; font-weight: 600; cursor: pointer">{{btnText}}</button>
+    </section>
+    <a href="Voice.dc.html" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--card); border-radius: 18px; box-shadow: 0 0 0 1px var(--hair); padding: 14px 16px; text-decoration: none">
+      <span style="display: grid; gap: 2px"><b style="font-size: 15px; font-weight: 600">{{c.askT}}</b><span style="font-size: 13.5px; color: var(--muted)">{{c.askD}}</span></span>
+      <span aria-hidden="true" style="color: var(--link); font-size: 20px">›</span>
+    </a>
+  </div>
+  <nav aria-label="Main" style="position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: var(--card); border-top: 1px solid var(--hair)">
+    <div style="height: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center">
+      <a href="Main.dc.html" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>{{nav.today}}</a>
+      <a href="Invest.dc.html" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"></path><path d="M4 19h16"></path><path d="m7 14 4-4 3 3 5-6"></path></svg>{{nav.invest}}</a>
+      <a href="Voice.dc.html" aria-label="{{nav.ask}}" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; padding-bottom: 10px; box-sizing: border-box; font-size: 12.5px; text-decoration: none; color: var(--link); font-weight: 700">
+        <span class="orb-teal" style="position: relative; width: 60px; height: 60px; margin-top: -32px; border-radius: 50%; border: 4px solid var(--card); display: grid; place-items: center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>
+        </span>{{nav.ask}}</a>
+      <a href="Spends.dc.html" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--muted)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>{{nav.spends}}</a>
+      <a href="#" aria-current="page" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; text-decoration: none; color: var(--link); font-weight: 700">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"></rect><path d="M2.5 10h19M6.5 15h4"></path></svg>{{nav.credit}}</a>
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"variant":{"editor":"enum","options":["standard","bharat"],"default":"standard"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { asked: false }; }
+  renderVals() {
+    var self = this, s = this.state;
+    var hi = (this.props.variant ?? 'standard') === 'bharat';
+    // Fake door (19 Oct: missing integrations show "coming soon"). The tap is the signal: how many want Credit next.
+    var C = hi ? {
+      title: 'उधार', tag: 'जल्द आ रहा है', head: 'आपका क्रेडिट, एक जगह', sub: 'स्कोर, कार्ड और लोन: क्या बदला, पहले क्या ठीक करें, और कब सस्ता लोन लेना फ़ायदे का है।',
+      items: [{ n: '1', t: 'स्कोर क्यों बदला', d: 'हर बदलाव की वजह, आसान भाषा में' }, { n: '2', t: 'कार्ड का इस्तेमाल', d: 'लिमिट का 30% से कम रखने में मदद' }, { n: '3', t: 'सस्ता लोन', d: 'फ़ीस जोड़कर भी फ़ायदा हो, तभी बदलें' }],
+      notify: 'तैयार होने पर बताएँ', notified: '✓ तैयार होने पर बताएँगे', askT: 'तब तक मुनीम से पूछें', askD: 'अपने लोन और सिबिल स्कोर के बारे में'
+    } : {
+      title: 'Credit', tag: 'Coming soon', head: 'Your credit, in one place', sub: 'Score, cards and loans: what changed, what to fix first, and when a cheaper loan is really worth it.',
+      items: [{ n: '1', t: 'Why your score moved', d: 'Every change explained in plain words' }, { n: '2', t: 'Card usage', d: 'Help keeping it under 30% of your limit' }, { n: '3', t: 'Cheaper loans', d: 'Switch only if it still pays after fees' }],
+      notify: 'Tell me when it’s ready', notified: '✓ We’ll tell you when it’s ready', askT: 'Meanwhile, ask Munim', askD: 'About your loans and credit score'
+    };
+    return {
+      theme: this.props.theme ?? 'light', c: C, asked: s.asked,
+      btnText: s.asked ? C.notified : C.notify, btnBg: s.asked ? 'var(--tint)' : 'var(--btn)', btnInk: s.asked ? 'var(--link)' : 'var(--on-btn)', btnRing: 'none',
+      notify: function () { if (self.props.onNotify) self.props.onNotify(); self.setState({ asked: true }); },
+      nav: hi ? { today: 'आज', invest: 'निवेश', spends: 'खर्च', credit: 'उधार', ask: 'मुनीम से पूछें' } : { today: 'Today', invest: 'Invest', spends: 'Spends', credit: 'Credit', ask: 'Ask Munim' }
+    };
+  }
+}
+</script>
+</body>
+</html>

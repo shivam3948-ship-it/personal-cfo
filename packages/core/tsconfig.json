@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "lib": ["dom", "es2023"], "strict": true, "noEmit": true, "skipLibCheck": true,
+    "module": "esnext", "moduleResolution": "bundler", "resolveJsonModule": true, "isolatedModules": true, "esModuleInterop": true,
+    "baseUrl": ".", "paths": { "@core/*": ["./src/*"] }
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}

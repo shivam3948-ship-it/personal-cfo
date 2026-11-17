@@ -1,0 +1,32 @@
+SURAKSHA HEALTH INSURANCE LTD (fictional)
+POLICY SCHEDULE - SURAKSHA FAMILY SHIELD (Family Floater)
+
+Proposer: Rohan Mehta
+Policy Number: XXXXXX4410
+Policy Type: Health Insurance - Family Floater
+Sum Insured: Rs 10,00,000 (floater)
+Annual Premium: Rs 18,900.00 (incl. GST)
+Premium Frequency: Yearly
+First Policy Start Date: 10-Jul-2025    Current Period: 10-Jul-2026 to 09-Jul-2027
+Next Premium Due Date: 10-Jul-2027
+Insured Members: Self (age 29); Mother (age 56); Father (age 59)
+
+COVERAGE HIGHLIGHTS
+Room Rent: up to 1% of Sum Insured per day (Rs 10,000/day). ICU: up to 2% of Sum Insured per day (Rs 20,000/day).
+If a higher room category is chosen, associated medical expenses are reduced proportionately.
+Co-payment: 20% on every claim for insured members aged above 60 years at the time of admission.
+Pre-hospitalisation: 30 days. Post-hospitalisation: 60 days. Day-care procedures: covered.
+Ambulance: up to Rs 2,000 per hospitalisation.
+
+WAITING PERIODS
+Initial waiting period: 30 days from first policy start (except accidents).
+Specified illnesses/procedures waiting period: 24 months from first policy start - cataract, hernia, kidney stones, gall bladder stones, piles, sinusitis, tonsillectomy, joint replacement, knee replacement.
+Pre-existing diseases waiting period: 36 months from first policy start, for conditions declared in the proposal (declared: Father - hypertension).
+Maternity: not covered.
+
+CLAIMS PROCESS
+Cashless: available at network hospitals. Show the health card at the hospital insurance desk; the hospital sends the pre-authorisation request to the TPA.
+Intimation: planned hospitalisation at least 48 hours before admission; emergency hospitalisation within 24 hours of admission.
+TPA: CareLink TPA (fictional), helpline 1800-000-5678, claims@carelink-tpa.example
+Reimbursement: submit the claim within 30 days of discharge.
+Documents: claim form (signed), health card and photo ID of the patient, doctor's prescription advising admission, discharge summary, final hospital bill with itemised breakup, payment receipts, investigation reports, pharmacy bills with prescriptions, cancelled cheque of the proposer (for reimbursement).

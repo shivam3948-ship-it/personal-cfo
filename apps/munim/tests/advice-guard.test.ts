@@ -1,0 +1,115 @@
+// The answer guard against an independent list (D-066, review 2). The eval reuses the guard's own check, so it can't catch
+// what the check misses; these sentences were written by hand from two reviews: real instructions that must be removed, and
+// real money-path advice that must survive. Add every new miss here first.
+import { describe, expect, it } from 'vitest';
+import { loadDemo } from '@core/demo';
+import { tellsToExit } from '@/lib/agent/tradeWords';
+import { fundLabels, heldNames } from '@/lib/agent/funds';
+import { knownProducts, strangerProducts } from '@/lib/agent/brands';
+import { allowedActions, guardAnswer, userAllowsAction } from '@/lib/agent/claude';
+import { NO_PRODUCT, NO_TRADE } from '@/lib/advice';
+import { ADVICE_THAT_STAYS, INSTRUCTIONS } from '../evals/guardGolden';
+
+describe('the guard on the sample family', async () => {
+  const ds = await loadDemo();
+  const funds = fundLabels(ds.portfolio!.holdings, 'en'), held = heldNames(funds);
+  const known = knownProducts(ds.portfolio!.holdings, ds.policies);
+
+  it('removes every instruction', () => { for (const a of INSTRUCTIONS) expect(tellsToExit(a, held), a).toBe(true); });
+  it('keeps every piece of money-path advice and every fact', () => { for (const a of ADVICE_THAT_STAYS) expect(tellsToExit(a, held), a).toBe(false); });
+  it('the hard guard removes only the instruction', () => {
+    expect(guardAnswer('Your safety net is short by ₹40,000. Move ₹40,000 from your savings account into a liquid fund.', 'guided', funds, known, 'en'))
+      .toBe('Your safety net is short by ₹40,000. Move ₹40,000 from your savings account into a liquid fund.');
+    expect(guardAnswer('Monsoon Small Cap Fund is worth ₹92,440. Consider selling Monsoon Small Cap Fund before March.', 'guided', funds, known, 'en'))
+      .toBe(`Monsoon Small Cap Fund is worth ₹92,440. ${NO_TRADE.en}`);
+  });
+
+  const BANKS_AND_OWN_COVER = ['Clear the SBI Card debt first.', 'Your HDFC Credit Card debt is ₹48,000.', 'Pay off the Union Bank debt before investing.',
+    'The Bajaj Finserv EMI Card debt costs you the most.', 'Your Tata Nexon value has dropped.', 'Axis Bank Index of rates went up.',
+    'Your LIC premium of ₹12,000 is due on Friday.', 'Ask LIC for the surrender value.', 'That ₹12,000 to ICICI Lombard is your car insurance renewal.',
+    'Your Acko car insurance renews next month.', 'Your Star Health policy covers ₹5 lakh.', 'Pay your HDFC credit card bill.', 'Your SBI account balance is ₹4,000.',
+    'Your Tata Play plan renews on Friday.'];
+  const PRODUCTS_FROM_MEMORY = [['Buy Parag Parikh Flexi Cap Fund for the long term.', 'Parag Parikh Flexi Cap Fund'], ['Mirae Asset Large Cap Fund is a good pick.', 'Mirae Asset Large Cap Fund'],
+    ['Take a term plan from HDFC Life.', 'HDFC Life'], ['Buy a Star Health family floater.', 'Star Health'], ['Jio BlackRock Flexi Cap is new.', 'Jio BlackRock Flexi Cap']] as const;
+  it('banks, cards, loans and the user\'s own cover are not products from memory', () => { for (const a of BANKS_AND_OWN_COVER) expect(strangerProducts(a, known), a).toEqual([]); });
+  it('a fund or insurer named from memory is', () => { for (const [a, name] of PRODUCTS_FROM_MEMORY) expect(strangerProducts(a, known), a).toEqual([name]); });
+  it('a fund from a house not on the list is caught where it is recommended (injection review)', () => {
+    expect(strangerProducts('You could move that money into QuickRich Growth Fund.', known)).toEqual(['QuickRich Growth Fund']);
+    expect(strangerProducts('Consider SuperShield Plus Plan for your health cover.', known)).toEqual(['SuperShield Plus Plan']); // a Plan counts where cover is the topic (review 7)
+    expect(strangerProducts('Switch to the Netflix Basic Plan to save ₹300 a month.', known)).toEqual([]);
+    for (const a of ['Put the bonus in a Liquid Fund for the safety net.', 'An Index Fund is a good choice for new money.', 'Your Monsoon Small Cap Fund fell 4%.', 'QuickRich Growth Fund appeared on your statement.'])
+      expect(strangerProducts(a, known), a).toEqual([]);
+  });
+  it('a product the user named may be discussed as a fact, never recommended back (review 3)', () => {
+    const asked = (q: string, picks: string[] = []) => knownProducts(ds.portfolio!.holdings, ds.policies, picks, [q]);
+    expect(strangerProducts('Star Health covers day-care procedures.', asked('Is Star Health any good?'))).toEqual([]);
+    expect(strangerProducts('Parag Parikh Flexi Cap Fund has a 5-year lock-in? No, only ELSS funds do.', asked('Does Parag Parikh Flexi Cap Fund have a lock-in?'))).toEqual([]);
+    expect(strangerProducts('Yes, buy Parag Parikh Flexi Cap Fund for the long term.', asked('Should I buy Parag Parikh Flexi Cap Fund?'))).toEqual(['Parag Parikh Flexi Cap Fund']);
+    expect(strangerProducts('Yes, buy Quant Small Cap Fund.', asked('Should I buy Quant Small Cap Fund?', ['Monsoon Liquid Fund']))).toEqual(['Quant Small Cap Fund']); // private: only picks
+    expect(strangerProducts('Yes, go with Star Health for your family.', asked('Star Health or Niva Bupa?'))).toEqual(['Star Health']);
+  });
+  it('an insurer with a plan name counts whatever the verb; "your" plan is the user\'s own (review 3)', () => {
+    for (const [a, name] of [['HDFC Life Click 2 Protect is a good term plan.', 'HDFC Life Click 2 Protect'], ['Star Health is the best option for your parents.', 'Star Health'],
+      ['ICICI Prudential Life iProtect Smart is a good term plan.', 'ICICI Prudential Life'], ['Consider HDFC Life Click 2 Protect for term cover; the premium is low.', 'HDFC Life Click 2 Protect']] as const)
+      expect(strangerProducts(a, known), a).toEqual([name]);
+    for (const a of ['Your LIC Jeevan Anand premium is due on Friday.', 'Aapki LIC Jeevan Anand policy ka premium ₹12,000 hai.'])
+      expect(strangerProducts(a, known), a).toEqual([]);
+  });
+  it('a removed product gets a product-neutral line, not "can\'t name funds"', () => {
+    expect(guardAnswer('Take a term plan from HDFC Life. Cover of ₹1 crore costs less at 30.', 'guided', funds, known, 'en')).toBe(`Cover of ₹1 crore costs less at 30. ${NO_PRODUCT.en}`);
+  });
+});
+
+describe('the action guard (review 7)', () => {
+  const offer = 'Your card bill is ₹36,343 on 24 October. Shall I set a reminder?';
+  it('a yes to an offer, in the words people use', () => {
+    for (const y of ['yes', 'haan', 'thik hai', 'theek hai', 'ज़रूर', 'जरूर', 'अच्छा', 'Zaroor', 'Acha', 'Sahi hai', 'Chalega', 'kar lo', 'हो जाए', 'Haa', 'Sounds good', 'Go for it', 'Yep', 'Of course', 'Absolutely', 'Do that', 'okk', '👍', 'हाँ कर दो', 'ठीक है', 'OK'])
+      expect(userAllowsAction(y, offer), y).toBe(true);
+  });
+  it('a yes that names the action, or says it the Hinglish way, is still a yes (final review)', () => {
+    const cancel = 'Want me to draft an email to cancel cult.fit?';
+    for (const y of ['Yes, cancel it', 'haan, cancel kar do', 'Yes, cancel the membership', 'Yes, stop it', 'haan kyun nahi', 'Bilkul, kyun nahi', 'क्यों नहीं, कर दो', 'No problem, go ahead', "ok do it, don't wait", 'haan, mat ruko'])
+      expect(userAllowsAction(y, cancel), y).toBe(true);
+    expect(userAllowsAction('haan', 'I can set a reminder for 30 October if you like.')).toBe(true);
+  });
+  it('a no, or no offer, runs nothing; an outright ask always does', () => {
+    for (const n of ['no', 'nahi', 'not now', 'baad mein', 'रहने दो', 'मत करो']) expect(userAllowsAction(n, offer), n).toBe(false);
+    expect(userAllowsAction('How much did I save last month?', 'Your spend fell.')).toBe(false);
+    expect(userAllowsAction('ok', 'Your spend fell.')).toBe(false);
+    expect(userAllowsAction('Remind me to pay my card bill on 30 Oct', '')).toBe(true);
+    expect(userAllowsAction('haan, plan save kar do', 'Want me to save this plan?')).toBe(true);
+  });
+});
+
+describe('the action guard after review (29 Oct)', () => {
+  const all = ['create_reminder', 'draft_email', 'create_savings_goal', 'save_prepayment_plan'];
+  it('a yes to an offer allows the action, however the offer is worded (Hindi included)', () => {
+    for (const [offer, yes] of [['क्या 20 दिसंबर का Orbit prepayment रिमाइंडर लगा दूँ?', 'haan'], ['इसे भरने का प्लान बना दूँ?', 'हाँ'], ['Should I write to Orbit asking them to apply the prepayment?', 'yes'],
+      ['Shall I draft the email to cult.fit?', 'Yes, and remind me too'], ['Shall I set up a goal for the trip?', 'Bana do'], ['Shall I set a reminder?', 'हा']] as const)
+      expect(allowedActions(yes, offer).sort(), `${offer} → ${yes}`).toEqual([...all].sort());
+  });
+  it('an opening no allows nothing; a correction that asks for an action still does', () => {
+    expect(allowedActions("No, don't remind me", 'Shall I set a reminder?')).toEqual([]);
+    expect(allowedActions('nahi', 'Shall I set a reminder?')).toEqual([]);
+    for (const c of ['No, remind me on 1 Nov instead', 'Nahi, 1 Nov ko yaad dilana', 'नहीं, 1 नवंबर को याद दिलाना']) expect(allowedActions(c, 'Shall I set a reminder for 30 Oct?').length, c).toBe(4);
+    expect(userAllowsAction('Yes, cancel it', 'Want me to draft an email to cancel cult.fit?')).toBe(true);
+    expect(allowedActions('नहीं, याद मत दिलाओ', 'क्या रिमाइंडर लगा दूँ?')).toEqual([]);
+  });
+  it('an opening that negates the action allows nothing (review, 29 Oct, follow-up)', () => {
+    for (const n of ["Don't draft any email", 'Do not send the email', 'Never remind me about this', 'Please don’t set a reminder', 'mat likhna email', 'मत लिखो ईमेल'])
+      expect(allowedActions(n, 'Shall I draft an email to cult.fit?'), n).toEqual([]);
+    for (const n of ['remind mat karo', 'email mat bhejo', 'reminder mat lagao', 'yes but dont send it', 'ठीक है पर मत भेजो', "No need to email, I'll call them"])
+      expect(allowedActions(n, 'Shall I draft an email to cult.fit?'), n).toEqual([]);
+    for (const y of ["Don't forget to remind me on Friday", "Don't worry, set the reminder for 30 Oct", "Don't email them, just remind me", 'No need to email, just remind me',
+      'Do not save the plan, set a reminder instead', "Don't set it for Friday, set it for Monday", 'Email mat likho, reminder laga do', 'mat bhejo email, yaad dila do',
+      'Draft an email asking cult.fit to never email me again', "Draft an email to HDFC saying don't send me promotional mail", 'Write to the bank: please do not send me paper statements',
+      'Draft an email to the landlord: do not mail the cheque', 'Email likh do ki mujhe mail mat bhejo'])
+      expect(allowedActions(y, 'Shall I draft an email to cult.fit?').length, y).toBe(4);
+  });
+  it('a direct request runs whatever else it says (review, 29 Oct)', () => {
+    for (const a of ["Set a reminder so I don't miss the card bill", 'Remind me so I never pay late again', "Draft an email to cult.fit saying I don't use the gym anymore",
+      'Card bill ka reminder laga do, bhoolna mat', 'बिल वाले दिन याद दिला दो', '30 दिन बाद याद दिला देना', 'लोन की EMI से पहले याद दिला दो',
+      'cult.fit के कैंसिलेशन का ईमेल लिख दो', 'सब्सक्रिप्शन बंद करने का ईमेल लिख दो', 'मतलब 30 तारीख़ को याद दिला दो'])
+      expect(allowedActions(a, '').length, a).toBe(4);
+  });
+});
